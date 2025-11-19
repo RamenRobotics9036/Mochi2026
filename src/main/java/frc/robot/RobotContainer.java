@@ -29,21 +29,17 @@ import frc.robot.Constants.IntakeSpitCommandConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.OuttakeSpitCommandConstants;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.commands.ArmDefaultCommand;
 import frc.robot.commands.ControllerRumbleCommand;
 import frc.robot.commands.DriveForwardCommand;
 import frc.robot.commands.DriveForwardNow;
 import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.IntakeSpitCommand;
 import frc.robot.commands.OuttakeSpitCommand;
-import frc.robot.commands.SetArmToAngleCommand;
 import frc.robot.ramenlib.sim.SimConstants.SimCommandConstants;
-import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandIntakeArmSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandIntakeSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandNoSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandOuttakeSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.UnexpectedCommand;
-import frc.robot.subsystems.IntakeArmSystem;
 import frc.robot.subsystems.IntakeSystem;
 import frc.robot.subsystems.OuttakeSystem;
 import frc.robot.subsystems.SwerveSubsystem;
@@ -112,7 +108,6 @@ public class RobotContainer
 
 
   private final IntakeSystem m_intakeSystem = new IntakeSystem();
-  private IntakeArmSystem m_armSystem = new IntakeArmSystem();
   private final OuttakeSystem m_outtakeSystem = new OuttakeSystem();
 
   /**
@@ -132,10 +127,6 @@ public class RobotContainer
     m_swerveDrive.initShuffleboard();
     AutoLogic.initShuffleBoard();
     addTestButtonsToShuffleboard();
-
-    NamedCommands.registerCommand("Set Arm Position To Bottom", CmdWrapperIntakeArmSystem(new SetArmToAngleCommand(m_armSystem, ArmConstants.kMaxArmRotation)));
-    NamedCommands.registerCommand("Set Arm Position To Top", CmdWrapperIntakeArmSystem(new SetArmToAngleCommand(m_armSystem, ArmConstants.kMinArmRotation)));
-    NamedCommands.registerCommand("Set Arm Position To L1", CmdWrapperIntakeArmSystem(new SetArmToAngleCommand(m_armSystem, ArmConstants.L1ArmAngle)));
 
     NamedCommands.registerCommand("Dispense Intake Into Bucket", CmdWrapperIntakeSystem(new IntakeSpitCommand(m_intakeSystem, -IntakeSpitCommandConstants.bucketSpeed, true)));
     NamedCommands.registerCommand("Shoot From Intake", CmdWrapperIntakeSystem(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed, true)));
@@ -233,10 +224,6 @@ public class RobotContainer
   public void configureDefaultCommands() {
     m_swerveDrive.setDefaultCommand(m_driveFieldOrientedAngularVelocity);
     m_intakeSystem.setDefaultCommand(new IntakeDefaultCommand(m_intakeSystem));
-    
-    // m_elevatorSystem.setDefaultCommand(new ElevatorManualCommand(m_elevatorSystem, () -> m_armController.getRightY()));
-
-    m_armSystem.setDefaultCommand(new ArmDefaultCommand(m_armSystem, () -> m_armController.getLeftY()));
   }
   
   /**
@@ -267,13 +254,6 @@ public class RobotContainer
 
     // this is field relative, right stick controls rotation around z axis
     configureDefaultCommands();
-    if (m_armSystem != null) {
-      // Algae preset
-      m_armController.leftBumper().whileTrue(new SetArmToAngleCommand(m_armSystem, ArmConstants.algaePreset).
-      andThen(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed, true)));
-      // Arm down
-      m_armController.leftTrigger().whileTrue(new SetArmToAngleCommand(m_armSystem, ArmConstants.kMaxArmRotation));
-    }
   
   
     //D-pad drives straight (no gyro) for tests
@@ -299,12 +279,6 @@ public class RobotContainer
       AlignRobotConstants.transformDrive,
       AlignRobotConstants.transformRightStrafe
   ));
-
-
-    // Command to spit out game pieces
-    //m_armController.a().whileTrue(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed));
-    //
-    m_armController.a().whileTrue(new SetArmToAngleCommand(m_armSystem, ArmConstants.L1ArmAngle).andThen(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed)));
     
     // Spit coral into outtake
     m_armController.b().whileTrue(new IntakeSpitCommand(m_intakeSystem, -IntakeSpitCommandConstants.bucketSpeed));
