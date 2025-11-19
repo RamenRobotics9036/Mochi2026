@@ -30,12 +30,9 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.OuttakeSpitCommandConstants;
 import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.ControllerRumbleCommand;
-import frc.robot.commands.DriveForwardCommand;
-import frc.robot.commands.DriveForwardNow;
 import frc.robot.ramenlib.sim.SimConstants.SimCommandConstants;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandNoSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.UnexpectedCommand;
-import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.util.AutoLogic;
 import frc.robot.util.CommandAppliedController;
 import java.io.File;
@@ -57,47 +54,6 @@ public class RobotContainer
     new CommandAppliedController(OperatorConstants.kArmPort);
 
   // The robot's subsystems and commands are defined here...
-  private final SwerveSubsystem       m_swerveDrive  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
-                                                                                SwerveConstants.kJsonDirectory));
-  // Applies deadbands and inverts controls because joysticks
-  // are back-right positive while robot
-  // controls are front-left positive
-  // left stick controls translation
-  // right stick controls the rotational velocity 
-  // buttons are quick rotation positions to different ways to face
-  // WARNING: default buttons are on the same buttons as the ones defined in configureBindings
-   /**
-   * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
-   */
-  SwerveInputStream driveAngularVelocity = SwerveInputStream.of(m_swerveDrive.getSwerveDrive(),
-                                                                () -> m_driverController.getLeftY(),
-                                                                () -> m_driverController.getLeftX())
-                                                            .withControllerRotationAxis(() -> -m_driverController.getRightX())
-                                                            .deadband(OperatorConstants.kDeadband)
-                                                            .scaleTranslation(0.8)
-                                                            .allianceRelativeControl(true);
-
-  /**
-   * Clone's the angular velocity input stream and converts it to a fieldRelative input stream.
-   */
-  SwerveInputStream driveDirectAngle = driveAngularVelocity.copy().withControllerHeadingAxis(m_driverController::getRightX,
-                                                                                             m_driverController::getRightY)
-                                                           .headingWhile(true);
-
-
-  // Applies deadbands and inverts controls because joysticks
-  // are back-right positive while robot
-  // controls are front-left positive
-  // left stick controls translation
-  // right stick controls the desired angle NOT angular rotation
-  Command m_driveFieldOrientedDirectAngle = m_swerveDrive.driveFieldOriented(driveDirectAngle);
-
-  // Applies deadbands and inverts controls because joysticks
-  // are back-right positive while robot
-  // controls are front-left positive
-  // left stick controls translation
-  // right stick controls the angular velocity of the robot
-  Command m_driveFieldOrientedAngularVelocity = m_swerveDrive.driveFieldOriented(driveAngularVelocity);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -113,18 +69,8 @@ public class RobotContainer
     configureBindings();
     DriverStation.silenceJoystickConnectionWarning(true);
 
-    m_swerveDrive.initShuffleboard();
     AutoLogic.initShuffleBoard();
     addTestButtonsToShuffleboard();
-
-    NamedCommands.registerCommand("Align to April Tag Left Side", CmdWrapperUnexpectedCommand(m_swerveDrive.alignWithAprilTagCommand(
-      AlignRobotConstants.transformDrive,
-      AlignRobotConstants.transformLeftStrafe
-    ), "alignAprilLeft"));
-    NamedCommands.registerCommand("Align to April Tag Right Side", CmdWrapperUnexpectedCommand(m_swerveDrive.alignWithAprilTagCommand(
-      AlignRobotConstants.transformDrive,
-      AlignRobotConstants.transformRightStrafe
-    ), "alignAprilRight"));
 
     //
     // Heres the Commands that we dont mock in simulation, since they work just fine in sim.
@@ -141,18 +87,6 @@ public class RobotContainer
 
   private void addTestButtonsToShuffleboard() {
     ShuffleboardTab tabTest = Shuffleboard.getTab("Test");
-
-    Command spinCmd = printStartStop(
-      m_swerveDrive.sysIdDriveMotorCommand(true), "Spin test");
-    tabTest.add("Spin Test", spinCmd).withWidget("Command");
-
-    Command driveCmd = printStartStop(
-      m_swerveDrive.sysIdDriveMotorCommand(false), "Drive test");
-    tabTest.add("Drive Test", driveCmd).withWidget("Command");
-
-    Command angleTest = printStartStop(
-      m_swerveDrive.sysIdAngleMotorCommand(), "Angle test");
-    tabTest.add("Angle Test", angleTest).withWidget("Command");
   }
 
   private Command CmdWrapperIntakeArmSystem(Command command) {
@@ -187,10 +121,6 @@ public class RobotContainer
 
     return SimCommandConstants.kDisableMostCommandsInSim;
   }
-
-  public void configureDefaultCommands() {
-    m_swerveDrive.setDefaultCommand(m_driveFieldOrientedAngularVelocity);
-  }
   
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
@@ -215,12 +145,6 @@ public class RobotContainer
     */
     //this is field relative, right stick controls orientation relative to the field
     //drivebase.setDefaultCommand(m_driveFieldOrientedDirectAngle);
-
-
-
-    // this is field relative, right stick controls rotation around z axis
-    configureDefaultCommands();
-  
   
     //D-pad drives straight (no gyro) for tests
     // m_driverController.povCenter().onTrue((m_swerveDrive.driveCommand(() -> 0, () -> 0, () -> 0, true)));
@@ -231,25 +155,6 @@ public class RobotContainer
     
 
     // $TODO m_swerveDrive.sysIdDriveMotorCommand()
-
-    // Start button resets the gyro
-    m_driverController.start().onTrue((Commands.runOnce(m_swerveDrive::zeroGyroWithAlliance)));
-
-    // A button aligns the robot using the AprilTag
-    //m_driverController.a().onTrue(new AimAtLimeLightV2(m_swerveDrive));
-    m_driverController.povLeft().onTrue(m_swerveDrive.alignWithAprilTagCommand(
-    AlignRobotConstants.transformDrive,
-    AlignRobotConstants.transformLeftStrafe
-  ));
-    m_driverController.povRight().onTrue(m_swerveDrive.alignWithAprilTagCommand(
-      AlignRobotConstants.transformDrive,
-      AlignRobotConstants.transformRightStrafe
-  ));
-
-    new Trigger(() -> (m_driverController.leftBumper().getAsBoolean() && m_swerveDrive.getVisionSystem().isDetecting())).onTrue(
-      Commands.runOnce(() -> m_swerveDrive.trueResetPose())
-    );
-
   }
 
   //private Command waitFiveSeconds = new WaitCommand(5)
@@ -283,14 +188,5 @@ public class RobotContainer
         //return new DriveForwardNow(m_swerveDrive, 1.4, true).
           //andThen(CmdWrapperIntakeArmSystem(new SetArmToAngleCommand(m_armSystem, ArmConstants.L1ArmAngle)))
           //.andThen(CmdWrapperIntakeSystem(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed, true)));
-  }
-  
-  public void setMotorBrake(boolean brake)
-  {
-    m_swerveDrive.setMotorBrake(brake);
-  }
-
-  public void updateVisionPose() {
-    m_swerveDrive.updateVisionPose();
   }
 }
