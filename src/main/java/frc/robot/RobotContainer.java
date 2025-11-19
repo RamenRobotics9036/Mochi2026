@@ -33,21 +33,16 @@ import frc.robot.commands.ArmDefaultCommand;
 import frc.robot.commands.ControllerRumbleCommand;
 import frc.robot.commands.DriveForwardCommand;
 import frc.robot.commands.DriveForwardNow;
-import frc.robot.commands.ElevatorDefaultCommand;
-import frc.robot.commands.ElevatorManualCommand;
-import frc.robot.commands.ElevatorToPositionCommand;
 import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.IntakeSpitCommand;
 import frc.robot.commands.OuttakeSpitCommand;
 import frc.robot.commands.SetArmToAngleCommand;
 import frc.robot.ramenlib.sim.SimConstants.SimCommandConstants;
-import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandElevatorSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandIntakeArmSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandIntakeSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandNoSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandOuttakeSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.UnexpectedCommand;
-import frc.robot.subsystems.ElevatorSystem;
 import frc.robot.subsystems.IntakeArmSystem;
 import frc.robot.subsystems.IntakeSystem;
 import frc.robot.subsystems.OuttakeSystem;
@@ -119,7 +114,6 @@ public class RobotContainer
   private final IntakeSystem m_intakeSystem = new IntakeSystem();
   private IntakeArmSystem m_armSystem = new IntakeArmSystem();
   private final OuttakeSystem m_outtakeSystem = new OuttakeSystem();
-  private final ElevatorSystem m_elevatorSystem = new ElevatorSystem();
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -157,11 +151,6 @@ public class RobotContainer
       AlignRobotConstants.transformDrive,
       AlignRobotConstants.transformRightStrafe
     ), "alignAprilRight"));
-
-    NamedCommands.registerCommand("Set Elevator Position To Bottom", CmdWrapperElevatorSystem(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kDownElevatorPosition)));
-    NamedCommands.registerCommand("Set Elevator Position To L2", CmdWrapperElevatorSystem(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel2ReefPosition)));
-    NamedCommands.registerCommand("Set Elevator Position To L3", CmdWrapperElevatorSystem(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel3ReefPosition)));
-    NamedCommands.registerCommand("Set Elevator Position to L4", CmdWrapperElevatorSystem(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel4ReefPosition)));
 
     //
     // Heres the Commands that we dont mock in simulation, since they work just fine in sim.
@@ -208,14 +197,6 @@ public class RobotContainer
   private Command CmdWrapperOuttakeSystem(Command command) {
     if (disableCommandsInSim()) {
       return new PretendCommandOuttakeSystem(m_outtakeSystem);
-    } else {
-      return command;
-    }
-  }
-
-  private Command CmdWrapperElevatorSystem(Command command) {
-    if (disableCommandsInSim()) {
-      return new PretendCommandElevatorSystem(m_elevatorSystem);
     } else {
       return command;
     }
@@ -287,9 +268,6 @@ public class RobotContainer
     // this is field relative, right stick controls rotation around z axis
     configureDefaultCommands();
     if (m_armSystem != null) {
-      // Arm up
-      m_armController.rightTrigger().onTrue(new SetArmToAngleCommand(m_armSystem, ArmConstants.kMinArmRotation).
-           alongWith(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kDownElevatorPosition)));
       // Algae preset
       m_armController.leftBumper().whileTrue(new SetArmToAngleCommand(m_armSystem, ArmConstants.algaePreset).
       andThen(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed, true)));
@@ -330,15 +308,6 @@ public class RobotContainer
     
     // Spit coral into outtake
     m_armController.b().whileTrue(new IntakeSpitCommand(m_intakeSystem, -IntakeSpitCommandConstants.bucketSpeed));
-    // L2 preset
-    m_armController.x().onTrue(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel2ReefPosition));
-    // L3 Preset
-    m_armController.y().onTrue(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel3ReefPosition));
-    // L4 Preset
-    m_armController.povUp().onTrue(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel4ReefPosition));
-
-    // Elevator down
-    m_armController.povDown().onTrue(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kDownElevatorPosition));
     // Outtake reverse
     m_armController.povLeft().whileTrue(new OuttakeSpitCommand(m_outtakeSystem, -OuttakeSpitCommandConstants.speed));
     // Outtake coral
