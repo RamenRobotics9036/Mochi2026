@@ -32,12 +32,9 @@ import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.ControllerRumbleCommand;
 import frc.robot.commands.DriveForwardCommand;
 import frc.robot.commands.DriveForwardNow;
-import frc.robot.commands.OuttakeSpitCommand;
 import frc.robot.ramenlib.sim.SimConstants.SimCommandConstants;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandNoSystem;
-import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandOuttakeSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.UnexpectedCommand;
-import frc.robot.subsystems.OuttakeSystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.util.AutoLogic;
 import frc.robot.util.CommandAppliedController;
@@ -102,9 +99,6 @@ public class RobotContainer
   // right stick controls the angular velocity of the robot
   Command m_driveFieldOrientedAngularVelocity = m_swerveDrive.driveFieldOriented(driveAngularVelocity);
 
-
-  private final OuttakeSystem m_outtakeSystem = new OuttakeSystem();
-
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
@@ -122,8 +116,6 @@ public class RobotContainer
     m_swerveDrive.initShuffleboard();
     AutoLogic.initShuffleBoard();
     addTestButtonsToShuffleboard();
-
-    NamedCommands.registerCommand("Outtake from Bucket", CmdWrapperOuttakeSystem(new OuttakeSpitCommand(m_outtakeSystem, OuttakeSpitCommandConstants.speed).withTimeout(1)));
 
     NamedCommands.registerCommand("Align to April Tag Left Side", CmdWrapperUnexpectedCommand(m_swerveDrive.alignWithAprilTagCommand(
       AlignRobotConstants.transformDrive,
@@ -167,14 +159,6 @@ public class RobotContainer
     // Now that we implemented sim for arm, re-enable these commands for sim.
     return command;
   } 
-
-  private Command CmdWrapperOuttakeSystem(Command command) {
-    if (disableCommandsInSim()) {
-      return new PretendCommandOuttakeSystem(m_outtakeSystem);
-    } else {
-      return command;
-    }
-  }
 
   private Command CmdWrapperNoSystem(Command command) {
     if (disableCommandsInSim()) {
@@ -261,14 +245,6 @@ public class RobotContainer
       AlignRobotConstants.transformDrive,
       AlignRobotConstants.transformRightStrafe
   ));
-    
-    // Outtake reverse
-    m_armController.povLeft().whileTrue(new OuttakeSpitCommand(m_outtakeSystem, -OuttakeSpitCommandConstants.speed));
-    // Outtake coral
-    m_armController.povRight().whileTrue(new OuttakeSpitCommand(m_outtakeSystem, OuttakeSpitCommandConstants.speed));
-    
-    // 
-    m_armController.start().whileTrue(new OuttakeSpitCommand(m_outtakeSystem, -OuttakeSpitCommandConstants.speed));
 
     new Trigger(() -> (m_driverController.leftBumper().getAsBoolean() && m_swerveDrive.getVisionSystem().isDetecting())).onTrue(
       Commands.runOnce(() -> m_swerveDrive.trueResetPose())
