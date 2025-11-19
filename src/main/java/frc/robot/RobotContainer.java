@@ -32,15 +32,11 @@ import frc.robot.Constants.SwerveConstants;
 import frc.robot.commands.ControllerRumbleCommand;
 import frc.robot.commands.DriveForwardCommand;
 import frc.robot.commands.DriveForwardNow;
-import frc.robot.commands.IntakeDefaultCommand;
-import frc.robot.commands.IntakeSpitCommand;
 import frc.robot.commands.OuttakeSpitCommand;
 import frc.robot.ramenlib.sim.SimConstants.SimCommandConstants;
-import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandIntakeSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandNoSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandOuttakeSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.UnexpectedCommand;
-import frc.robot.subsystems.IntakeSystem;
 import frc.robot.subsystems.OuttakeSystem;
 import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.util.AutoLogic;
@@ -107,7 +103,6 @@ public class RobotContainer
   Command m_driveFieldOrientedAngularVelocity = m_swerveDrive.driveFieldOriented(driveAngularVelocity);
 
 
-  private final IntakeSystem m_intakeSystem = new IntakeSystem();
   private final OuttakeSystem m_outtakeSystem = new OuttakeSystem();
 
   /**
@@ -127,10 +122,6 @@ public class RobotContainer
     m_swerveDrive.initShuffleboard();
     AutoLogic.initShuffleBoard();
     addTestButtonsToShuffleboard();
-
-    NamedCommands.registerCommand("Dispense Intake Into Bucket", CmdWrapperIntakeSystem(new IntakeSpitCommand(m_intakeSystem, -IntakeSpitCommandConstants.bucketSpeed, true)));
-    NamedCommands.registerCommand("Shoot From Intake", CmdWrapperIntakeSystem(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed, true)));
-    NamedCommands.registerCommand("Idle Intake", CmdWrapperIntakeSystem(new IntakeDefaultCommand(m_intakeSystem).withTimeout(1)));
 
     NamedCommands.registerCommand("Outtake from Bucket", CmdWrapperOuttakeSystem(new OuttakeSpitCommand(m_outtakeSystem, OuttakeSpitCommandConstants.speed).withTimeout(1)));
 
@@ -177,14 +168,6 @@ public class RobotContainer
     return command;
   } 
 
-  private Command CmdWrapperIntakeSystem(Command command) {
-    if (disableCommandsInSim()) {
-      return new PretendCommandIntakeSystem(m_intakeSystem);
-    } else {
-      return command;
-    }
-  }
-
   private Command CmdWrapperOuttakeSystem(Command command) {
     if (disableCommandsInSim()) {
       return new PretendCommandOuttakeSystem(m_outtakeSystem);
@@ -223,7 +206,6 @@ public class RobotContainer
 
   public void configureDefaultCommands() {
     m_swerveDrive.setDefaultCommand(m_driveFieldOrientedAngularVelocity);
-    m_intakeSystem.setDefaultCommand(new IntakeDefaultCommand(m_intakeSystem));
   }
   
   /**
@@ -280,8 +262,6 @@ public class RobotContainer
       AlignRobotConstants.transformRightStrafe
   ));
     
-    // Spit coral into outtake
-    m_armController.b().whileTrue(new IntakeSpitCommand(m_intakeSystem, -IntakeSpitCommandConstants.bucketSpeed));
     // Outtake reverse
     m_armController.povLeft().whileTrue(new OuttakeSpitCommand(m_outtakeSystem, -OuttakeSpitCommandConstants.speed));
     // Outtake coral
@@ -292,10 +272,6 @@ public class RobotContainer
 
     new Trigger(() -> (m_driverController.leftBumper().getAsBoolean() && m_swerveDrive.getVisionSystem().isDetecting())).onTrue(
       Commands.runOnce(() -> m_swerveDrive.trueResetPose())
-    );
-
-    new Trigger(() -> m_intakeSystem.isHoldingCoral()).onTrue(new ControllerRumbleCommand(m_armController, OperatorConstants.kRumbleTime)
-    .alongWith(new ControllerRumbleCommand(m_driverController, OperatorConstants.kRumbleTime))
     );
 
   }
