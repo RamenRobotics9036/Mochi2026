@@ -49,7 +49,6 @@ import frc.robot.ramenlib.sim.simvision.VisionSystemInterface;
 import frc.robot.ramenlib.sim.simvision.VisionSystemSim;
 import frc.robot.ramenlib.wheelcalibration.CalibrationOrchestrator;
 import frc.robot.util.AutoLogic;
-import frc.robot.vision.VisionSystem;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -155,17 +154,6 @@ public class SwerveSubsystem extends SubsystemBase
 
     // IDO says he found this in YAGSL examples
     //
-  
-
-    if (!Robot.isSimulation()) {
-      m_vision = new VisionSystem();
-      isUsingSimVision = false;
-    }
-    else {
-      m_visionSim = new VisionSim();
-      m_vision = new VisionSystemSim(m_visionSim);
-      isUsingSimVision = true;
-    }
 
     swerveDrive.setMaximumAttainableSpeeds(swerveDrive.getMaximumChassisVelocity(), swerveDrive.getMaximumChassisAngularVelocity());
     swerveDrive.setMaximumAllowableSpeeds(swerveDrive.getMaximumChassisVelocity(), swerveDrive.getMaximumChassisAngularVelocity());
