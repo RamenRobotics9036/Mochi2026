@@ -29,29 +29,10 @@ import frc.robot.Constants.IntakeSpitCommandConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.OuttakeSpitCommandConstants;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.commands.ArmDefaultCommand;
 import frc.robot.commands.ControllerRumbleCommand;
-import frc.robot.commands.DriveForwardCommand;
-import frc.robot.commands.DriveForwardNow;
-import frc.robot.commands.ElevatorDefaultCommand;
-import frc.robot.commands.ElevatorManualCommand;
-import frc.robot.commands.ElevatorToPositionCommand;
-import frc.robot.commands.IntakeDefaultCommand;
-import frc.robot.commands.IntakeSpitCommand;
-import frc.robot.commands.OuttakeSpitCommand;
-import frc.robot.commands.SetArmToAngleCommand;
 import frc.robot.ramenlib.sim.SimConstants.SimCommandConstants;
-import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandElevatorSystem;
-import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandIntakeArmSystem;
-import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandIntakeSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandNoSystem;
-import frc.robot.ramenlib.sim.simcommands.pretend.PretendCommandOuttakeSystem;
 import frc.robot.ramenlib.sim.simcommands.pretend.UnexpectedCommand;
-import frc.robot.subsystems.ElevatorSystem;
-import frc.robot.subsystems.IntakeArmSystem;
-import frc.robot.subsystems.IntakeSystem;
-import frc.robot.subsystems.OuttakeSystem;
-import frc.robot.subsystems.SwerveSubsystem;
 import frc.robot.util.AutoLogic;
 import frc.robot.util.CommandAppliedController;
 import java.io.File;
@@ -73,53 +54,6 @@ public class RobotContainer
     new CommandAppliedController(OperatorConstants.kArmPort);
 
   // The robot's subsystems and commands are defined here...
-  private final SwerveSubsystem       m_swerveDrive  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
-                                                                                SwerveConstants.kJsonDirectory));
-  // Applies deadbands and inverts controls because joysticks
-  // are back-right positive while robot
-  // controls are front-left positive
-  // left stick controls translation
-  // right stick controls the rotational velocity 
-  // buttons are quick rotation positions to different ways to face
-  // WARNING: default buttons are on the same buttons as the ones defined in configureBindings
-   /**
-   * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
-   */
-  SwerveInputStream driveAngularVelocity = SwerveInputStream.of(m_swerveDrive.getSwerveDrive(),
-                                                                () -> m_driverController.getLeftY(),
-                                                                () -> m_driverController.getLeftX())
-                                                            .withControllerRotationAxis(() -> -m_driverController.getRightX())
-                                                            .deadband(OperatorConstants.kDeadband)
-                                                            .scaleTranslation(0.8)
-                                                            .allianceRelativeControl(true);
-
-  /**
-   * Clone's the angular velocity input stream and converts it to a fieldRelative input stream.
-   */
-  SwerveInputStream driveDirectAngle = driveAngularVelocity.copy().withControllerHeadingAxis(m_driverController::getRightX,
-                                                                                             m_driverController::getRightY)
-                                                           .headingWhile(true);
-
-
-  // Applies deadbands and inverts controls because joysticks
-  // are back-right positive while robot
-  // controls are front-left positive
-  // left stick controls translation
-  // right stick controls the desired angle NOT angular rotation
-  Command m_driveFieldOrientedDirectAngle = m_swerveDrive.driveFieldOriented(driveDirectAngle);
-
-  // Applies deadbands and inverts controls because joysticks
-  // are back-right positive while robot
-  // controls are front-left positive
-  // left stick controls translation
-  // right stick controls the angular velocity of the robot
-  Command m_driveFieldOrientedAngularVelocity = m_swerveDrive.driveFieldOriented(driveAngularVelocity);
-
-
-  private final IntakeSystem m_intakeSystem = new IntakeSystem();
-  private IntakeArmSystem m_armSystem = new IntakeArmSystem();
-  private final OuttakeSystem m_outtakeSystem = new OuttakeSystem();
-  private final ElevatorSystem m_elevatorSystem = new ElevatorSystem();
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -135,33 +69,8 @@ public class RobotContainer
     configureBindings();
     DriverStation.silenceJoystickConnectionWarning(true);
 
-    m_swerveDrive.initShuffleboard();
     AutoLogic.initShuffleBoard();
     addTestButtonsToShuffleboard();
-
-    NamedCommands.registerCommand("Set Arm Position To Bottom", CmdWrapperIntakeArmSystem(new SetArmToAngleCommand(m_armSystem, ArmConstants.kMaxArmRotation)));
-    NamedCommands.registerCommand("Set Arm Position To Top", CmdWrapperIntakeArmSystem(new SetArmToAngleCommand(m_armSystem, ArmConstants.kMinArmRotation)));
-    NamedCommands.registerCommand("Set Arm Position To L1", CmdWrapperIntakeArmSystem(new SetArmToAngleCommand(m_armSystem, ArmConstants.L1ArmAngle)));
-
-    NamedCommands.registerCommand("Dispense Intake Into Bucket", CmdWrapperIntakeSystem(new IntakeSpitCommand(m_intakeSystem, -IntakeSpitCommandConstants.bucketSpeed, true)));
-    NamedCommands.registerCommand("Shoot From Intake", CmdWrapperIntakeSystem(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed, true)));
-    NamedCommands.registerCommand("Idle Intake", CmdWrapperIntakeSystem(new IntakeDefaultCommand(m_intakeSystem).withTimeout(1)));
-
-    NamedCommands.registerCommand("Outtake from Bucket", CmdWrapperOuttakeSystem(new OuttakeSpitCommand(m_outtakeSystem, OuttakeSpitCommandConstants.speed).withTimeout(1)));
-
-    NamedCommands.registerCommand("Align to April Tag Left Side", CmdWrapperUnexpectedCommand(m_swerveDrive.alignWithAprilTagCommand(
-      AlignRobotConstants.transformDrive,
-      AlignRobotConstants.transformLeftStrafe
-    ), "alignAprilLeft"));
-    NamedCommands.registerCommand("Align to April Tag Right Side", CmdWrapperUnexpectedCommand(m_swerveDrive.alignWithAprilTagCommand(
-      AlignRobotConstants.transformDrive,
-      AlignRobotConstants.transformRightStrafe
-    ), "alignAprilRight"));
-
-    NamedCommands.registerCommand("Set Elevator Position To Bottom", CmdWrapperElevatorSystem(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kDownElevatorPosition)));
-    NamedCommands.registerCommand("Set Elevator Position To L2", CmdWrapperElevatorSystem(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel2ReefPosition)));
-    NamedCommands.registerCommand("Set Elevator Position To L3", CmdWrapperElevatorSystem(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel3ReefPosition)));
-    NamedCommands.registerCommand("Set Elevator Position to L4", CmdWrapperElevatorSystem(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel4ReefPosition)));
 
     //
     // Heres the Commands that we dont mock in simulation, since they work just fine in sim.
@@ -178,48 +87,12 @@ public class RobotContainer
 
   private void addTestButtonsToShuffleboard() {
     ShuffleboardTab tabTest = Shuffleboard.getTab("Test");
-
-    Command spinCmd = printStartStop(
-      m_swerveDrive.sysIdDriveMotorCommand(true), "Spin test");
-    tabTest.add("Spin Test", spinCmd).withWidget("Command");
-
-    Command driveCmd = printStartStop(
-      m_swerveDrive.sysIdDriveMotorCommand(false), "Drive test");
-    tabTest.add("Drive Test", driveCmd).withWidget("Command");
-
-    Command angleTest = printStartStop(
-      m_swerveDrive.sysIdAngleMotorCommand(), "Angle test");
-    tabTest.add("Angle Test", angleTest).withWidget("Command");
   }
 
   private Command CmdWrapperIntakeArmSystem(Command command) {
     // Now that we implemented sim for arm, re-enable these commands for sim.
     return command;
   } 
-
-  private Command CmdWrapperIntakeSystem(Command command) {
-    if (disableCommandsInSim()) {
-      return new PretendCommandIntakeSystem(m_intakeSystem);
-    } else {
-      return command;
-    }
-  }
-
-  private Command CmdWrapperOuttakeSystem(Command command) {
-    if (disableCommandsInSim()) {
-      return new PretendCommandOuttakeSystem(m_outtakeSystem);
-    } else {
-      return command;
-    }
-  }
-
-  private Command CmdWrapperElevatorSystem(Command command) {
-    if (disableCommandsInSim()) {
-      return new PretendCommandElevatorSystem(m_elevatorSystem);
-    } else {
-      return command;
-    }
-  }
 
   private Command CmdWrapperNoSystem(Command command) {
     if (disableCommandsInSim()) {
@@ -248,15 +121,6 @@ public class RobotContainer
 
     return SimCommandConstants.kDisableMostCommandsInSim;
   }
-
-  public void configureDefaultCommands() {
-    m_swerveDrive.setDefaultCommand(m_driveFieldOrientedAngularVelocity);
-    m_intakeSystem.setDefaultCommand(new IntakeDefaultCommand(m_intakeSystem));
-    
-    // m_elevatorSystem.setDefaultCommand(new ElevatorManualCommand(m_elevatorSystem, () -> m_armController.getRightY()));
-
-    m_armSystem.setDefaultCommand(new ArmDefaultCommand(m_armSystem, () -> m_armController.getLeftY()));
-  }
   
   /**
    * Use this method to define your trigger->command mappings. Triggers can be created via the
@@ -281,22 +145,6 @@ public class RobotContainer
     */
     //this is field relative, right stick controls orientation relative to the field
     //drivebase.setDefaultCommand(m_driveFieldOrientedDirectAngle);
-
-
-
-    // this is field relative, right stick controls rotation around z axis
-    configureDefaultCommands();
-    if (m_armSystem != null) {
-      // Arm up
-      m_armController.rightTrigger().onTrue(new SetArmToAngleCommand(m_armSystem, ArmConstants.kMinArmRotation).
-           alongWith(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kDownElevatorPosition)));
-      // Algae preset
-      m_armController.leftBumper().whileTrue(new SetArmToAngleCommand(m_armSystem, ArmConstants.algaePreset).
-      andThen(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed, true)));
-      // Arm down
-      m_armController.leftTrigger().whileTrue(new SetArmToAngleCommand(m_armSystem, ArmConstants.kMaxArmRotation));
-    }
-  
   
     //D-pad drives straight (no gyro) for tests
     // m_driverController.povCenter().onTrue((m_swerveDrive.driveCommand(() -> 0, () -> 0, () -> 0, true)));
@@ -307,54 +155,6 @@ public class RobotContainer
     
 
     // $TODO m_swerveDrive.sysIdDriveMotorCommand()
-
-    // Start button resets the gyro
-    m_driverController.start().onTrue((Commands.runOnce(m_swerveDrive::zeroGyroWithAlliance)));
-
-    // A button aligns the robot using the AprilTag
-    //m_driverController.a().onTrue(new AimAtLimeLightV2(m_swerveDrive));
-    m_driverController.povLeft().onTrue(m_swerveDrive.alignWithAprilTagCommand(
-    AlignRobotConstants.transformDrive,
-    AlignRobotConstants.transformLeftStrafe
-  ));
-    m_driverController.povRight().onTrue(m_swerveDrive.alignWithAprilTagCommand(
-      AlignRobotConstants.transformDrive,
-      AlignRobotConstants.transformRightStrafe
-  ));
-
-
-    // Command to spit out game pieces
-    //m_armController.a().whileTrue(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed));
-    //
-    m_armController.a().whileTrue(new SetArmToAngleCommand(m_armSystem, ArmConstants.L1ArmAngle).andThen(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed)));
-    
-    // Spit coral into outtake
-    m_armController.b().whileTrue(new IntakeSpitCommand(m_intakeSystem, -IntakeSpitCommandConstants.bucketSpeed));
-    // L2 preset
-    m_armController.x().onTrue(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel2ReefPosition));
-    // L3 Preset
-    m_armController.y().onTrue(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel3ReefPosition));
-    // L4 Preset
-    m_armController.povUp().onTrue(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kLevel4ReefPosition));
-
-    // Elevator down
-    m_armController.povDown().onTrue(new ElevatorToPositionCommand(m_elevatorSystem, ElevatorConstants.kDownElevatorPosition));
-    // Outtake reverse
-    m_armController.povLeft().whileTrue(new OuttakeSpitCommand(m_outtakeSystem, -OuttakeSpitCommandConstants.speed));
-    // Outtake coral
-    m_armController.povRight().whileTrue(new OuttakeSpitCommand(m_outtakeSystem, OuttakeSpitCommandConstants.speed));
-    
-    // 
-    m_armController.start().whileTrue(new OuttakeSpitCommand(m_outtakeSystem, -OuttakeSpitCommandConstants.speed));
-
-    new Trigger(() -> (m_driverController.leftBumper().getAsBoolean() && m_swerveDrive.getVisionSystem().isDetecting())).onTrue(
-      Commands.runOnce(() -> m_swerveDrive.trueResetPose())
-    );
-
-    new Trigger(() -> m_intakeSystem.isHoldingCoral()).onTrue(new ControllerRumbleCommand(m_armController, OperatorConstants.kRumbleTime)
-    .alongWith(new ControllerRumbleCommand(m_driverController, OperatorConstants.kRumbleTime))
-    );
-
   }
 
   //private Command waitFiveSeconds = new WaitCommand(5)
@@ -388,14 +188,5 @@ public class RobotContainer
         //return new DriveForwardNow(m_swerveDrive, 1.4, true).
           //andThen(CmdWrapperIntakeArmSystem(new SetArmToAngleCommand(m_armSystem, ArmConstants.L1ArmAngle)))
           //.andThen(CmdWrapperIntakeSystem(new IntakeSpitCommand(m_intakeSystem, IntakeSpitCommandConstants.speed, true)));
-  }
-  
-  public void setMotorBrake(boolean brake)
-  {
-    m_swerveDrive.setMotorBrake(brake);
-  }
-
-  public void updateVisionPose() {
-    m_swerveDrive.updateVisionPose();
   }
 }
