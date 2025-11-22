@@ -36,7 +36,6 @@ import frc.robot.ramenlib.sim.simcommands.pretend.UnexpectedCommand;
 import frc.robot.util.AutoLogic;
 import frc.robot.util.CommandAppliedController;
 import java.io.File;
-import swervelib.SwerveInputStream;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based
