@@ -12,8 +12,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.function.Supplier;
-import swervelib.math.Matter;
-import swervelib.telemetry.SwerveDriveTelemetry.TelemetryVerbosity;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -52,15 +50,7 @@ public final class Constants
     public static final String  kJsonDirectory = "nori";
     public static final double kMaxSpeedMetersPerSecond = 5.06;
     public static final double kRobotMass = Units.lbsToKilograms(129); // $TODO update
-    public static final Matter kChassisMatter = new Matter(new Translation3d(0, 0, Units.inchesToMeters(16)), kRobotMass); // $TODO update
     public static final double kLoopTime = 0.13; //s, 20ms + 110ms sprk max velocity lag
-  }
-  /**
-   * Constants for telemetry.
-   */
-  public static class TelemetryConstants
-  {
-    public static final TelemetryVerbosity kSwerveVerbosity = TelemetryVerbosity.HIGH;
   }
   /**
    * Constants for autonomous mode.
