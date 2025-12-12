@@ -51,6 +51,7 @@ public final class Constants
     public static final double kMaxSpeedMetersPerSecond = 5.06;
     public static final double kRobotMass = Units.lbsToKilograms(129); // $TODO update
     public static final double kLoopTime = 0.13; //s, 20ms + 110ms sprk max velocity lag
+    public static final double kDriveStatorCurrentLimit = 40.0;
   }
   /**
    * Constants for autonomous mode.
@@ -158,7 +159,7 @@ public final class Constants
     
     public static final double kAbsoluteEncoderOffset = 0;
 
-    public static final int kcurrentLimit = 20;
+    public static final int kCurrentLimit = 20;
     public static final double tolerance = 0.1;
     public static final double setArmMaxTime = 4;
     public static final double algaePreset = 1.849222;
@@ -199,7 +200,7 @@ public final class Constants
   public static final class OuttakeConstants {
     public static final int sparkflexID = 32; // No longer used
     public static final int sparkmaxID = 33;
-    public static final int currentLimit = 20;
+    public static final int kCurrentLimit = 20;
     public static final double motorGearRatio = 1;
   }
 
