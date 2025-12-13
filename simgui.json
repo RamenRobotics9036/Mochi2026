@@ -2,6 +2,7 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/Pose": "Field2d",
       "/Shuffleboard/Autos/Auto Selector": "String Chooser",
       "/Shuffleboard/Field/Robot Position on Field": "Field2d",
       "/Shuffleboard/Field/Target Position on Field": "Field2d",
@@ -12,6 +13,10 @@
       "/SmartDashboard/Field": "Field2d",
       "/SmartDashboard/IMU": "Alerts",
       "/SmartDashboard/JSON": "Alerts",
+      "/SmartDashboard/Module 0": "Mechanism2d",
+      "/SmartDashboard/Module 1": "Mechanism2d",
+      "/SmartDashboard/Module 2": "Mechanism2d",
+      "/SmartDashboard/Module 3": "Mechanism2d",
       "/SmartDashboard/Motors": "Alerts",
       "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/Pigeon 2 (v6) [18]": "Gyro",
@@ -30,10 +35,7 @@
         "left": 534,
         "right": 3466,
         "top": 291,
-        "width": 17.54825210571289,
-        "window": {
-          "visible": true
-        }
+        "width": 17.54825210571289
       },
       "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "EstimatedRobot": {
@@ -118,10 +120,7 @@
           "selectable": false,
           "width": 0.4000000059604645
         },
-        "width": 17.54825210571289,
-        "window": {
-          "visible": true
-        }
+        "width": 17.54825210571289
       }
     }
   },
@@ -168,6 +167,9 @@
         "open": true
       }
     }
+  },
+  "NetworkTables Info": {
+    "visible": true
   },
   "NetworkTables View": {
     "visible": false

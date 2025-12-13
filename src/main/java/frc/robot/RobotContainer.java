@@ -41,16 +41,24 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     public RobotContainer() {
+        // Log current limit configuration on startup
+        System.out.println("=== Swerve Current Limits Configuration ===");
+        System.out.println("Drive Motor Stator Current Limit: " + Constants.SwerveConstants.kDriveStatorCurrentLimit + " Amps");
+        System.out.println("Steer Motor Stator Current Limit: " + Constants.SwerveConstants.kSteerStatorCurrentLimit + " Amps");
+        System.out.println("============================================");
+        
         configureBindings();
     }
 
     private void configureBindings() {
         // Default drivetrain command
+        // Robot's physical forward is aligned with code's Y-axis (90° rotated from standard)
+        // So we swap: joystick forward (getLeftY) → VelocityY, joystick strafe (getLeftX) → VelocityX
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed)
-                     .withVelocityY(-joystick.getLeftX() * MaxSpeed)
-                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate)
+                drive.withVelocityX(-joystick.getLeftX() * MaxSpeed)  // Strafe left/right
+                     .withVelocityY(-joystick.getLeftY() * MaxSpeed)  // Forward/backward
+                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate)  // Rotation
             )
         );
 

@@ -68,7 +68,7 @@ public class TunerConstants {
             new CurrentLimitsConfigs()
                 // Swerve azimuth does not require much torque output, so we can set a relatively low
                 // stator current limit to help avoid brownouts without impacting performance.
-                .withStatorCurrentLimit(Amps.of(60))
+                .withStatorCurrentLimit(Amps.of(Constants.SwerveConstants.kSteerStatorCurrentLimit))
                 .withStatorCurrentLimitEnable(true)
         );
     private static final CANcoderConfiguration encoderInitialConfigs = new CANcoderConfiguration();
@@ -140,6 +140,7 @@ public class TunerConstants {
     private static final boolean kFrontLeftSteerMotorInverted = false;
     private static final boolean kFrontLeftEncoderInverted = false;
 
+    // NOTE: X and Y positions swapped to match robot's physical orientation
     private static final Distance kFrontLeftXPos = Inches.of(10.75);
     private static final Distance kFrontLeftYPos = Inches.of(10.75);
 

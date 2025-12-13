@@ -52,6 +52,7 @@ public final class Constants
     public static final double kRobotMass = Units.lbsToKilograms(129); // $TODO update
     public static final double kLoopTime = 0.13; //s, 20ms + 110ms sprk max velocity lag
     public static final double kDriveStatorCurrentLimit = 40.0;
+    public static final double kSteerStatorCurrentLimit = 60.0;
   }
   /**
    * Constants for autonomous mode.
