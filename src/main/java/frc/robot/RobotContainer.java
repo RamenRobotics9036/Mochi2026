@@ -41,11 +41,21 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     public RobotContainer() {
-        // Log current limit configuration on startup
-        System.out.println("=== Swerve Current Limits Configuration ===");
+        // Log swerve configuration on startup
+        System.out.println("=== Swerve Configuration ===");
         System.out.println("Drive Motor Stator Current Limit: " + Constants.SwerveConstants.kDriveStatorCurrentLimit + " Amps");
         System.out.println("Steer Motor Stator Current Limit: " + Constants.SwerveConstants.kSteerStatorCurrentLimit + " Amps");
-        System.out.println("============================================");
+        System.out.println("CAN Bus Name: " + (Constants.SwerveConstants.kCANBusName.isEmpty() ? "RIO (default)" : Constants.SwerveConstants.kCANBusName));
+        System.out.println("CAN Bus Log Path: " + Constants.SwerveConstants.kCANBusLogPath);
+        
+        // Check actual connection status
+        var status = TunerConstants.kCANBus.isNetworkFD();
+        if (status) {
+            System.out.println("CAN Bus Status: Bang Bang it works! (CAN FD Detected)");
+        } else {
+            System.out.println("CAN Bus Status: STANDARD (CAN 2.0 or RIO Internal) - Check if CAN FD was expected.");
+        }
+        System.out.println("============================");
         
         configureBindings();
     }

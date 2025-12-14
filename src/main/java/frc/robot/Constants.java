@@ -53,6 +53,11 @@ public final class Constants
     public static final double kLoopTime = 0.13; //s, 20ms + 110ms sprk max velocity lag
     public static final double kDriveStatorCurrentLimit = 40.0;
     public static final double kSteerStatorCurrentLimit = 60.0;
+    
+    // CAN bus configuration
+    // Use "" for the default RIO CAN bus, or "canivore" for a CANivore
+    public static final String kCANBusName = "";
+    public static final String kCANBusLogPath = "./logs/swerve.hoot";
   }
   /**
    * Constants for autonomous mode.
