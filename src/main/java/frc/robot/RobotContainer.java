@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -91,6 +92,18 @@ public class RobotContainer {
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+
+        // D-Pad Up: Reset Gyro/Pose to 0 degrees (Field Forward)
+        // Useful if robot powers on facing standard forward direction
+        joystick.povUp().onTrue(drivetrain.runOnce(() -> {
+            drivetrain.resetPose(new Pose2d(drivetrain.getState().Pose.getTranslation(), Rotation2d.fromDegrees(0)));
+        }));
+
+        // D-Pad Down: Reset Gyro/Pose to 180 degrees (Field Backward)
+        // Useful if robot powers on facing backward (towards driver) controls feel inverted
+        joystick.povDown().onTrue(drivetrain.runOnce(() -> {
+            drivetrain.resetPose(new Pose2d(drivetrain.getState().Pose.getTranslation(), Rotation2d.fromDegrees(180)));
+        }));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
