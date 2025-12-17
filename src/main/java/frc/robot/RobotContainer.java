@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -66,9 +67,9 @@ public class RobotContainer {
         // So we swap: joystick forward (getLeftY) → VelocityY, joystick strafe (getLeftX) → VelocityX
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftX() * MaxSpeed)  // Strafe left/right
-                     .withVelocityY(-joystick.getLeftY() * MaxSpeed)  // Forward/backward
-                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate)  // Rotation
+                drive.withVelocityX(-MathUtil.applyDeadband(joystick.getLeftX(), 0.1) * MaxSpeed)  // Strafe left/right
+                     .withVelocityY(MathUtil.applyDeadband(joystick.getLeftY(), 0.1) * MaxSpeed)  // Forward/backward
+                     .withRotationalRate(-MathUtil.applyDeadband(joystick.getRightX(), 0.1) * MaxAngularRate)  // Rotation
             )
         );
 
