@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.commands.RotateToHeadingCommand;
 import frc.robot.subsystems.auto.AutoLogic;
 
 public class RobotContainer {
@@ -93,17 +94,12 @@ public class RobotContainer {
 
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        // D-Pad Up: Reset Gyro/Pose to 0 degrees (Field Forward)
-        // Useful if robot powers on facing standard forward direction
-        joystick.povUp().onTrue(drivetrain.runOnce(() -> {
-            drivetrain.resetPose(new Pose2d(drivetrain.getState().Pose.getTranslation(), Rotation2d.fromDegrees(0)));
-        }));
+        // D-Pad Up: Rotate to face Field Forward (0 degrees) then reset gyro
+        // This physically reorients the robot to match the field
+        joystick.povUp().onTrue(new RotateToHeadingCommand(drivetrain, 0).withTimeout(3.0));
 
-        // D-Pad Down: Reset Gyro/Pose to 180 degrees (Field Backward)
-        // Useful if robot powers on facing backward (towards driver) controls feel inverted
-        joystick.povDown().onTrue(drivetrain.runOnce(() -> {
-            drivetrain.resetPose(new Pose2d(drivetrain.getState().Pose.getTranslation(), Rotation2d.fromDegrees(180)));
-        }));
+        // D-Pad Down: Rotate to face Field Backward (180 degrees) then reset gyro
+        joystick.povDown().onTrue(new RotateToHeadingCommand(drivetrain, 180).withTimeout(3.0));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
