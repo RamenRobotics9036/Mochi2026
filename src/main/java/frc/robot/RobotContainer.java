@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.commands.RotateToHeadingCommand;
 import frc.robot.subsystems.auto.AutoLogic;
 
 public class RobotContainer {
@@ -69,9 +68,9 @@ public class RobotContainer {
         // So we swap: joystick forward (getLeftY) → VelocityY, joystick strafe (getLeftX) → VelocityX
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-MathUtil.applyDeadband(joystick.getLeftX(), 0.1) * MaxSpeed)  // Strafe left/right
-                     .withVelocityY(MathUtil.applyDeadband(joystick.getLeftY(), 0.1) * MaxSpeed)  // Forward/backward
-                     .withRotationalRate(-MathUtil.applyDeadband(joystick.getRightX(), 0.1) * MaxAngularRate)  // Rotation
+                drive.withVelocityY(-joystick.getLeftX()*MaxSpeed)  // Strafe left/right
+                     .withVelocityX(-joystick.getLeftY()*MaxSpeed)  // Forward/backward
+                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate)  // Rotation
             )
         );
 
@@ -96,10 +95,6 @@ public class RobotContainer {
 
         // D-Pad Up: Rotate to face Field Forward (0 degrees) then reset gyro
         // This physically reorients the robot to match the field
-        joystick.povUp().onTrue(new RotateToHeadingCommand(drivetrain, 0).withTimeout(3.0));
-
-        // D-Pad Down: Rotate to face Field Backward (180 degrees) then reset gyro
-        joystick.povDown().onTrue(new RotateToHeadingCommand(drivetrain, 180).withTimeout(3.0));
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
