@@ -10,7 +10,6 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,9 +29,9 @@ public class RobotContainer {
 
     /* Swerve drive requests */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(MaxSpeed * 0.1)
-            .withRotationalDeadband(MaxAngularRate * 0.1)
-            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+            .withDeadband(0.0001)
+            .withRotationalDeadband(0.0001)
+            .withDriveRequestType(DriveRequestType.Velocity);
 
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
@@ -42,35 +41,42 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    public RobotContainer() {
-        // Log swerve configuration on startup
-        System.out.println("=== Swerve Configuration ===");
-        System.out.println("Drive Motor Stator Current Limit: " + Constants.SwerveConstants.kDriveStatorCurrentLimit + " Amps");
-        System.out.println("Steer Motor Stator Current Limit: " + Constants.SwerveConstants.kSteerStatorCurrentLimit + " Amps");
-        System.out.println("CAN Bus Name: " + (Constants.SwerveConstants.kCANBusName.isEmpty() ? "RIO (default)" : Constants.SwerveConstants.kCANBusName));
-        System.out.println("CAN Bus Log Path: " + Constants.SwerveConstants.kCANBusLogPath);
-        
-        // Check actual connection status
-        var status = TunerConstants.kCANBus.isNetworkFD();
-        if (status) {
-            System.out.println("CAN Bus Status: Bang Bang it works! (CAN FD Detected)");
-        } else {
-            System.out.println("CAN Bus Status: STANDARD (CAN 2.0 or RIO Internal) - Check if CAN FD was expected.");
-        }
-        System.out.println("============================");
-        
+    public RobotContainer() {        
         configureBindings();
     }
 
+    // takes the X value from the joystick, and applies a deadband and input scaling
+    private double getDriveX() {
+        // Joystick +Y is back, Robot +X is forward
+        double input = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
+        // Using Right Bumper as the 'driveSlowMode' toggle
+        double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
+        return input * MaxSpeed * inputScale;
+    }
+
+    // takes the Y value from the joystick, and applies a deadband and input scaling
+    private double getDriveY() {
+        // Joystick +X is right, Robot +Y is left (standard FieldCentric convention)
+        double input = MathUtil.applyDeadband(-joystick.getLeftX(), 0.1);
+        double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
+        return input * MaxSpeed * inputScale;
+    }
+
+    // takes the rotation value from the joystick, and applies a deadband and input scaling
+    private double getDriveRotate() {
+        // Joystick +X is right, Robot +angle is CCW (left)
+        double input = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
+        double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
+        return input * MaxAngularRate * inputScale;
+    }
+
     private void configureBindings() {
-        // Default drivetrain command
-        // Robot's physical forward is aligned with code's Y-axis (90° rotated from standard)
-        // So we swap: joystick forward (getLeftY) → VelocityY, joystick strafe (getLeftX) → VelocityX
+        // Default drivetrain command using custom helper methods
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() ->
-                drive.withVelocityY(-joystick.getLeftX()*MaxSpeed)  // Strafe left/right
-                     .withVelocityX(-joystick.getLeftY()*MaxSpeed)  // Forward/backward
-                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate)  // Rotation
+                drive.withVelocityX(getDriveX())
+                     .withVelocityY(getDriveY())
+                     .withRotationalRate(getDriveRotate())
             )
         );
 
@@ -93,9 +99,6 @@ public class RobotContainer {
 
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        // D-Pad Up: Rotate to face Field Forward (0 degrees) then reset gyro
-        // This physically reorients the robot to match the field
-
         drivetrain.registerTelemetry(logger::telemeterize);
     }
 
@@ -108,11 +111,11 @@ public class RobotContainer {
         }
         return command;
     }
-
+    
     /**
-     * Returns the autonomous command using your team's AutoLogic system
+     * Returns the autonomous command selected on the dashboard.
      */
     public Command getAutonomousCommand() {
-        return AutoLogic.getAutoCommand(AutoLogic.autoPicker.getSelected());
+        return AutoLogic.getSelectedAutoCommand();
     }
 }

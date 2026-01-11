@@ -1,145 +1,155 @@
 package frc.robot.subsystems.auto;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
 import com.pathplanner.lib.util.FileVersionException;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import frc.robot.Constants.AutoNameConstants;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import org.json.simple.parser.ParseException;
 
-@SuppressWarnings({"all"}) // suppress CheckStyle warnings in this file
-public class AutoLogic {
-  public static SendableChooser<String> autoPicker = new SendableChooser<String>();
+@SuppressWarnings("all")
+public final class AutoLogic {
 
-  public static ShuffleboardTab tab = Shuffleboard.getTab("Autos");
+    public static final SendableChooser<String> autoPicker = new SendableChooser<>();
+    private static final ShuffleboardTab tab = Shuffleboard.getTab("Autos");
 
-  // Constructor
-  public AutoLogic() {
-    throw new UnsupportedOperationException("This is a static utility class, dont try to instantiate!");
-  }
-  
-  public static Command getAutoCommand(String autoName) {
-    // System.out.println("Path name: " + pathName);
-    // Load the path you want to follow using its name in the GUI
-    try {
-
-      return AutoBuilder.buildAuto(autoName);
-
-    } catch (FileVersionException e) {
-      // TODO: handle exception
-
-      DriverStation.reportError("Ooofs: " + e.getMessage(), e.getStackTrace());
+    private AutoLogic() {
+        throw new UnsupportedOperationException("Static utility class!");
     }
 
-    // Create a path following command using AutoBuilder. This will also trigger event markers.
-
-    return Commands.none();
-  }
-  
-  public static PathPlannerPath getPathData(String pathName) {
-    // System.out.println("Path name: " + pathName);
-    // Load the path you want to follow using its name in the GUI
-    try {
-      PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
-
-      return path;
-
-    } catch (IOException | ParseException | FileVersionException e) {
-      // TODO: handle exception
-
-      DriverStation.reportError("Ooofs: " + e.getMessage(), e.getStackTrace());
+    /** 
+     * Registers PathPlanner configurations and warms up commands.
+     */
+    public static void registerCommands() {
+        try {
+            FollowPathCommand.warmupCommand().schedule();
+        } catch (Exception e) {
+            DriverStation.reportWarning("Autonomous warmup failed: " + e.getMessage(), false);
+        }
     }
 
-    // Create a path following command using AutoBuilder. This will also trigger event markers.
+    /** Setup the Shuffleboard dashboard */
+    public static void initShuffleboard() {
+        addAutoOptions();
 
-    return null;
-  }
+        tab.add("Auto Selector", autoPicker)
+            .withWidget(BuiltInWidgets.kComboBoxChooser)
+            .withPosition(0, 0)
+            .withSize(2, 1);
 
-  public static void initShuffleBoard() {
-    // Leave these options available for kCompetitionMode
-
-    addAutoOptions();
-
-    tab.add("Auto Selector", autoPicker)
-        .withWidget(BuiltInWidgets.kComboBoxChooser)
-        .withPosition(0, 0)
-        .withSize(2, 1);
-
-    tab.addString("Current Selected path", () -> autoPicker.getSelected());
-    if (RobotState.isAutonomous()) {
-      getAutoCommand(autoPicker.getSelected());
-    }
-  }
-
-  public static <T> String[] toStringArray(List<T> dataList) {
-   
-    
-    String[] data = new String[dataList.size()]; // TODO FIX INFINTELY REPEATING LIST
-
-    for (int i = 0; i < dataList.size(); i++) {
-
-      String addedData = dataList.get(i).toString();
-
-      data[i] = "\n" + addedData;
+        tab.addString("Active Auto", AutoLogic::getSelectedName)
+            .withPosition(0, 1)
+            .withSize(2, 1);
     }
 
-    return data;
-  }
+    private static void addAutoOptions() {
+        autoPicker.setDefaultOption("Center Auto", "Birdi Auto Center");
+        autoPicker.addOption("LEFT 1 Coral", "auto 1 coral left");
+        autoPicker.addOption("RIGHT 1 Coral", "auto 1 coral right");
+    }
 
-  public static PathPlannerTrajectory makeTrajectory(
-      PathPlannerPath path,
-      ChassisSpeeds startingSpeeds,
-      Rotation2d startingRotation,
-      RobotConfig config) {
+    public static Command getAutoCommand(String autoName) {
+        if (autoName == null) return Commands.none();
+        try {
+            return AutoBuilder.buildAuto(autoName).withName(autoName);
+        } catch (FileVersionException e) {
+            DriverStation.reportError("Failed to build autonomous: " + autoName, e.getStackTrace());
+            return Commands.none();
+        }
+    }
 
-    PathPlannerTrajectory trajectory =
-        new PathPlannerTrajectory(path, startingSpeeds, startingRotation, config);
+    /**
+     * Vibrates controller for 0.5s after the auto routine finishes
+     */
+    public static Command getSelectedAutoCommandWithFeedback(CommandXboxController controller) {
+        String autoName = getSelectedName();
+        return getAutoCommand(autoName).andThen(
+            Commands.startEnd(
+                () -> controller.getHID().setRumble(RumbleType.kBothRumble, 0.6),
+                () -> controller.getHID().setRumble(RumbleType.kBothRumble, 0)
+            ).withTimeout(0.5)
+        ).withName(autoName + "_WithRumble");
+    }
 
-    return trajectory;
-  }
+    public static String getSelectedName() {
+        return autoPicker.getSelected();
+    }
 
-  public static void addOptionToPicker(String autoName) {
-    autoPicker.addOption(autoName, autoName);
-  }
+    public static Command getSelectedAutoCommand() {
+        return getAutoCommand(getSelectedName());
+    }
 
-  public static void addOptionToPicker(String displayName, String autoName) {
-    autoPicker.addOption(displayName, autoName);
-  }
+    public static AutoTrajectoryProfile getSelectedAutoProfile() {
+        String autoName = getSelectedName();
+        if (autoName == null) return null;
 
-  public static String getSelectedName() {
-    return autoPicker.getSelected();
-  }
+        try {
+            PathPlannerPath path = PathPlannerPath.fromPathFile(autoName);
+            return new AutoTrajectoryProfile(List.of(path));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+}
 
-  public static boolean selectedAutoIsMirror() {
-    return getSelectedName().startsWith("auto mirror");
-  }
+/** 
+ * Trajectory Profile
+ * Calculates exactly how long the auto will take and where it starts.
+ */
+class AutoTrajectoryProfile {
+    private final Pose2d startingPose;
+    private final List<PathPlannerTrajectory> trajectories;
+    private final double autoDuration;
 
-  public static void addAutoOptions() {
-    //autoPicker.setDefaultOption("Right auto", "Birdi Auto Right");
-    //autoPicker.setDefaultOption("Left Auto", "Birdi Auto left");
-    autoPicker.setDefaultOption("Center Auto", "Birdi Auto Center");
-    //autoPicker.setDefaultOption("test auto freedom project", "TTTTest");
-    
-    //This was used for the manual code of the Auto
-    //autoPicker.setDefaultOption(AutoNameConstants.kCenterL1AutoName, AutoNameConstants.kCenterL1AutoName);
-    //addOptionToPicker(AutoNameConstants.kCenterL4AutoccxName);
-    
-    //These are alternatives to choice if needed during the competition through PathPlanner
-    addOptionToPicker("LEFT 1 Coral", "auto 1 coral left");
-    addOptionToPicker("RIGHT 1 Coral", "auto 1 coral right");
-  }
+    public AutoTrajectoryProfile(List<PathPlannerPath> paths) {
+        Pose2d initialPose = new Pose2d();
+        List<PathPlannerTrajectory> trajs = new ArrayList<>();
+        double totalTime = 0.0;
+
+        if (paths != null && !paths.isEmpty()) {
+            initialPose = paths.get(0).getStartingHolonomicPose().orElse(new Pose2d());
+
+            try {
+                RobotConfig config = RobotConfig.fromGUISettings();
+                ChassisSpeeds speeds = new ChassisSpeeds();
+                Rotation2d rotation = initialPose.getRotation();
+
+                for (PathPlannerPath path : paths) {
+                    if (path != null) {
+                        PathPlannerTrajectory traj = new PathPlannerTrajectory(path, speeds, rotation, config);
+                        trajs.add(traj);
+                        speeds = traj.getEndState().fieldSpeeds;
+                        rotation = traj.getEndState().pose.getRotation();
+                    }
+                }
+                totalTime = trajs.stream().mapToDouble(t -> t.getTotalTimeSeconds()).sum();
+            } catch (Exception e) {
+                DriverStation.reportError("RobotConfig Error: " + e.getMessage(), e.getStackTrace());
+            }
+        }
+
+        this.startingPose = initialPose;
+        this.trajectories = List.copyOf(trajs);
+        this.autoDuration = totalTime;
+    }
+
+    public Pose2d getStartingPose() { return startingPose; }
+    public List<PathPlannerTrajectory> getTrajectories() { return trajectories; }
+    public double getRunTimeSeconds() { return autoDuration; }
 }
