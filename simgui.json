@@ -3,47 +3,13 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/Pose": "Field2d",
-      "/Shuffleboard/Autos/Auto Selector": "String Chooser",
-      "/Shuffleboard/Autos/Current Selected Auto": "String",
-      "/SmartDashboard/Alerts": "Alerts",
-      "/SmartDashboard/Encoders": "Alerts",
-      "/SmartDashboard/IMU": "Alerts",
-      "/SmartDashboard/JSON": "Alerts",
       "/SmartDashboard/Module 0": "Mechanism2d",
       "/SmartDashboard/Module 1": "Mechanism2d",
       "/SmartDashboard/Module 2": "Mechanism2d",
-      "/SmartDashboard/Module 3": "Mechanism2d",
-      "/SmartDashboard/Pigeon 2 (v6) [18]": "Gyro",
-      "/SmartDashboard/Swerve Drive": "Alerts"
-    },
-    "windows": {
-      "/Pose": {
-        "bottom": 1638,
-        "height": 8.051901817321777,
-        "left": 534,
-        "right": 3466,
-        "top": 291,
-        "width": 17.54825210571289,
-        "window": {
-          "visible": true
-        }
-      },
-      "/Shuffleboard/Autos/Auto Selector": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/Shuffleboard/Autos/Current Selected Auto": {
-        "window": {
-          "visible": true
-        }
-      }
+      "/SmartDashboard/Module 3": "Mechanism2d"
     }
   },
   "NetworkTables Info": {
     "visible": true
-  },
-  "NetworkTables View": {
-    "visible": false
   }
 }
