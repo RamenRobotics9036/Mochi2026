@@ -41,7 +41,8 @@ public class RobotContainer {
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    public RobotContainer() {        
+    public RobotContainer() {      
+        AutoLogic.initShuffleboard(drivetrain); 
         configureBindings();
     }
 

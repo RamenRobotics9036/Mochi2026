@@ -20,6 +20,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.auto.DriveForwardNow;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +31,12 @@ public final class AutoLogic {
 
     public static final SendableChooser<String> autoPicker = new SendableChooser<>();
     private static final ShuffleboardTab tab = Shuffleboard.getTab("Autos");
+
+    // Static reference to the drivetrain for manual commands
+    private static CommandSwerveDrivetrain m_drivetrain;
+
+    // Added Names for Manual code
+    private static final String K_MANUAL_DRIVE_NAME = "MANUAL: Drive 2m Forward";
 
     private AutoLogic() {
         throw new UnsupportedOperationException("Static utility class!");
@@ -45,7 +54,8 @@ public final class AutoLogic {
     }
 
     /** Setup the Shuffleboard dashboard */
-    public static void initShuffleboard() {
+    public static void initShuffleboard(CommandSwerveDrivetrain drivetrain) {
+        m_drivetrain = drivetrain;
         addAutoOptions();
 
         tab.add("Auto Selector", autoPicker)
@@ -59,16 +69,27 @@ public final class AutoLogic {
     }
 
     private static void addAutoOptions() {
-        autoPicker.setDefaultOption("Center Auto", "Birdi Auto Center");
-        autoPicker.addOption("LEFT 1 Coral", "auto 1 coral left");
-        autoPicker.addOption("RIGHT 1 Coral", "auto 1 coral right");
+        // Manual Autos
+        autoPicker.setDefaultOption("Manual: Drive 2m Forward", K_MANUAL_DRIVE_NAME);
+        
+        // Pathplanner Autos
+        //autoPicker.addOption("Center Auto", "Center Auto");
+        //autoPicker.addOption("LEFT 1 Coral", "auto 1 coral left");
+        //autoPicker.addOption("RIGHT 1 Coral", "auto 1 coral right");
     }
 
     public static Command getAutoCommand(String autoName) {
         if (autoName == null) return Commands.none();
+
+        // Handle Manual 2m Forward
+        if (autoName.equals(K_MANUAL_DRIVE_NAME)) {
+            return new DriveForwardNow(m_drivetrain, 2.0, true).withName("ManualDriveForward");
+        }
+
+        // Handle PathPlanner Autos
         try {
             return AutoBuilder.buildAuto(autoName).withName(autoName);
-        } catch (FileVersionException e) {
+        } catch (Exception e) {
             DriverStation.reportError("Failed to build autonomous: " + autoName, e.getStackTrace());
             return Commands.none();
         }
@@ -97,7 +118,7 @@ public final class AutoLogic {
 
     public static AutoTrajectoryProfile getSelectedAutoProfile() {
         String autoName = getSelectedName();
-        if (autoName == null) return null;
+        if (autoName == null || autoName.equals(K_MANUAL_DRIVE_NAME)) return null;
 
         try {
             PathPlannerPath path = PathPlannerPath.fromPathFile(autoName);

@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.auto.AutoLogic;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -16,6 +17,11 @@ public class Robot extends TimedRobot {
 
   public Robot() {
     m_robotContainer = new RobotContainer();
+  }
+
+  @Override
+  public void robotInit() {
+    AutoLogic.registerCommands();
   }
 
   @Override
@@ -35,7 +41,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     Shuffleboard.startRecording();
-    
+
     // Get the autonomous command from RobotContainer (linked to AutoLogic)
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
