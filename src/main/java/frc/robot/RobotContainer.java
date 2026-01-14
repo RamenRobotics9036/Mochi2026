@@ -44,7 +44,6 @@ public class RobotContainer {
     public RobotContainer() {      
         AutoLogic.initShuffleboard(drivetrain); 
         configureBindings();
-        AutoLogic.initShuffleboard();
     }
 
     // takes the X value from the joystick, and applies a deadband and input scaling

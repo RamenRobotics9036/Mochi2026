@@ -27,7 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("all")
-public final class AutoLogic {
+public final class  AutoLogic {
 
     public static final SendableChooser<String> autoPicker = new SendableChooser<>();
     private static final ShuffleboardTab tab = Shuffleboard.getTab("Autos");
@@ -70,10 +70,10 @@ public final class AutoLogic {
 
     private static void addAutoOptions() {
         // Manual Autos
-        autoPicker.setDefaultOption("Manual: Drive 2m Forward", K_MANUAL_DRIVE_NAME);
+        // autoPicker.setDefaultOption("Manual: Drive 2m Forward", K_MANUAL_DRIVE_NAME);
         
         // Pathplanner Autos
-        //autoPicker.addOption("Center Auto", "Center Auto");
+        autoPicker.setDefaultOption("Center Auto", "Center Auto");
         //autoPicker.addOption("LEFT 1 Coral", "auto 1 coral left");
         //autoPicker.addOption("RIGHT 1 Coral", "auto 1 coral right");
     }
