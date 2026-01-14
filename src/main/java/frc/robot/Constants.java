@@ -77,6 +77,20 @@ public final class Constants {
         /** Turret-mounted camera - used for target tracking (tx/ty) */
         public static final String kTurretCameraName = "limelight-turret";
 
+        // ========== PIPELINE INDEXES (Must match Limelight Web UI) ==========
+        /** Pipeline 0: AprilTag detection for pose estimation */
+        public static final int PIPELINE_TAGS = 0;
+        
+        /** Pipeline 1: Color/GRIP pipeline for fuel (ball) detection */
+        public static final int PIPELINE_FUEL = 1;
+
+        // ========== FUEL DETECTION SETTINGS ==========
+        /** 
+         * Ignore fuel targets above this TY value (too high/far away).
+         * Negative TY means target is below crosshair.
+         */
+        public static final double FUEL_TY_FILTER = -15.0;
+
         // ========== FIXED CAMERA MOUNT POSITION ==========
         /**
          * Transform from robot center to fixed camera position.
@@ -101,6 +115,9 @@ public final class Constants {
         // ========== POSE ESTIMATION FILTERING ==========
         /** Maximum distance to trust vision estimates (meters) */
         public static final double MAX_TAG_DISTANCE = 4.0;
+        
+        /** Maximum distance for snap-to-pose command (meters) */
+        public static final double SNAP_MAX_DISTANCE = 3.5;
         
         /** Minimum number of tags required for pose update */
         public static final int MIN_TAG_COUNT = 1;

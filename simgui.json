@@ -9,6 +9,19 @@
       "/SmartDashboard/Module 3": "Mechanism2d"
     }
   },
+  "NetworkTables": {
+    "transitory": {
+      "SmartDashboard": {
+        "Module 1": {
+          "open": true
+        },
+        "open": true
+      },
+      "limelight-fixed": {
+        "open": true
+      }
+    }
+  },
   "NetworkTables Info": {
     "visible": true
   }

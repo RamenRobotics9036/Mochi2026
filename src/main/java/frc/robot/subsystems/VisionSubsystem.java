@@ -14,18 +14,32 @@ import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
 
 /**
- * VisionSubsystem manages a dual-Limelight setup:
+ * VisionSubsystem manages a dual-Limelight setup with pipeline switching:
  * <ul>
  *   <li><b>Fixed Camera:</b> Chassis-mounted for MegaTag2 field localization</li>
- *   <li><b>Turret Camera:</b> Hood-mounted for target tracking (tx/ty)</li>
+ *   <li><b>Turret Camera:</b> Hood-mounted for target tracking (AprilTags OR Fuel)</li>
  * </ul>
  * 
- * <p>MegaTag2 requires the robot's orientation (from the Pigeon2 IMU) to be
- * synced with the fixed Limelight before pose estimation can work correctly.
+ * <p>The turret camera supports two modes:
+ * <ul>
+ *   <li>{@link VisionMode#APRILTAG}: Pipeline 0 - AprilTag detection</li>
+ *   <li>{@link VisionMode#FUEL}: Pipeline 1 - Color/GRIP fuel (ball) detection</li>
+ * </ul>
  */
 public class VisionSubsystem extends SubsystemBase {
 
+    /**
+     * Vision modes for the turret camera.
+     */
+    public enum VisionMode {
+        /** AprilTag detection mode (Pipeline 0) */
+        APRILTAG,
+        /** Fuel (ball) detection mode (Pipeline 1) */
+        FUEL
+    }
+
     private final CommandSwerveDrivetrain m_drivetrain;
+    private VisionMode m_currentMode = VisionMode.APRILTAG;
 
     // ========== FIXED CAMERA (Localization) State ==========
     private int m_fixedTagCount = 0;
@@ -37,6 +51,11 @@ public class VisionSubsystem extends SubsystemBase {
     private double m_turretTY = 0.0;
     private boolean m_hasTurretTarget = false;
 
+    // ========== FUEL DETECTION State ==========
+    private double m_fuelTX = 0.0;
+    private double m_fuelTY = 0.0;
+    private boolean m_hasFuelTarget = false;
+
     /**
      * Creates a new VisionSubsystem managing both Limelights.
      * 
@@ -45,6 +64,9 @@ public class VisionSubsystem extends SubsystemBase {
     public VisionSubsystem(CommandSwerveDrivetrain drivetrain) {
         m_drivetrain = drivetrain;
         initShuffleboard();
+        
+        // Start in AprilTag mode
+        setTurretMode(VisionMode.APRILTAG);
     }
 
     /**
@@ -57,13 +79,18 @@ public class VisionSubsystem extends SubsystemBase {
         tab.addNumber("Fixed: Tag Count", () -> m_fixedTagCount);
         tab.addNumber("Fixed: Avg Tag Dist (m)", () -> m_fixedAvgTagDist);
         tab.addBoolean("Fixed: Valid Pose", () -> m_hasValidPose);
-        tab.addBoolean("Fixed: Has Tags", () -> 
-            LimelightHelpers.getTV(VisionConstants.kFixedCameraName));
 
-        // Turret Camera (Targeting) telemetry
+        // Turret Camera telemetry
+        tab.addString("Turret Mode", () -> m_currentMode.name());
         tab.addNumber("Turret: TX", () -> m_turretTX);
-        tab.addNumber("Turret: TY", () -> m_turretTY);
         tab.addBoolean("Turret: Has Target", () -> m_hasTurretTarget);
+        
+        // Fuel detection telemetry
+        tab.addNumber("Fuel: TX", () -> m_fuelTX);
+        tab.addBoolean("Fuel: Has Target", () -> m_hasFuelTarget);
+        
+        // Best aiming target
+        tab.addNumber("Aiming TX", this::getAimingTX);
     }
 
     @Override
@@ -71,18 +98,12 @@ public class VisionSubsystem extends SubsystemBase {
         // ==================== TASK A: Fixed Camera (MegaTag2 Localization) ====================
         updateFixedCameraLocalization();
 
-        // ==================== TASK B: Turret Camera (Target Tracking) ====================
+        // ==================== TASK B: Turret Camera (Mode-Based Tracking) ====================
         updateTurretCameraTracking();
     }
 
     /**
      * Task A: Process the fixed (chassis-mounted) camera for MegaTag2 localization.
-     * <ol>
-     *   <li>Get Pigeon2 rotation</li>
-     *   <li>Sync orientation with Limelight</li>
-     *   <li>Get MegaTag2 pose estimate</li>
-     *   <li>Filter and update drivetrain pose estimator</li>
-     * </ol>
      */
     private void updateFixedCameraLocalization() {
         // Step 1: Get robot orientation from Pigeon2 IMU
@@ -92,14 +113,14 @@ public class VisionSubsystem extends SubsystemBase {
         LimelightHelpers.SetRobotOrientation(
             VisionConstants.kFixedCameraName,
             Units.radiansToDegrees(robotRotation.getZ()),  // Yaw
-            0.0,  // Yaw rate (not needed)
+            0.0,  // Yaw rate
             Units.radiansToDegrees(robotRotation.getY()),  // Pitch
             0.0,  // Pitch rate
             Units.radiansToDegrees(robotRotation.getX()),  // Roll
             0.0   // Roll rate
         );
 
-        // Step 3: Get MegaTag2 pose estimate (WPILib Blue alliance origin)
+        // Step 3: Get MegaTag2 pose estimate
         PoseEstimate poseEstimate = 
             LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(VisionConstants.kFixedCameraName);
 
@@ -108,7 +129,6 @@ public class VisionSubsystem extends SubsystemBase {
             m_fixedTagCount = poseEstimate.tagCount;
             m_fixedAvgTagDist = poseEstimate.avgTagDist;
 
-            // Filter: Only accept poses with enough tags and within distance limit
             boolean isValid = poseEstimate.tagCount >= VisionConstants.MIN_TAG_COUNT
                            && poseEstimate.avgTagDist < VisionConstants.MAX_TAG_DISTANCE;
 
@@ -128,22 +148,64 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     /**
-     * Task B: Read targeting data from the turret (hood-mounted) camera.
-     * Simply reads tx, ty, and tv for use by the Turret subsystem.
+     * Task B: Read targeting data from the turret camera based on current mode.
      */
     private void updateTurretCameraTracking() {
-        // Read whether turret camera has a valid target
+        // Always read turret camera data (works for both AprilTag and Fuel modes)
         m_hasTurretTarget = LimelightHelpers.getTV(VisionConstants.kTurretCameraName);
 
         if (m_hasTurretTarget) {
-            // Read horizontal and vertical offsets to target
             m_turretTX = LimelightHelpers.getTX(VisionConstants.kTurretCameraName);
             m_turretTY = LimelightHelpers.getTY(VisionConstants.kTurretCameraName);
         } else {
-            // No target - reset values
             m_turretTX = 0.0;
             m_turretTY = 0.0;
         }
+
+        // Update fuel-specific state based on current mode
+        if (m_currentMode == VisionMode.FUEL) {
+            // In fuel mode, check if target passes the TY filter
+            boolean passesFilter = m_turretTY > VisionConstants.FUEL_TY_FILTER;
+            m_hasFuelTarget = m_hasTurretTarget && passesFilter;
+            
+            if (m_hasFuelTarget) {
+                m_fuelTX = m_turretTX;
+                m_fuelTY = m_turretTY;
+            } else {
+                m_fuelTX = 0.0;
+                m_fuelTY = 0.0;
+            }
+        } else {
+            // Not in fuel mode - no fuel target
+            m_hasFuelTarget = false;
+            m_fuelTX = 0.0;
+            m_fuelTY = 0.0;
+        }
+    }
+
+    // ==================== PIPELINE SWITCHING ====================
+
+    /**
+     * Sets the turret camera mode (switches the Limelight pipeline).
+     * 
+     * @param mode The desired vision mode (APRILTAG or FUEL)
+     */
+    public void setTurretMode(VisionMode mode) {
+        m_currentMode = mode;
+        
+        int pipelineIndex = switch (mode) {
+            case APRILTAG -> VisionConstants.PIPELINE_TAGS;
+            case FUEL -> VisionConstants.PIPELINE_FUEL;
+        };
+        
+        LimelightHelpers.setPipelineIndex(VisionConstants.kTurretCameraName, pipelineIndex);
+    }
+
+    /**
+     * @return The current turret camera vision mode
+     */
+    public VisionMode getTurretMode() {
+        return m_currentMode;
     }
 
     // ==================== FIXED CAMERA GETTERS ====================
@@ -169,11 +231,10 @@ public class VisionSubsystem extends SubsystemBase {
         return m_fixedAvgTagDist;
     }
 
-    // ==================== TURRET CAMERA GETTERS ====================
+    // ==================== TURRET CAMERA GETTERS (AprilTag Mode) ====================
 
     /**
      * Gets the horizontal offset to the target from the turret camera.
-     * Use this value to control turret aiming.
      * 
      * @return Horizontal offset (tx) in degrees. Positive = target is to the right.
      */
@@ -183,20 +244,83 @@ public class VisionSubsystem extends SubsystemBase {
 
     /**
      * Gets the vertical offset to the target from the turret camera.
-     * Use this value for distance estimation or shooter angle.
      * 
-     * @return Vertical offset (ty) in degrees. Positive = target is above crosshair.
+     * @return Vertical offset (ty) in degrees.
      */
     public double getTurretY() {
         return m_turretTY;
     }
 
     /**
-     * Checks if the turret camera currently sees a valid target.
-     * 
      * @return True if the turret camera has locked onto a target
      */
     public boolean hasTurretTarget() {
         return m_hasTurretTarget;
+    }
+
+    // ==================== FUEL GETTERS ====================
+
+    /**
+     * Gets the horizontal offset to the fuel (ball) target.
+     * Only valid when mode is set to FUEL.
+     * 
+     * @return Horizontal offset (tx) in degrees. Positive = fuel is to the right.
+     */
+    public double getFuelTX() {
+        return m_fuelTX;
+    }
+
+    /**
+     * Gets the vertical offset to the fuel target.
+     * 
+     * @return Vertical offset (ty) in degrees.
+     */
+    public double getFuelTY() {
+        return m_fuelTY;
+    }
+
+    /**
+     * Checks if the turret camera currently sees a valid fuel target.
+     * Returns true ONLY if:
+     * <ul>
+     *   <li>Pipeline is set to FUEL mode</li>
+     *   <li>tv == 1 (target detected)</li>
+     *   <li>ty passes the FUEL_TY_FILTER (not too far)</li>
+     * </ul>
+     * 
+     * @return True if a valid fuel target is detected
+     */
+    public boolean hasFuelTarget() {
+        return m_hasFuelTarget;
+    }
+
+    // ==================== BEST TARGET SELECTOR ====================
+
+    /**
+     * Automatically returns the best TX for aiming based on current mode.
+     * <ul>
+     *   <li>APRILTAG mode: Returns turret TX</li>
+     *   <li>FUEL mode: Returns fuel TX</li>
+     * </ul>
+     * 
+     * Use this method in your turret/aiming code for mode-agnostic control.
+     * 
+     * @return Horizontal offset (tx) in degrees for the current targeting mode
+     */
+    public double getAimingTX() {
+        return switch (m_currentMode) {
+            case APRILTAG -> m_turretTX;
+            case FUEL -> m_fuelTX;
+        };
+    }
+
+    /**
+     * @return True if there is a valid target for the current mode
+     */
+    public boolean hasAimingTarget() {
+        return switch (m_currentMode) {
+            case APRILTAG -> m_hasTurretTarget;
+            case FUEL -> m_hasFuelTarget;
+        };
     }
 }
