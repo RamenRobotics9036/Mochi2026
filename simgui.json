@@ -11,14 +11,10 @@
   },
   "NetworkTables": {
     "transitory": {
-      "SmartDashboard": {
-        "Module 1": {
-          "open": true
-        },
-        "open": true
-      },
       "limelight-fixed": {
-        "open": true
+        "double[]##v_/limelight-fixed/robot_orientation_set": {
+          "open": true
+        }
       }
     }
   },

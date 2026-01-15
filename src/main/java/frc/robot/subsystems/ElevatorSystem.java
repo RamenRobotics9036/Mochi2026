@@ -59,7 +59,7 @@ public class ElevatorSystem extends SubsystemBase{
         // encoderConfig.velocityConversionFactor(ElevatorConstants.kRotationToElevatorRatio / 60);
 
         m_leaderConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
-        m_leaderConfig.smartCurrentLimit(IntakeConstants.kStallLimit);
+        m_leaderConfig.smartCurrentLimit(ElevatorConstants.kElevatorStallLimit);
         m_leaderConfig.inverted(true);
         m_leaderConfig.apply(closedLoopConfig);
         m_leaderConfig.apply(encoderConfig);
@@ -68,7 +68,7 @@ public class ElevatorSystem extends SubsystemBase{
             SparkBase.PersistMode.kPersistParameters);
 
         m_followConfig.idleMode(SparkBaseConfig.IdleMode.kBrake);
-        m_followConfig.smartCurrentLimit(IntakeConstants.kStallLimit);
+        m_followConfig.smartCurrentLimit(ElevatorConstants.kElevatorStallLimit);
         m_followConfig.inverted(false);
         m_followConfig.follow(ElevatorConstants.kLeaderMotorID);
         m_followMotor.configure(m_followConfig, 

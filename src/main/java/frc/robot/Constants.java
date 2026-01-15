@@ -43,12 +43,16 @@ public final class Constants {
         // Motor configuration
         public static final double kRotationToElevatorRatio = 1.0;
         public static final double elevatorMaxSpeed = 0.5;
+        public static final int kElevatorStallLimit = 40; // Amps
     }
 
     /**
      * Constants for the Intake subsystem.
      */
     public static final class IntakeConstants {
+        public static final int kIntakeMotorID = 30;
+        public static final double kIntakeSpeed = 0.8;
+        public static final double kOuttakeSpeed = -0.8;
         public static final int kStallLimit = 40; // Amps
     }
 

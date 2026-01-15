@@ -23,8 +23,11 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ElevatorSystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.commands.ElevatorToPositionCommand;
 import frc.robot.commands.ElevatorDefaultCommand;
+import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.SnapToPoseCommand;
 import frc.robot.subsystems.auto.AutoLogic;
 
 /**
@@ -51,6 +54,9 @@ public class RobotContainer {
 
     // Elevator subsystem (from the original RobotContainer)
     private final ElevatorSystem elevator = new ElevatorSystem();
+
+    // Intake subsystem
+    private final IntakeSubsystem intake = new IntakeSubsystem();
 
     /* ===================== CONTROLLERS ===================== */
     // Standard Xbox controller for driver and operator input
@@ -169,9 +175,23 @@ public class RobotContainer {
         joystick.start().and(joystick.x())
                 .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-        // Left bumper seeds field-centric orientation
-        joystick.leftBumper()
+        // Back button seeds field-centric orientation (moved from Left Bumper)
+        joystick.back()
                 .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+
+        // Left Bumper: Snap to Vision Pose (Drift Correction)
+        joystick.leftBumper()
+                .onTrue(new SnapToPoseCommand(drivetrain));
+
+        /* ===================== INTAKE CONTROLS ===================== */
+        // Right Trigger: Run Intake until stall
+        joystick.rightTrigger()
+                .onTrue(new IntakeCommand(intake));
+
+        // Left Trigger: Run Outtake while held
+        joystick.leftTrigger()
+                .whileTrue(Commands.run(() -> intake.setSpeed(frc.robot.Constants.IntakeConstants.kOuttakeSpeed), intake))
+                .onFalse(Commands.runOnce(intake::stop, intake));
 
         /* ===================== ELEVATOR CONTROLS ===================== */
         // These are lifted directly from the original RobotContainer
