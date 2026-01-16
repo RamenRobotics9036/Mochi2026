@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.Constants.ElevatorConstants;
@@ -54,7 +55,6 @@ public class RobotContainer {
 
     // Elevator subsystem (from the original RobotContainer)
     private final ElevatorSystem elevator = new ElevatorSystem();
-
     // Intake subsystem
     private final IntakeSubsystem intake = new IntakeSubsystem();
 
@@ -184,9 +184,9 @@ public class RobotContainer {
                 .onTrue(new SnapToPoseCommand(drivetrain));
 
         /* ===================== INTAKE CONTROLS ===================== */
-        // Right Trigger: Run Intake until stall
+        // Right Trigger: Run Intake until stall (with haptic feedback)
         joystick.rightTrigger()
-                .onTrue(new IntakeCommand(intake));
+                .onTrue(new IntakeCommand(intake, joystick));
 
         // Left Trigger: Run Outtake while held
         joystick.leftTrigger()
@@ -239,6 +239,47 @@ public class RobotContainer {
         /* -------- TELEMETRY -------- */
         // Continuously log drivetrain telemetry
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        /* ===================== VISION AUTOMATION ===================== */
+        configureVisionLogic();
+    }
+
+    /**
+     * Configures the automatic vision mode switching.
+     * Logic:
+     * - If Elevator is DOWN (near 0) -> Mode = FUEL (Hunting)
+     * - If Elevator is UP (Scoring)  -> Mode = APRILTAG (Aligning)
+     * - POV Left/Right overrides this.
+     */
+    private void configureVisionLogic() {
+        // Define "Down" as being close to 0 (e.g., greater than -5.0)
+        // Elevator positions are negative (0 is top/home, -100 is max) 
+        // Note: ElevatorConstants says 0.0 is Down, -100 is Max.
+        
+        Trigger elevatorDown = new Trigger(() -> elevator.getPosition() > -5.0);
+        Trigger elevatorUp = new Trigger(() -> elevator.getPosition() <= -5.0);
+
+        // Auto-switch based on elevator state
+        elevatorDown.onTrue(
+            Commands.runOnce(() -> vision.setTurretMode(VisionSubsystem.VisionMode.FUEL))
+                    .ignoringDisable(true)
+        );
+
+        elevatorUp.onTrue(
+            Commands.runOnce(() -> vision.setTurretMode(VisionSubsystem.VisionMode.APRILTAG))
+                    .ignoringDisable(true)
+        );
+
+        // Manual Overrides
+        // POV Left -> Force FUEL Mode
+        joystick.povLeft().onTrue(
+            Commands.runOnce(() -> vision.setTurretMode(VisionSubsystem.VisionMode.FUEL))
+        );
+
+        // POV Right -> Force APRILTAG Mode
+        joystick.povRight().onTrue(
+            Commands.runOnce(() -> vision.setTurretMode(VisionSubsystem.VisionMode.APRILTAG))
+        );
     }
 
     /* ===================== SIM SAFETY ===================== */
