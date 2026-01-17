@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
+import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.DriveForwardNow;
 
@@ -148,7 +148,7 @@ class AutoTrajectoryProfile {
 
             try {
                 RobotConfig config = RobotConfig.fromGUISettings();
-                ChassisSpeeds speeds = new ChassisSpeeds();
+                ChassisSpeeds speeds = new ChassisSpeeds(2, 2, Math.PI/2);
                 Rotation2d rotation = initialPose.getRotation();
 
                 for (PathPlannerPath path : paths) {
