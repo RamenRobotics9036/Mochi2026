@@ -24,7 +24,8 @@ import frc.robot.subsystems.auto.AutoLogic;
 
 public class RobotContainer {
 
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    //private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    private double MaxSpeed = 2.16;
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
     /* Swerve drive requests */
