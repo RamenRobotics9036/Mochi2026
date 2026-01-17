@@ -148,7 +148,7 @@ class AutoTrajectoryProfile {
 
             try {
                 RobotConfig config = RobotConfig.fromGUISettings();
-                ChassisSpeeds speeds = new ChassisSpeeds(2, 2, Math.PI/2);
+                ChassisSpeeds speeds = new ChassisSpeeds();
                 Rotation2d rotation = initialPose.getRotation();
 
                 for (PathPlannerPath path : paths) {
