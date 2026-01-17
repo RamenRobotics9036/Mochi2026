@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers;
@@ -91,6 +92,18 @@ public class VisionSubsystem extends SubsystemBase {
         
         // Best aiming target
         tab.addNumber("Aiming TX", this::getAimingTX);
+
+        // Add Camera Streams (Actual Video)
+        // These will appear as "Camera Stream" widgets in Shuffleboard
+        tab.addCamera("Fixed Stream", "limelight-fixed", "http://limelight-fixed.local:5800/stream.mjpg")
+           .withWidget(BuiltInWidgets.kCameraStream)
+           .withSize(3, 3)
+           .withPosition(0, 3);
+
+        tab.addCamera("Turret Stream", "limelight-turret", "http://limelight-turret.local:5800/stream.mjpg")
+           .withWidget(BuiltInWidgets.kCameraStream)
+           .withSize(3, 3)
+           .withPosition(3, 3);
     }
 
     @Override
