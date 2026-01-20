@@ -1,18 +1,18 @@
 {
-    "fileName": "REVLib.json",
-    "name": "REVLib",
-    "version": "2026.2.0",
+    "fileName": "Phoenix6.json",
+    "name": "Phoenix6",
+    "version": "25.1.0",
     "frcYear": 2026,
-    "uuid": "3f48eb8c-5021-4cf6-9782-dd1f2802d8e7",
+    "uuid": "ab676553-b602-441f-a38d-f1296eff6537",
     "mavenUrls": [
-        "https://maven.revrobotics.com/"
+        "https://maven.ctr-electronics.com/release/"
     ],
-    "jsonUrl": "https://software-metadata.revrobotics.com/REVLib-2026.json",
+    "jsonUrl": "https://maven.ctr-electronics.com/release/com/ctre/phoenix6/latest/Phoenix6-frc2026-latest.json",
     "jniDependencies": [
         {
-            "groupId": "com.revrobotics.frc",
-            "artifactId": "REVLib-driver",
-            "version": "2026.2.0",
+            "groupId": "com.ctre.phoenix6",
+            "artifactId": "phoenix6-hal",
+            "version": "25.1.0",
             "isJar": false,
             "skipInvalidPlatforms": true,
             "validPlatforms": [
@@ -25,10 +25,10 @@
     ],
     "cppDependencies": [
         {
-            "groupId": "com.revrobotics.frc",
-            "artifactId": "REVLib-cpp",
-            "version": "2026.2.0",
-            "libName": "REVLib",
+            "groupId": "com.ctre.phoenix6",
+            "artifactId": "phoenix6-cpp",
+            "version": "25.1.0",
+            "libName": "Phoenix6",
             "headerClassifier": "headers",
             "sharedLibrary": true,
             "skipInvalidPlatforms": true,
@@ -40,10 +40,10 @@
             ]
         },
         {
-            "groupId": "com.revrobotics.frc",
-            "artifactId": "REVLib-driver",
-            "version": "2026.2.0",
-            "libName": "REVLibDriver",
+            "groupId": "com.ctre.phoenix6",
+            "artifactId": "phoenix6-hal",
+            "version": "25.1.0",
+            "libName": "Phoenix6-hal",
             "headerClassifier": "headers",
             "sharedLibrary": true,
             "skipInvalidPlatforms": true,
@@ -57,9 +57,9 @@
     ],
     "javaDependencies": [
         {
-            "groupId": "com.revrobotics.frc",
-            "artifactId": "REVLib-java",
-            "version": "2026.2.0"
+            "groupId": "com.ctre.phoenix6",
+            "artifactId": "phoenix6-java",
+            "version": "25.1.0"
         }
     ]
 }
