@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +38,9 @@ public final class AutoLogic {
      * Registers PathPlanner configurations and warms up commands.
      */
     public static void registerCommands() {
+
         try {
-            FollowPathCommand.warmupCommand().schedule();
+            CommandScheduler.getInstance().schedule(FollowPathCommand.warmupCommand());
         } catch (Exception e) {
             DriverStation.reportWarning("Autonomous warmup failed: " + e.getMessage(), false);
         }
