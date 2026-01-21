@@ -9,11 +9,13 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import edu.wpi.first.math.MathUtil;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.FollowPathCommand;
+
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -22,14 +24,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.ElevatorSystem;
-import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.commands.ElevatorToPositionCommand;
-import frc.robot.commands.ElevatorDefaultCommand;
-import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.SnapToPoseCommand;
-import frc.robot.subsystems.auto.AutoLogic;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based
@@ -39,39 +33,17 @@ import frc.robot.subsystems.auto.AutoLogic;
  * mappings) should be declared here.
  */
 public class RobotContainer {
+    private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
-    // Maximum linear speed of the robot (from TunerConstants)
-    private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
-    // Maximum angular rate of the robot
-    private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
-
-    /* ===================== SUBSYSTEMS ===================== */
-    // The main drivetrain
-    public final CommandSwerveDrivetrain drivetrain =
-            TunerConstants.createDrivetrain();
-
-    // Vision subsystem for Limelight MegaTag2 pose estimation
-    private final VisionSubsystem vision = new VisionSubsystem(drivetrain);
-
-    // Elevator subsystem (from the original RobotContainer)
-    private final ElevatorSystem elevator = new ElevatorSystem();
-    // Intake subsystem
-    private final IntakeSubsystem intake = new IntakeSubsystem();
-
-    /* ===================== CONTROLLERS ===================== */
-    // Standard Xbox controller for driver and operator input
-    private final CommandXboxController joystick = new CommandXboxController(0);
-
-    /* ===================== SWERVE REQUESTS ===================== */
-    // Field-centric drive request for velocity control (newest convention)
+    /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(0.0001)
-            .withRotationalDeadband(0.0001)
-            .withDriveRequestType(DriveRequestType.Velocity);
-
-    // Brake request to stop the robot
-    private final SwerveRequest.SwerveDriveBrake brake =
-            new SwerveRequest.SwerveDriveBrake();
+            .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+    private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
+    private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
+    private final SwerveRequest.RobotCentric forwardStraight = new SwerveRequest.RobotCentric()
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     // Point wheels in a specific direction (used for testing or facing a target)
     private final SwerveRequest.PointWheelsAt point =
@@ -80,38 +52,21 @@ public class RobotContainer {
     // Telemetry logger
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    /* ===================== CONSTRUCTOR ===================== */
-    /**
-     * The container for the robot. Contains subsystems, OI devices, and commands.
-     */
+    private final CommandXboxController joystick = new CommandXboxController(0);
+
+    public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+
+    /* Path follower */
+    private final SendableChooser<Command> autoChooser;
+
     public RobotContainer() {
-        // Configure controller bindings
+        autoChooser = AutoBuilder.buildAutoChooser("Tests");
+        SmartDashboard.putData("Auto Mode", autoChooser);
+
         configureBindings();
-    }
 
-    // takes the X value from the joystick, and applies a deadband and input scaling
-    private double getDriveX() {
-        // Joystick +Y is back, Robot +X is forward
-        double input = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
-        // Using Right Bumper as the 'driveSlowMode' toggle
-        double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
-        return input * MaxSpeed * inputScale;
-    }
-
-    // takes the Y value from the joystick, and applies a deadband and input scaling
-    private double getDriveY() {
-        // Joystick +X is right, Robot +Y is left (standard FieldCentric convention)
-        double input = MathUtil.applyDeadband(-joystick.getLeftX(), 0.1);
-        double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
-        return input * MaxSpeed * inputScale;
-    }
-
-    // takes the rotation value from the joystick, and applies a deadband and input scaling
-    private double getDriveRotate() {
-        // Joystick +X is right, Robot +angle is CCW (left)
-        double input = MathUtil.applyDeadband(-joystick.getRightX(), 0.1);
-        double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
-        return input * MaxAngularRate * inputScale;
+        // Warmup PathPlanner to avoid Java pauses
+        FollowPathCommand.warmupCommand().schedule();
     }
 
     /* ===================== BINDINGS ===================== */
@@ -123,36 +78,24 @@ public class RobotContainer {
      * controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight joysticks}.
      */
     private void configureBindings() {
-
-        /* -------- DRIVETRAIN DEFAULT -------- */
-        // Default drivetrain command using joystick input
-        // Standard WPILib convention: +X is forward, +Y is left
-        // Joystick: pushing forward = negative Y, pushing left = negative X
+        // Note that X is defined as forward according to WPILib convention,
+        // and Y is defined as to the left according to WPILib convention.
         drivetrain.setDefaultCommand(
+            // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(getDriveX())
-                     .withVelocityY(getDriveY())
-                     .withRotationalRate(getDriveRotate())
+                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
 
-        /* -------- ELEVATOR DEFAULT -------- */
-        elevator.setDefaultCommand(
-            new ElevatorDefaultCommand(
-                elevator, 
-                () -> joystick.getRightY() // Manual control with right stick Y
-            )
-        );
-
-        /* -------- DISABLED MODE -------- */
-        // Idle while disabled
+        // Idle while the robot is disabled. This ensures the configured
+        // neutral mode is applied to the drive motors while disabled.
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-        /* -------- SWERVE BUTTONS -------- */
-        // Hold A to brake
         joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
 
         // Hold B to point wheels in the direction of joystick left stick
@@ -162,12 +105,22 @@ public class RobotContainer {
             )
         ));
 
-        // SysID commands for drivetrain characterization
-        joystick.back().and(joystick.y())
-                .whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        joystick.povUp().whileTrue(drivetrain.applyRequest(() ->
+            forwardStraight.withVelocityX(0.5).withVelocityY(0))
+        );
+        joystick.povDown().whileTrue(drivetrain.applyRequest(() ->
+            forwardStraight.withVelocityX(-0.5).withVelocityY(0))
+        );
 
-        joystick.back().and(joystick.x())
-                .whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        // Run SysId routines when holding back/start and X/Y.
+        // Note that each routine should be run exactly once in a single log.
+        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+
+        // Reset the field-centric heading on left bumper press.
+        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         joystick.start().and(joystick.y())
                 .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
@@ -244,63 +197,8 @@ public class RobotContainer {
         configureVisionLogic();
     }
 
-    /**
-     * Configures the automatic vision mode switching.
-     * Logic:
-     * - If Elevator is DOWN (near 0) -> Mode = FUEL (Hunting)
-     * - If Elevator is UP (Scoring)  -> Mode = APRILTAG (Aligning)
-     * - POV Left/Right overrides this.
-     */
-    private void configureVisionLogic() {
-        // Define "Down" as being close to 0 (e.g., greater than -5.0)
-        // Elevator positions are negative (0 is top/home, -100 is max) 
-        // Note: ElevatorConstants says 0.0 is Down, -100 is Max.
-        
-        Trigger elevatorDown = new Trigger(() -> elevator.getPosition() > -5.0);
-        Trigger elevatorUp = new Trigger(() -> elevator.getPosition() <= -5.0);
-
-        // Auto-switch based on elevator state
-        elevatorDown.onTrue(
-            Commands.runOnce(() -> vision.setTurretMode(VisionSubsystem.VisionMode.FUEL))
-                    .ignoringDisable(true)
-        );
-
-        elevatorUp.onTrue(
-            Commands.runOnce(() -> vision.setTurretMode(VisionSubsystem.VisionMode.APRILTAG))
-                    .ignoringDisable(true)
-        );
-
-        // Manual Overrides
-        // POV Left -> Force FUEL Mode
-        joystick.povLeft().onTrue(
-            Commands.runOnce(() -> vision.setTurretMode(VisionSubsystem.VisionMode.FUEL))
-        );
-
-        // POV Right -> Force APRILTAG Mode
-        joystick.povRight().onTrue(
-            Commands.runOnce(() -> vision.setTurretMode(VisionSubsystem.VisionMode.APRILTAG))
-        );
-    }
-
-    /* ===================== SIM SAFETY ===================== */
-    /**
-     * Simulation-safe wrapper for team commands (placeholder for future team commands)
-     */
-    private Command CmdWrapperTeamCommand(Command command) {
-        if (RobotBase.isSimulation()) {
-            return Commands.none(); // disable commands in simulation if needed
-        }
-        return command;
-    }
-
-    /* ===================== AUTONOMOUS ===================== */
-    /**
-     * Use this to pass the autonomous command to the main {@link Robot} class.
-     *
-     * @return the command to run in autonomous
-     */
     public Command getAutonomousCommand() {
-        //This is the Autologic that is used throughout Path Planner
-        return AutoLogic.getAutoCommand(AutoLogic.autoPicker.getSelected());
+        /* Run the path selected from the auto chooser */
+        return autoChooser.getSelected();
     }
 }

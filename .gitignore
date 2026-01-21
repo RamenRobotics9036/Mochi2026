@@ -109,8 +109,6 @@ Temporary Items
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-!.vscode/RamenFormatting.xml
-!.vscode/RamenCheckstyle.xml
 
 ### Windows ###
 # Windows thumbnail cache files
@@ -172,6 +170,7 @@ out/
 
 # Simulation GUI and other tools window save file
 networktables.json
+simgui.json
 *-window.json
 
 # Simulation data log directory
