@@ -18,20 +18,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
-import frc.robot.Constants.ElevatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
-/**
- * This class is where the bulk of the robot should be declared. Since Command-based
- * is a "declarative" paradigm, very little robot logic should actually be handled
- * in the {@link Robot} periodic methods (other than the scheduler calls).
- * Instead, the structure of the robot (including subsystems, commands, and trigger
- * mappings) should be declared here.
- */
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
@@ -45,11 +36,6 @@ public class RobotContainer {
     private final SwerveRequest.RobotCentric forwardStraight = new SwerveRequest.RobotCentric()
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-    // Point wheels in a specific direction (used for testing or facing a target)
-    private final SwerveRequest.PointWheelsAt point =
-            new SwerveRequest.PointWheelsAt();
-
-    // Telemetry logger
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController joystick = new CommandXboxController(0);
@@ -69,14 +55,6 @@ public class RobotContainer {
         FollowPathCommand.warmupCommand().schedule();
     }
 
-    /* ===================== BINDINGS ===================== */
-    /**
-     * Use this method to define your trigger->command mappings. Triggers can be created via the
-     * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary predicate, or via the
-     * named factories in {@link edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for
-     * {@link CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller PS4}
-     * controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight joysticks}.
-     */
     private void configureBindings() {
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
@@ -97,12 +75,8 @@ public class RobotContainer {
         );
 
         joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
-
-        // Hold B to point wheels in the direction of joystick left stick
         joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(
-                new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX())
-            )
+            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
         ));
 
         joystick.povUp().whileTrue(drivetrain.applyRequest(() ->
@@ -122,79 +96,7 @@ public class RobotContainer {
         // Reset the field-centric heading on left bumper press.
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
-        joystick.start().and(joystick.y())
-                .whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-
-        joystick.start().and(joystick.x())
-                .whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
-
-        // Back button seeds field-centric orientation (moved from Left Bumper)
-        joystick.back()
-                .onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-
-        // Left Bumper: Snap to Vision Pose (Drift Correction)
-        joystick.leftBumper()
-                .onTrue(new SnapToPoseCommand(drivetrain));
-
-        /* ===================== INTAKE CONTROLS ===================== */
-        // Right Trigger: Run Intake until stall (with haptic feedback)
-        joystick.rightTrigger()
-                .onTrue(new IntakeCommand(intake, joystick));
-
-        // Left Trigger: Run Outtake while held
-        joystick.leftTrigger()
-                .whileTrue(Commands.run(() -> intake.setSpeed(frc.robot.Constants.IntakeConstants.kOuttakeSpeed), intake))
-                .onFalse(Commands.runOnce(intake::stop, intake));
-
-        /* ===================== ELEVATOR CONTROLS ===================== */
-        // These are lifted directly from the original RobotContainer
-
-        // L2 Preset
-        joystick.x().onTrue(
-            CmdWrapperTeamCommand(
-                new ElevatorToPositionCommand(
-                    elevator,
-                    ElevatorConstants.kLevel2ReefPosition
-                )
-            )
-        );
-
-        // L3 Preset
-        joystick.y().onTrue(
-            CmdWrapperTeamCommand(
-                new ElevatorToPositionCommand(
-                    elevator,
-                    ElevatorConstants.kLevel3ReefPosition
-                )
-            )
-        );
-
-        // L4 Preset
-        joystick.povUp().onTrue(
-            CmdWrapperTeamCommand(
-                new ElevatorToPositionCommand(
-                    elevator,
-                    ElevatorConstants.kLevel4ReefPosition
-                )
-            )
-        );
-
-        // Elevator Down
-        joystick.povDown().onTrue(
-            CmdWrapperTeamCommand(
-                new ElevatorToPositionCommand(
-                    elevator,
-                    ElevatorConstants.kDownElevatorPosition
-                )
-            )
-        );
-
-        /* -------- TELEMETRY -------- */
-        // Continuously log drivetrain telemetry
         drivetrain.registerTelemetry(logger::telemeterize);
-
-        /* ===================== VISION AUTOMATION ===================== */
-        configureVisionLogic();
     }
 
     public Command getAutonomousCommand() {
