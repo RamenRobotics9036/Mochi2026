@@ -118,7 +118,18 @@ public class RobotContainer {
         joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        // Bumper buttons for simulation
+        if (Robot.isSimulation() && groundTruthSim != null) {
+            // In simulation, inject drift with right bumper to test vision correction
+            joystick.rightBumper().onTrue(drivetrain.runOnce(() ->
+                groundTruthSim.injectDrift(0.5, 15.0)  // 0.5m translation, 15° rotation drift
+            ));
+
+            // Left bumper resets robot to the starting pose of the selected auto
+            joystick.leftBumper().onTrue(drivetrain.runOnce(() ->
+                groundTruthSim.cycleResetPosition(selectedAutoStartingPose)
+            ));
+        }
 
         drivetrain.registerTelemetry(logger::telemeterize);
     }
