@@ -7,13 +7,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Center"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "Center to Right"
+            "pathName": "Diagonal path"
           }
         }
       ]
