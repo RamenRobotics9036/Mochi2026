@@ -6,10 +6,13 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.Consumer;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -19,6 +22,9 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
+import frc.robot.sim.GroundTruthSimFactory;
+import frc.robot.sim.GroundTruthSimInterface;
+import frc.robot.sim.SimJoystickOrientation;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
 
@@ -39,10 +45,24 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
     private final CommandXboxController joystick = new CommandXboxController(0);
 
+    // Ground truth simulation for testing vision correction
+    public GroundTruthSimInterface groundTruthSim = null;
+
+    private Consumer<Pose2d> visionResetter;
+
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    public RobotContainer() {      
-        AutoLogic.initShuffleboard(drivetrain); 
+    /** Stores the starting pose of the currently selected auto */
+    private Pose2d selectedAutoStartingPose = new Pose2d();
+
+    public RobotContainer() {
+        // Ground truth simulation setup
+        if (Robot.isSimulation()) {
+            groundTruthSim = GroundTruthSimFactory.create(drivetrain, this::resetRobotPose);
+        }
+
+        AutoLogic.initShuffleboard(drivetrain);
+
         configureBindings();
     }
 
@@ -118,5 +138,36 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         return AutoLogic.getSelectedAutoCommand();
+    }
+
+    /**
+     * Sets the vision resetter consumer to be called when the robot pose is reset.
+     * @param resetter Consumer that accepts a Pose2d to reset vision position
+     */
+    public void setVisionResetter(Consumer<Pose2d> resetter) {
+        this.visionResetter = resetter;
+    }
+
+    /**
+     * Called when the robot pose is reset in simulation.
+     * This is triggered by GroundTruthSim via the consumer pattern.
+     *
+     * Resets both the ground truth pose and the drivetrain pose to the specified pose.
+     * Also resets the vision system simulation pose history if a Vision instance is set.
+     *
+     * @param pose The new pose the robot has been reset to
+     */
+    private void resetRobotPose(Pose2d pose) {
+        System.out.println("Robot pose reset to: " + pose);
+
+        if (Robot.isSimulation() && groundTruthSim != null) {
+            groundTruthSim.resetGroundTruthPoseForSim(pose);
+        }
+
+        drivetrain.resetPose(pose);
+
+        if (visionResetter != null) {
+            visionResetter.accept(pose);
+        }
     }
 }
