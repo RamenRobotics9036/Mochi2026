@@ -25,6 +25,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.sim.GroundTruthSimFactory;
 import frc.robot.sim.GroundTruthSimInterface;
 import frc.robot.sim.SimJoystickOrientation;
+import frc.robot.sim.SimJoystickOrientation.ScreenDirection;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
 
@@ -91,14 +92,40 @@ public class RobotContainer {
         return input * MaxAngularRate * inputScale;
     }
 
+    private Command getPhysicalBotDriveCommand() {
+        return drivetrain.applyRequest(() ->
+            drive.withVelocityX(getDriveX())
+                .withVelocityY(getDriveY())
+                .withRotationalRate(getDriveRotate()));
+    }
+
+    private Command getJoystickCommandForSimRobot() {
+        return drivetrain.applyRequest(() -> {
+            ScreenDirection forwardDirection =
+                SimJoystickOrientation.getOperatorScreenDirection(
+                    drivetrain.getOperatorForwardDirection().getDegrees());
+
+            //System.out.println("Driving with orientation: " + forwardDirection);
+
+            if (forwardDirection == ScreenDirection.EAST) {
+                return drive.withVelocityX(-getDriveY())
+                    .withVelocityY(getDriveX())
+                    .withRotationalRate(getDriveRotate());
+            }
+            else {
+                return drive.withVelocityX(getDriveY())
+                    .withVelocityY(-getDriveX())
+                    .withRotationalRate(getDriveRotate());
+            }
+        });
+    }
+
     private void configureBindings() {
         // Default drivetrain command using custom helper methods
         drivetrain.setDefaultCommand(
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(getDriveX())
-                     .withVelocityY(getDriveY())
-                     .withRotationalRate(getDriveRotate())
-            )
+            Robot.isSimulation()
+                ? getJoystickCommandForSimRobot()
+                : getPhysicalBotDriveCommand()
         );
 
         // Idle while disabled
