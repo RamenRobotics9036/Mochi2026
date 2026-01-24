@@ -57,5 +57,9 @@
     "edu.wpi.first.math.**.proto.*",
     "edu.wpi.first.math.**.struct.*",
   ],
-  "java.dependency.enableDependencyCheckup": false
+  "java.dependency.enableDependencyCheckup": false,
+  "editor.formatOnSave": false,
+  "java.format.settings.url": ".vscode/RamenFormatting.xml",
+  "java.checkstyle.configuration": "${workspaceFolder}/.vscode/RamenCheckstyle.xml",
+  "java.checkstyle.version": "10.23.0"
 }
