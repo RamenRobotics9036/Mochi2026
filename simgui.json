@@ -37,11 +37,6 @@
           "visible": true
         }
       },
-      "/SmartDashboard/PhotonAlerts": {
-        "window": {
-          "visible": true
-        }
-      },
       "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "EstimatedRobot": {
           "arrowWeight": 3.0,
@@ -130,7 +125,10 @@
           "selectable": false,
           "width": 0.4000000059604645
         },
-        "width": 16.54119300842285
+        "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
       }
     }
   },
