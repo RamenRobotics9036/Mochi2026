@@ -109,6 +109,8 @@ Temporary Items
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+!.vscode/RamenFormatting.xml
+!.vscode/RamenCheckstyle.xml
 
 ### Windows ###
 # Windows thumbnail cache files

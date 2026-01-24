@@ -48,7 +48,7 @@ def deployArtifact = deploy.targets.roborio.artifacts.frcJava
 wpi.java.debugJni = false
 
 // Set this to true to enable desktop support.
-def includeDesktopSupport = false
+def includeDesktopSupport = true
 
 // Defining my dependencies. In this case, WPILib (+ friends), and vendor libraries.
 // Also defines JUnit 5.
@@ -92,6 +92,7 @@ jar {
     from('src') { into 'backup/src' }
     from('vendordeps') { into 'backup/vendordeps' }
     from('build.gradle') { into 'backup' }
+    from sourceSets.main.allSource
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
