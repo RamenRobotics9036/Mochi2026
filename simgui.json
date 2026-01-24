@@ -1,42 +1,136 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "window": {
+        "visible": false
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
       "/Pose": "Field2d",
       "/Shuffleboard/Autos/Auto Selector": "String Chooser",
-      "/Shuffleboard/Autos/Current Selected Auto": "String",
-      "/SmartDashboard/Alerts": "Alerts",
-      "/SmartDashboard/Encoders": "Alerts",
-      "/SmartDashboard/IMU": "Alerts",
-      "/SmartDashboard/JSON": "Alerts",
+      "/SmartDashboard/Auto Mode": "String Chooser",
       "/SmartDashboard/Module 0": "Mechanism2d",
       "/SmartDashboard/Module 1": "Mechanism2d",
       "/SmartDashboard/Module 2": "Mechanism2d",
       "/SmartDashboard/Module 3": "Mechanism2d",
-      "/SmartDashboard/Pigeon 2 (v6) [18]": "Gyro",
-      "/SmartDashboard/Swerve Drive": "Alerts"
+      "/SmartDashboard/PathPlanner": "Alerts",
+      "/SmartDashboard/PhotonAlerts": "Alerts",
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d"
     },
     "windows": {
       "/Pose": {
-        "bottom": 1638,
-        "height": 8.051901817321777,
-        "left": 534,
-        "right": 3466,
-        "top": 291,
-        "width": 17.54825210571289,
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
         "window": {
           "visible": true
         }
       },
-      "/Shuffleboard/Autos/Auto Selector": {
+      "/SmartDashboard/Auto Mode": {
         "window": {
           "visible": true
         }
       },
-      "/Shuffleboard/Autos/Current Selected Auto": {
+      "/SmartDashboard/PhotonAlerts": {
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/VisionSystemSim-main/Sim Field": {
+        "EstimatedRobot": {
+          "arrowWeight": 3.0,
+          "length": 0.800000011920929,
+          "selectable": false,
+          "weight": 3.0,
+          "width": 0.800000011920929
+        },
+        "EstimatedRobotModules": {
+          "arrows": false,
+          "image": "swerve_module.png",
+          "length": 0.30000001192092896,
+          "selectable": false,
+          "width": 0.30000001192092896
+        },
+        "Robot": {
+          "arrowColor": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "arrowWeight": 2.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "length": 0.800000011920929,
+          "selectable": false,
+          "weight": 2.0,
+          "width": 0.800000011920929
+        },
+        "VisionEstimation": {
+          "arrowColor": [
+            0.0,
+            0.6000000238418579,
+            1.0,
+            255.0
+          ],
+          "arrowWeight": 2.0,
+          "color": [
+            0.0,
+            0.6000000238418579,
+            1.0,
+            255.0
+          ],
+          "selectable": false,
+          "weight": 2.0
+        },
+        "apriltag": {
+          "arrows": false,
+          "image": "tag-green.png",
+          "length": 0.6000000238418579,
+          "width": 0.5
+        },
+        "bottom": 1914,
+        "cameras": {
+          "arrowColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "arrowSize": 0,
+          "arrowWeight": 0.0,
+          "color": [
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          "length": 0.0,
+          "weight": 0.0,
+          "width": 0.0
+        },
+        "height": 8.069275856018066,
+        "left": 245,
+        "right": 3942,
+        "top": 118,
+        "visibleTargetPoses": {
+          "arrows": false,
+          "image": "tag-blue.png",
+          "length": 0.5,
+          "selectable": false,
+          "width": 0.4000000059604645
+        },
+        "width": 16.54119300842285
       }
     }
   },
