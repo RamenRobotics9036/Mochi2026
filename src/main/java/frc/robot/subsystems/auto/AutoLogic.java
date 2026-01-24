@@ -5,6 +5,8 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
+import com.pathplanner.lib.util.FileVersionException;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -67,29 +69,19 @@ public final class  AutoLogic {
     }
 
     private static void addAutoOptions() {
+        // Manual Autos
+        // autoPicker.setDefaultOption("Manual: Drive 2m Forward", K_MANUAL_DRIVE_NAME);
+        
         // Pathplanner Autos
         autoPicker.setDefaultOption("Center Auto", "Center Auto");
-        autoPicker.addOption("Scale test", "Scale test");
-        autoPicker.addOption("Diagonal path", "Diagonal path");
-        
-        // Manual Autos
-        autoPicker.addOption("Manual: Drive 2m Forward", K_MANUAL_DRIVE_NAME);
-    }
-
-    /**
-     * Dynamic selection
-     */
-    public static Command getSelectedAutoCommand() {
-        return Commands.deferredProxy(() -> {
-            String selected = getSelectedName();
-            return getAutoCommand(selected);
-        });
+        //autoPicker.addOption("LEFT 1 Coral", "auto 1 coral left");
+        //autoPicker.addOption("RIGHT 1 Coral", "auto 1 coral right");
     }
 
     public static Command getAutoCommand(String autoName) {
-        if (autoName == null || autoName.isEmpty()) return Commands.none();
+        if (autoName == null) return Commands.none();
 
-        // Handle Manual Drive
+        // Handle Manual 2m Forward
         if (autoName.equals(K_MANUAL_DRIVE_NAME)) {
             return new DriveForwardNow(m_drivetrain, 2.0, true).withName("ManualDriveForward");
         }
@@ -104,20 +96,24 @@ public final class  AutoLogic {
     }
 
     /**
-     * Vibrates controller for 0.5s after the dynamic auto finishes
+     * Vibrates controller for 0.5s after the auto routine finishes
      */
     public static Command getSelectedAutoCommandWithFeedback(CommandXboxController controller) {
-        return getSelectedAutoCommand().andThen(
+        String autoName = getSelectedName();
+        return getAutoCommand(autoName).andThen(
             Commands.startEnd(
                 () -> controller.getHID().setRumble(RumbleType.kBothRumble, 0.6),
                 () -> controller.getHID().setRumble(RumbleType.kBothRumble, 0)
             ).withTimeout(0.5)
-        );
+        ).withName(autoName + "_WithRumble");
     }
 
     public static String getSelectedName() {
-        String selected = autoPicker.getSelected();
-        return (selected != null) ? selected : "Center Auto";
+        return autoPicker.getSelected();
+    }
+
+    public static Command getSelectedAutoCommand() {
+        return getAutoCommand(getSelectedName());
     }
 
     public static AutoTrajectoryProfile getSelectedAutoProfile() {
