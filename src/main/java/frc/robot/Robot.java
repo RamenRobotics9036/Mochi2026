@@ -14,24 +14,19 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.generated.TunerConstants;
 import frc.robot.sim.VisionSimFactory;
 import frc.robot.sim.VisionSimInterface;
+import frc.robot.sim.WrapperSimRobot;
 import frc.robot.subsystems.auto.AutoLogic;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
-
-  private final VisionSimInterface m_visionSim;
+  private final WrapperSimRobot m_wrapperSimRobot;
 
   public Robot() {
     m_robotContainer = new RobotContainer();
 
-    // Vision simulation setup
-    m_visionSim = VisionSimFactory.create();
-    m_visionSim.subscribePoseEstimates(m_robotContainer.drivetrain::addVisionMeasurement);
-
-    // Set the vision resetter so pose resets also reset vision simulation
-    m_robotContainer.setVisionResetter(m_visionSim::resetSimPose);
+// $TODO
   }
 
   @Override
@@ -137,7 +132,7 @@ public class Robot extends TimedRobot {
     }
   }
 
-  /**
+  /** $TODO - This should go away
    * Get the Pose2d of each swerve module based on the current robot pose and module states.
    */
   private Pose2d[] getModulePoses(com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState driveState) {

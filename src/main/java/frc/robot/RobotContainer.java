@@ -49,6 +49,7 @@ public class RobotContainer {
     // Ground truth simulation for testing vision correction
     public GroundTruthSimInterface groundTruthSim = null;
 
+    // $TODO - This should go away
     private Consumer<Pose2d> visionResetter;
 
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -178,7 +179,7 @@ public class RobotContainer {
         return AutoLogic.getSelectedAutoCommand();
     }
 
-    /**
+    /** $TODO should go away
      * Sets the vision resetter consumer to be called when the robot pose is reset.
      * @param resetter Consumer that accepts a Pose2d to reset vision position
      */
