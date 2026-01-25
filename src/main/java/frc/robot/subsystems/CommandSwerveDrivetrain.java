@@ -69,14 +69,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             this
         )
     );
-
+    /**
+     * Integrates PathPlanner's AutoBuilder with the CTRE Swerve API.
+     * Configures pose suppliers, reset consumers, and PID constants for path following.
+     */
     private void configureAutoBuilder() {
         try {
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
-                () -> getState().Pose,   // Supplier of current robot pose
-                this::resetPose,         // Consumer for seeding pose against auto
-                () -> getState().Speeds, // Supplier of current robot speeds
+                () -> getState().Pose,   // Current pose supplier
+                this::resetPose,         // Pose reset consumer
+                () -> getState().Speeds, // Current chassis speeds supplier
                 // Consumer of ChassisSpeeds and feedforwards to drive the robot
                 (speeds, feedforwards) -> setControl(
                     m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
@@ -108,6 +111,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             // Log state with SignalLogger class
             state -> SignalLogger.writeString("SysIdSteer_State", state.toString())
         ),
+        // mechanism to apply voltages to steer motors
         new SysIdRoutine.Mechanism(
             volts -> setControl(m_steerCharacterization.withVolts(volts)),
             null,
@@ -159,11 +163,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SwerveDrivetrainConstants drivetrainConstants,
         SwerveModuleConstants<?, ?, ?>... modules
     ) {
+        // super constructor call
         super(drivetrainConstants, modules);
         if (Utils.isSimulation()) {
             startSimThread();
         }
-
+        // configure PathPlanner AutoBuilder
         configureAutoBuilder();
     }
 
