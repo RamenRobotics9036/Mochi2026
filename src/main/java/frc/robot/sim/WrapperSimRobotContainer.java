@@ -51,6 +51,11 @@ public class WrapperSimRobotContainer {
         m_visionResetter = resetter;
     }
 
+    public void resetSimRobotPose(Pose2d pose) {
+        m_groundTruthSim.resetGroundTruthPoseForSim(pose);
+        m_visionResetter.accept(pose);
+    }
+
     public GroundTruthSimInterface getGroundTruthSim() {
         return m_groundTruthSim;
     }

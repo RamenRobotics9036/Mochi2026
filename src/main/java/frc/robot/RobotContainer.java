@@ -25,6 +25,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.sim.GroundTruthSimFactory;
 import frc.robot.sim.GroundTruthSimInterface;
 import frc.robot.sim.SimJoystickOrientation;
+import frc.robot.sim.WrapperSimRobotContainer;
 import frc.robot.sim.SimJoystickOrientation.ScreenDirection;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
@@ -46,26 +47,21 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
     private final CommandXboxController joystick = new CommandXboxController(0);
 
-    // Ground truth simulation for testing vision correction
-    public GroundTruthSimInterface groundTruthSim = null;
-
-    // $TODO - This should go away
-    private Consumer<Pose2d> visionResetter;
-
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     /** Stores the starting pose of the currently selected auto */
     private Pose2d selectedAutoStartingPose = new Pose2d();
 
-    public RobotContainer() {
-        // Ground truth simulation setup
-        if (Robot.isSimulation()) {
-            groundTruthSim = GroundTruthSimFactory.create(drivetrain, this::resetRobotPose);
-        }
+    public final WrapperSimRobotContainer m_wrapperSimRobotContainer;
 
+    public RobotContainer() {
         AutoLogic.initShuffleboard(drivetrain);
 
         configureBindings();
+
+        m_wrapperSimRobotContainer = new WrapperSimRobotContainer(
+            drivetrain,
+            this::resetRobotPose);
     }
 
     // takes the X value from the joystick, and applies a deadband and input scaling
@@ -147,15 +143,15 @@ public class RobotContainer {
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Bumper buttons for simulation
-        if (Robot.isSimulation() && groundTruthSim != null) {
+        if (Robot.isSimulation()) {
             // In simulation, inject drift with right bumper to test vision correction
             joystick.rightBumper().onTrue(drivetrain.runOnce(() ->
-                groundTruthSim.injectDrift(0.5, 15.0)  // 0.5m translation, 15° rotation drift
+                m_wrapperSimRobotContainer.getGroundTruthSim().injectDrift(0.5, 15.0)  // 0.5m translation, 15° rotation drift
             ));
 
             // Left bumper resets robot to the starting pose of the selected auto
             joystick.leftBumper().onTrue(drivetrain.runOnce(() ->
-                groundTruthSim.cycleResetPosition(selectedAutoStartingPose)
+                m_wrapperSimRobotContainer.getGroundTruthSim().cycleResetPosition(selectedAutoStartingPose)
             ));
         }
 
@@ -179,34 +175,19 @@ public class RobotContainer {
         return AutoLogic.getSelectedAutoCommand();
     }
 
-    /** $TODO should go away
-     * Sets the vision resetter consumer to be called when the robot pose is reset.
-     * @param resetter Consumer that accepts a Pose2d to reset vision position
-     */
-    public void setVisionResetter(Consumer<Pose2d> resetter) {
-        this.visionResetter = resetter;
-    }
-
     /**
-     * Called when the robot pose is reset in simulation.
-     * This is triggered by GroundTruthSim via the consumer pattern.
-     *
-     * Resets both the ground truth pose and the drivetrain pose to the specified pose.
-     * Also resets the vision system simulation pose history if a Vision instance is set.
+     * Called when the robot pose is reset.
+     * It resets:
+     * - The drivetrain pose
+     * - The real vision system
+     * - The simulation pose and vision system
      *
      * @param pose The new pose the robot has been reset to
      */
     private void resetRobotPose(Pose2d pose) {
         System.out.println("Robot pose reset to: " + pose);
 
-        if (Robot.isSimulation() && groundTruthSim != null) {
-            groundTruthSim.resetGroundTruthPoseForSim(pose);
-        }
-
         drivetrain.resetPose(pose);
-
-        if (visionResetter != null) {
-            visionResetter.accept(pose);
-        }
+        m_wrapperSimRobotContainer.resetSimRobotPose(pose);
     }
 }

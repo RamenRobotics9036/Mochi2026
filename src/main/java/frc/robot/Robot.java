@@ -26,7 +26,10 @@ public class Robot extends TimedRobot {
   public Robot() {
     m_robotContainer = new RobotContainer();
 
-// $TODO
+    m_wrapperSimRobot = new WrapperSimRobot(
+        m_robotContainer.m_wrapperSimRobotContainer,
+        m_robotContainer.drivetrain::addVisionMeasurement,
+        m_robotContainer.drivetrain);
   }
 
   @Override
@@ -38,10 +41,7 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
 
-    // Update vision simulation (processes camera results and updates pose estimator)
-    if (m_visionSim != null) {
-      m_visionSim.periodic();
-    }
+    m_wrapperSimRobot.robotPeriodic();
   }
 
   @Override
@@ -99,57 +99,6 @@ public class Robot extends TimedRobot {
 
   @Override
   public void simulationPeriodic() {
-    var driveState = m_robotContainer.drivetrain.getState();
-    var robotPoseHoldingCamera = driveState.Pose;
-
-    // Ground truth simulation
-    if (m_robotContainer.groundTruthSim != null) {
-      m_robotContainer.groundTruthSim.simulationPeriodic();
-
-      // Update vision simulation with the ground truth robot pose (from physics)
-      // This ensures the camera sees AprilTags based on where the robot actually is,
-      // not where odometry thinks it is. This allows testing of vision correction.
-      robotPoseHoldingCamera = m_robotContainer.groundTruthSim.getGroundTruthPose();
-    }
-
-    // Vision simulation update
-    if (m_visionSim != null) {
-      m_visionSim.simulationPeriodic(robotPoseHoldingCamera);
-    }
-
-    // Debug field visualization
-    var debugField = m_visionSim != null ? m_visionSim.getSimDebugField() : null;
-    if (debugField != null) {
-      // Show the estimated pose (what odometry thinks)
-      debugField.getObject("EstimatedRobot").setPose(driveState.Pose);
-      debugField.getObject("EstimatedRobotModules").setPoses(getModulePoses(driveState));
-
-      if (m_robotContainer.groundTruthSim != null) {
-        // Show the ground truth pose (where the robot actually is in simulation)
-        debugField.getObject("GroundTruthRobot").setPose(
-            m_robotContainer.groundTruthSim.getGroundTruthPose());
-      }
-    }
-  }
-
-  /** $TODO - This should go away
-   * Get the Pose2d of each swerve module based on the current robot pose and module states.
-   */
-  private Pose2d[] getModulePoses(com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState driveState) {
-    // Module locations relative to robot center (from TunerConstants)
-    Translation2d[] moduleLocations = {
-        new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
-        new Translation2d(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY),
-        new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
-        new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
-    };
-
-    Pose2d[] modulePoses = new Pose2d[4];
-    for (int i = 0; i < 4; i++) {
-      modulePoses[i] = driveState.Pose.transformBy(
-          new Transform2d(moduleLocations[i], driveState.ModuleStates[i].angle)
-      );
-    }
-    return modulePoses;
+    m_wrapperSimRobot.simulationPeriodic();
   }
 }
