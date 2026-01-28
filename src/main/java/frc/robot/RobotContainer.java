@@ -24,6 +24,9 @@ import frc.robot.subsystems.auto.AutoLogic;
 
 public class RobotContainer {
 
+    // This is our hard-and-fast cap for our robot speed
+    // This also serves as our teleop max speed
+    // To change auto max speed, find it in deploy\pathplanner\settings.json
     private double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
