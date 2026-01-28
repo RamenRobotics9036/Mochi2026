@@ -13,26 +13,14 @@ import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /**
- * SnapToPoseCommand: Instantly resets the drivetrain odometry to match the vision pose.
+ * Resets the robot's odometry to match the global pose estimated by the vision system.
  * 
- * <p><b>Team 2910 Strategy:</b> Before critical actions (like shooting), the driver
- * holds a button to "snap" the robot's internal pose to the vision-measured pose.
- * This eliminates accumulated odometry drift from aggressive driving (spinning, collisions).
+ * <p>This "Snap" command uses Limelight's MegaTag2 algorithm to reconcile accumulated
+ * wheel slip and gyro drift. It is designed to be highly reliable by enforcing distance
+ * and visibility filters before allowing an odometry reset.
  * 
- * <p><b>When to use:</b>
- * <ul>
- *   <li>Before shooting - ensures aiming calculations use accurate pose</li>
- *   <li>After heavy defense - resets drift from collisions</li>
- *   <li>After spinning - resets gyro-related drift</li>
- * </ul>
- * 
- * <p><b>Safety:</b> This command only resets if the vision data is reliable:
- * <ul>
- *   <li>At least one AprilTag visible</li>
- *   <li>Average tag distance under 3.5 meters</li>
- * </ul>
- * 
- * <p>This is an instant command - it executes once and finishes immediately.
+ * <p><b>Strategy:</b> Trigger this before high-precision automated tasks (like auto-aiming)
+ * or after collisions to ensure the robot "knows" exactly where it is on the field.
  */
 public class SnapToPoseCommand extends Command {
 
@@ -42,44 +30,52 @@ public class SnapToPoseCommand extends Command {
     /**
      * Creates a new SnapToPoseCommand.
      * 
-     * @param drivetrain The swerve drivetrain to reset
+     * @param drivetrain The {@link CommandSwerveDrivetrain} instance to be updated.
      */
     public SnapToPoseCommand(CommandSwerveDrivetrain drivetrain) {
+        // Store drivetrain reference
         m_drivetrain = drivetrain;
         
-        // No subsystem requirements - this is a one-shot instant command
-        // We don't want to interrupt driving while snapping
+        // Note: We do NOT call addRequirements(m_drivetrain) here.
+        // This allows the driver to continue driving/strafing while the pose
+        // is updated in the background without interrupting the default drive command.
     }
 
+    /**
+     * Executes the pose-synchronization logic.
+     * 
+     * Pulls the MegaTag2 pose estimate, validates it against predefined safety 
+     * thresholds (tag count and distance), and updates the drivetrain odometry.
+     */
     @Override
     public void initialize() {
         m_snapSucceeded = false;
         
         try {
-            // Get MegaTag2 pose from fixed camera
+            // Retrieve pose using MegaTag2 (optimized for robots in motion using gyro data)
             PoseEstimate poseEstimate = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
                 VisionConstants.kFixedCameraName
             );
 
-            // Safety check: validate the pose estimate
+            // Validation 1: Ensure the camera is actually returning data
             if (poseEstimate == null) {
-                reportFailure("No pose estimate available");
+                reportFailure("No pose estimate available (Camera disconnected?)");
                 return;
             }
 
+            // Validation 2: Ensure enough tags are visible to minimize "ghost" poses
             if (poseEstimate.tagCount < VisionConstants.MIN_TAG_COUNT) {
-                reportFailure("Not enough tags visible (need " + VisionConstants.MIN_TAG_COUNT 
-                    + ", have " + poseEstimate.tagCount + ")");
+                reportFailure("Insufficient tags: " + poseEstimate.tagCount);
                 return;
             }
 
+            // Validation 3: Ensure tags are close enough that depth error is negligible
             if (poseEstimate.avgTagDist > VisionConstants.SNAP_MAX_DISTANCE) {
-                reportFailure("Tags too far (max " + VisionConstants.SNAP_MAX_DISTANCE 
-                    + "m, current " + String.format("%.2f", poseEstimate.avgTagDist) + "m)");
+                reportFailure("Tags beyond distance threshold: " + String.format("%.2f", poseEstimate.avgTagDist) + "m");
                 return;
             }
 
-            // All checks passed - snap the odometry!
+            // Success: Overwrite internal odometry with the vision-validated pose
             Pose2d visionPose = poseEstimate.pose;
             m_drivetrain.resetPose(visionPose);
             
@@ -87,32 +83,39 @@ public class SnapToPoseCommand extends Command {
             reportSuccess(visionPose, poseEstimate.tagCount, poseEstimate.avgTagDist);
 
         } catch (Exception e) {
-            // Thread safety: don't crash if camera disconnected
-            reportFailure("Exception: " + e.getMessage());
+            // Prevent code crashes if the Limelight helper encounters unexpected networking issues
+            reportFailure("Vision System Exception: " + e.getMessage());
         }
     }
 
+    /**
+     * This is an instant command. It returns true immediately after {@link #initialize()} finishes.
+     */
     @Override
     public boolean isFinished() {
-        // Instant command - always finish immediately
-        return true;
-    }
-
-    @Override
-    public boolean runsWhenDisabled() {
-        // Allow snapping while disabled for testing
+        // Command completes immediately after initialization
         return true;
     }
 
     /**
-     * @return True if the last snap attempt succeeded
+     * Allows pose snapping during the pre-match period or while testing on blocks.
+     */
+    @Override
+    public boolean runsWhenDisabled() {
+        // Allows alowed operation when robot is disabled
+        return true;
+    }
+
+    /**
+     * @return True if the most recent execution successfully updated the robot's pose.
      */
     public boolean snapSucceeded() {
+        // was the snap successful?
         return m_snapSucceeded;
     }
 
     /**
-     * Reports a successful snap to the console and dashboard.
+     * Logs successful synchronization to the Driver Station for operator awareness.
      */
     private void reportSuccess(Pose2d pose, int tagCount, double avgDist) {
         String message = String.format(
@@ -125,7 +128,7 @@ public class SnapToPoseCommand extends Command {
     }
 
     /**
-     * Reports a failed snap attempt to the console and dashboard.
+     * Logs synchronization failure to the Driver Station.
      */
     private void reportFailure(String reason) {
         String message = "SNAP FAILED: " + reason;
