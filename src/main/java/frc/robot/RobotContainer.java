@@ -36,7 +36,7 @@ public class RobotContainer {
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
     /** Maximum linear velocity of the robot DURING TELEOP in meters per second. */
-    private double TeleoperatedSpeed = Math.min(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond), MaxSpeed);
+    private double TeleoperatedSpeed = Math.min(TunerConstants.kSpeedInTeleop.in(MetersPerSecond), MaxSpeed);
 
     /** Standard field-centric swerve request. Uses Velocity control for smoother movement. */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
