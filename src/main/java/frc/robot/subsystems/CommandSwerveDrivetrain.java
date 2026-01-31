@@ -27,7 +27,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
+import frc.robot.Robot;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.visutils.VisionInjectFilter;
 
@@ -52,7 +52,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     /** Filter for ignoring stale vision measurements around pose resets. */
     // $TODO - Inject Filter
-    private final VisionInjectFilter m_visionFilter = new VisionInjectFilter();
+    private final VisionInjectFilter m_visionFilter;
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -173,6 +173,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        // $TODO - Inject Filter
+        if (Robot.isSimulation()) {
+            m_visionFilter = new VisionInjectFilter();
+        }
+        else {
+            m_visionFilter = null;
+        }
+
         // configure PathPlanner AutoBuilder
         configureAutoBuilder();
     }
@@ -310,7 +319,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     // $TODO - Clean reset
     @Override
     public void resetPose(Pose2d pose) {
-        m_visionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
+        // $TODO - Inject Filter
+        if (Robot.isSimulation() && m_visionFilter != null) {
+            m_visionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
+        }
         super.resetPose(pose);
     }
 
@@ -346,12 +358,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
         // $TODO - Inject Filter
-        if (m_visionFilter.shouldIgnore(
-            visionRobotPoseMeters,
-            getState().Pose,
-            timestampSeconds)) {
+        if (Robot.isSimulation() && m_visionFilter != null) {
+            if (m_visionFilter.shouldIgnore(
+                visionRobotPoseMeters,
+                getState().Pose,
+                timestampSeconds)) {
 
-            return;
+                return;
+            }
         }
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
     }
