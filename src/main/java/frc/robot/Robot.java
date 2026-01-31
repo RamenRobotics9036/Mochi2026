@@ -71,7 +71,11 @@ public class Robot extends TimedRobot {
         m_robotContainer.m_simWrapper.robotPeriodic();
     }
 
-    m_robotContainer.m_limelightOdometry.periodic();
+    // For now, we do vision odemetry only in simulation.  Eventually, this will
+    // be replaced by our real Vision Subsystem.
+    if (Robot.isSimulation()) {
+      m_robotContainer.m_limelightOdometry.periodic();
+    }
 
     if (Robot.isSimulation() && m_showVisionOnField != null) {
         Optional<Pose2d> showVisPose = m_robotContainer.m_limelightOdometry.getLatestVisPose();
