@@ -1,4 +1,4 @@
-//LimelightHelpers v1.12 (REQUIRES LLOS 2025.0 OR LATER)
+//LimelightHelpers v1.9 (REQUIRES 2024.9.1)
 
 package frc.robot;
 
@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -33,17 +32,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * LimelightHelpers provides static methods and classes for interfacing with Limelight vision cameras in FRC.
- * This library supports all Limelight features including AprilTag tracking, Neural Networks, and standard color/retroreflective tracking.
- */
 public class LimelightHelpers {
 
     private static final Map<String, DoubleArrayEntry> doubleArrayEntries = new ConcurrentHashMap<>();
 
-    /**
-     * Represents a Color/Retroreflective Target Result extracted from JSON Output
-     */
+
     public static class LimelightTarget_Retro {
 
         @JsonProperty("t6c_ts")
@@ -61,26 +54,65 @@ public class LimelightHelpers {
         @JsonProperty("t6t_rs")
         private double[] targetPose_RobotSpace;
 
-        public Pose3d getCameraPose_TargetSpace() { return toPose3D(cameraPose_TargetSpace); }
-        public Pose3d getRobotPose_FieldSpace() { return toPose3D(robotPose_FieldSpace); }
-        public Pose3d getRobotPose_TargetSpace() { return toPose3D(robotPose_TargetSpace); }
-        public Pose3d getTargetPose_CameraSpace() { return toPose3D(targetPose_CameraSpace); }
-        public Pose3d getTargetPose_RobotSpace() { return toPose3D(targetPose_RobotSpace); }
+        public Pose3d getCameraPose_TargetSpace()
+        {
+            return toPose3D(cameraPose_TargetSpace);
+        }
+        public Pose3d getRobotPose_FieldSpace()
+        {
+            return toPose3D(robotPose_FieldSpace);
+        }
+        public Pose3d getRobotPose_TargetSpace()
+        {
+            return toPose3D(robotPose_TargetSpace);
+        }
+        public Pose3d getTargetPose_CameraSpace()
+        {
+            return toPose3D(targetPose_CameraSpace);
+        }
+        public Pose3d getTargetPose_RobotSpace()
+        {
+            return toPose3D(targetPose_RobotSpace);
+        }
 
-        public Pose2d getCameraPose_TargetSpace2D() { return toPose2D(cameraPose_TargetSpace); }
-        public Pose2d getRobotPose_FieldSpace2D() { return toPose2D(robotPose_FieldSpace); }
-        public Pose2d getRobotPose_TargetSpace2D() { return toPose2D(robotPose_TargetSpace); }
-        public Pose2d getTargetPose_CameraSpace2D() { return toPose2D(targetPose_CameraSpace); }
-        public Pose2d getTargetPose_RobotSpace2D() { return toPose2D(targetPose_RobotSpace); }
+        public Pose2d getCameraPose_TargetSpace2D()
+        {
+            return toPose2D(cameraPose_TargetSpace);
+        }
+        public Pose2d getRobotPose_FieldSpace2D()
+        {
+            return toPose2D(robotPose_FieldSpace);
+        }
+        public Pose2d getRobotPose_TargetSpace2D()
+        {
+            return toPose2D(robotPose_TargetSpace);
+        }
+        public Pose2d getTargetPose_CameraSpace2D()
+        {
+            return toPose2D(targetPose_CameraSpace);
+        }
+        public Pose2d getTargetPose_RobotSpace2D()
+        {
+            return toPose2D(targetPose_RobotSpace);
+        }
 
-        @JsonProperty("ta") public double ta;
-        @JsonProperty("tx") public double tx;
-        @JsonProperty("ty") public double ty;
-        @JsonProperty("txp") public double tx_pixels;
-        @JsonProperty("typ") public double ty_pixels;
-        @JsonProperty("tx_nocross") public double tx_nocrosshair;
-        @JsonProperty("ty_nocross") public double ty_nocrosshair;
-        @JsonProperty("ts") public double ts;
+        @JsonProperty("ta")
+        public double ta;
+
+        @JsonProperty("tx")
+        public double tx;
+
+        @JsonProperty("txp")
+        public double tx_pixels;
+
+        @JsonProperty("ty")
+        public double ty;
+
+        @JsonProperty("typ")
+        public double ty_pixels;
+
+        @JsonProperty("ts")
+        public double ts;
 
         public LimelightTarget_Retro() {
             cameraPose_TargetSpace = new double[6];
@@ -89,43 +121,92 @@ public class LimelightHelpers {
             targetPose_CameraSpace = new double[6];
             targetPose_RobotSpace = new double[6];
         }
+
     }
 
-    /**
-     * Represents an AprilTag/Fiducial Target Result extracted from JSON Output
-     */
     public static class LimelightTarget_Fiducial {
 
-        @JsonProperty("fID") public double fiducialID;
-        @JsonProperty("fam") public String fiducialFamily;
+        @JsonProperty("fID")
+        public double fiducialID;
 
-        @JsonProperty("t6c_ts") private double[] cameraPose_TargetSpace;
-        @JsonProperty("t6r_fs") private double[] robotPose_FieldSpace;
-        @JsonProperty("t6r_ts") private double[] robotPose_TargetSpace;
-        @JsonProperty("t6t_cs") private double[] targetPose_CameraSpace;
-        @JsonProperty("t6t_rs") private double[] targetPose_RobotSpace;
+        @JsonProperty("fam")
+        public String fiducialFamily;
 
-        public Pose3d getCameraPose_TargetSpace() { return toPose3D(cameraPose_TargetSpace); }
-        public Pose3d getRobotPose_FieldSpace() { return toPose3D(robotPose_FieldSpace); }
-        public Pose3d getRobotPose_TargetSpace() { return toPose3D(robotPose_TargetSpace); }
-        public Pose3d getTargetPose_CameraSpace() { return toPose3D(targetPose_CameraSpace); }
-        public Pose3d getTargetPose_RobotSpace() { return toPose3D(targetPose_RobotSpace); }
+        @JsonProperty("t6c_ts")
+        private double[] cameraPose_TargetSpace;
 
-        public Pose2d getCameraPose_TargetSpace2D() { return toPose2D(cameraPose_TargetSpace); }
-        public Pose2d getRobotPose_FieldSpace2D() { return toPose2D(robotPose_FieldSpace); }
-        public Pose2d getRobotPose_TargetSpace2D() { return toPose2D(robotPose_TargetSpace); }
-        public Pose2d getTargetPose_CameraSpace2D() { return toPose2D(targetPose_CameraSpace); }
-        public Pose2d getTargetPose_RobotSpace2D() { return toPose2D(targetPose_RobotSpace); }
+        @JsonProperty("t6r_fs")
+        private double[] robotPose_FieldSpace;
 
-        @JsonProperty("ta") public double ta;
-        @JsonProperty("tx") public double tx;
-        @JsonProperty("ty") public double ty;
-        @JsonProperty("txp") public double tx_pixels;
-        @JsonProperty("typ") public double ty_pixels;
-        @JsonProperty("tx_nocross") public double tx_nocrosshair;
-        @JsonProperty("ty_nocross") public double ty_nocrosshair;
-        @JsonProperty("ts") public double ts;
+        @JsonProperty("t6r_ts")
+        private double[] robotPose_TargetSpace;
 
+        @JsonProperty("t6t_cs")
+        private double[] targetPose_CameraSpace;
+
+        @JsonProperty("t6t_rs")
+        private double[] targetPose_RobotSpace;
+
+        public Pose3d getCameraPose_TargetSpace()
+        {
+            return toPose3D(cameraPose_TargetSpace);
+        }
+        public Pose3d getRobotPose_FieldSpace()
+        {
+            return toPose3D(robotPose_FieldSpace);
+        }
+        public Pose3d getRobotPose_TargetSpace()
+        {
+            return toPose3D(robotPose_TargetSpace);
+        }
+        public Pose3d getTargetPose_CameraSpace()
+        {
+            return toPose3D(targetPose_CameraSpace);
+        }
+        public Pose3d getTargetPose_RobotSpace()
+        {
+            return toPose3D(targetPose_RobotSpace);
+        }
+
+        public Pose2d getCameraPose_TargetSpace2D()
+        {
+            return toPose2D(cameraPose_TargetSpace);
+        }
+        public Pose2d getRobotPose_FieldSpace2D()
+        {
+            return toPose2D(robotPose_FieldSpace);
+        }
+        public Pose2d getRobotPose_TargetSpace2D()
+        {
+            return toPose2D(robotPose_TargetSpace);
+        }
+        public Pose2d getTargetPose_CameraSpace2D()
+        {
+            return toPose2D(targetPose_CameraSpace);
+        }
+        public Pose2d getTargetPose_RobotSpace2D()
+        {
+            return toPose2D(targetPose_RobotSpace);
+        }
+        
+        @JsonProperty("ta")
+        public double ta;
+
+        @JsonProperty("tx")
+        public double tx;
+
+        @JsonProperty("txp")
+        public double tx_pixels;
+
+        @JsonProperty("ty")
+        public double ty;
+
+        @JsonProperty("typ")
+        public double ty_pixels;
+
+        @JsonProperty("ts")
+        public double ts;
+        
         public LimelightTarget_Fiducial() {
             cameraPose_TargetSpace = new double[6];
             robotPose_FieldSpace = new double[6];
@@ -135,96 +216,157 @@ public class LimelightHelpers {
         }
     }
 
-    /**
-     * Represents a Barcode Target Result extracted from JSON Output
-     */
     public static class LimelightTarget_Barcode {
-        @JsonProperty("fam") public String family;
-        @JsonProperty("data") public String data;
-        @JsonProperty("txp") public double tx_pixels;
-        @JsonProperty("typ") public double ty_pixels;
-        @JsonProperty("tx") public double tx;
-        @JsonProperty("ty") public double ty;
-        @JsonProperty("tx_nocross") public double tx_nocrosshair;
-        @JsonProperty("ty_nocross") public double ty_nocrosshair;
-        @JsonProperty("ta") public double ta;
-        @JsonProperty("pts") public double[][] corners;
 
-        public LimelightTarget_Barcode() {}
-        public String getFamily() { return family; }
     }
 
-    /**
-     * Represents a Neural Classifier Pipeline Result extracted from JSON Output
-     */
     public static class LimelightTarget_Classifier {
-        @JsonProperty("class") public String className;
-        @JsonProperty("classID") public double classID;
-        @JsonProperty("conf") public double confidence;
-        @JsonProperty("zone") public double zone;
-        @JsonProperty("tx") public double tx;
-        @JsonProperty("txp") public double tx_pixels;
-        @JsonProperty("ty") public double ty;
-        @JsonProperty("typ") public double ty_pixels;
 
-        public LimelightTarget_Classifier() {}
+        @JsonProperty("class")
+        public String className;
+
+        @JsonProperty("classID")
+        public double classID;
+
+        @JsonProperty("conf")
+        public double confidence;
+
+        @JsonProperty("zone")
+        public double zone;
+
+        @JsonProperty("tx")
+        public double tx;
+
+        @JsonProperty("txp")
+        public double tx_pixels;
+
+        @JsonProperty("ty")
+        public double ty;
+
+        @JsonProperty("typ")
+        public double ty_pixels;
+
+        public  LimelightTarget_Classifier() {
+        }
     }
 
-    /**
-     * Represents a Neural Detector Pipeline Result extracted from JSON Output
-     */
     public static class LimelightTarget_Detector {
-        @JsonProperty("class") public String className;
-        @JsonProperty("classID") public double classID;
-        @JsonProperty("conf") public double confidence;
-        @JsonProperty("ta") public double ta;
-        @JsonProperty("tx") public double tx;
-        @JsonProperty("ty") public double ty;
-        @JsonProperty("txp") public double tx_pixels;
-        @JsonProperty("typ") public double ty_pixels;
-        @JsonProperty("tx_nocross") public double tx_nocrosshair;
-        @JsonProperty("ty_nocross") public double ty_nocrosshair;
 
-        public LimelightTarget_Detector() {}
+        @JsonProperty("class")
+        public String className;
+
+        @JsonProperty("classID")
+        public double classID;
+
+        @JsonProperty("conf")
+        public double confidence;
+
+        @JsonProperty("ta")
+        public double ta;
+
+        @JsonProperty("tx")
+        public double tx;
+
+        @JsonProperty("txp")
+        public double tx_pixels;
+
+        @JsonProperty("ty")
+        public double ty;
+
+        @JsonProperty("typ")
+        public double ty_pixels;
+
+        public LimelightTarget_Detector() {
+        }
     }
 
-    /**
-     * Limelight Results object, parsed from a Limelight's JSON results output.
-     */
     public static class LimelightResults {
+        
         public String error;
+        
+        @JsonProperty("pID")
+        public double pipelineID;
 
-        @JsonProperty("pID") public double pipelineID;
-        @JsonProperty("tl") public double latency_pipeline;
-        @JsonProperty("cl") public double latency_capture;
+        @JsonProperty("tl")
+        public double latency_pipeline;
+
+        @JsonProperty("cl")
+        public double latency_capture;
+
         public double latency_jsonParse;
 
-        @JsonProperty("ts") public double timestamp_LIMELIGHT_publish;
-        @JsonProperty("ts_rio") public double timestamp_RIOFPGA_capture;
+        @JsonProperty("ts")
+        public double timestamp_LIMELIGHT_publish;
 
-        @JsonProperty("v") @JsonFormat(shape = Shape.NUMBER) public boolean valid;
+        @JsonProperty("ts_rio")
+        public double timestamp_RIOFPGA_capture;
 
-        @JsonProperty("botpose") public double[] botpose;
-        @JsonProperty("botpose_wpired") public double[] botpose_wpired;
-        @JsonProperty("botpose_wpiblue") public double[] botpose_wpiblue;
-        @JsonProperty("botpose_tagcount") public double botpose_tagcount;
-        @JsonProperty("botpose_span") public double botpose_span;
-        @JsonProperty("botpose_avgdist") public double botpose_avgdist;
-        @JsonProperty("botpose_avgarea") public double botpose_avgarea;
-        @JsonProperty("t6c_rs") public double[] camerapose_robotspace;
+        @JsonProperty("v")
+        @JsonFormat(shape = Shape.NUMBER)
+        public boolean valid;
 
-        public Pose3d getBotPose3d() { return toPose3D(botpose); }
-        public Pose3d getBotPose3d_wpiRed() { return toPose3D(botpose_wpired); }
-        public Pose3d getBotPose3d_wpiBlue() { return toPose3D(botpose_wpiblue); }
-        public Pose2d getBotPose2d() { return toPose2D(botpose); }
-        public Pose2d getBotPose2d_wpiRed() { return toPose2D(botpose_wpired); }
-        public Pose2d getBotPose2d_wpiBlue() { return toPose2D(botpose_wpiblue); }
+        @JsonProperty("botpose")
+        public double[] botpose;
 
-        @JsonProperty("Retro") public LimelightTarget_Retro[] targets_Retro;
-        @JsonProperty("Fiducial") public LimelightTarget_Fiducial[] targets_Fiducials;
-        @JsonProperty("Classifier") public LimelightTarget_Classifier[] targets_Classifier;
-        @JsonProperty("Detector") public LimelightTarget_Detector[] targets_Detector;
-        @JsonProperty("Barcode") public LimelightTarget_Barcode[] targets_Barcode;
+        @JsonProperty("botpose_wpired")
+        public double[] botpose_wpired;
+
+        @JsonProperty("botpose_wpiblue")
+        public double[] botpose_wpiblue;
+
+        @JsonProperty("botpose_tagcount")
+        public double botpose_tagcount;
+       
+        @JsonProperty("botpose_span")
+        public double botpose_span;
+       
+        @JsonProperty("botpose_avgdist")
+        public double botpose_avgdist;
+       
+        @JsonProperty("botpose_avgarea")
+        public double botpose_avgarea;
+
+        @JsonProperty("t6c_rs")
+        public double[] camerapose_robotspace;
+
+        public Pose3d getBotPose3d() {
+            return toPose3D(botpose);
+        }
+    
+        public Pose3d getBotPose3d_wpiRed() {
+            return toPose3D(botpose_wpired);
+        }
+    
+        public Pose3d getBotPose3d_wpiBlue() {
+            return toPose3D(botpose_wpiblue);
+        }
+
+        public Pose2d getBotPose2d() {
+            return toPose2D(botpose);
+        }
+    
+        public Pose2d getBotPose2d_wpiRed() {
+            return toPose2D(botpose_wpired);
+        }
+    
+        public Pose2d getBotPose2d_wpiBlue() {
+            return toPose2D(botpose_wpiblue);
+        }
+
+        @JsonProperty("Retro")
+        public LimelightTarget_Retro[] targets_Retro;
+
+        @JsonProperty("Fiducial")
+        public LimelightTarget_Fiducial[] targets_Fiducials;
+
+        @JsonProperty("Classifier")
+        public LimelightTarget_Classifier[] targets_Classifier;
+
+        @JsonProperty("Detector")
+        public LimelightTarget_Detector[] targets_Detector;
+
+        @JsonProperty("Barcode")
+        public LimelightTarget_Barcode[] targets_Barcode;
 
         public LimelightResults() {
             botpose = new double[6];
@@ -236,12 +378,12 @@ public class LimelightHelpers {
             targets_Classifier = new LimelightTarget_Classifier[0];
             targets_Detector = new LimelightTarget_Detector[0];
             targets_Barcode = new LimelightTarget_Barcode[0];
+
         }
+
+
     }
 
-    /**
-     * Represents a Limelight Raw Fiducial result from Limelight's NetworkTables output.
-     */
     public static class RawFiducial {
         public int id = 0;
         public double txnc = 0;
@@ -250,6 +392,7 @@ public class LimelightHelpers {
         public double distToCamera = 0;
         public double distToRobot = 0;
         public double ambiguity = 0;
+
 
         public RawFiducial(int id, double txnc, double tync, double ta, double distToCamera, double distToRobot, double ambiguity) {
             this.id = id;
@@ -260,25 +403,8 @@ public class LimelightHelpers {
             this.distToRobot = distToRobot;
             this.ambiguity = ambiguity;
         }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            RawFiducial other = (RawFiducial) obj;
-            return id == other.id &&
-                Double.compare(txnc, other.txnc) == 0 &&
-                Double.compare(tync, other.tync) == 0 &&
-                Double.compare(ta, other.ta) == 0 &&
-                Double.compare(distToCamera, other.distToCamera) == 0 &&
-                Double.compare(distToRobot, other.distToRobot) == 0 &&
-                Double.compare(ambiguity, other.ambiguity) == 0;
-        }
     }
 
-    /**
-     * Represents a Limelight Raw Neural Detector result from Limelight's NetworkTables output.
-     */
     public static class RawDetection {
         public int classId = 0;
         public double txnc = 0;
@@ -293,11 +419,12 @@ public class LimelightHelpers {
         public double corner3_X = 0;
         public double corner3_Y = 0;
 
+
         public RawDetection(int classId, double txnc, double tync, double ta, 
             double corner0_X, double corner0_Y, 
             double corner1_X, double corner1_Y, 
             double corner2_X, double corner2_Y, 
-            double corner3_X, double corner3_Y) {
+            double corner3_X, double corner3_Y ) {
             this.classId = classId;
             this.txnc = txnc;
             this.tync = tync;
@@ -313,9 +440,6 @@ public class LimelightHelpers {
         }
     }
 
-    /**
-     * Represents a 3D Pose Estimate.
-     */
     public static class PoseEstimate {
         public Pose2d pose;
         public double timestampSeconds;
@@ -325,8 +449,10 @@ public class LimelightHelpers {
         public double avgTagDist;
         public double avgTagArea;
         public RawFiducial[] rawFiducials; 
-        public boolean isMegaTag2;
 
+        /**
+         * Makes a PoseEstimate object with default values
+         */
         public PoseEstimate() {
             this.pose = new Pose2d();
             this.timestampSeconds = 0;
@@ -336,12 +462,12 @@ public class LimelightHelpers {
             this.avgTagDist = 0;
             this.avgTagArea = 0;
             this.rawFiducials = new RawFiducial[]{};
-            this.isMegaTag2 = false;
         }
 
         public PoseEstimate(Pose2d pose, double timestampSeconds, double latency, 
             int tagCount, double tagSpan, double avgTagDist, 
-            double avgTagArea, RawFiducial[] rawFiducials, boolean isMegaTag2) {
+            double avgTagArea, RawFiducial[] rawFiducials) {
+
             this.pose = pose;
             this.timestampSeconds = timestampSeconds;
             this.latency = latency;
@@ -350,69 +476,28 @@ public class LimelightHelpers {
             this.avgTagDist = avgTagDist;
             this.avgTagArea = avgTagArea;
             this.rawFiducials = rawFiducials;
-            this.isMegaTag2 = isMegaTag2;
         }
 
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null || getClass() != obj.getClass()) return false;
-            PoseEstimate that = (PoseEstimate) obj;
-            return Double.compare(that.latency, latency) == 0
-                && tagCount == that.tagCount
-                && Double.compare(that.tagSpan, tagSpan) == 0
-                && Double.compare(that.avgTagDist, avgTagDist) == 0
-                && Double.compare(that.avgTagArea, avgTagArea) == 0
-                && pose.equals(that.pose)
-                && Arrays.equals(rawFiducials, that.rawFiducials);
-        }
-    }
-
-    /**
-     * Encapsulates the state of an internal Limelight IMU.
-     */
-    public static class IMUData {
-        public double robotYaw = 0.0;
-        public double Roll = 0.0;
-        public double Pitch = 0.0;
-        public double Yaw = 0.0;
-        public double gyroX = 0.0;
-        public double gyroY = 0.0;
-        public double gyroZ = 0.0;
-        public double accelX = 0.0;
-        public double accelY = 0.0;
-        public double accelZ = 0.0;
-
-        public IMUData() {}
-
-        public IMUData(double[] imuData) {
-            if (imuData != null && imuData.length >= 10) {
-                this.robotYaw = imuData[0];
-                this.Roll = imuData[1];
-                this.Pitch = imuData[2];
-                this.Yaw = imuData[3];
-                this.gyroX = imuData[4];
-                this.gyroY = imuData[5];
-                this.gyroZ = imuData[6];
-                this.accelX = imuData[7];
-                this.accelY = imuData[8];
-                this.accelZ = imuData[9];
-            }
-        }
     }
 
     private static ObjectMapper mapper;
+
+    /**
+     * Print JSON Parse time to the console in milliseconds
+     */
     static boolean profileJSON = false;
 
     static final String sanitizeName(String name) {
-        if ("".equals(name) || name == null) {
+        if (name == "" || name == null) {
             return "limelight";
         }
         return name;
     }
 
-    public static Pose3d toPose3D(double[] inData) {
-        if (inData.length < 6) {
+    public static Pose3d toPose3D(double[] inData){
+        if(inData.length < 6)
+        {
+            //System.err.println("Bad LL 3D Pose Data!");
             return new Pose3d();
         }
         return new Pose3d(
@@ -421,8 +506,10 @@ public class LimelightHelpers {
                     Units.degreesToRadians(inData[5])));
     }
 
-    public static Pose2d toPose2D(double[] inData) {
-        if (inData.length < 6) {
+    public static Pose2d toPose2D(double[] inData){
+        if(inData.length < 6)
+        {
+            //System.err.println("Bad LL 2D Pose Data!");
             return new Pose2d();
         }
         Translation2d tran2d = new Translation2d(inData[0], inData[1]);
@@ -430,6 +517,12 @@ public class LimelightHelpers {
         return new Pose2d(tran2d, r2d);
     }
 
+    /**
+     * Converts a Pose3d object to an array of doubles.
+     * 
+     * @param pose The Pose3d object to convert.
+     * @return The array of doubles representing the pose.
+     **/
     public static double[] pose3dToArray(Pose3d pose) {
         double[] result = new double[6];
         result[0] = pose.getTranslation().getX();
@@ -441,6 +534,12 @@ public class LimelightHelpers {
         return result;
     }
 
+    /**
+     * Converts a Pose2d object to an array of doubles.
+     * 
+     * @param pose The Pose2d object to convert.
+     * @return The array of doubles representing the pose.
+     **/
     public static double[] pose2dToArray(Pose2d pose) {
         double[] result = new double[6];
         result[0] = pose.getTranslation().getX();
@@ -452,39 +551,44 @@ public class LimelightHelpers {
         return result;
     }
 
-    private static double extractArrayEntry(double[] inData, int position) {
-        if (inData.length < position + 1) {
+    private static double extractArrayEntry(double[] inData, int position){
+        if(inData.length < position+1)
+        {
             return 0;
         }
         return inData[position];
     }
 
-    private static PoseEstimate getBotPoseEstimate(String limelightName, String entryName, boolean isMegaTag2) {
+    private static PoseEstimate getBotPoseEstimate(String limelightName, String entryName) {
         DoubleArrayEntry poseEntry = LimelightHelpers.getLimelightDoubleArrayEntry(limelightName, entryName);
-
+        
         TimestampedDoubleArray tsValue = poseEntry.getAtomic();
         double[] poseArray = tsValue.value;
         long timestamp = tsValue.timestamp;
-
+        
         if (poseArray.length == 0) {
-            return null;
+            // Handle the case where no data is available
+            return null; // or some default PoseEstimate
         }
-
+    
         var pose = toPose2D(poseArray);
         double latency = extractArrayEntry(poseArray, 6);
         int tagCount = (int)extractArrayEntry(poseArray, 7);
         double tagSpan = extractArrayEntry(poseArray, 8);
         double tagDist = extractArrayEntry(poseArray, 9);
         double tagArea = extractArrayEntry(poseArray, 10);
-
+        
+        // Convert server timestamp from microseconds to seconds and adjust for latency
         double adjustedTimestamp = (timestamp / 1000000.0) - (latency / 1000.0);
-
+    
         RawFiducial[] rawFiducials = new RawFiducial[tagCount];
         int valsPerFiducial = 7;
         int expectedTotalVals = 11 + valsPerFiducial * tagCount;
-
-        if (poseArray.length == expectedTotalVals) {
-            for (int i = 0; i < tagCount; i++) {
+    
+        if (poseArray.length != expectedTotalVals) {
+            // Don't populate fiducials
+        } else {
+            for(int i = 0; i < tagCount; i++) {
                 int baseIndex = 11 + (i * valsPerFiducial);
                 int id = (int)poseArray[baseIndex];
                 double txnc = poseArray[baseIndex + 1];
@@ -496,21 +600,21 @@ public class LimelightHelpers {
                 rawFiducials[i] = new RawFiducial(id, txnc, tync, ta, distToCamera, distToRobot, ambiguity);
             }
         }
-
-        return new PoseEstimate(pose, adjustedTimestamp, latency, tagCount, tagSpan, tagDist, tagArea, rawFiducials, isMegaTag2);
+    
+        return new PoseEstimate(pose, adjustedTimestamp, latency, tagCount, tagSpan, tagDist, tagArea, rawFiducials);
     }
 
-    public static RawFiducial[] getRawFiducials(String limelightName) {
+    private static RawFiducial[] getRawFiducials(String limelightName) {
         var entry = LimelightHelpers.getLimelightNTTableEntry(limelightName, "rawfiducials");
         var rawFiducialArray = entry.getDoubleArray(new double[0]);
         int valsPerEntry = 7;
         if (rawFiducialArray.length % valsPerEntry != 0) {
             return new RawFiducial[0];
         }
-
+    
         int numFiducials = rawFiducialArray.length / valsPerEntry;
         RawFiducial[] rawFiducials = new RawFiducial[numFiducials];
-
+    
         for (int i = 0; i < numFiducials; i++) {
             int baseIndex = i * valsPerEntry;
             int id = (int) extractArrayEntry(rawFiducialArray, baseIndex);
@@ -520,25 +624,26 @@ public class LimelightHelpers {
             double distToCamera = extractArrayEntry(rawFiducialArray, baseIndex + 4);
             double distToRobot = extractArrayEntry(rawFiducialArray, baseIndex + 5);
             double ambiguity = extractArrayEntry(rawFiducialArray, baseIndex + 6);
+            
             rawFiducials[i] = new RawFiducial(id, txnc, tync, ta, distToCamera, distToRobot, ambiguity);
         }
-
+    
         return rawFiducials;
     }
 
     public static RawDetection[] getRawDetections(String limelightName) {
         var entry = LimelightHelpers.getLimelightNTTableEntry(limelightName, "rawdetections");
         var rawDetectionArray = entry.getDoubleArray(new double[0]);
-        int valsPerEntry = 12;
+        int valsPerEntry = 11;
         if (rawDetectionArray.length % valsPerEntry != 0) {
             return new RawDetection[0];
         }
-
+    
         int numDetections = rawDetectionArray.length / valsPerEntry;
         RawDetection[] rawDetections = new RawDetection[numDetections];
-
+    
         for (int i = 0; i < numDetections; i++) {
-            int baseIndex = i * valsPerEntry;
+            int baseIndex = i * valsPerEntry; // Starting index for this detection's data
             int classId = (int) extractArrayEntry(rawDetectionArray, baseIndex);
             double txnc = extractArrayEntry(rawDetectionArray, baseIndex + 1);
             double tync = extractArrayEntry(rawDetectionArray, baseIndex + 2);
@@ -551,14 +656,46 @@ public class LimelightHelpers {
             double corner2_Y = extractArrayEntry(rawDetectionArray, baseIndex + 9);
             double corner3_X = extractArrayEntry(rawDetectionArray, baseIndex + 10);
             double corner3_Y = extractArrayEntry(rawDetectionArray, baseIndex + 11);
+            
             rawDetections[i] = new RawDetection(classId, txnc, tync, ta, corner0_X, corner0_Y, corner1_X, corner1_Y, corner2_X, corner2_Y, corner3_X, corner3_Y);
         }
-
+    
         return rawDetections;
     }
 
-    public static Boolean validPoseEstimate(PoseEstimate pose) {
-        return pose != null && pose.rawFiducials != null && pose.rawFiducials.length != 0;
+    public static void printPoseEstimate(PoseEstimate pose) {
+        if (pose == null) {
+            System.out.println("No PoseEstimate available.");
+            return;
+        }
+    
+        System.out.printf("Pose Estimate Information:%n");
+        System.out.printf("Timestamp (Seconds): %.3f%n", pose.timestampSeconds);
+        System.out.printf("Latency: %.3f ms%n", pose.latency);
+        System.out.printf("Tag Count: %d%n", pose.tagCount);
+        System.out.printf("Tag Span: %.2f meters%n", pose.tagSpan);
+        System.out.printf("Average Tag Distance: %.2f meters%n", pose.avgTagDist);
+        System.out.printf("Average Tag Area: %.2f%% of image%n", pose.avgTagArea);
+        System.out.println();
+    
+        if (pose.rawFiducials == null || pose.rawFiducials.length == 0) {
+            System.out.println("No RawFiducials data available.");
+            return;
+        }
+    
+        System.out.println("Raw Fiducials Details:");
+        for (int i = 0; i < pose.rawFiducials.length; i++) {
+            RawFiducial fiducial = pose.rawFiducials[i];
+            System.out.printf(" Fiducial #%d:%n", i + 1);
+            System.out.printf("  ID: %d%n", fiducial.id);
+            System.out.printf("  TXNC: %.2f%n", fiducial.txnc);
+            System.out.printf("  TYNC: %.2f%n", fiducial.tync);
+            System.out.printf("  TA: %.2f%n", fiducial.ta);
+            System.out.printf("  Distance to Camera: %.2f meters%n", fiducial.distToCamera);
+            System.out.printf("  Distance to Robot: %.2f meters%n", fiducial.distToRobot);
+            System.out.printf("  Ambiguity: %.2f%n", fiducial.ambiguity);
+            System.out.println();
+        }
     }
 
     public static NetworkTable getLimelightNTTable(String tableName) {
@@ -580,7 +717,7 @@ public class LimelightHelpers {
             return table.getDoubleArrayTopic(entryName).getEntry(new double[0]);
         });
     }
-
+    
     public static double getLimelightNTDouble(String tableName, String entryName) {
         return getLimelightNTTableEntry(tableName, entryName).getDouble(0.0);
     }
@@ -597,6 +734,8 @@ public class LimelightHelpers {
         return getLimelightNTTableEntry(tableName, entryName).getDoubleArray(new double[0]);
     }
 
+
+
     public static String getLimelightNTString(String tableName, String entryName) {
         return getLimelightNTTableEntry(tableName, entryName).getString("");
     }
@@ -605,19 +744,20 @@ public class LimelightHelpers {
         return getLimelightNTTableEntry(tableName, entryName).getStringArray(new String[0]);
     }
 
+
     public static URL getLimelightURLString(String tableName, String request) {
         String urlString = "http://" + sanitizeName(tableName) + ".local:5807/" + request;
+        URL url;
         try {
-            return new URL(urlString);
+            url = new URL(urlString);
+            return url;
         } catch (MalformedURLException e) {
             System.err.println("bad LL URL");
         }
         return null;
     }
-
-    public static boolean getTV(String limelightName) {
-        return 1.0 == getLimelightNTDouble(limelightName, "tv");
-    }
+    /////
+    /////
 
     public static double getTX(String limelightName) {
         return getLimelightNTDouble(limelightName, "tx");
@@ -627,14 +767,6 @@ public class LimelightHelpers {
         return getLimelightNTDouble(limelightName, "ty");
     }
 
-    public static double getTXNC(String limelightName) {
-        return getLimelightNTDouble(limelightName, "txnc");
-    }
-
-    public static double getTYNC(String limelightName) {
-        return getLimelightNTDouble(limelightName, "tync");
-    }
-
     public static double getTA(String limelightName) {
         return getLimelightNTDouble(limelightName, "ta");
     }
@@ -642,14 +774,41 @@ public class LimelightHelpers {
     public static double[] getT2DArray(String limelightName) {
         return getLimelightNTDoubleArray(limelightName, "t2d");
     }
+    
 
     public static int getTargetCount(String limelightName) {
-        double[] t2d = getT2DArray(limelightName);
-        if (t2d.length == 17) {
-            return (int)t2d[1];
-        }
-        return 0;
+      double[] t2d = getT2DArray(limelightName);
+      if(t2d.length == 17)
+      {
+        return (int)t2d[1];
+      }
+      return 0;
     }
+
+    public static int getClassifierClassIndex (String limelightName) {
+    double[] t2d = getT2DArray(limelightName);
+      if(t2d.length == 17)
+      {
+        return (int)t2d[10];
+      }
+      return 0;
+    }
+    public static int getDetectorClassIndex (String limelightName) {
+     double[] t2d = getT2DArray(limelightName);
+      if(t2d.length == 17)
+      {
+        return (int)t2d[11];
+      }
+      return 0;
+    }
+    
+    public static String getClassifierClass (String limelightName) {
+        return getLimelightNTString(limelightName, "tcclass");
+    }
+    public static String getDetectorClass (String limelightName) {
+        return getLimelightNTString(limelightName, "tdclass");
+    }
+
 
     public static double getLatency_Pipeline(String limelightName) {
         return getLimelightNTDouble(limelightName, "tl");
@@ -669,6 +828,39 @@ public class LimelightHelpers {
 
     public static String getJSONDump(String limelightName) {
         return getLimelightNTString(limelightName, "json");
+    }
+
+    /**
+     * Switch to getBotPose
+     * 
+     * @param limelightName
+     * @return
+     */
+    @Deprecated
+    public static double[] getBotpose(String limelightName) {
+        return getLimelightNTDoubleArray(limelightName, "botpose");
+    }
+
+    /**
+     * Switch to getBotPose_wpiRed
+     * 
+     * @param limelightName
+     * @return
+     */
+    @Deprecated
+    public static double[] getBotpose_wpiRed(String limelightName) {
+        return getLimelightNTDoubleArray(limelightName, "botpose_wpired");
+    }
+
+    /**
+     * Switch to getBotPose_wpiBlue
+     * 
+     * @param limelightName
+     * @return
+     */
+    @Deprecated
+    public static double[] getBotpose_wpiBlue(String limelightName) {
+        return getLimelightNTDoubleArray(limelightName, "botpose_wpiblue");
     }
 
     public static double[] getBotPose(String limelightName) {
@@ -715,6 +907,9 @@ public class LimelightHelpers {
         return getLimelightNTStringArray(limelightName, "rawbarcodes");
     }
 
+    /////
+    /////
+
     public static Pose3d getBotPose3d(String limelightName) {
         double[] poseArray = getLimelightNTDoubleArray(limelightName, "botpose");
         return toPose3D(poseArray);
@@ -755,53 +950,109 @@ public class LimelightHelpers {
         return toPose3D(poseArray);
     }
 
+    /**
+     * Gets the Pose2d for easy use with Odometry vision pose estimator
+     * (addVisionMeasurement)
+     * 
+     * @param limelightName
+     * @return
+     */
     public static Pose2d getBotPose2d_wpiBlue(String limelightName) {
+
         double[] result = getBotPose_wpiBlue(limelightName);
         return toPose2D(result);
     }
 
+    /**
+     * Gets the Pose2d and timestamp for use with WPILib pose estimator (addVisionMeasurement) when you are on the BLUE
+     * alliance
+     * 
+     * @param limelightName
+     * @return
+     */
     public static PoseEstimate getBotPoseEstimate_wpiBlue(String limelightName) {
-        return getBotPoseEstimate(limelightName, "botpose_wpiblue", false);
+        return getBotPoseEstimate(limelightName, "botpose_wpiblue");
     }
 
+    /**
+     * Gets the Pose2d and timestamp for use with WPILib pose estimator (addVisionMeasurement) when you are on the BLUE
+     * alliance
+     * 
+     * @param limelightName
+     * @return
+     */
     public static PoseEstimate getBotPoseEstimate_wpiBlue_MegaTag2(String limelightName) {
-        return getBotPoseEstimate(limelightName, "botpose_orb_wpiblue", true);
+        return getBotPoseEstimate(limelightName, "botpose_orb_wpiblue");
     }
 
+    /**
+     * Gets the Pose2d for easy use with Odometry vision pose estimator
+     * (addVisionMeasurement)
+     * 
+     * @param limelightName
+     * @return
+     */
     public static Pose2d getBotPose2d_wpiRed(String limelightName) {
+
         double[] result = getBotPose_wpiRed(limelightName);
         return toPose2D(result);
+
     }
 
+    /**
+     * Gets the Pose2d and timestamp for use with WPILib pose estimator (addVisionMeasurement) when you are on the RED
+     * alliance
+     * @param limelightName
+     * @return
+     */
     public static PoseEstimate getBotPoseEstimate_wpiRed(String limelightName) {
-        return getBotPoseEstimate(limelightName, "botpose_wpired", false);
+        return getBotPoseEstimate(limelightName, "botpose_wpired");
     }
 
+    /**
+     * Gets the Pose2d and timestamp for use with WPILib pose estimator (addVisionMeasurement) when you are on the RED
+     * alliance
+     * @param limelightName
+     * @return
+     */
     public static PoseEstimate getBotPoseEstimate_wpiRed_MegaTag2(String limelightName) {
-        return getBotPoseEstimate(limelightName, "botpose_orb_wpired", true);
+        return getBotPoseEstimate(limelightName, "botpose_orb_wpired");
     }
 
+    /**
+     * Gets the Pose2d for easy use with Odometry vision pose estimator
+     * (addVisionMeasurement)
+     * 
+     * @param limelightName
+     * @return
+     */
     public static Pose2d getBotPose2d(String limelightName) {
+
         double[] result = getBotPose(limelightName);
         return toPose2D(result);
+
     }
 
-    public static IMUData getIMUData(String limelightName) {
-        double[] imuData = getLimelightNTDoubleArray(limelightName, "imu");
-        if (imuData == null || imuData.length < 10) {
-            return new IMUData();
-        }
-        return new IMUData(imuData);
+    public static boolean getTV(String limelightName) {
+        return 1.0 == getLimelightNTDouble(limelightName, "tv");
     }
+
+    /////
+    /////
 
     public static void setPipelineIndex(String limelightName, int pipelineIndex) {
         setLimelightNTDouble(limelightName, "pipeline", pipelineIndex);
     }
 
+    
     public static void setPriorityTagID(String limelightName, int ID) {
         setLimelightNTDouble(limelightName, "priorityid", ID);
     }
 
+    /**
+     * The LEDs will be controlled by Limelight pipeline settings, and not by robot
+     * code.
+     */
     public static void setLEDMode_PipelineControl(String limelightName) {
         setLimelightNTDouble(limelightName, "ledMode", 0);
     }
@@ -830,6 +1081,11 @@ public class LimelightHelpers {
         setLimelightNTDouble(limelightName, "stream", 2);
     }
 
+
+    /**
+     * Sets the crop window. The crop window in the UI must be completely open for
+     * dynamic cropping to work.
+     */
     public static void setCropWindow(String limelightName, double cropXMin, double cropXMax, double cropYMin, double cropYMax) {
         double[] entries = new double[4];
         entries[0] = cropXMin;
@@ -838,7 +1094,10 @@ public class LimelightHelpers {
         entries[3] = cropYMax;
         setLimelightNTDoubleArray(limelightName, "crop", entries);
     }
-
+   
+    /**
+     * Sets 3D offset point for easy 3D targeting.
+     */
     public static void setFiducial3DOffset(String limelightName, double offsetX, double offsetY, double offsetZ) {
         double[] entries = new double[3];
         entries[0] = offsetX;
@@ -847,17 +1106,6 @@ public class LimelightHelpers {
         setLimelightNTDoubleArray(limelightName, "fiducial_offset_set", entries);
     }
 
-    /**
-     * Sets robot orientation values used by MegaTag2 localization algorithm.
-     * 
-     * @param limelightName Name/identifier of the Limelight
-     * @param yaw Robot yaw in degrees. 0 = robot facing red alliance wall in FRC
-     * @param yawRate Angular velocity of robot yaw in degrees per second
-     * @param pitch Robot pitch in degrees 
-     * @param pitchRate Angular velocity of robot pitch in degrees per second
-     * @param roll Robot roll in degrees
-     * @param rollRate Angular velocity of robot roll in degrees per second
-     */
     public static void SetRobotOrientation(String limelightName, double yaw, double yawRate, 
         double pitch, double pitchRate, 
         double roll, double rollRate) {
@@ -873,6 +1121,7 @@ public class LimelightHelpers {
     private static void SetRobotOrientation_INTERNAL(String limelightName, double yaw, double yawRate, 
         double pitch, double pitchRate, 
         double roll, double rollRate, boolean flush) {
+
         double[] entries = new double[6];
         entries[0] = yaw;
         entries[1] = yawRate;
@@ -881,24 +1130,16 @@ public class LimelightHelpers {
         entries[4] = roll;
         entries[5] = rollRate;
         setLimelightNTDoubleArray(limelightName, "robot_orientation_set", entries);
-        if (flush) {
+        if(flush)
+        {
             Flush();
         }
     }
 
-    public static void SetIMUMode(String limelightName, int mode) {
-        setLimelightNTDouble(limelightName, "imumode_set", mode);
-    }
 
-    public static void SetIMUAssistAlpha(String limelightName, double alpha) {
-        setLimelightNTDouble(limelightName, "imuassistalpha_set", alpha);
-    }
+    public static void SetFidcuial3DOffset(String limelightName, double x, double y, 
+        double z) {
 
-    public static void SetThrottle(String limelightName, int throttle) {
-        setLimelightNTDouble(limelightName, "throttle_set", throttle);
-    }
-
-    public static void SetFidcuial3DOffset(String limelightName, double x, double y, double z) {
         double[] entries = new double[3];
         entries[0] = x;
         entries[1] = y;
@@ -914,16 +1155,32 @@ public class LimelightHelpers {
         setLimelightNTDoubleArray(limelightName, "fiducial_id_filters_set", validIDsDouble);
     }
 
-    public static void SetFiducialDownscalingOverride(String limelightName, float downscale) {
-        int d = 0;
-        if (downscale == 1.0) d = 1;
-        if (downscale == 1.5) d = 2;
-        if (downscale == 2) d = 3;
-        if (downscale == 3) d = 4;
-        if (downscale == 4) d = 5;
+    public static void SetFiducialDownscalingOverride(String limelightName, float downscale) 
+    {
+        int d = 0; // pipeline
+        if (downscale == 1.0)
+        {
+            d = 1;
+        }
+        if (downscale == 1.5)
+        {
+            d = 2;
+        }
+        if (downscale == 2)
+        {
+            d = 3;
+        }
+        if (downscale == 3)
+        {
+            d = 4;
+        }
+        if (downscale == 4)
+        {
+            d = 5;
+        }
         setLimelightNTDouble(limelightName, "fiducial_downscale_set", d);
     }
-
+    
     public static void setCameraPose_RobotSpace(String limelightName, double forward, double side, double up, double roll, double pitch, double yaw) {
         double[] entries = new double[6];
         entries[0] = forward;
@@ -935,6 +1192,9 @@ public class LimelightHelpers {
         setLimelightNTDoubleArray(limelightName, "camerapose_robotspace_set", entries);
     }
 
+    /////
+    /////
+
     public static void setPythonScriptData(String limelightName, double[] outgoingPythonData) {
         setLimelightNTDoubleArray(limelightName, "llrobot", outgoingPythonData);
     }
@@ -943,6 +1203,12 @@ public class LimelightHelpers {
         return getLimelightNTDoubleArray(limelightName, "llpython");
     }
 
+    /////
+    /////
+
+    /**
+     * Asynchronously take snapshot.
+     */
     public static CompletableFuture<Boolean> takeSnapshot(String tableName, String snapshotName) {
         return CompletableFuture.supplyAsync(() -> {
             return SYNCH_TAKESNAPSHOT(tableName, snapshotName);
@@ -954,9 +1220,10 @@ public class LimelightHelpers {
         try {
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-            if (snapshotName != null && !"".equals(snapshotName)) {
+            if (snapshotName != null && snapshotName != "") {
                 connection.setRequestProperty("snapname", snapshotName);
             }
+
             int responseCode = connection.getResponseCode();
             if (responseCode == 200) {
                 return true;
@@ -969,7 +1236,11 @@ public class LimelightHelpers {
         return false;
     }
 
+    /**
+     * Parses Limelight's JSON results dump into a LimelightResults Object
+     */
     public static LimelightResults getLatestResults(String limelightName) {
+
         long start = System.nanoTime();
         LimelightHelpers.LimelightResults results = new LimelightHelpers.LimelightResults();
         if (mapper == null) {
