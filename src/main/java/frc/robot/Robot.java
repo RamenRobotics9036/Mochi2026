@@ -4,27 +4,32 @@
 
 package frc.robot;
 
+import java.util.Optional;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.sim.ShowVisionOnField;
 import frc.robot.subsystems.auto.AutoLogic;
 
 /**
  * The main robot class that controls the flow of the 2026 FRC robot code.
- * 
- * <p>This class manages the lifecycle of the robot (Initialization, Autonomous, 
+ *
+ * <p>This class manages the lifecycle of the robot (Initialization, Autonomous,
  * Teleop, and Test modes) and coordinates with the CommandScheduler to run commands.
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
+  private ShowVisionOnField m_showVisionOnField;
 
   private final RobotContainer m_robotContainer;
 
   /**
-   * Initializes the RobotContainer, which sets up all subsystem hardware, 
+   * Initializes the RobotContainer, which sets up all subsystem hardware,
    * button bindings, and default commands.
    */
   public Robot() {
@@ -52,6 +57,22 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    // $TODO - Wrapper for sim features
+    if (Robot.isSimulation() && m_robotContainer.m_simWrapper != null) {
+        // NOTE: We run the vision period FIRST in robotPeriodic, since it updates
+        // NetworkTables with the limelight data, in-case any code in this loop
+        // needs that info and doesnt want it delayed 20ms.
+        m_robotContainer.m_simWrapper.robotPeriodic();
+    }
+
+    m_robotContainer.m_limelightOdometry.periodic();
+
+    if (Robot.isSimulation() && m_showVisionOnField != null) {
+        Optional<Pose2d> showVisPose = m_robotContainer.m_limelightOdometry.getLatestVisPose();
+        m_showVisionOnField.showPointInTimeVisionEstimate(
+            ShowVisionOnField.FieldType.SIMULATION_FIELD, showVisPose);
+    }
+
     CommandScheduler.getInstance().run();
   }
 
@@ -122,9 +143,14 @@ public class Robot extends TimedRobot {
   public void testExit() {}
 
   /**
-   * Optional simulation periodic loop. 
+   * Optional simulation periodic loop.
    * This is where physics engine updates would be called if running on a PC.
    */
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    // $TODO - Wrapper for sim features
+    if (m_robotContainer.m_simWrapper != null) {
+        m_robotContainer.m_simWrapper.simulationPeriodic();
+    }
+  }
 }

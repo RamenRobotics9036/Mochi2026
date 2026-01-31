@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
+import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
@@ -129,11 +130,29 @@ public class RobotContainer {
     private void configureBindings() {
         // Set the default command for the drivetrain to follow joystick inputs continuously
         drivetrain.setDefaultCommand(
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(getDriveX())
-                     .withVelocityY(getDriveY())
-                     .withRotationalRate(getDriveRotate())
-            )
+            drivetrain.applyRequest(() -> {
+                double leftX = getDriveX();
+                double leftY = getDriveY();
+                double rightX = getDriveRotate();
+
+                // $TODO - Wrapper for sim features
+                if (Robot.isSimulation()) {
+                    JoystickInputsRecord newJoystickInputs =
+
+                        SimWrapper.transformJoystickOrientation(
+                        drivetrain.getOperatorForwardDirection().getDegrees(),
+                        leftX,
+                        leftY,
+                        rightX);
+                    leftX = newJoystickInputs.driveX();
+                    leftY = newJoystickInputs.driveY();
+                    rightX = newJoystickInputs.rotatetX();
+                }
+
+                return drive.withVelocityX(leftX)
+                     .withVelocityY(leftY)
+                     .withRotationalRate(rightX);
+            })
         );
 
         // Keep the drivetrain in an Idle state while the robot is disabled
@@ -158,6 +177,18 @@ public class RobotContainer {
 
         // Recalibrate the gyro's forward heading using the Left Bumper
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+
+        // $TODO - POV buttons for sim
+        if (Robot.isSimulation()) {
+            // In simulation, inject drift with POV right to test vision correction
+            joystick.povRight()
+                .onTrue(drivetrain.runOnce(() -> m_simWrapper.injectDrift(0.5, 15.0)));
+
+            // POV left resets robot to the starting pose of the selected auto
+            joystick.povLeft().onTrue(
+                drivetrain
+                    .runOnce(() -> m_simWrapper.cycleResetPosition(new Pose2d())));
+        }
 
         // Hook up the telemetry logger to the drivetrain periodic updates
         drivetrain.registerTelemetry(logger::telemeterize);

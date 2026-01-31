@@ -29,13 +29,14 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.visutils.VisionInjectFilter;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
-    private static final double kSimLoopPeriod = 0.005; // 5 ms
+    private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
@@ -48,6 +49,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
+
+    /** Filter for ignoring stale vision measurements around pose resets. */
+    // $TODO - Inject Filter
+    private final VisionInjectFilter m_visionFilter = new VisionInjectFilter();
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -297,6 +302,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     /**
+     * Resets the pose of the robot. Also updates the reset timestamp to filter
+     * stale vision measurements captured before this reset.
+     *
+     * @param pose The pose to reset to
+     */
+    // $TODO - Clean reset
+    @Override
+    public void resetPose(Pose2d pose) {
+        m_visionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
+        super.resetPose(pose);
+    }
+
+    /**
      * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
      * while still accounting for measurement noise.
      *
@@ -327,6 +345,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
+        // $TODO - Inject Filter
+        if (m_visionFilter.shouldIgnore(
+            visionRobotPoseMeters,
+            getState().Pose,
+            timestampSeconds)) {
+
+            return;
+        }
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
     }
 }
