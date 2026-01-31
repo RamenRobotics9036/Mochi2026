@@ -84,7 +84,14 @@ public class RobotContainer {
             m_simWrapper = null;
         }
 
-        m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
+        // For now, we do vision odemetry only in simulation.  Eventually, this will
+        // be replaced by our real Vision Subsystem.
+        if (Robot.isSimulation()) {
+            m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
+        }
+        else {
+            m_limelightOdometry = null;
+        }
     }
 
     /**
