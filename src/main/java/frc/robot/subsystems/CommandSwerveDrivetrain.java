@@ -29,6 +29,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.LimelightHelpers;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -278,6 +279,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 );
                 m_hasAppliedOperatorPerspective = true;
             });
+        }
+
+        LimelightHelpers.PoseEstimate pose = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+        if (pose != null && pose.tagCount > 0) {
+            System.out.printf("Pose: X=%.2f Y=%.2f Rot=%.2f | Tags: %d | Latency: %.2fms%n",
+                pose.pose.getX(),
+                pose.pose.getY(),
+                pose.pose.getRotation().getDegrees(),
+                pose.tagCount,
+                pose.latency);
         }
     }
 
