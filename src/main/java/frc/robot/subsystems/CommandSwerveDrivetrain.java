@@ -51,7 +51,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private boolean m_hasAppliedOperatorPerspective = false;
 
     /** Filter for ignoring stale vision measurements around pose resets. */
-    // $TODO - Inject Filter
+    // $VISIONSIM - Inject Filter
     private final VisionInjectFilter m_visionFilter;
 
     /* Swerve requests to apply during SysId characterization */
@@ -174,7 +174,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
-        // $TODO - Inject Filter
+        // $VISIONSIM - Inject Filter
         if (Robot.isSimulation()) {
             m_visionFilter = new VisionInjectFilter();
         }
@@ -208,6 +208,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        // $VISIONSIM - Inject Filter
+        if (Robot.isSimulation()) {
+            m_visionFilter = new VisionInjectFilter();
+        }
+        else {
+            m_visionFilter = null;
+        }
     }
 
     /**
@@ -239,6 +247,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         super(drivetrainConstants, odometryUpdateFrequency, odometryStandardDeviation, visionStandardDeviation, modules);
         if (Utils.isSimulation()) {
             startSimThread();
+        }
+
+        // $VISIONSIM - Inject Filter
+        if (Robot.isSimulation()) {
+            m_visionFilter = new VisionInjectFilter();
+        }
+        else {
+            m_visionFilter = null;
         }
     }
 
@@ -316,10 +332,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      *
      * @param pose The pose to reset to
      */
-    // $TODO - Clean reset
+    // $VISIONSIM - Clean reset
     @Override
     public void resetPose(Pose2d pose) {
-        // $TODO - Inject Filter
+        // $VISIONSIM - Inject Filter
         if (Robot.isSimulation() && m_visionFilter != null) {
             m_visionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
         }
@@ -357,7 +373,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
-        // $TODO - Inject Filter
+        // $VISIONSIM - Inject Filter
         if (Robot.isSimulation() && m_visionFilter != null) {
             if (m_visionFilter.shouldIgnore(
                 visionRobotPoseMeters,

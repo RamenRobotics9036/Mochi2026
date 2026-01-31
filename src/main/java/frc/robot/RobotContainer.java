@@ -74,7 +74,7 @@ public class RobotContainer {
         AutoLogic.initShuffleboard(drivetrain);
         configureBindings();
 
-        // $TODO - Wrapper for sim features
+        // $VISIONSIM - Wrapper for sim features
         if (Robot.isSimulation()) {
             m_simWrapper = new SimWrapper(
                 drivetrain,
@@ -142,7 +142,7 @@ public class RobotContainer {
                 double leftY = getDriveY();
                 double rightX = getDriveRotate();
 
-                // $TODO - Wrapper for sim features
+                // $VISIONSIM - Wrapper for sim features
                 if (Robot.isSimulation()) {
                     JoystickInputsRecord newJoystickInputs =
 
@@ -185,7 +185,7 @@ public class RobotContainer {
         // Recalibrate the gyro's forward heading using the Left Bumper
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
-        // $TODO - POV buttons for sim
+        // $VISIONSIM - POV buttons for sim
         if (Robot.isSimulation()) {
             // In simulation, inject drift with POV right to test vision correction
             joystick.povRight()
@@ -237,7 +237,7 @@ public class RobotContainer {
 
         drivetrain.resetPose(pose);
 
-        // $TODO - Clean reset
+        // $VISIONSIM - Clean reset
         if (Robot.isSimulation()) {
             m_simWrapper.resetSimPose(pose);
         }
