@@ -144,8 +144,8 @@ public class RobotContainer {
                         leftX,
                         leftY,
                         rightX);
-                    leftX = newJoystickInputs.driveX();
-                    leftY = newJoystickInputs.driveY();
+                    leftX = -newJoystickInputs.driveX();
+                    leftY =- newJoystickInputs.driveY();
                     rightX = newJoystickInputs.rotatetX();
                 }
 

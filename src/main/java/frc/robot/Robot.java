@@ -34,6 +34,12 @@ public class Robot extends TimedRobot {
    */
   public Robot() {
     m_robotContainer = new RobotContainer();
+
+      // $TODO - Wrapper for sim features
+    if (Robot.isSimulation() && m_robotContainer.m_simWrapper != null) {
+        m_showVisionOnField = new ShowVisionOnField(
+            null, m_robotContainer.m_simWrapper.getSimDebugField());
+    }
   }
 
   /**
