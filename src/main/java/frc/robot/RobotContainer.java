@@ -35,6 +35,9 @@ public class RobotContainer {
     /** Maximum angular velocity of the robot in radians per second. */
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond);
 
+    /** Maximum linear velocity of the robot DURING TELEOP in meters per second. */
+    private double TeleoperatedSpeed = Math.max(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond), MaxSpeed);
+
     /** Standard field-centric swerve request. Uses Velocity control for smoother movement. */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(0.0001)
@@ -73,7 +76,7 @@ public class RobotContainer {
         double input = MathUtil.applyDeadband(-joystick.getLeftY(), 0.1);
         // Reduce speed by 50% if the Right Bumper is held for fine positioning
         double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
-        return input * MaxSpeed * inputScale;
+        return input * TeleoperatedSpeed * inputScale;
     }
 
     /**
@@ -85,7 +88,7 @@ public class RobotContainer {
         // Joystick +X is right, Robot +Y is left (standard FieldCentric convention)
         double input = MathUtil.applyDeadband(-joystick.getLeftX(), 0.1);
         double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
-        return input * MaxSpeed * inputScale;
+        return input * TeleoperatedSpeed * inputScale;
     }
 
     /**
