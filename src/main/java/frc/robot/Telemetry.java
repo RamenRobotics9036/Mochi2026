@@ -1,6 +1,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -22,14 +23,17 @@ import edu.wpi.first.wpilibj.util.Color8Bit;
 
 public class Telemetry {
     private final double MaxSpeed;
+    private final Pigeon2 m_pigeon;
 
     /**
      * Construct a telemetry object, with the specified max speed of the robot
-     * 
+     *
      * @param maxSpeed Maximum speed in meters per second
+     * @param pigeon   The Pigeon2 gyro to read raw yaw from
      */
-    public Telemetry(double maxSpeed) {
+    public Telemetry(double maxSpeed, Pigeon2 pigeon) {
         MaxSpeed = maxSpeed;
+        m_pigeon = pigeon;
         SignalLogger.start();
 
         /* Set up the module state Mechanism2d telemetry */
@@ -50,6 +54,10 @@ public class Telemetry {
     private final StructArrayPublisher<SwerveModulePosition> driveModulePositions = driveStateTable.getStructArrayTopic("ModulePositions", SwerveModulePosition.struct).publish();
     private final DoublePublisher driveTimestamp = driveStateTable.getDoubleTopic("Timestamp").publish();
     private final DoublePublisher driveOdometryFrequency = driveStateTable.getDoubleTopic("OdometryFrequency").publish();
+
+    /* Gyro state and robot heading*/
+    private final DoublePublisher driveHeadingDegrees = driveStateTable.getDoubleTopic("HeadingDegrees").publish();
+    private final DoublePublisher gyroYawDegrees = driveStateTable.getDoubleTopic("GyroYawDegrees").publish();
 
     /* Robot pose for field positioning */
     private final NetworkTable table = inst.getTable("Pose");
@@ -96,6 +104,10 @@ public class Telemetry {
         driveModulePositions.set(state.ModulePositions);
         driveTimestamp.set(state.Timestamp);
         driveOdometryFrequency.set(1.0 / state.OdometryPeriod);
+
+        /* Gyro and robot heading */
+        driveHeadingDegrees.set(state.Pose.getRotation().getDegrees());
+        gyroYawDegrees.set(m_pigeon.getYaw().getValueAsDouble());
 
         /* Also write to log file */
         m_poseArray[0] = state.Pose.getX();
