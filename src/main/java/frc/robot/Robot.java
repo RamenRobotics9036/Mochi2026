@@ -84,6 +84,12 @@ public class Robot extends TimedRobot {
     }
 
     CommandScheduler.getInstance().run();
+
+    // We update logging after CommandScheduler.run(), so that any commands that
+    // changed drivetrain state are reflected in the telemetry.
+    if (m_robotContainer.basicInfoDashboard != null) {
+        m_robotContainer.basicInfoDashboard.update();
+    }
   }
 
   @Override

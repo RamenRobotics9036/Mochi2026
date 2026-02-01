@@ -2,6 +2,7 @@ package frc.robot.subsystems.auto;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.trajectory.PathPlannerTrajectory;
@@ -27,7 +28,7 @@ import java.util.List;
 
 /**
  * Static utility class that manages autonomous selection and execution logic.
- * 
+ *
  * <p>This class handles the interface between PathPlanner, the Shuffleboard dashboard,
  * and the physical drivetrain to provide a centralized way to choose and run 2026 auto routines.
  */
@@ -36,7 +37,7 @@ public final class  AutoLogic {
 
     /** The UI element for selecting autonomous routines on the dashboard. */
     public static final SendableChooser<String> autoPicker = new SendableChooser<>();
-    
+
     /** The Shuffleboard tab dedicated to autonomous settings and feedback. */
     private static final ShuffleboardTab tab = Shuffleboard.getTab("Autos");
 
@@ -50,7 +51,7 @@ public final class  AutoLogic {
         throw new UnsupportedOperationException("Static utility class!");
     }
 
-    /** 
+    /**
      * Registers PathPlanner configurations and warms up commands to prevent lag during the match.
      */
     public static void registerCommands() {
@@ -61,9 +62,9 @@ public final class  AutoLogic {
         }
     }
 
-    /** 
+    /**
      * Initializes the Shuffleboard tab with the auto chooser and active status.
-     * 
+     *
      * @param drivetrain The drivetrain instance required for manual auto routines.
      */
     public static void initShuffleboard(CommandSwerveDrivetrain drivetrain) {
@@ -84,16 +85,16 @@ public final class  AutoLogic {
     private static void addAutoOptions() {
         // Manual Autos
         autoPicker.addOption("Manual: Drive 2m Forward", K_MANUAL_DRIVE_NAME);
-        
+
         // Pathplanner Autos
         autoPicker.setDefaultOption("Center Auto", "Center Auto");
         autoPicker.addOption("Scale test", "Scale test");
-        autoPicker.addOption("Diagonal path", "Diagonal path");   
+        autoPicker.addOption("Diagonal path", "Diagonal path");
     }
 
     /**
      * Factory method that returns the Command corresponding to the provided string name.
-     * 
+     *
      * @param autoName The name of the routine as defined in PathPlanner or local constants.
      * @return A command ready to be scheduled; {@link Commands#none()} if name is null or invalid.
      */
@@ -116,7 +117,7 @@ public final class  AutoLogic {
 
     /**
      * Wraps the selected auto command with haptic feedback upon completion.
-     * 
+     *
      * @param controller The Xbox controller to vibrate when auto finishes.
      * @return The sequence including the auto routine and a 0.5s rumble.
      */
@@ -140,7 +141,7 @@ public final class  AutoLogic {
         return getAutoCommand(getSelectedName());
     }
 
-    /** 
+    /**
      * Generates a trajectory profile for the selected auto for use in field visualization.
      */
     public static AutoTrajectoryProfile getSelectedAutoProfile() {
@@ -148,25 +149,37 @@ public final class  AutoLogic {
         if (autoName == null || autoName.equals(K_MANUAL_DRIVE_NAME)) return null;
 
         try {
-            PathPlannerPath path = PathPlannerPath.fromPathFile(autoName);
-            return new AutoTrajectoryProfile(List.of(path));
+            List<PathPlannerPath> paths = PathPlannerAuto.getPathGroupFromAutoFile(autoName);
+            return new AutoTrajectoryProfile(paths);
         } catch (Exception e) {
             return null;
         }
     }
+
+    /**
+     * Returns the starting pose for the selected autonomous routine, OR default Pose2d().
+     */
+    public static Pose2d getSelectedAutoStartingPose() {
+        AutoTrajectoryProfile profile = getSelectedAutoProfile();
+        if (profile != null) {
+            return profile.getStartingPose();
+        } else {
+            return Pose2d.kZero;
+        }
+    }
 }
 
-/** 
+/**
  * Helper class to calculate trajectory timing and starting positions.
  * Used primarily for dashboard visualization and pre-match planning.
  */
 class AutoTrajectoryProfile {
     /** The coordinate where the robot expects to be placed on the field. */
     private final Pose2d startingPose;
-    
+
     /** List of individual path segments that make up the routine. */
     private final List<PathPlannerTrajectory> trajectories;
-    
+
     /** Total predicted time in seconds to complete the autonomous routine. */
     private final double autoDuration;
 
@@ -184,7 +197,7 @@ class AutoTrajectoryProfile {
                 RobotConfig config = RobotConfig.fromGUISettings();
                 ChassisSpeeds speeds = new ChassisSpeeds();
                 Rotation2d rotation = initialPose.getRotation();
-                // Build each trajectory segment sequentially   
+                // Build each trajectory segment sequentially
                 for (PathPlannerPath path : paths) {
                     if (path != null) {
                         PathPlannerTrajectory traj = new PathPlannerTrajectory(path, speeds, rotation, config);
@@ -206,10 +219,10 @@ class AutoTrajectoryProfile {
 
     /** @return The initial pose required for this auto routine. */
     public Pose2d getStartingPose() { return startingPose; }
-    
+
     /** @return The list of generated trajectories for simulation. */
     public List<PathPlannerTrajectory> getTrajectories() { return trajectories; }
-    
+
     /** @return Total time in seconds the routine will take to execute. */
     public double getRunTimeSeconds() { return autoDuration; }
 }
