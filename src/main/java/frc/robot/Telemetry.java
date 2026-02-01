@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
@@ -15,6 +16,8 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -55,10 +58,17 @@ public class Telemetry {
     private final DoublePublisher driveTimestamp = driveStateTable.getDoubleTopic("Timestamp").publish();
     private final DoublePublisher driveOdometryFrequency = driveStateTable.getDoubleTopic("OdometryFrequency").publish();
 
-    /* Gyro state and robot heading*/
+    /* Gyro state and robot heading */
     private final NetworkTable basicInfoTable = inst.getTable("BasicInfo");
     private final DoublePublisher driveHeadingDegrees = basicInfoTable.getDoubleTopic("HeadingDegrees").publish();
     private final DoublePublisher gyroYawDegrees = basicInfoTable.getDoubleTopic("GyroYawDegrees").publish();
+
+    /* Other basic info */
+    private final StringPublisher AllianceWithBlueFallback = basicInfoTable.getStringTopic("AllianceWithBlueFallback").publish();
+    private final StringPublisher AllianceNT = basicInfoTable.getStringTopic("AllianceNT").publish();
+    private final BooleanPublisher IsDSAttached = basicInfoTable.getBooleanTopic("IsDSAttached").publish();
+    private final BooleanPublisher IsFMSAttached = basicInfoTable.getBooleanTopic("IsFMSAttached").publish();
+    private final DoublePublisher OperatorForwardDirectionDegrees = basicInfoTable.getDoubleTopic("OperatorForwardDirectionDegrees").publish();
 
     /* Robot pose for field positioning */
     private final NetworkTable table = inst.getTable("Pose");
@@ -95,6 +105,10 @@ public class Telemetry {
     private final double[] m_moduleStatesArray = new double[8];
     private final double[] m_moduleTargetsArray = new double[8];
 
+    private boolean isRedAlliance() {
+        return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
+    }
+
     /** Accept the swerve drive state and telemeterize it to SmartDashboard and SignalLogger. */
     public void telemeterize(SwerveDriveState state) {
         /* Telemeterize the swerve drive state */
@@ -109,6 +123,12 @@ public class Telemetry {
         /* Gyro and robot heading */
         driveHeadingDegrees.set(state.Pose.getRotation().getDegrees());
         gyroYawDegrees.set(m_pigeon.getYaw().getValueAsDouble());
+
+        /* Publish other basic info */
+        AllianceWithBlueFallback.set(isRedAlliance() ? "Red" : "Blue");
+        AllianceNT.set(DriverStation.getAlliance().map(Object::toString).orElse("UNKNOWN"));
+        IsDSAttached.set(DriverStation.isDSAttached());
+        IsFMSAttached.set(DriverStation.isFMSAttached());
 
         /* Also write to log file */
         m_poseArray[0] = state.Pose.getX();
@@ -125,6 +145,7 @@ public class Telemetry {
         SignalLogger.writeDoubleArray("DriveState/ModuleStates", m_moduleStatesArray);
         SignalLogger.writeDoubleArray("DriveState/ModuleTargets", m_moduleTargetsArray);
         SignalLogger.writeDouble("DriveState/OdometryPeriod", state.OdometryPeriod, "seconds");
+        // $TODO - drivetrain.getOperatorForwardDirection().getDegrees()
 
         /* Telemeterize the pose to a Field2d */
         fieldTypePub.set("Field2d");
