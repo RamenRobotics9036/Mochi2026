@@ -56,8 +56,9 @@ public class Telemetry {
     private final DoublePublisher driveOdometryFrequency = driveStateTable.getDoubleTopic("OdometryFrequency").publish();
 
     /* Gyro state and robot heading*/
-    private final DoublePublisher driveHeadingDegrees = driveStateTable.getDoubleTopic("HeadingDegrees").publish();
-    private final DoublePublisher gyroYawDegrees = driveStateTable.getDoubleTopic("GyroYawDegrees").publish();
+    private final NetworkTable basicInfoTable = inst.getTable("BasicInfo");
+    private final DoublePublisher driveHeadingDegrees = basicInfoTable.getDoubleTopic("HeadingDegrees").publish();
+    private final DoublePublisher gyroYawDegrees = basicInfoTable.getDoubleTopic("GyroYawDegrees").publish();
 
     /* Robot pose for field positioning */
     private final NetworkTable table = inst.getTable("Pose");

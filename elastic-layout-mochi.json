@@ -250,6 +250,56 @@
           }
         ]
       }
+    },
+    {
+      "name": "Calibration",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Robot Heading",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Radial Gauge",
+            "properties": {
+              "topic": "/BasicInfo/HeadingDegrees",
+              "period": 0.06,
+              "data_type": "double",
+              "start_angle": 180.0,
+              "end_angle": -180.0,
+              "min_value": -180.0,
+              "max_value": 180.0,
+              "number_of_labels": 4,
+              "wrap_value": true,
+              "show_pointer": true,
+              "show_ticks": false
+            }
+          },
+          {
+            "title": "Gyro",
+            "x": 256.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Radial Gauge",
+            "properties": {
+              "topic": "/BasicInfo/GyroYawDegrees",
+              "period": 0.06,
+              "data_type": "double",
+              "start_angle": 180.0,
+              "end_angle": -180.0,
+              "min_value": -180.0,
+              "max_value": 180.0,
+              "number_of_labels": 4,
+              "wrap_value": true,
+              "show_pointer": true,
+              "show_ticks": false
+            }
+          }
+        ]
+      }
     }
   ]
 }
