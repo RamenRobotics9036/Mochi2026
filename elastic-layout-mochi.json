@@ -15,86 +15,16 @@
         "layouts": [],
         "containers": [
           {
-            "title": "readyToScore?",
+            "title": "Auto Selector",
             "x": 0.0,
             "y": 0.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/Shuffleboard/Autos/readyToScore?",
-              "period": 0.06,
-              "data_type": "boolean",
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "Starting Position",
-            "x": 512.0,
-            "y": 0.0,
-            "width": 256.0,
+            "width": 384.0,
             "height": 128.0,
             "type": "ComboBox Chooser",
             "properties": {
-              "topic": "/Shuffleboard/Autos/Starting Position",
+              "topic": "/Shuffleboard/Autos/Auto Selector",
               "period": 0.06,
               "sort_options": false
-            }
-          },
-          {
-            "title": "Launch Type",
-            "x": 512.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "ComboBox Chooser",
-            "properties": {
-              "topic": "/Shuffleboard/Autos/Launch Type",
-              "period": 0.06,
-              "sort_options": false
-            }
-          },
-          {
-            "title": "Game Objects",
-            "x": 640.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "ComboBox Chooser",
-            "properties": {
-              "topic": "/Shuffleboard/Autos/Game Objects",
-              "period": 0.06,
-              "sort_options": false
-            }
-          },
-          {
-            "title": "Available Auto Variants",
-            "x": 512.0,
-            "y": 256.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "ComboBox Chooser",
-            "properties": {
-              "topic": "/Shuffleboard/Autos/Available Auto Variants",
-              "period": 0.06,
-              "sort_options": false
-            }
-          },
-          {
-            "title": "Auto Delay",
-            "x": 512.0,
-            "y": 384.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/Shuffleboard/Autos/Auto Delay",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
             }
           }
         ]
@@ -196,37 +126,6 @@
       "grid_layout": {
         "layouts": [],
         "containers": [
-          {
-            "title": "Auto display speed",
-            "x": 1280.0,
-            "y": 640.0,
-            "width": 384.0,
-            "height": 128.0,
-            "type": "Number Slider",
-            "properties": {
-              "topic": "/Shuffleboard/Field/Auto display speed",
-              "period": 0.06,
-              "data_type": "double",
-              "min_value": -1.0,
-              "max_value": 1.0,
-              "divisions": 5,
-              "update_continuously": false
-            }
-          },
-          {
-            "title": "Est. Time (s)",
-            "x": 1280.0,
-            "y": 512.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/Shuffleboard/Field/Est. Time (s)",
-              "period": 0.06,
-              "data_type": "double",
-              "show_submit_button": false
-            }
-          },
           {
             "title": "Selected auto",
             "x": 0.0,
