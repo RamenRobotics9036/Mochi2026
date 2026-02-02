@@ -196,7 +196,7 @@ public class RobotContainer {
             // POV left resets robot to the starting pose of the selected auto
             joystick.povLeft().onTrue(
                 drivetrain
-                    .runOnce(() -> m_simWrapper.cycleResetPosition(new Pose2d())));
+                    .runOnce(() -> m_simWrapper.cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
         }
 
         // Hook up the telemetry logger to the drivetrain periodic updates
