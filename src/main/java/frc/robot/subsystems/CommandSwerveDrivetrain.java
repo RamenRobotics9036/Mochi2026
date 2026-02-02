@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.visutils.VisionInjectFilter;
+import frc.robot.LimelightHelpers;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -74,38 +75,38 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             this
         )
     );
-    /**
-     * Integrates PathPlanner's AutoBuilder with the CTRE Swerve API.
-     * Configures pose suppliers, reset consumers, and PID constants for path following.
-     */
-    private void configureAutoBuilder() {
-        try {
-            var config = RobotConfig.fromGUISettings();
-            AutoBuilder.configure(
-                () -> getState().Pose,   // Current pose supplier
-                this::resetPose,         // Pose reset consumer
-                () -> getState().Speeds, // Current chassis speeds supplier
-                // Consumer of ChassisSpeeds and feedforwards to drive the robot
-                (speeds, feedforwards) -> setControl(
-                    m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
-                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
-                ),
-                new PPHolonomicDriveController(
-                    // PID constants for translation
-                    new PIDConstants(10, 0, 0),
-                    // PID constants for rotation
-                    new PIDConstants(7, 0, 0)
-                ),
-                config,
-                // Assume the path needs to be flipped for Red vs Blue, this is normally the case
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                this // Subsystem for requirements
-            );
-        } catch (Exception ex) {
-            DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
-        }
-    }
+     /**
+      * Integrates PathPlanner's AutoBuilder with the CTRE Swerve API.
+      * Configures pose suppliers, reset consumers, and PID constants for path following.
+      */
+     private void configureAutoBuilder() {
+         try {
+             var config = RobotConfig.fromGUISettings();
+             AutoBuilder.configure(
+                 () -> getState().Pose,   // Current pose supplier
+                 this::resetPose,         // Pose reset consumer
+                 () -> getState().Speeds, // Current chassis speeds supplier
+                 // Consumer of ChassisSpeeds and feedforwards to drive the robot
+                 (speeds, feedforwards) -> setControl(
+                     m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
+                         .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                         .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+                 ),
+                 new PPHolonomicDriveController(
+                     // PID constants for translation
+                     new PIDConstants(10, 0, 0),
+                     // PID constants for rotation
+                     new PIDConstants(7, 0, 0)
+                 ),
+                 config,
+                 // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+                 this // Subsystem for requirements
+             );
+         } catch (Exception ex) {
+             DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
+         }
+     }
 
     /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
     private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
