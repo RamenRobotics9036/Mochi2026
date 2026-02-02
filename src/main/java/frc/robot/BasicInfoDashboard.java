@@ -18,8 +18,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 public class BasicInfoDashboard {
     private final Pigeon2 m_pigeon;
     private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_drivetrain;
-    private boolean m_lastPeriodicWasEnabled = false;
-    private String m_lastAllianceString = "Robot disabled";
 
     private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
 
@@ -34,6 +32,7 @@ public class BasicInfoDashboard {
     private final BooleanPublisher IsDSAttached = m_basicInfoTable.getBooleanTopic("IsDSAttached").publish();
     private final BooleanPublisher IsFMSAttached = m_basicInfoTable.getBooleanTopic("IsFMSAttached").publish();
     private final StringPublisher OperatorForwardDirectionDegrees = m_basicInfoTable.getStringTopic("OperatorForwardDirectionDegrees").publish();
+    private final StringPublisher DebugCalculatedForwardDirection = m_basicInfoTable.getStringTopic("DebugCalculatedForwardDirection").publish();
 
 
     /**
@@ -50,9 +49,17 @@ public class BasicInfoDashboard {
         return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
     }
 
-    private String getAllianceWhenEnabled() {
-        double forwardDegrees = m_drivetrain.getOperatorForwardDirection().getDegrees();
-        return String.format("%.1f", forwardDegrees);
+    /* This is not the forward direction as seen by the drivetrain.  Instead, this is what
+       its supposed to be, based on the alliance color.  The CommandSwerveDrivetrain has
+       some funny logic in how it calculates it, so we display the correct value
+       in Dashboard for easier debugging.
+    */
+    private String getDebugCalculatedForwardString() {
+        if (isRedAlliance()) {
+            return "WEST";
+        } else {
+            return "EAST";
+        }
     }
 
     /** Called after each Robot Periodic. */
@@ -75,7 +82,6 @@ public class BasicInfoDashboard {
         String screenDirection = (Math.abs(forwardDegrees) < 90) ? "EAST" : "WEST";
         OperatorForwardDirectionDegrees.set(screenDirection);
 
-        // Update whether last periodic was enabled
-        m_lastPeriodicWasEnabled = DriverStation.isEnabled();
+        DebugCalculatedForwardDirection.set(getDebugCalculatedForwardString());
     }
 }

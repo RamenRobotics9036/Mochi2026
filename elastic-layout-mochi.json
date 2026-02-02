@@ -361,14 +361,28 @@
             }
           },
           {
-            "title": "OperatorForwardDirectionDegrees",
+            "title": "Drivetrain Forward",
             "x": 0.0,
             "y": 256.0,
-            "width": 512.0,
+            "width": 256.0,
             "height": 128.0,
             "type": "Text Display",
             "properties": {
               "topic": "/BasicInfo/OperatorForwardDirectionDegrees",
+              "period": 0.06,
+              "data_type": "string",
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "DebugCalculatedForwardDirection",
+            "x": 256.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/BasicInfo/DebugCalculatedForwardDirection",
               "period": 0.06,
               "data_type": "string",
               "show_submit_button": false
