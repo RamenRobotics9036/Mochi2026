@@ -4,15 +4,21 @@
 
 package frc.robot.subsystems;
 
+import java.util.function.Supplier;
+
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
+import frc.robot.commands.VisionDefaultCommand;
 
 /**
  * Subsystem for managing dual Limelight cameras with multi-pipeline processing.
@@ -223,6 +229,10 @@ public class VisionSubsystem extends SubsystemBase {
         
         // Command Limelight to switch to the appropriate pipeline
         LimelightHelpers.setPipelineIndex(VisionConstants.kTurretCameraName, pipelineIndex);
+    }
+
+    public boolean isTagVisible() {
+        return LimelightHelpers.getTV(getName());
     }
 
     /** @return The current vision mode for the turret camera. */
