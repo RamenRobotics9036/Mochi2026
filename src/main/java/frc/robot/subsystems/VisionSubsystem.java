@@ -153,7 +153,11 @@ public class VisionSubsystem extends SubsystemBase {
             m_hasValidPose = isValid;
 
             // If valid, add the vision measurement to the drivetrain's pose estimator
-            if (isValid) {
+            // (Skip updates when spinning too fast to reduce motion blur errors.)
+            double angularVelocity = Math.abs(
+                m_drivetrain.getPigeon2().getAngularVelocityZWorld().getValueAsDouble()
+            );
+            if (isValid && angularVelocity < 720.0) {
                 m_drivetrain.addVisionMeasurement(
                     poseEstimate.pose,
                     poseEstimate.timestampSeconds
