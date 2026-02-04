@@ -86,8 +86,10 @@ public class TunerConstants {
     // This is our hard-and-fast cap for our robot speed
     // To change auto max speed, find it in deploy\pathplanner\settings.json
     public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.54);
+    // Factor used to divide the teleop speed to keep it reasonable during testing
+    public static final double kSpeedDivisionFactor = 2.0;
     // This serves as our teleop max speed
-    public static final LinearVelocity kSpeedInTeleop = MetersPerSecond.of(4.54);
+    public static final LinearVelocity kSpeedInTeleop = MetersPerSecond.of(4.54 / kSpeedDivisionFactor);
 
     // Every 1 rotation of the azimuth results in kCoupleRatio drive motor turns;
     // This may need to be tuned to your individual robot

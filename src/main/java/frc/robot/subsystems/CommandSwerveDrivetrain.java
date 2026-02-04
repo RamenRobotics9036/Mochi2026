@@ -27,8 +27,9 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-
+import frc.robot.Robot;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.visutils.VisionInjectFilter;
 import frc.robot.LimelightHelpers;
 
 /**
@@ -36,7 +37,7 @@ import frc.robot.LimelightHelpers;
  * Subsystem so it can easily be used in command-based projects.
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem {
-    private static final double kSimLoopPeriod = 0.005; // 5 ms
+    private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
 
@@ -49,6 +50,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
+
+    /** Filter for ignoring stale vision measurements around pose resets. */
+    // $VISIONSIM - Inject Filter
+    private final VisionInjectFilter m_visionFilter;
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -70,38 +75,38 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             this
         )
     );
-    /**
-     * Integrates PathPlanner's AutoBuilder with the CTRE Swerve API.
-     * Configures pose suppliers, reset consumers, and PID constants for path following.
-     */
-    private void configureAutoBuilder() {
-        try {
-            var config = RobotConfig.fromGUISettings();
-            AutoBuilder.configure(
-                () -> getState().Pose,   // Current pose supplier
-                this::resetPose,         // Pose reset consumer
-                () -> getState().Speeds, // Current chassis speeds supplier
-                // Consumer of ChassisSpeeds and feedforwards to drive the robot
-                (speeds, feedforwards) -> setControl(
-                    m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
-                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
-                ),
-                new PPHolonomicDriveController(
-                    // PID constants for translation
-                    new PIDConstants(10, 0, 0),
-                    // PID constants for rotation
-                    new PIDConstants(7, 0, 0)
-                ),
-                config,
-                // Assume the path needs to be flipped for Red vs Blue, this is normally the case
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                this // Subsystem for requirements
-            );
-        } catch (Exception ex) {
-            DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
-        }
-    }
+     /**
+      * Integrates PathPlanner's AutoBuilder with the CTRE Swerve API.
+      * Configures pose suppliers, reset consumers, and PID constants for path following.
+      */
+     private void configureAutoBuilder() {
+         try {
+             var config = RobotConfig.fromGUISettings();
+             AutoBuilder.configure(
+                 () -> getState().Pose,   // Current pose supplier
+                 this::resetPose,         // Pose reset consumer
+                 () -> getState().Speeds, // Current chassis speeds supplier
+                 // Consumer of ChassisSpeeds and feedforwards to drive the robot
+                 (speeds, feedforwards) -> setControl(
+                     m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
+                         .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                         .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+                 ),
+                 new PPHolonomicDriveController(
+                     // PID constants for translation
+                     new PIDConstants(10, 0, 0),
+                     // PID constants for rotation
+                     new PIDConstants(7, 0, 0)
+                 ),
+                 config,
+                 // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+                 () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+                 this // Subsystem for requirements
+             );
+         } catch (Exception ex) {
+             DriverStation.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
+         }
+     }
 
     /* SysId routine for characterizing steer. This is used to find PID gains for the steer motors. */
     private final SysIdRoutine m_sysIdRoutineSteer = new SysIdRoutine(
@@ -169,6 +174,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+
+        // $VISIONSIM - Inject Filter
+        if (Robot.isSimulation()) {
+            m_visionFilter = new VisionInjectFilter();
+        }
+        else {
+            m_visionFilter = null;
+        }
+
         // configure PathPlanner AutoBuilder
         configureAutoBuilder();
     }
@@ -194,6 +208,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         super(drivetrainConstants, odometryUpdateFrequency, modules);
         if (Utils.isSimulation()) {
             startSimThread();
+        }
+
+        // $VISIONSIM - Inject Filter
+        if (Robot.isSimulation()) {
+            m_visionFilter = new VisionInjectFilter();
+        }
+        else {
+            m_visionFilter = null;
         }
     }
 
@@ -226,6 +248,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         super(drivetrainConstants, odometryUpdateFrequency, odometryStandardDeviation, visionStandardDeviation, modules);
         if (Utils.isSimulation()) {
             startSimThread();
+        }
+
+        // $VISIONSIM - Inject Filter
+        if (Robot.isSimulation()) {
+            m_visionFilter = new VisionInjectFilter();
+        }
+        else {
+            m_visionFilter = null;
         }
     }
 
@@ -298,6 +328,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     /**
+     * Resets the pose of the robot. Also updates the reset timestamp to filter
+     * stale vision measurements captured before this reset.
+     *
+     * @param pose The pose to reset to
+     */
+    // $VISIONSIM - Clean reset
+    @Override
+    public void resetPose(Pose2d pose) {
+        // $VISIONSIM - Inject Filter
+        if (Robot.isSimulation() && m_visionFilter != null) {
+            m_visionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
+        }
+        super.resetPose(pose);
+    }
+
+    /**
      * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
      * while still accounting for measurement noise.
      *
@@ -328,6 +374,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         double timestampSeconds,
         Matrix<N3, N1> visionMeasurementStdDevs
     ) {
-        super.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+        // $VISIONSIM - Inject Filter
+        if (Robot.isSimulation() && m_visionFilter != null) {
+            if (m_visionFilter.shouldIgnore(
+                visionRobotPoseMeters,
+                getState().Pose,
+                timestampSeconds)) {
+
+                return;
+            }
+        }
+        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
     }
 }

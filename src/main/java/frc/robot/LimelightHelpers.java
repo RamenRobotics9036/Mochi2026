@@ -419,12 +419,11 @@ public class LimelightHelpers {
         public double corner3_X = 0;
         public double corner3_Y = 0;
 
-
-        public RawDetection(int classId, double txnc, double tync, double ta, 
-            double corner0_X, double corner0_Y, 
-            double corner1_X, double corner1_Y, 
-            double corner2_X, double corner2_Y, 
-            double corner3_X, double corner3_Y ) {
+        public RawDetection(int classId, double txnc, double tync, double ta,
+            double corner0_X, double corner0_Y,
+            double corner1_X, double corner1_Y,
+            double corner2_X, double corner2_Y,
+            double corner3_X, double corner3_Y) {
             this.classId = classId;
             this.txnc = txnc;
             this.tync = tync;
@@ -448,7 +447,8 @@ public class LimelightHelpers {
         public double tagSpan;
         public double avgTagDist;
         public double avgTagArea;
-        public RawFiducial[] rawFiducials; 
+        public RawFiducial[] rawFiducials;
+        public boolean isMegaTag2;
 
         /**
          * Makes a PoseEstimate object with default values
@@ -464,10 +464,9 @@ public class LimelightHelpers {
             this.rawFiducials = new RawFiducial[]{};
         }
 
-        public PoseEstimate(Pose2d pose, double timestampSeconds, double latency, 
-            int tagCount, double tagSpan, double avgTagDist, 
-            double avgTagArea, RawFiducial[] rawFiducials) {
-
+        public PoseEstimate(Pose2d pose, double timestampSeconds, double latency,
+            int tagCount, double tagSpan, double avgTagDist,
+            double avgTagArea, RawFiducial[] rawFiducials, boolean isMegaTag2) {
             this.pose = pose;
             this.timestampSeconds = timestampSeconds;
             this.latency = latency;
@@ -1106,20 +1105,31 @@ public class LimelightHelpers {
         setLimelightNTDoubleArray(limelightName, "fiducial_offset_set", entries);
     }
 
-    public static void SetRobotOrientation(String limelightName, double yaw, double yawRate, 
-        double pitch, double pitchRate, 
+    /**
+     * Sets robot orientation values used by MegaTag2 localization algorithm.
+     *
+     * @param limelightName Name/identifier of the Limelight
+     * @param yaw Robot yaw in degrees. 0 = robot facing red alliance wall in FRC
+     * @param yawRate Angular velocity of robot yaw in degrees per second
+     * @param pitch Robot pitch in degrees
+     * @param pitchRate Angular velocity of robot pitch in degrees per second
+     * @param roll Robot roll in degrees
+     * @param rollRate Angular velocity of robot roll in degrees per second
+     */
+    public static void SetRobotOrientation(String limelightName, double yaw, double yawRate,
+        double pitch, double pitchRate,
         double roll, double rollRate) {
         SetRobotOrientation_INTERNAL(limelightName, yaw, yawRate, pitch, pitchRate, roll, rollRate, true);
     }
 
-    public static void SetRobotOrientation_NoFlush(String limelightName, double yaw, double yawRate, 
-        double pitch, double pitchRate, 
+    public static void SetRobotOrientation_NoFlush(String limelightName, double yaw, double yawRate,
+        double pitch, double pitchRate,
         double roll, double rollRate) {
         SetRobotOrientation_INTERNAL(limelightName, yaw, yawRate, pitch, pitchRate, roll, rollRate, false);
     }
 
-    private static void SetRobotOrientation_INTERNAL(String limelightName, double yaw, double yawRate, 
-        double pitch, double pitchRate, 
+    private static void SetRobotOrientation_INTERNAL(String limelightName, double yaw, double yawRate,
+        double pitch, double pitchRate,
         double roll, double rollRate, boolean flush) {
 
         double[] entries = new double[6];
@@ -1151,7 +1161,7 @@ public class LimelightHelpers {
         double[] validIDsDouble = new double[validIDs.length];
         for (int i = 0; i < validIDs.length; i++) {
             validIDsDouble[i] = validIDs[i];
-        }        
+        }
         setLimelightNTDoubleArray(limelightName, "fiducial_id_filters_set", validIDsDouble);
     }
 
