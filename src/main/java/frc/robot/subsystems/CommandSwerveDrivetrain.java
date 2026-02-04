@@ -352,6 +352,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      */
     @Override
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
+        // $TODOIDO - Thiru changed this from Utils.fpgaToCurrentTime(timestampSeconds)
+        // - follow up on whether that is needed
         super.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
     }
 
