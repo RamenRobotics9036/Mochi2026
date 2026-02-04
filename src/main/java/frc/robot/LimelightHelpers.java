@@ -466,7 +466,7 @@ public class LimelightHelpers {
 
         public PoseEstimate(Pose2d pose, double timestampSeconds, double latency,
             int tagCount, double tagSpan, double avgTagDist,
-            double avgTagArea, RawFiducial[] rawFiducials, boolean isMegaTag2) {
+            double avgTagArea, RawFiducial[] rawFiducials) {
             this.pose = pose;
             this.timestampSeconds = timestampSeconds;
             this.latency = latency;
