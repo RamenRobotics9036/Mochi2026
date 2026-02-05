@@ -85,6 +85,22 @@ public class ShowVisionOnField {
     }
 
     /**
+     * Shows or hides the Kalman-filtered vision pose on the field.
+     *
+     * @param fieldType The field to display on (REAL_FIELD or SIMULATION_FIELD)
+     * @param kalmanPose The Kalman-filtered pose if present, or empty to hide
+     */
+    public void showKalmanVisionPose(FieldType fieldType, Optional<Pose2d> kalmanPose) {
+        Optional<Field2d> field = (fieldType == FieldType.REAL_FIELD) ? m_realField : m_simulationField;
+        field.ifPresent(f -> {
+            kalmanPose.ifPresentOrElse(
+                pose -> f.getObject("KalmanVisionPose").setPose(pose),
+                () -> f.getObject("KalmanVisionPose").setPoses()
+            );
+        });
+    }
+
+    /**
      * Get the Pose2d of each swerve module based on the current robot pose and module states.
      */
     private Pose2d[] getModulePoses(SwerveDrivetrain.SwerveDriveState driveState) {

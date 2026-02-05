@@ -83,18 +83,18 @@ public class Robot extends TimedRobot {
     }
 
     if (Robot.isSimulation() && m_showVisionOnField != null) {
-        // Old: show point-in-time vision estimate
-        // Optional<Pose2d> showVisPose = m_robotContainer.m_limelightOdometry.getLatestVisPose();
-        // m_showVisionOnField.showPointInTimeVisionEstimate(
-        //     ShowVisionOnField.FieldType.SIMULATION_FIELD, showVisPose);
+        // Show point-in-time vision estimate
+        Optional<Pose2d> showVisPose = m_robotContainer.m_limelightOdometry.getLatestVisPose();
+        m_showVisionOnField.showPointInTimeVisionEstimate(
+            ShowVisionOnField.FieldType.SIMULATION_FIELD, showVisPose);
 
-        // New: show VisionKalmanFilter converged pose (offset forward for visibility)
+        // Show VisionKalmanFilter converged pose (offset forward for visibility)
         final double kKalmanPoseDisplayOffset = 1.0; // meters forward offset for visibility
         Optional<Pose2d> kalmanPose = m_robotContainer.m_visionKalmanFilter.isInitialized()
             ? Optional.of(m_robotContainer.m_visionKalmanFilter.getEstimate()
                 .transformBy(new Transform2d(kKalmanPoseDisplayOffset, 0, new Rotation2d())))
             : Optional.empty();
-        m_showVisionOnField.showPointInTimeVisionEstimate(
+        m_showVisionOnField.showKalmanVisionPose(
             ShowVisionOnField.FieldType.SIMULATION_FIELD, kalmanPose);
     }
 
