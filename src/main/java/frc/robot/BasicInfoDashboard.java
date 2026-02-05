@@ -5,6 +5,7 @@ import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
@@ -46,6 +47,13 @@ public class BasicInfoDashboard {
     private IntSupplier m_numLockedTagsSupplier = null;
     private DoubleSupplier m_txSupplier = null;
     private Supplier<String> m_targetListSupplier = null;
+
+    // Debouncers for locked indicators (prevents flickering)
+    private static final double kLockedDebounceSeconds = 0.25;
+    private final Debouncer m_oneLockedDebouncer =
+        new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
+    private final Debouncer m_multiLockedDebouncer =
+        new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
 
     /**
      * Constructs a BasicInfoDashboard.
@@ -138,8 +146,8 @@ public class BasicInfoDashboard {
         }
         if (m_numLockedTagsSupplier != null) {
             int numTags = m_numLockedTagsSupplier.getAsInt();
-            m_oneLocked.set(numTags >= 1);
-            m_multiLocked.set(numTags >= 2);
+            m_oneLocked.set(m_oneLockedDebouncer.calculate(numTags >= 1));
+            m_multiLocked.set(m_multiLockedDebouncer.calculate(numTags >= 2));
         }
         if (m_txSupplier != null) {
             m_visionTx.set(m_txSupplier.getAsDouble());
