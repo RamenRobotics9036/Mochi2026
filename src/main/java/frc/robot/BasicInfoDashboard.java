@@ -6,13 +6,17 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 
 import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.visutils.VisionKalmanFilter;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
@@ -43,10 +47,29 @@ public class BasicInfoDashboard {
     private final DoublePublisher m_visionTx = m_basicInfoTable.getDoubleTopic("VisionTx").publish();
     private final StringPublisher m_targetList = m_basicInfoTable.getStringTopic("TargetList").publish();
 
+    /* Vision Kalman filter outputs */
+    private final DoubleArrayPublisher m_visionKalmanPose =
+        m_basicInfoTable.getDoubleArrayTopic("VisionKalmanPose").publish();
+    private final BooleanPublisher m_visionKalmanConverged =
+        m_basicInfoTable.getBooleanTopic("VisionKalmanConverged").publish();
+    private final BooleanPublisher m_visionKalmanActive =
+        m_basicInfoTable.getBooleanTopic("VisionKalmanActive").publish();
+    private final DoublePublisher m_visionKalmanMeasurementCount =
+        m_basicInfoTable.getDoubleTopic("VisionKalmanMeasurementCount").publish();
+    private final DoublePublisher m_visionKalmanPositionStdDev =
+        m_basicInfoTable.getDoubleTopic("VisionKalmanPositionStdDev").publish();
+    private final BooleanPublisher m_visionKalmanIsRobotStill =
+        m_basicInfoTable.getBooleanTopic("VisionKalmanIsRobotStill").publish();
+    private final StringPublisher m_visionKalmanSecondsStill =
+        m_basicInfoTable.getStringTopic("VisionKalmanSecondsStill").publish();
+
     private DoubleSupplier m_visionConfidenceSupplier = null;
     private IntSupplier m_numLockedTagsSupplier = null;
     private DoubleSupplier m_txSupplier = null;
     private Supplier<String> m_targetListSupplier = null;
+    private Supplier<VisionKalmanFilter> m_visionKalmanSupplier = null;
+    private BooleanSupplier m_isRobotMotionlessSupplier = null;
+    private DoubleSupplier m_secondsStillSupplier = null;
 
     // Debouncers for locked indicators (prevents flickering)
     private static final double kLockedDebounceSeconds = 0.25;
@@ -102,6 +125,33 @@ public class BasicInfoDashboard {
      */
     public void setTargetListSupplier(Supplier<String> supplier) {
         m_targetListSupplier = supplier;
+    }
+
+    /**
+     * Sets the supplier for the vision Kalman filter.
+     *
+     * @param supplier A Supplier returning the VisionKalmanFilter instance
+     */
+    public void setVisionKalmanSupplier(Supplier<VisionKalmanFilter> supplier) {
+        m_visionKalmanSupplier = supplier;
+    }
+
+    /**
+     * Sets the supplier for robot motionless state.
+     *
+     * @param supplier A BooleanSupplier returning true when robot is motionless
+     */
+    public void setIsRobotMotionlessSupplier(BooleanSupplier supplier) {
+        m_isRobotMotionlessSupplier = supplier;
+    }
+
+    /**
+     * Sets the supplier for how long the robot has been still.
+     *
+     * @param supplier A DoubleSupplier returning seconds the robot has been still
+     */
+    public void setSecondsStillSupplier(DoubleSupplier supplier) {
+        m_secondsStillSupplier = supplier;
     }
 
     private boolean isRedAlliance() {
@@ -164,6 +214,39 @@ public class BasicInfoDashboard {
             // Debounce the "has targets" state - when it goes false, delay before showing empty
             boolean showTargets = m_targetListDebouncer.calculate(hasTargets);
             m_targetList.set(showTargets ? m_lastNonEmptyTargetList : "");
+        }
+
+        /* Publish vision Kalman filter state */
+        if (m_visionKalmanSupplier != null) {
+            VisionKalmanFilter filter = m_visionKalmanSupplier.get();
+            boolean isActive = filter.isInitialized();
+            m_visionKalmanActive.set(isActive);
+
+            if (isActive) {
+                Pose2d pose = filter.getEstimate();
+                m_visionKalmanPose.set(new double[] {
+                    pose.getX(),
+                    pose.getY(),
+                    pose.getRotation().getDegrees()
+                });
+                m_visionKalmanConverged.set(filter.hasConverged());
+                m_visionKalmanMeasurementCount.set(filter.getMeasurementCount());
+                m_visionKalmanPositionStdDev.set(filter.getPositionStdDev());
+            } else {
+                m_visionKalmanPose.set(new double[] {0, 0, 0});
+                m_visionKalmanConverged.set(false);
+                m_visionKalmanMeasurementCount.set(0);
+                m_visionKalmanPositionStdDev.set(Double.MAX_VALUE);
+            }
+        }
+
+        /* Publish robot motionless state for Kalman filter */
+        if (m_isRobotMotionlessSupplier != null) {
+            m_visionKalmanIsRobotStill.set(m_isRobotMotionlessSupplier.getAsBoolean());
+        }
+        if (m_secondsStillSupplier != null) {
+            double seconds = m_secondsStillSupplier.getAsDouble();
+            m_visionKalmanSecondsStill.set(String.format("%.1f", seconds));
         }
     }
 }
