@@ -94,8 +94,9 @@ public class Robot extends TimedRobot {
             ? Optional.of(m_robotContainer.m_visionKalmanFilter.getEstimate()
                 .transformBy(new Transform2d(kKalmanPoseDisplayOffset, 0, new Rotation2d())))
             : Optional.empty();
+        boolean hasConverged = m_robotContainer.m_visionKalmanFilter.hasConverged();
         m_showVisionOnField.showKalmanVisionPose(
-            ShowVisionOnField.FieldType.SIMULATION_FIELD, kalmanPose);
+            ShowVisionOnField.FieldType.SIMULATION_FIELD, kalmanPose, hasConverged);
     }
 
     CommandScheduler.getInstance().run();

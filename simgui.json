@@ -47,7 +47,24 @@
           "selectable": false,
           "width": 0.30000001192092896
         },
-        "KalmanVisionPose": {
+        "KalmanVisionPoseConverged": {
+          "arrowColor": [
+            0.0,
+            1.0,
+            0.0,
+            255.0
+          ],
+          "arrowWeight": 2.0,
+          "color": [
+            0.0,
+            1.0,
+            0.0,
+            255.0
+          ],
+          "selectable": false,
+          "weight": 2.0
+        },
+        "KalmanVisionPoseNotConverged": {
           "arrowColor": [
             0.800000011920929,
             0.20000000298023224,

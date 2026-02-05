@@ -86,17 +86,24 @@ public class ShowVisionOnField {
 
     /**
      * Shows or hides the Kalman-filtered vision pose on the field.
+     * Color changes based on convergence: green when converged, purple when not.
      *
      * @param fieldType The field to display on (REAL_FIELD or SIMULATION_FIELD)
      * @param kalmanPose The Kalman-filtered pose if present, or empty to hide
+     * @param hasConverged Whether the Kalman filter has converged
      */
-    public void showKalmanVisionPose(FieldType fieldType, Optional<Pose2d> kalmanPose) {
+    public void showKalmanVisionPose(FieldType fieldType, Optional<Pose2d> kalmanPose, boolean hasConverged) {
         Optional<Field2d> field = (fieldType == FieldType.REAL_FIELD) ? m_realField : m_simulationField;
         field.ifPresent(f -> {
-            kalmanPose.ifPresentOrElse(
-                pose -> f.getObject("KalmanVisionPose").setPose(pose),
-                () -> f.getObject("KalmanVisionPose").setPoses()
-            );
+            // Clear both objects first
+            f.getObject("KalmanVisionPoseConverged").setPoses();
+            f.getObject("KalmanVisionPoseNotConverged").setPoses();
+
+            // Show on the appropriate object based on convergence
+            kalmanPose.ifPresent(pose -> {
+                String objectName = hasConverged ? "KalmanVisionPoseConverged" : "KalmanVisionPoseNotConverged";
+                f.getObject(objectName).setPose(pose);
+            });
         });
     }
 
