@@ -22,7 +22,7 @@ public class LimelightOdometry {
     private double m_lastTimestamp = 0;
 
     private Optional<Pose2d> m_latestVisPose = Optional.empty();
-    private double m_lastConfidenceScore = 0.0;
+    private double m_curConfidenceScore = 0.0;
 
     /** Constructor. */
     public LimelightOdometry(VisionSimInterface.EstimateConsumer poseConsumer) {
@@ -53,8 +53,9 @@ public class LimelightOdometry {
         }
         m_lastTimestamp = mt1.timestampSeconds;
 
-        // Update std devs based on tag count and distance
-        updateEstimationStdDevs(mt1);
+        // Update std devs based on tag count and distance.  And confidence score.
+        m_curStdDevs = calculateEstimationStdDevs(mt1);
+        m_curConfidenceScore = getConfidenceScore(m_curStdDevs);
 
         // Check if we should reject this update
         if (mt1.tagCount == 0) {
@@ -138,5 +139,9 @@ public class LimelightOdometry {
 
     public Optional<Pose2d> getLatestVisPose() {
         return m_latestVisPose;
+    }
+
+    public double getCurrentConfidenceScore() {
+        return m_curConfidenceScore;
     }
 }
