@@ -12,6 +12,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import java.util.function.DoubleSupplier;
 
 /** Basic logging to dashboard. */
 @SuppressWarnings("LineLength")
@@ -33,7 +34,9 @@ public class BasicInfoDashboard {
     private final BooleanPublisher IsFMSAttached = m_basicInfoTable.getBooleanTopic("IsFMSAttached").publish();
     private final StringPublisher OperatorForwardDirectionDegrees = m_basicInfoTable.getStringTopic("OperatorForwardDirectionDegrees").publish();
     private final StringPublisher DebugCalculatedForwardDirection = m_basicInfoTable.getStringTopic("DebugCalculatedForwardDirection").publish();
+    private final DoublePublisher m_visionConfidence = m_basicInfoTable.getDoubleTopic("VisionConfidence").publish();
 
+    private DoubleSupplier m_visionConfidenceSupplier = null;
 
     /**
      * Constructs a BasicInfoDashboard.
@@ -43,6 +46,15 @@ public class BasicInfoDashboard {
     public BasicInfoDashboard(SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain) {
         m_drivetrain = drivetrain;
         m_pigeon = drivetrain.getPigeon2();
+    }
+
+    /**
+     * Sets the supplier for vision confidence score.
+     *
+     * @param supplier A DoubleSupplier returning confidence 0-100
+     */
+    public void setVisionConfidenceSupplier(DoubleSupplier supplier) {
+        m_visionConfidenceSupplier = supplier;
     }
 
     private boolean isRedAlliance() {
@@ -83,5 +95,10 @@ public class BasicInfoDashboard {
         OperatorForwardDirectionDegrees.set(screenDirection);
 
         DebugCalculatedForwardDirection.set(getDebugCalculatedForwardString());
+
+        /* Publish vision confidence */
+        if (m_visionConfidenceSupplier != null) {
+            m_visionConfidence.set(m_visionConfidenceSupplier.getAsDouble());
+        }
     }
 }

@@ -94,6 +94,8 @@ public class RobotContainer {
         // be replaced by our real Vision Subsystem.
         if (Robot.isSimulation()) {
             m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
+            basicInfoDashboard.setVisionConfidenceSupplier(
+                m_limelightOdometry::getCurrentConfidenceScore);
         }
         else {
             m_limelightOdometry = null;
