@@ -38,9 +38,11 @@ public class BasicInfoDashboard {
     private final DoublePublisher m_visionConfidence = m_basicInfoTable.getDoubleTopic("VisionConfidence").publish();
     private final BooleanPublisher m_oneLocked = m_basicInfoTable.getBooleanTopic("OneLocked").publish();
     private final BooleanPublisher m_multiLocked = m_basicInfoTable.getBooleanTopic("MultiLocked").publish();
+    private final DoublePublisher m_visionTx = m_basicInfoTable.getDoubleTopic("VisionTx").publish();
 
     private DoubleSupplier m_visionConfidenceSupplier = null;
     private IntSupplier m_numLockedTagsSupplier = null;
+    private DoubleSupplier m_txSupplier = null;
 
     /**
      * Constructs a BasicInfoDashboard.
@@ -68,6 +70,15 @@ public class BasicInfoDashboard {
      */
     public void setNumLockedTagsSupplier(IntSupplier supplier) {
         m_numLockedTagsSupplier = supplier;
+    }
+
+    /**
+     * Sets the supplier for vision tx (horizontal offset to target).
+     *
+     * @param supplier A DoubleSupplier returning tx in degrees
+     */
+    public void setTxSupplier(DoubleSupplier supplier) {
+        m_txSupplier = supplier;
     }
 
     private boolean isRedAlliance() {
@@ -117,6 +128,9 @@ public class BasicInfoDashboard {
             int numTags = m_numLockedTagsSupplier.getAsInt();
             m_oneLocked.set(numTags >= 1);
             m_multiLocked.set(numTags >= 2);
+        }
+        if (m_txSupplier != null) {
+            m_visionTx.set(m_txSupplier.getAsDouble());
         }
     }
 }

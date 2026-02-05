@@ -24,6 +24,7 @@ public class LimelightOdometry {
     private Optional<Pose2d> m_latestVisPose = Optional.empty();
     private double m_curConfidenceScore = 0.0;
     private int m_numLockedTags = 0;
+    private double m_tx = 0.0;
 
     /** Constructor. */
     public LimelightOdometry(VisionSimInterface.EstimateConsumer poseConsumer) {
@@ -38,11 +39,15 @@ public class LimelightOdometry {
     private void clearResults() {
         m_curConfidenceScore = 0.0;
         m_numLockedTags = 0;
+        m_tx = 0.0;
     }
 
     private void setResults(double confidenceScore, int numLockedTags) {
         m_curConfidenceScore = confidenceScore;
         m_numLockedTags = numLockedTags;
+
+        // Horizontal offset to primary target (degrees)
+        m_tx = LimelightHelpers.getTX("limelight");
     }
 
     private void addVisionMeasurementV1() {
@@ -164,5 +169,9 @@ public class LimelightOdometry {
 
     public int getNumLockedTags() {
         return m_numLockedTags;
+    }
+
+    public double getTx() {
+        return m_tx;
     }
 }

@@ -98,6 +98,8 @@ public class RobotContainer {
                 m_limelightOdometry::getCurrentConfidenceScore);
             basicInfoDashboard.setNumLockedTagsSupplier(
                 m_limelightOdometry::getNumLockedTags);
+            basicInfoDashboard.setTxSupplier(
+                m_limelightOdometry::getTx);
         }
         else {
             m_limelightOdometry = null;
