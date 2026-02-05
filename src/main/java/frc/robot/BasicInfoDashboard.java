@@ -54,6 +54,9 @@ public class BasicInfoDashboard {
         new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
     private final Debouncer m_multiLockedDebouncer =
         new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
+    private final Debouncer m_targetListDebouncer =
+        new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
+    private String m_lastNonEmptyTargetList = "";
 
     /**
      * Constructs a BasicInfoDashboard.
@@ -153,7 +156,14 @@ public class BasicInfoDashboard {
             m_visionTx.set(m_txSupplier.getAsDouble());
         }
         if (m_targetListSupplier != null) {
-            m_targetList.set(m_targetListSupplier.get());
+            String currentTargetList = m_targetListSupplier.get();
+            boolean hasTargets = !currentTargetList.isEmpty();
+            if (hasTargets) {
+                m_lastNonEmptyTargetList = currentTargetList;
+            }
+            // Debounce the "has targets" state - when it goes false, delay before showing empty
+            boolean showTargets = m_targetListDebouncer.calculate(hasTargets);
+            m_targetList.set(showTargets ? m_lastNonEmptyTargetList : "");
         }
     }
 }
