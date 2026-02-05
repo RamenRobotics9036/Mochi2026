@@ -87,12 +87,12 @@ public class LimelightOdometry {
      * deviations based on number of tags and distance from the tags.
      *
      * @param poseEstimate The Limelight pose estimate to evaluate
+     * @return The calculated standard deviations matrix
      */
-    private void updateEstimationStdDevs(LimelightHelpers.PoseEstimate poseEstimate) {
+    private Matrix<N3, N1> calculateEstimationStdDevs(LimelightHelpers.PoseEstimate poseEstimate) {
         if (poseEstimate == null || poseEstimate.tagCount == 0) {
             // No pose input. Default to single-tag std devs
-            m_curStdDevs = kSingleTagStdDevs;
-            return;
+            return kSingleTagStdDevs;
         }
 
         // Pose present. Start running Heuristic
@@ -108,13 +108,9 @@ public class LimelightOdometry {
 
         // Increase std devs based on (average) distance
         if (numTags == 1 && avgDist > 4) {
-            estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+            return VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
         }
-        else {
-            estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
-        }
-
-        m_curStdDevs = estStdDevs;
+        return estStdDevs.times(1 + (avgDist * avgDist / 30));
     }
 
     /**
