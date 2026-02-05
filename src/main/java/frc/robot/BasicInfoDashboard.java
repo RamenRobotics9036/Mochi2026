@@ -13,6 +13,7 @@ import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.function.DoubleSupplier;
+import java.util.function.IntSupplier;
 
 /** Basic logging to dashboard. */
 @SuppressWarnings("LineLength")
@@ -35,8 +36,11 @@ public class BasicInfoDashboard {
     private final StringPublisher OperatorForwardDirectionDegrees = m_basicInfoTable.getStringTopic("OperatorForwardDirectionDegrees").publish();
     private final StringPublisher DebugCalculatedForwardDirection = m_basicInfoTable.getStringTopic("DebugCalculatedForwardDirection").publish();
     private final DoublePublisher m_visionConfidence = m_basicInfoTable.getDoubleTopic("VisionConfidence").publish();
+    private final BooleanPublisher m_oneLocked = m_basicInfoTable.getBooleanTopic("OneLocked").publish();
+    private final BooleanPublisher m_multiLocked = m_basicInfoTable.getBooleanTopic("MultiLocked").publish();
 
     private DoubleSupplier m_visionConfidenceSupplier = null;
+    private IntSupplier m_numLockedTagsSupplier = null;
 
     /**
      * Constructs a BasicInfoDashboard.
@@ -55,6 +59,15 @@ public class BasicInfoDashboard {
      */
     public void setVisionConfidenceSupplier(DoubleSupplier supplier) {
         m_visionConfidenceSupplier = supplier;
+    }
+
+    /**
+     * Sets the supplier for number of locked AprilTags.
+     *
+     * @param supplier An IntSupplier returning the tag count
+     */
+    public void setNumLockedTagsSupplier(IntSupplier supplier) {
+        m_numLockedTagsSupplier = supplier;
     }
 
     private boolean isRedAlliance() {
@@ -99,6 +112,11 @@ public class BasicInfoDashboard {
         /* Publish vision confidence */
         if (m_visionConfidenceSupplier != null) {
             m_visionConfidence.set(m_visionConfidenceSupplier.getAsDouble());
+        }
+        if (m_numLockedTagsSupplier != null) {
+            int numTags = m_numLockedTagsSupplier.getAsInt();
+            m_oneLocked.set(numTags >= 1);
+            m_multiLocked.set(numTags >= 2);
         }
     }
 }

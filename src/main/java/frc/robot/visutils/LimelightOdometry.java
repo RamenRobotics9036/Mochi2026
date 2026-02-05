@@ -23,6 +23,7 @@ public class LimelightOdometry {
 
     private Optional<Pose2d> m_latestVisPose = Optional.empty();
     private double m_curConfidenceScore = 0.0;
+    private int m_numLockedTags = 0;
 
     /** Constructor. */
     public LimelightOdometry(VisionSimInterface.EstimateConsumer poseConsumer) {
@@ -32,6 +33,16 @@ public class LimelightOdometry {
     /** Periodic update; should be called from robot periodic. */
     public void periodic() {
         addVisionMeasurementV1();
+    }
+
+    private void clearResults() {
+        m_curConfidenceScore = 0.0;
+        m_numLockedTags = 0;
+    }
+
+    private void setResults(double confidenceScore, int numLockedTags) {
+        m_curConfidenceScore = confidenceScore;
+        m_numLockedTags = numLockedTags;
     }
 
     private void addVisionMeasurementV1() {
@@ -44,6 +55,7 @@ public class LimelightOdometry {
         if (mt1 == null) {
             // In simulation, limelight may not be present until a few cycles of periodic, since we
             // populate it via NetworkTables later.
+            clearResults();
             return;
         }
 
@@ -59,24 +71,29 @@ public class LimelightOdometry {
 
         // Check if we should reject this update
         if (mt1.tagCount == 0) {
+            clearResults();
             return;
         }
 
         if (mt1.tagCount == 1 && mt1.rawFiducials.length == 1) {
             if (mt1.rawFiducials[0].ambiguity > 0.7) {
+                setResults(m_curConfidenceScore, 0);
                 return;
             }
         }
 
         // Check if std devs indicate rejection
         if (m_curStdDevs.get(0, 0) == Double.MAX_VALUE) {
+            setResults(m_curConfidenceScore, 0);
             return;
         }
 
         // Print # of tags matching AND the stddevs values
-        System.out.printf(
-            "LimelightOdometry: Vision measurement with %d tags, stdDevs=(%.2f, %.2f, %.2f)%n",
-            mt1.tagCount, m_curStdDevs.get(0, 0), m_curStdDevs.get(1, 0), m_curStdDevs.get(2, 0));
+        // System.out.printf(
+        //     "LimelightOdometry: Vision measurement with %d tags, stdDevs=(%.2f, %.2f, %.2f)%n",
+        //     mt1.tagCount, m_curStdDevs.get(0, 0), m_curStdDevs.get(1, 0), m_curStdDevs.get(2, 0));
+
+        setResults(m_curConfidenceScore, mt1.tagCount);
 
         if (m_estConsumer != null) {
             m_estConsumer.accept(mt1.pose, mt1.timestampSeconds, m_curStdDevs);
@@ -143,5 +160,9 @@ public class LimelightOdometry {
 
     public double getCurrentConfidenceScore() {
         return m_curConfidenceScore;
+    }
+
+    public int getNumLockedTags() {
+        return m_numLockedTags;
     }
 }
