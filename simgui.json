@@ -48,38 +48,18 @@
           "width": 0.30000001192092896
         },
         "KalmanVisionPoseConverged": {
-          "arrowColor": [
-            0.0,
-            1.0,
-            0.0,
-            255.0
-          ],
-          "arrowWeight": 2.0,
-          "color": [
-            0.0,
-            1.0,
-            0.0,
-            255.0
-          ],
+          "arrows": false,
+          "image": "camera-locked.png",
+          "length": 0.6000000238418579,
           "selectable": false,
-          "weight": 2.0
+          "width": 0.6000000238418579
         },
         "KalmanVisionPoseNotConverged": {
-          "arrowColor": [
-            0.800000011920929,
-            0.20000000298023224,
-            1.0,
-            255.0
-          ],
-          "arrowWeight": 2.0,
-          "color": [
-            0.800000011920929,
-            0.20000000298023224,
-            1.0,
-            255.0
-          ],
+          "arrows": false,
+          "image": "camera-nolock.png",
+          "length": 0.6000000238418579,
           "selectable": false,
-          "weight": 2.0
+          "width": 0.6000000238418579
         },
         "Robot": {
           "arrowColor": [
