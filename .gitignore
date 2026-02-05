@@ -170,9 +170,8 @@ out/
 # Fleet
 .fleet
 
-# Simulation GUI and other tools window save file
+# Other tools window save file
 networktables.json
-simgui.json
 *-window.json
 
 # Simulation data log directory
