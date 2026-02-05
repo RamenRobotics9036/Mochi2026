@@ -96,8 +96,8 @@ public class VisionKalmanFilter {
         Matrix<N3, N3> I = Matrix.eye(Nat.N3());
         m_P = I.minus(K).times(m_P);
 
-        // Add small process noise to prevent covariance from collapsing to zero
-        m_P = m_P.plus(createProcessNoise());
+        // Note: We don't add process noise Q here because the robot is assumed
+        // to be truly motionless. Adding Q would prevent convergence.
 
         m_measurementCount++;
     }
