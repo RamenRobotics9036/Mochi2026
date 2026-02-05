@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 /** Basic logging to dashboard. */
 @SuppressWarnings("LineLength")
@@ -39,10 +40,12 @@ public class BasicInfoDashboard {
     private final BooleanPublisher m_oneLocked = m_basicInfoTable.getBooleanTopic("OneLocked").publish();
     private final BooleanPublisher m_multiLocked = m_basicInfoTable.getBooleanTopic("MultiLocked").publish();
     private final DoublePublisher m_visionTx = m_basicInfoTable.getDoubleTopic("VisionTx").publish();
+    private final StringPublisher m_targetList = m_basicInfoTable.getStringTopic("TargetList").publish();
 
     private DoubleSupplier m_visionConfidenceSupplier = null;
     private IntSupplier m_numLockedTagsSupplier = null;
     private DoubleSupplier m_txSupplier = null;
+    private Supplier<String> m_targetListSupplier = null;
 
     /**
      * Constructs a BasicInfoDashboard.
@@ -79,6 +82,15 @@ public class BasicInfoDashboard {
      */
     public void setTxSupplier(DoubleSupplier supplier) {
         m_txSupplier = supplier;
+    }
+
+    /**
+     * Sets the supplier for the visible target list.
+     *
+     * @param supplier A Supplier returning comma-separated tag IDs
+     */
+    public void setTargetListSupplier(Supplier<String> supplier) {
+        m_targetListSupplier = supplier;
     }
 
     private boolean isRedAlliance() {
@@ -131,6 +143,9 @@ public class BasicInfoDashboard {
         }
         if (m_txSupplier != null) {
             m_visionTx.set(m_txSupplier.getAsDouble());
+        }
+        if (m_targetListSupplier != null) {
+            m_targetList.set(m_targetListSupplier.get());
         }
     }
 }

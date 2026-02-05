@@ -100,6 +100,8 @@ public class RobotContainer {
                 m_limelightOdometry::getNumLockedTags);
             basicInfoDashboard.setTxSupplier(
                 m_limelightOdometry::getTx);
+            basicInfoDashboard.setTargetListSupplier(
+                m_limelightOdometry::getTargetList);
         }
         else {
             m_limelightOdometry = null;
