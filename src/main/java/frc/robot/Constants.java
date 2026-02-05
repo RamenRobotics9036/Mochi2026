@@ -69,6 +69,16 @@ public final class Constants {
     }
 
     /**
+     * Constants for the Intake subsystem rollers.
+     */
+    public static final class ShooterConstants {
+        /** CAN IDs for the Talon FX motor controllers. */
+        public static final int kLMotorID = 20; //TODO: filler value
+        public static final int kRMotorID = 21; //TODO: filler value
+        
+    }
+
+    /**
      * Configuration constants for the Operator Interface and telemetry.
      */
     public static final class OperatorConstants {
