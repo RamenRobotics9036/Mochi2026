@@ -26,6 +26,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.LimelightOdometry;
+import frc.robot.visutils.VisionKalmanFilter;
 
 /**
  * The RobotContainer class is where the bulk of the robot structure is declared.
@@ -69,6 +70,16 @@ public class RobotContainer {
 
     public final LimelightOdometry m_limelightOdometry;
 
+    /** Vision-only Kalman filter for precise stationary position estimation. */
+    public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
+
+    /** Tracks whether robot was still on the previous cycle (for edge detection). */
+    private boolean m_wasStillLastCycle = false;
+    /** Timestamp when robot became still (seconds). */
+    private double m_stillStartTime = 0.0;
+    /** Cached value of whether robot is currently still. */
+    private boolean m_isCurrentlyStill = false;
+
     /** The vision subsystem handles Limelight MegaTag2 localization. */
     public final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain);
 
@@ -94,6 +105,7 @@ public class RobotContainer {
         // be replaced by our real Vision Subsystem.
         if (Robot.isSimulation()) {
             m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
+            m_limelightOdometry.setVisionKalmanFilter(m_visionKalmanFilter, this::isRobotMotionless);
             basicInfoDashboard.setVisionConfidenceSupplier(
                 m_limelightOdometry::getCurrentConfidenceScore);
             basicInfoDashboard.setNumLockedTagsSupplier(
@@ -102,10 +114,69 @@ public class RobotContainer {
                 m_limelightOdometry::getTx);
             basicInfoDashboard.setTargetListSupplier(
                 m_limelightOdometry::getTargetList);
+            basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
+            basicInfoDashboard.setIsRobotMotionlessSupplier(this::isRobotMotionless);
+            basicInfoDashboard.setSecondsStillSupplier(this::getSecondsStill);
         }
         else {
             m_limelightOdometry = null;
+            // Still wire up the Kalman filter publisher even outside simulation
+            basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
+            basicInfoDashboard.setIsRobotMotionlessSupplier(this::isRobotMotionless);
+            basicInfoDashboard.setSecondsStillSupplier(this::getSecondsStill);
         }
+    }
+
+    /**
+     * Updates the motionless state tracking. Call this from Robot.robotPeriodic().
+     * Resets the Kalman filter when the robot starts moving.
+     */
+    public void updateMotionlessTracking() {
+        m_isCurrentlyStill = computeIsMotionless();
+
+        if (m_isCurrentlyStill && !m_wasStillLastCycle) {
+            // Robot just became still - record the time
+            m_stillStartTime = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
+        } else if (!m_isCurrentlyStill && m_wasStillLastCycle) {
+            // Robot just started moving - reset the Kalman filter
+            m_visionKalmanFilter.reset();
+        }
+
+        m_wasStillLastCycle = m_isCurrentlyStill;
+    }
+
+    /**
+     * Checks if the robot is motionless based on chassis speeds.
+     * Uses drivetrain state speeds rather than raw gyro for better simulation compatibility.
+     *
+     * @return true if robot is stationary
+     */
+    private boolean isRobotMotionless() {
+        return m_isCurrentlyStill;
+    }
+
+    /**
+     * Computes whether the robot is motionless based on chassis speeds.
+     */
+    private boolean computeIsMotionless() {
+        var speeds = drivetrain.getState().Speeds;
+        double linearSpeed = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
+        double angularRateDegPerSec = Math.abs(Math.toDegrees(speeds.omegaRadiansPerSecond));
+
+        return linearSpeed < Constants.VisionKalmanConstants.kMotionlessLinearThreshold
+            && angularRateDegPerSec < Constants.VisionKalmanConstants.kMotionlessGyroThreshold;
+    }
+
+    /**
+     * Gets how long the robot has been still, in seconds.
+     *
+     * @return Seconds the robot has been motionless, or 0.0 if moving
+     */
+    public double getSecondsStill() {
+        if (!m_isCurrentlyStill) {
+            return 0.0;
+        }
+        return edu.wpi.first.wpilibj.Timer.getFPGATimestamp() - m_stillStartTime;
     }
 
     /**
@@ -255,5 +326,8 @@ public class RobotContainer {
         if (Robot.isSimulation()) {
             m_simWrapper.resetSimPose(pose);
         }
+
+        // Reset the vision-only Kalman filter
+        m_visionKalmanFilter.reset();
     }
 }
