@@ -87,49 +87,14 @@ public final class Constants {
     /**
      * Constants for the Vision subsystem and dual Limelight configuration.
      */
+    // To upload fmap:
+    // curl -X POST http://10.90.36.15:5807/upload-fieldmap -H "Content-Type: application/json" --data-binary @FRC2026_ANDYMARK.fmap
     public static final class VisionConstants {
-        /** Network table name for the chassis-mounted localization camera. */
-        public static final String kFixedCameraName = "limelight-fixed";
+        /** Limelight name for odometry on real robot. */
+        public static final String kLimelightNameReal = "limelight-fixed";
 
-        /** Network table name for the turret-mounted tracking camera. */
-        public static final String kTurretCameraName = "limelight-turret";
-
-        /** Index of the Limelight pipeline configured for AprilTag 3D localization. */
-        public static final int PIPELINE_TAGS = 0;
-
-        /** Index of the Limelight pipeline configured for color-based object detection. */
-        public static final int PIPELINE_FUEL = 1;
-
-        /** Vertical angle threshold to ignore game pieces that are too far away. */
-        public static final double FUEL_TY_FILTER = -15.0;
-
-        /** The physical 3D offset of the fixed camera relative to the robot's center. */
-        public static final Transform3d kFixedCameraTransform = new Transform3d(
-            new Translation3d(
-                0.25,   // 25cm forward from robot center
-                0.0,    // Centered left-right
-                0.50    // 50cm up from ground
-            ),
-            new Rotation3d(
-                0.0,                            // Roll: 0
-                Math.toRadians(-15.0),          // Pitch: 15° down
-                0.0                             // Yaw: 0 (facing forward)
-            )
-        );
-
-        /** Distance threshold in meters beyond which AprilTag data is considered too noisy to trust. */
-        public static final double MAX_TAG_DISTANCE = 4.0;
-
-        /** Maximum distance allowed to execute a manual 'Snap-to-Pose' realignment. */
-        public static final double SNAP_MAX_DISTANCE = 3.5;
-
-        /** Number of visible tags required before the Pose Estimator accepts a vision update. */
-        public static final int MIN_TAG_COUNT = 1;
-
-        /** Default camera name for legacy support modules. */
-        public static final String LIMELIGHT_NAME = kFixedCameraName;
-        /** The 0,0,0 coordinate reference for the 2026 FRC field. */
-        public static final Pose2d FIELD_ORIGIN = new Pose2d();
+        /** Limelight name for odometry in simulation. */
+        public static final String kLimelightNameSim = "limelight";
     }
 
     /**

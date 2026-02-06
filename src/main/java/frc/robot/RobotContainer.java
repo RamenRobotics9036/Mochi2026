@@ -13,6 +13,8 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -21,9 +23,9 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.sim.JoystickInputsRecord;
+import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.LimelightOdometry;
 
@@ -64,19 +66,24 @@ public class RobotContainer {
 
     public final BasicInfoDashboard basicInfoDashboard = new BasicInfoDashboard(drivetrain);
 
+    /** Field2d for Glass/SmartDashboard visualization. */
+    public final Field2d m_glassField = new Field2d();
+
     /** Simulation wrapper - null when not in simulation. */
     public final SimWrapper m_simWrapper;
+    public final ShowVisionOnField m_showVisionOnField;
 
     public final LimelightOdometry m_limelightOdometry;
-
-    /** The vision subsystem handles Limelight MegaTag2 localization. */
-    public final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain);
 
     /**
      * Constructs the RobotContainer.
      * Initializes autonomous selection dashboards and binds controller inputs to commands.
      */
     public RobotContainer() {
+        Field2d debugField = null;
+
+        SmartDashboard.putData("GlassField", m_glassField);
+
         AutoLogic.initShuffleboard(drivetrain);
         configureBindings();
 
@@ -85,27 +92,26 @@ public class RobotContainer {
             m_simWrapper = new SimWrapper(
                 drivetrain,
                 this::resetRobotPose);
+
+            debugField = m_simWrapper.getSimDebugField();
         }
         else {
             m_simWrapper = null;
         }
 
-        // For now, we do vision odemetry only in simulation.  Eventually, this will
-        // be replaced by our real Vision Subsystem.
-        if (Robot.isSimulation()) {
-            m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
-            basicInfoDashboard.setVisionConfidenceSupplier(
-                m_limelightOdometry::getCurrentConfidenceScore);
-            basicInfoDashboard.setNumLockedTagsSupplier(
-                m_limelightOdometry::getNumLockedTags);
-            basicInfoDashboard.setTxSupplier(
-                m_limelightOdometry::getTx);
-            basicInfoDashboard.setTargetListSupplier(
-                m_limelightOdometry::getTargetList);
-        }
-        else {
-            m_limelightOdometry = null;
-        }
+        m_showVisionOnField = new ShowVisionOnField(
+            m_glassField, debugField);
+
+        // Setup vision system
+        m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
+        basicInfoDashboard.setVisionConfidenceSupplier(
+            m_limelightOdometry::getCurrentConfidenceScore);
+        basicInfoDashboard.setNumLockedTagsSupplier(
+            m_limelightOdometry::getNumLockedTags);
+        basicInfoDashboard.setTxSupplier(
+            m_limelightOdometry::getTx);
+        basicInfoDashboard.setTargetListSupplier(
+            m_limelightOdometry::getTargetList);
     }
 
     /**

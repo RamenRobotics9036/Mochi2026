@@ -26,7 +26,6 @@ import frc.robot.subsystems.auto.AutoLogic;
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
-  private ShowVisionOnField m_showVisionOnField;
 
   private final RobotContainer m_robotContainer;
 
@@ -36,12 +35,6 @@ public class Robot extends TimedRobot {
    */
   public Robot() {
     m_robotContainer = new RobotContainer();
-
-      // $VISIONSIM - Wrapper for sim features
-    if (Robot.isSimulation() && m_robotContainer.m_simWrapper != null) {
-        m_showVisionOnField = new ShowVisionOnField(
-            null, m_robotContainer.m_simWrapper.getSimDebugField());
-    }
   }
 
   /**
@@ -73,19 +66,16 @@ public class Robot extends TimedRobot {
         m_robotContainer.m_simWrapper.robotPeriodic();
     }
 
-    // For now, we do vision odemetry only in simulation.  Eventually, this will
-    // be replaced by our real Vision Subsystem.
-    if (Robot.isSimulation()) {
-      m_robotContainer.m_limelightOdometry.periodic();
-    }
+    m_robotContainer.m_limelightOdometry.periodic();
 
-    if (Robot.isSimulation() && m_showVisionOnField != null) {
-        Optional<Pose2d> showVisPose = m_robotContainer.m_limelightOdometry.getLatestVisPose();
-        m_showVisionOnField.showPointInTimeVisionEstimate(
-            ShowVisionOnField.FieldType.SIMULATION_FIELD, showVisPose);
-    }
+    Optional<Pose2d> showVisPose = Optional.empty();
+    showVisPose = m_robotContainer.m_limelightOdometry.getLatestVisPose();
+    m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(showVisPose);
 
     CommandScheduler.getInstance().run();
+
+    var driveState = m_robotContainer.drivetrain.getState();
+    m_robotContainer.m_showVisionOnField.showEstimatedPoseAndWheels(driveState);
 
     // We update logging after CommandScheduler.run(), so that any commands that
     // changed drivetrain state are reflected in the telemetry.
@@ -169,6 +159,10 @@ public class Robot extends TimedRobot {
     // $VISIONSIM - Wrapper for sim features
     if (m_robotContainer.m_simWrapper != null) {
         m_robotContainer.m_simWrapper.simulationPeriodic();
+
+        // Debug field visualization
+        Pose2d groundTruthPose = m_robotContainer.m_simWrapper.getGroundTruthPose();
+        m_robotContainer. m_showVisionOnField.showGroundTruthPoseOnField(groundTruthPose);
     }
   }
 }

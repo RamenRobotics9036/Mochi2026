@@ -12,6 +12,7 @@
       "/Pose": "Field2d",
       "/Shuffleboard/Autos/Auto Selector": "String Chooser",
       "/SmartDashboard/Auto Mode": "String Chooser",
+      "/SmartDashboard/GlassField": "Field2d",
       "/SmartDashboard/Module 0": "Mechanism2d",
       "/SmartDashboard/Module 1": "Mechanism2d",
       "/SmartDashboard/Module 2": "Mechanism2d",
@@ -22,6 +23,86 @@
     },
     "windows": {
       "/Pose": {
+        "bottom": 1914,
+        "height": 8.069275856018066,
+        "left": 245,
+        "right": 3942,
+        "top": 118,
+        "width": 16.54119300842285,
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/GlassField": {
+        "EstimatedRobot": {
+          "arrowWeight": 3.0,
+          "length": 0.800000011920929,
+          "selectable": false,
+          "weight": 3.0,
+          "width": 0.800000011920929
+        },
+        "EstimatedRobotModules": {
+          "arrows": false,
+          "image": "swerve_module.png",
+          "length": 0.30000001192092896,
+          "selectable": false,
+          "width": 0.30000001192092896
+        },
+        "GroundTruthRobot": {
+          "arrowColor": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "arrowWeight": 1.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "length": 0.800000011920929,
+          "selectable": false,
+          "weight": 1.0,
+          "width": 0.800000011920929
+        },
+        "Robot": {
+          "arrowColor": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "arrowWeight": 1.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "length": 0.800000011920929,
+          "selectable": false,
+          "weight": 1.0,
+          "width": 0.800000011920929
+        },
+        "VisionEstimation": {
+          "arrowColor": [
+            0.0,
+            0.6000000238418579,
+            1.0,
+            255.0
+          ],
+          "arrowWeight": 2.0,
+          "color": [
+            0.0,
+            0.6000000238418579,
+            1.0,
+            255.0
+          ],
+          "selectable": false,
+          "weight": 2.0
+        },
         "bottom": 1914,
         "height": 8.069275856018066,
         "left": 245,
@@ -47,14 +128,14 @@
           "selectable": false,
           "width": 0.30000001192092896
         },
-        "Robot": {
+        "GroundTruthRobot": {
           "arrowColor": [
             1.0,
             1.0,
             1.0,
             255.0
           ],
-          "arrowWeight": 2.0,
+          "arrowWeight": 1.0,
           "color": [
             1.0,
             1.0,
@@ -63,7 +144,26 @@
           ],
           "length": 0.800000011920929,
           "selectable": false,
-          "weight": 2.0,
+          "weight": 1.0,
+          "width": 0.800000011920929
+        },
+        "Robot": {
+          "arrowColor": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "arrowWeight": 1.0,
+          "color": [
+            1.0,
+            1.0,
+            1.0,
+            255.0
+          ],
+          "length": 0.800000011920929,
+          "selectable": false,
+          "weight": 1.0,
           "width": 0.800000011920929
         },
         "VisionEstimation": {

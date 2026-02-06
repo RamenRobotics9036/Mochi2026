@@ -8,11 +8,12 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers;
+import frc.robot.Robot;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
  * Limelight-based odometry measurement source.
  */
 public class LimelightOdometry {
+    private final String m_limelightName;
     private VisionSimInterface.EstimateConsumer m_estConsumer;
     private Matrix<N3, N1> m_curStdDevs = kSingleTagStdDevs;
     private double m_lastTimestamp = 0;
@@ -33,6 +35,9 @@ public class LimelightOdometry {
     /** Constructor. */
     public LimelightOdometry(VisionSimInterface.EstimateConsumer poseConsumer) {
         this.m_estConsumer = poseConsumer;
+        this.m_limelightName = Robot.isSimulation()
+            ? VisionConstants.kLimelightNameSim
+            : VisionConstants.kLimelightNameReal;
     }
 
     /** Periodic update; should be called from robot periodic. */
@@ -53,7 +58,7 @@ public class LimelightOdometry {
         m_numLockedTags = numLockedTags;
 
         // Horizontal offset to primary target (degrees)
-        m_tx = LimelightHelpers.getTX("limelight");
+        m_tx = LimelightHelpers.getTX(m_limelightName);
 
         // Build comma-separated list of visible tag IDs
         if (rawFiducials != null && rawFiducials.length > 0) {
@@ -65,14 +70,56 @@ public class LimelightOdometry {
         }
     }
 
+    // $TODO - This should go away
+    private void printDebugLimelightInfo(LimelightHelpers.PoseEstimate mt1) {
+        StringBuilder sb = new StringBuilder("LimelightOdometry: ");
+
+        // Horizontal offset to primary target (degrees)
+        double tempTx = LimelightHelpers.getTX(m_limelightName);
+        sb.append(String.format("tx=%7.2f°", tempTx));
+
+        double tempId = LimelightHelpers.getFiducialID(m_limelightName);
+        sb.append(String.format(", ID=%4s", tempId >= 0 ? String.valueOf((int) tempId) : "None"));
+
+        if (mt1 == null) {
+            sb.append(", No pose estimate");
+        } else {
+            sb.append(String.format(", tags=%d, pose=(%6.2f, %6.2f, %7.1f°)",
+                mt1.tagCount,
+                mt1.pose.getX(),
+                mt1.pose.getY(),
+                mt1.pose.getRotation().getDegrees()));
+        }
+
+        // Try getting RAW fiducials directly from NetworkTables
+        LimelightHelpers.RawFiducial[] fiducials =
+            LimelightHelpers.getRawFiducials(m_limelightName);
+        if (fiducials.length > 0) {
+            String ids = Arrays.stream(fiducials)
+                .map(f -> String.valueOf(f.id))
+                .collect(Collectors.joining(", "));
+            sb.append(", rawFiducials=[" + ids + "]");
+        }
+
+        System.out.println(sb.toString());
+    }
+
     private void addVisionMeasurementV1() {
         LimelightHelpers.PoseEstimate mt1 =
-            LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+            LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName);
+
+        // Limelighthelpers 2026.1 no longer returns null when no targets are visible.
+        // So need to sanitize mt1 value so mt1 == null is still "no targets".
+        if (mt1 == null || mt1.tagCount == 0) {
+            mt1 = null;
+        }
+
+        printDebugLimelightInfo(mt1);
 
         // Save the latest vision estimate so that it can be queried
         m_latestVisPose = Optional.ofNullable(mt1).map(est -> est.pose);
 
-        if (mt1 == null) {
+        if (mt1 == null || mt1.tagCount == 0) {
             // In simulation, limelight may not be present until a few cycles of periodic, since we
             // populate it via NetworkTables later.
             clearResults();
@@ -89,12 +136,6 @@ public class LimelightOdometry {
         m_curStdDevs = calculateEstimationStdDevs(mt1);
         m_curConfidenceScore = getConfidenceScore(m_curStdDevs);
 
-        // Check if we should reject this update
-        if (mt1.tagCount == 0) {
-            clearResults();
-            return;
-        }
-
         if (mt1.tagCount == 1 && mt1.rawFiducials.length == 1) {
             if (mt1.rawFiducials[0].ambiguity > 0.7) {
                 setResults(m_curConfidenceScore, 0, null);
@@ -107,11 +148,6 @@ public class LimelightOdometry {
             setResults(m_curConfidenceScore, 0, null);
             return;
         }
-
-        // Print # of tags matching AND the stddevs values
-        // System.out.printf(
-        //     "LimelightOdometry: Vision measurement with %d tags, stdDevs=(%.2f, %.2f, %.2f)%n",
-        //     mt1.tagCount, m_curStdDevs.get(0, 0), m_curStdDevs.get(1, 0), m_curStdDevs.get(2, 0));
 
         setResults(m_curConfidenceScore, mt1.tagCount, mt1.rawFiducials);
 
