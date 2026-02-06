@@ -10,7 +10,10 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.LimelightHelpers;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
+import java.util.stream.Collectors;
 
 
 /**
@@ -22,6 +25,10 @@ public class LimelightOdometry {
     private double m_lastTimestamp = 0;
 
     private Optional<Pose2d> m_latestVisPose = Optional.empty();
+    private double m_curConfidenceScore = 0.0;
+    private int m_numLockedTags = 0;
+    private double m_tx = 0.0;
+    private String m_targetList = "";
 
     /** Constructor. */
     public LimelightOdometry(VisionSimInterface.EstimateConsumer poseConsumer) {
@@ -31,6 +38,31 @@ public class LimelightOdometry {
     /** Periodic update; should be called from robot periodic. */
     public void periodic() {
         addVisionMeasurementV1();
+    }
+
+    private void clearResults() {
+        m_curConfidenceScore = 0.0;
+        m_numLockedTags = 0;
+        m_tx = 0.0;
+        m_targetList = "";
+    }
+
+    private void setResults(double confidenceScore, int numLockedTags,
+                            LimelightHelpers.RawFiducial[] rawFiducials) {
+        m_curConfidenceScore = confidenceScore;
+        m_numLockedTags = numLockedTags;
+
+        // Horizontal offset to primary target (degrees)
+        m_tx = LimelightHelpers.getTX("limelight");
+
+        // Build comma-separated list of visible tag IDs
+        if (rawFiducials != null && rawFiducials.length > 0) {
+            m_targetList = Arrays.stream(rawFiducials)
+                .map(f -> String.valueOf(f.id))
+                .collect(Collectors.joining(", "));
+        } else {
+            m_targetList = "";
+        }
     }
 
     private void addVisionMeasurementV1() {
@@ -43,6 +75,7 @@ public class LimelightOdometry {
         if (mt1 == null) {
             // In simulation, limelight may not be present until a few cycles of periodic, since we
             // populate it via NetworkTables later.
+            clearResults();
             return;
         }
 
@@ -52,29 +85,35 @@ public class LimelightOdometry {
         }
         m_lastTimestamp = mt1.timestampSeconds;
 
-        // Update std devs based on tag count and distance
-        updateEstimationStdDevs(mt1);
+        // Update std devs based on tag count and distance.  And confidence score.
+        m_curStdDevs = calculateEstimationStdDevs(mt1);
+        m_curConfidenceScore = getConfidenceScore(m_curStdDevs);
 
         // Check if we should reject this update
         if (mt1.tagCount == 0) {
+            clearResults();
             return;
         }
 
         if (mt1.tagCount == 1 && mt1.rawFiducials.length == 1) {
             if (mt1.rawFiducials[0].ambiguity > 0.7) {
+                setResults(m_curConfidenceScore, 0, null);
                 return;
             }
         }
 
         // Check if std devs indicate rejection
         if (m_curStdDevs.get(0, 0) == Double.MAX_VALUE) {
+            setResults(m_curConfidenceScore, 0, null);
             return;
         }
 
         // Print # of tags matching AND the stddevs values
-        System.out.printf(
-            "LimelightOdometry: Vision measurement with %d tags, stdDevs=(%.2f, %.2f, %.2f)%n",
-            mt1.tagCount, m_curStdDevs.get(0, 0), m_curStdDevs.get(1, 0), m_curStdDevs.get(2, 0));
+        // System.out.printf(
+        //     "LimelightOdometry: Vision measurement with %d tags, stdDevs=(%.2f, %.2f, %.2f)%n",
+        //     mt1.tagCount, m_curStdDevs.get(0, 0), m_curStdDevs.get(1, 0), m_curStdDevs.get(2, 0));
+
+        setResults(m_curConfidenceScore, mt1.tagCount, mt1.rawFiducials);
 
         if (m_estConsumer != null) {
             m_estConsumer.accept(mt1.pose, mt1.timestampSeconds, m_curStdDevs);
@@ -86,12 +125,12 @@ public class LimelightOdometry {
      * deviations based on number of tags and distance from the tags.
      *
      * @param poseEstimate The Limelight pose estimate to evaluate
+     * @return The calculated standard deviations matrix
      */
-    private void updateEstimationStdDevs(LimelightHelpers.PoseEstimate poseEstimate) {
+    private Matrix<N3, N1> calculateEstimationStdDevs(LimelightHelpers.PoseEstimate poseEstimate) {
         if (poseEstimate == null || poseEstimate.tagCount == 0) {
             // No pose input. Default to single-tag std devs
-            m_curStdDevs = kSingleTagStdDevs;
-            return;
+            return kSingleTagStdDevs;
         }
 
         // Pose present. Start running Heuristic
@@ -107,16 +146,51 @@ public class LimelightOdometry {
 
         // Increase std devs based on (average) distance
         if (numTags == 1 && avgDist > 4) {
-            estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
+            return VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
         }
-        else {
-            estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+        return estStdDevs.times(1 + (avgDist * avgDist / 30));
+    }
+
+    /**
+     * Converts std devs to a 0-100 confidence score.
+     *
+     * @param stdDevs The (x, y, theta) standard deviations matrix
+     * @return Confidence from 0 (no confidence) to 100 (highest)
+     */
+    private double getConfidenceScore(Matrix<N3, N1> stdDevs) {
+        // Handle rejection case
+        if (stdDevs.get(0, 0) >= Double.MAX_VALUE) {
+            return 0.0;
         }
 
-        m_curStdDevs = estStdDevs;
+        // Combine position uncertainties (Euclidean norm of x,y)
+        double posUncertainty = Math.hypot(stdDevs.get(0, 0), stdDevs.get(1, 0));
+
+        // Map to 0-100 using exponential decay
+        // At ~0.7m combined uncertainty → ~100% confidence
+        // At ~5m combined uncertainty → ~0% confidence
+        double confidence = 100.0 * Math.exp(-posUncertainty / 2.0);
+
+        return Math.max(0, Math.min(100, confidence));
     }
 
     public Optional<Pose2d> getLatestVisPose() {
         return m_latestVisPose;
+    }
+
+    public double getCurrentConfidenceScore() {
+        return m_curConfidenceScore;
+    }
+
+    public int getNumLockedTags() {
+        return m_numLockedTags;
+    }
+
+    public double getTx() {
+        return m_tx;
+    }
+
+    public String getTargetList() {
+        return m_targetList;
     }
 }

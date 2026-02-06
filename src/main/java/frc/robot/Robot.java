@@ -7,6 +7,8 @@ package frc.robot;
 import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -84,6 +86,12 @@ public class Robot extends TimedRobot {
     }
 
     CommandScheduler.getInstance().run();
+
+    // We update logging after CommandScheduler.run(), so that any commands that
+    // changed drivetrain state are reflected in the telemetry.
+    if (m_robotContainer.basicInfoDashboard != null) {
+        m_robotContainer.basicInfoDashboard.update();
+    }
   }
 
   @Override
