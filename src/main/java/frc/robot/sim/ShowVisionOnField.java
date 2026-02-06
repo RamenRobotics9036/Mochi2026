@@ -82,6 +82,11 @@ public class ShowVisionOnField {
         // Only show ground truth pose on glass field when we're in simulation mode
         if (Robot.isSimulation()) {
             m_realGlassField.ifPresent(f -> f.getObject("GroundTruthRobot").setPose(groundTruthPose));
+
+            // Also, the default "Robot" object on the glass field shows same thing.  This is confusing,
+            // but PhotonVisions sim is updating Robot based on where the cameras are.  And then I'm
+            // adding another object called GroundTruthRobot that shows the same pose.
+            m_realGlassField.ifPresent(f -> f.getObject("Robot").setPose(groundTruthPose));
         }
 
         // Only show on debug field if simulation is running in debug mode
