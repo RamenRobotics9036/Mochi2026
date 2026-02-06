@@ -80,6 +80,9 @@ public class Robot extends TimedRobot {
 
     CommandScheduler.getInstance().run();
 
+    var driveState = m_robotContainer.drivetrain.getState();
+    m_robotContainer.m_showVisionOnField.showEstimatedPoseAndWheels(driveState);
+
     // We update logging after CommandScheduler.run(), so that any commands that
     // changed drivetrain state are reflected in the telemetry.
     if (m_robotContainer.basicInfoDashboard != null) {
@@ -162,6 +165,10 @@ public class Robot extends TimedRobot {
     // $VISIONSIM - Wrapper for sim features
     if (m_robotContainer.m_simWrapper != null) {
         m_robotContainer.m_simWrapper.simulationPeriodic();
+
+        // Debug field visualization
+        Pose2d groundTruthPose = m_robotContainer.m_simWrapper.getGroundTruthPose();
+        m_robotContainer. m_showVisionOnField.showGroundTruthPoseOnField(groundTruthPose);
     }
   }
 }

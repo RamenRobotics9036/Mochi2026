@@ -82,13 +82,6 @@ public class SimWrapper {
         // This ensures cameras see AprilTags based on actual robot position
         Pose2d groundTruthPose = m_groundTruthSim.getGroundTruthPose();
         m_visionSim.simulationPeriodic(groundTruthPose);
-
-        // $TODO - This should always be shown, even when not in simulation.
-        // Debug field visualization
-        //m_showVisionOnField.showEstimatedPoseAndWheels(
-        //    ShowVisionOnField.FieldType.SIMULATION_FIELD, driveState);
-        //m_showVisionOnField.showGroundTruthPoseOnField(
-        //    ShowVisionOnField.FieldType.SIMULATION_FIELD, groundTruthPose);
     }
 
     /**
@@ -131,6 +124,11 @@ public class SimWrapper {
         m_groundTruthSim.cycleResetPosition(blueAlliancePose);
     }
 
+    /**  Gets the ground truth pose from the simulation. */
+    public Pose2d getGroundTruthPose() {
+        return m_groundTruthSim.getGroundTruthPose();
+    }
+
     /**
      * Get the simulation debug Field2d for visualization.
      *
@@ -140,9 +138,10 @@ public class SimWrapper {
         // This should ONLY be called when we're in simulation, since PhotonVision sim field is
         // only created in simulation.  Also, we ONLY allow adding to sim field when
         // we're in SIM_DEBUG mode.
-        if (!SimCheck.isSimulationDebug()) {
-            throw new IllegalStateException("getSimDebugField should only be in SIM_DEBUG mode");
-        }
+        // $TODO - Add this check back
+        // if (!SimCheck.isSimulationDebug()) {
+        //     throw new IllegalStateException("getSimDebugField should only be in SIM_DEBUG mode");
+        // }
 
         return m_visionSim.getSimDebugField();
     }
