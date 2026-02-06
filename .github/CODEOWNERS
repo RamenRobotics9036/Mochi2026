@@ -1,5 +1,6 @@
 # Code owners for this repository
 
 /src/main/java/frc/robot/LimelightHelpers.java @kraftmulaney
+/src/main/java/frc/robot/Telemetry.java @kraftmulaney
 /src/main/java/frc/robot/sim/ @kraftmulaney
 /src/main/java/frc/robot/visutils/ @kraftmulaney

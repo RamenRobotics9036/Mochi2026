@@ -2,7 +2,6 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -20,11 +19,16 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
+/** NOTE: Do not add extra Telemetry for logging or dashboard in this file!
+ * Telemetry.java is only for CTRE swerve drive telemetry, and needs
+ * to be highly optimized since it runs at a high frequency and is called in the
+ * critical path of the drivetrain code≈.
+ */
 public class Telemetry {
     private final double MaxSpeed;
 
     /**
-     * Construct a telemetry object, with the specified max speed of the robot
+     * Construct a telemetry object, with the specified max speed of the robot.
      *
      * @param maxSpeed Maximum speed in meters per second
      */
