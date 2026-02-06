@@ -96,12 +96,12 @@ public class ShowVisionOnField {
         Optional<Field2d> field = (fieldType == FieldType.REAL_FIELD) ? m_realField : m_simulationField;
         field.ifPresent(f -> {
             // Clear both objects first
-            f.getObject("KalmanVisionPoseConverged").setPoses();
-            f.getObject("KalmanVisionPoseNotConverged").setPoses();
+            f.getObject("ZKalmanVisionPoseConverged").setPoses();
+            f.getObject("ZKalmanVisionPoseNotConverged").setPoses();
 
             // Show on the appropriate object based on convergence
             kalmanPose.ifPresent(pose -> {
-                String objectName = hasConverged ? "KalmanVisionPoseConverged" : "KalmanVisionPoseNotConverged";
+                String objectName = hasConverged ? "ZKalmanVisionPoseConverged" : "ZKalmanVisionPoseNotConverged";
                 f.getObject(objectName).setPose(pose);
             });
         });

@@ -89,7 +89,7 @@ public class Robot extends TimedRobot {
             ShowVisionOnField.FieldType.SIMULATION_FIELD, showVisPose);
 
         // Show VisionKalmanFilter converged pose (offset forward for visibility)
-        final double kKalmanPoseDisplayOffset = 1.0; // meters forward offset for visibility
+        final double kKalmanPoseDisplayOffset = 0.4; // meters forward offset for visibility
         Optional<Pose2d> kalmanPose = m_robotContainer.m_visionKalmanFilter.isInitialized()
             ? Optional.of(m_robotContainer.m_visionKalmanFilter.getEstimate()
                 .transformBy(new Transform2d(kKalmanPoseDisplayOffset, 0, new Rotation2d())))

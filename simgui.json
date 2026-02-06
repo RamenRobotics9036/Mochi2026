@@ -47,20 +47,6 @@
           "selectable": false,
           "width": 0.30000001192092896
         },
-        "KalmanVisionPoseConverged": {
-          "arrows": false,
-          "image": "camera-locked.png",
-          "length": 0.6000000238418579,
-          "selectable": false,
-          "width": 0.6000000238418579
-        },
-        "KalmanVisionPoseNotConverged": {
-          "arrows": false,
-          "image": "camera-nolock.png",
-          "length": 0.6000000238418579,
-          "selectable": false,
-          "width": 0.6000000238418579
-        },
         "Robot": {
           "arrowColor": [
             1.0,
@@ -96,6 +82,20 @@
           ],
           "selectable": false,
           "weight": 2.0
+        },
+        "ZKalmanVisionPoseConverged": {
+          "arrows": false,
+          "image": "camera-locked.png",
+          "length": 1.0499999523162842,
+          "selectable": false,
+          "width": 1.0499999523162842
+        },
+        "ZKalmanVisionPoseNotConverged": {
+          "arrows": false,
+          "image": "camera-nolock.png",
+          "length": 1.0499999523162842,
+          "selectable": false,
+          "width": 1.0499999523162842
         },
         "apriltag": {
           "arrows": false,
