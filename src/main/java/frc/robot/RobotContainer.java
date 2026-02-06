@@ -280,10 +280,6 @@ public class RobotContainer {
             joystick.povLeft().onTrue(
                 drivetrain
                     .runOnce(() -> m_simWrapper.cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
-
-            // POV down resets the vision Kalman filter
-            joystick.povDown().onTrue(
-                Commands.runOnce(() -> m_visionKalmanFilter.reset()));
         }
 
         // Hook up the telemetry logger to the drivetrain periodic updates
@@ -330,5 +326,8 @@ public class RobotContainer {
         if (Robot.isSimulation()) {
             m_simWrapper.resetSimPose(pose);
         }
+
+        // Reset the vision-only Kalman filter
+        m_visionKalmanFilter.reset();
     }
 }
