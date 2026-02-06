@@ -136,12 +136,10 @@ public class SimWrapper {
      */
     public Field2d getSimDebugField() {
         // This should ONLY be called when we're in simulation, since PhotonVision sim field is
-        // only created in simulation.  Also, we ONLY allow adding to sim field when
-        // we're in SIM_DEBUG mode.
-        // $TODO - Add this check back
-        // if (!SimCheck.isSimulationDebug()) {
-        //     throw new IllegalStateException("getSimDebugField should only be in SIM_DEBUG mode");
-        // }
+        // only created in simulation.
+        if (!Robot.isSimulation()) {
+            throw new IllegalStateException("getSimDebugField should only be in simulation mode");
+        }
 
         return m_visionSim.getSimDebugField();
     }
