@@ -141,6 +141,13 @@ public class SimWrapper {
      * @return The VisionSystemSim's debug field, or null if not in simulation
      */
     public Field2d getSimDebugField() {
+        // This should ONLY be called when we're in simulation, since PhotonVision sim field is
+        // only created in simulation.  Also, we ONLY allow adding to sim field when
+        // we're in SIM_DEBUG mode.
+        if (!SimCheck.isSimulationDebug()) {
+            throw new IllegalStateException("getSimDebugField should only be in SIM_DEBUG mode");
+        }
+
         return m_visionSim.getSimDebugField();
     }
 }

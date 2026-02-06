@@ -179,6 +179,6 @@ public final class Constants {
         }
 
         /** Current simulation mode. */
-        public static final SimMode currentMode = SimMode.SIM_DEBUG;
+        public static final SimMode currentMode = SimMode.SIM_NORMAL;
     }
 }
