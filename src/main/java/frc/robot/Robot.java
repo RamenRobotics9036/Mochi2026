@@ -72,11 +72,11 @@ public class Robot extends TimedRobot {
       m_robotContainer.m_limelightOdometry.periodic();
     }
 
-    if (Robot.isSimulation() && m_robotContainer.m_showVisionOnField != null) {
-        Optional<Pose2d> showVisPose = m_robotContainer.m_limelightOdometry.getLatestVisPose();
-        m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(
-            ShowVisionOnField.FieldType.SIMULATION_FIELD, showVisPose);
+    Optional<Pose2d> showVisPose = Optional.empty();
+    if (Robot.isSimulation()) {
+        showVisPose = m_robotContainer.m_limelightOdometry.getLatestVisPose();
     }
+    m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(showVisPose);
 
     CommandScheduler.getInstance().run();
 

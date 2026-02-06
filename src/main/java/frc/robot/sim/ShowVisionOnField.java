@@ -15,12 +15,6 @@ import java.util.Optional;
  * Class to show vision targets on the field.
  */
 public class ShowVisionOnField {
-    // $TODO - This should go away
-    public enum FieldType {
-        REAL_GLASS_FIELD,
-        SIMULATION_FIELD
-    }
-
     /** Module locations relative to robot center (from TunerConstants). */
     private static final Translation2d[] MODULE_LOCATIONS = {
         new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
@@ -99,24 +93,26 @@ public class ShowVisionOnField {
     /**
      * Shows or hides the point-in-time vision estimate on the field.
      *
-     * @param fieldType The field to display on (REAL_GLASS_FIELD or SIMULATION_FIELD)
      * @param visionPose The vision pose if present, or empty to hide the estimate
      */
-    public void showPointInTimeVisionEstimate(FieldType fieldType, Optional<Pose2d> visionPose) {
-        // $TODO
-        return;
+    public void showPointInTimeVisionEstimate(Optional<Pose2d> visionPose) {
+        // Always show point in time vision pose on real/glass field
+        m_realGlassField.ifPresent(f -> {
+            visionPose.ifPresentOrElse(
+                pose -> f.getObject("VisionEstimation").setPose(pose),
+                () -> f.getObject("VisionEstimation").setPoses()
+            );
+        });
 
-        // if (fieldType == FieldType.SIMULATION_FIELD && !SimCheck.isSimulationDebug()) {
-        //     throw new IllegalArgumentException("We dont draw on sim field unless SIM_DEBUG mode");
-        // }
-
-        // Optional<Field2d> field = (fieldType == FieldType.REAL_GLASS_FIELD) ? m_realGlassField : m_simulationField;
-        // field.ifPresent(f -> {
-        //     visionPose.ifPresentOrElse(
-        //         pose -> f.getObject("VisionEstimation").setPose(pose),
-        //         () -> f.getObject("VisionEstimation").setPoses()
-        //     );
-        // });
+        // Only show on debug field if simulation is running in debug mode
+        if (Robot.isSimulation()) {
+            m_simulationField.ifPresent(f -> {
+                visionPose.ifPresentOrElse(
+                    pose -> f.getObject("VisionEstimation").setPose(pose),
+                    () -> f.getObject("VisionEstimation").setPoses()
+                );
+            });
+        }
     }
 
     /**
