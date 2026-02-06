@@ -167,18 +167,4 @@ public final class Constants {
         /** Linear velocity threshold for "motionless" detection (m/s). */
         public static final double kMotionlessLinearThreshold = 0.05;
     }
-
-    /**
-     * Constants for simulation mode configuration.
-     */
-    public static final class SimConstants {
-        /** Available simulation modes. */
-        public enum SimMode {
-            SIM_NORMAL,
-            SIM_DEBUG
-        }
-
-        /** Current simulation mode. */
-        public static final SimMode currentMode = SimMode.SIM_NORMAL;
-    }
 }

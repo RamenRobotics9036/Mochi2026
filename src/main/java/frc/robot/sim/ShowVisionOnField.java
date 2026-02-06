@@ -6,7 +6,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import frc.robot.Constants.SimConstants.SimMode;
 import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
 import java.util.Optional;
