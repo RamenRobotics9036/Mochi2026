@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.generated.TunerConstants;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
-import frc.robot.sim.SimCheck;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.VisionSubsystem;
