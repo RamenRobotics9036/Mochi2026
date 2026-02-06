@@ -90,13 +90,13 @@ public final class Constants {
     public static final class VisionConstants {
         /** Network table name for the chassis-mounted localization camera. */
         public static final String kFixedCameraName = "limelight-fixed";
-        
+
         /** Network table name for the turret-mounted tracking camera. */
         public static final String kTurretCameraName = "limelight-turret";
 
         /** Index of the Limelight pipeline configured for AprilTag 3D localization. */
         public static final int PIPELINE_TAGS = 0;
-        
+
         /** Index of the Limelight pipeline configured for color-based object detection. */
         public static final int PIPELINE_FUEL = 1;
 
@@ -119,10 +119,10 @@ public final class Constants {
 
         /** Distance threshold in meters beyond which AprilTag data is considered too noisy to trust. */
         public static final double MAX_TAG_DISTANCE = 4.0;
-        
+
         /** Maximum distance allowed to execute a manual 'Snap-to-Pose' realignment. */
         public static final double SNAP_MAX_DISTANCE = 3.5;
-        
+
         /** Number of visible tags required before the Pose Estimator accepts a vision update. */
         public static final int MIN_TAG_COUNT = 1;
 
@@ -130,5 +130,41 @@ public final class Constants {
         public static final String LIMELIGHT_NAME = kFixedCameraName;
         /** The 0,0,0 coordinate reference for the 2026 FRC field. */
         public static final Pose2d FIELD_ORIGIN = new Pose2d();
+    }
+
+    /**
+     * Constants for the Vision-only Kalman filter used for precise
+     * stationary position estimation with multi-tag measurements.
+     */
+    public static final class VisionKalmanConstants {
+        // Initial covariance (high uncertainty at start)
+        /** Initial position variance in m². */
+        public static final double kInitialPositionVariance = 1.0;
+        /** Initial angle variance in rad². */
+        public static final double kInitialAngleVariance = 0.5;
+
+        // Process noise Q (very small - robot is stationary)
+        /** Position process noise in m². */
+        public static final double kProcessNoisePosition = 0.0001;
+        /** Angle process noise in rad². */
+        public static final double kProcessNoiseAngle = 0.00005;
+
+        // Measurement noise R base values (before tag count scaling)
+        /** Base position measurement noise in m². */
+        public static final double kBasePositionNoise = 0.05;
+        /** Base angle measurement noise in rad². */
+        public static final double kBaseAngleNoise = 0.02;
+
+        // Convergence thresholds
+        /** Position std dev threshold for convergence (meters). */
+        public static final double kConvergencePositionThreshold = 0.02;
+        /** Angle std dev threshold for convergence (degrees). */
+        public static final double kConvergenceAngleThresholdDegrees = 1.0;
+
+        // Motionless detection
+        /** Gyro angular rate threshold for "motionless" detection (deg/sec). */
+        public static final double kMotionlessGyroThreshold = 2.0;
+        /** Linear velocity threshold for "motionless" detection (m/s). */
+        public static final double kMotionlessLinearThreshold = 0.05;
     }
 }
