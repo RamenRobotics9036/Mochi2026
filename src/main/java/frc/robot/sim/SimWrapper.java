@@ -26,7 +26,6 @@ public class SimWrapper {
     private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_drivetrain;
     private final GroundTruthSimInterface m_groundTruthSim;
     private final VisionSimInterface m_visionSim;
-    private final ShowVisionOnField m_showVisionOnField;
 
     /**
      * Creates a new SimWrapper.
@@ -59,10 +58,6 @@ public class SimWrapper {
         if (m_visionSim == null) {
             throw new IllegalStateException("VisionSimInterface creation failed");
         }
-
-        // Create field visualization helper
-        Field2d debugField = m_visionSim.getSimDebugField();
-        m_showVisionOnField = new ShowVisionOnField(null, debugField);
     }
 
     /**
@@ -88,11 +83,12 @@ public class SimWrapper {
         Pose2d groundTruthPose = m_groundTruthSim.getGroundTruthPose();
         m_visionSim.simulationPeriodic(groundTruthPose);
 
+        // $TODO - This should always be shown, even when not in simulation.
         // Debug field visualization
-        m_showVisionOnField.showEstimatedPoseAndWheels(
-            ShowVisionOnField.FieldType.SIMULATION_FIELD, driveState);
-        m_showVisionOnField.showGroundTruthPoseOnField(
-            ShowVisionOnField.FieldType.SIMULATION_FIELD, groundTruthPose);
+        //m_showVisionOnField.showEstimatedPoseAndWheels(
+        //    ShowVisionOnField.FieldType.SIMULATION_FIELD, driveState);
+        //m_showVisionOnField.showGroundTruthPoseOnField(
+        //    ShowVisionOnField.FieldType.SIMULATION_FIELD, groundTruthPose);
     }
 
     /**
