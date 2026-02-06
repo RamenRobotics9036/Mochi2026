@@ -54,10 +54,6 @@ public class BasicInfoDashboard {
         m_basicInfoTable.getBooleanTopic("VisionKalmanConverged").publish();
     private final BooleanPublisher m_visionKalmanActive =
         m_basicInfoTable.getBooleanTopic("VisionKalmanActive").publish();
-    private final DoublePublisher m_visionKalmanMeasurementCount =
-        m_basicInfoTable.getDoubleTopic("VisionKalmanMeasurementCount").publish();
-    private final DoublePublisher m_visionKalmanPositionStdDev =
-        m_basicInfoTable.getDoubleTopic("VisionKalmanPositionStdDev").publish();
     private final BooleanPublisher m_visionKalmanIsRobotStill =
         m_basicInfoTable.getBooleanTopic("VisionKalmanIsRobotStill").publish();
     private final StringPublisher m_visionKalmanSecondsStill =
@@ -230,13 +226,9 @@ public class BasicInfoDashboard {
                     pose.getRotation().getDegrees()
                 });
                 m_visionKalmanConverged.set(filter.hasConverged());
-                m_visionKalmanMeasurementCount.set(filter.getMeasurementCount());
-                m_visionKalmanPositionStdDev.set(filter.getPositionStdDev());
             } else {
                 m_visionKalmanPose.set(new double[] {0, 0, 0});
                 m_visionKalmanConverged.set(false);
-                m_visionKalmanMeasurementCount.set(0);
-                m_visionKalmanPositionStdDev.set(Double.MAX_VALUE);
             }
         }
 
