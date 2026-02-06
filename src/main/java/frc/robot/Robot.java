@@ -26,7 +26,6 @@ import frc.robot.subsystems.auto.AutoLogic;
  */
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
-  private ShowVisionOnField m_showVisionOnField;
 
   private final RobotContainer m_robotContainer;
 
@@ -36,12 +35,6 @@ public class Robot extends TimedRobot {
    */
   public Robot() {
     m_robotContainer = new RobotContainer();
-
-      // $VISIONSIM - Wrapper for sim features
-    if (Robot.isSimulation() && m_robotContainer.m_simWrapper != null) {
-        m_showVisionOnField = new ShowVisionOnField(
-            null, m_robotContainer.m_simWrapper.getSimDebugField());
-    }
   }
 
   /**
@@ -79,9 +72,9 @@ public class Robot extends TimedRobot {
       m_robotContainer.m_limelightOdometry.periodic();
     }
 
-    if (Robot.isSimulation() && m_showVisionOnField != null) {
+    if (Robot.isSimulation() && m_robotContainer.m_showVisionOnField != null) {
         Optional<Pose2d> showVisPose = m_robotContainer.m_limelightOdometry.getLatestVisPose();
-        m_showVisionOnField.showPointInTimeVisionEstimate(
+        m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(
             ShowVisionOnField.FieldType.SIMULATION_FIELD, showVisPose);
     }
 

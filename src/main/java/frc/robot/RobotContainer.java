@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
 import frc.robot.generated.TunerConstants;
 import frc.robot.sim.JoystickInputsRecord;
+import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.VisionSubsystem;
@@ -66,6 +67,7 @@ public class RobotContainer {
 
     /** Simulation wrapper - null when not in simulation. */
     public final SimWrapper m_simWrapper;
+    public final ShowVisionOnField m_showVisionOnField;
 
     public final LimelightOdometry m_limelightOdometry;
 
@@ -85,9 +87,13 @@ public class RobotContainer {
             m_simWrapper = new SimWrapper(
                 drivetrain,
                 this::resetRobotPose);
+
+            m_showVisionOnField = new ShowVisionOnField(
+                null, m_simWrapper.getSimDebugField());
         }
         else {
             m_simWrapper = null;
+            m_showVisionOnField = null;
         }
 
         // For now, we do vision odemetry only in simulation.  Eventually, this will
