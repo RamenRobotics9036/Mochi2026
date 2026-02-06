@@ -1,3 +1,15 @@
+//
+// Ground truth simulator, by Ramen Robotics (9036), 2026.
+//
+// In simulation, field shows BOTH:
+// 1) The estimated robot pose based on odometry - This is the pose that our code
+//   "thinks" the robot is at on the field.
+// 2) The GROUND TRUTH POSE.  This is a simulation of the actual PHYSICAL robot pose.
+//
+// Pressing trigger "offsets" the estimated pose, so that you can test how your
+// robot code corrects it.
+//
+
 package frc.robot.sim;
 
 import com.ctre.phoenix6.Utils;

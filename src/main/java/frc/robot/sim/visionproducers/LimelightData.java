@@ -1,3 +1,14 @@
+//
+// Photon-to-Limelight sim converter, by Ramen Robotics (9036), 2026.
+//
+// PhotonVision has a great simulation of April Tag detection.
+// However, it doesn't populate the NetworkTables for Limelight compatability.
+//
+// This class converts PhotonVision's data structures into the format expected by
+// the Limelight NetworkTables entries, so that teams using LimeLightHelpers.java
+// can also do vision simulation.
+//
+
 package frc.robot.sim.visionproducers;
 
 /**
