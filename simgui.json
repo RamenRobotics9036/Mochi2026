@@ -86,14 +86,14 @@
         "ZKalmanVisionPoseConverged": {
           "arrows": false,
           "image": "camera-locked.png",
-          "length": 1.0499999523162842,
+          "length": 0.8399999737739563,
           "selectable": false,
           "width": 1.0499999523162842
         },
         "ZKalmanVisionPoseNotConverged": {
           "arrows": false,
           "image": "camera-nolock.png",
-          "length": 1.0499999523162842,
+          "length": 0.8399999737739563,
           "selectable": false,
           "width": 1.0499999523162842
         },
