@@ -14,7 +14,6 @@ import frc.robot.Robot;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 
@@ -90,6 +89,16 @@ public class LimelightOdometry {
                 mt1.pose.getX(),
                 mt1.pose.getY(),
                 mt1.pose.getRotation().getDegrees()));
+        }
+
+        // Try getting RAW fiducials directly from NetworkTables
+        LimelightHelpers.RawFiducial[] fiducials =
+            LimelightHelpers.getRawFiducials(m_limelightName);
+        if (fiducials.length > 0) {
+            String ids = Arrays.stream(fiducials)
+                .map(f -> String.valueOf(f.id))
+                .collect(Collectors.joining(", "));
+            sb.append(", rawFiducials=[" + ids + "]");
         }
 
         System.out.println(sb.toString());
