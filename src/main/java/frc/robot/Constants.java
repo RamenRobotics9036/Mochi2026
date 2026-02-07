@@ -72,9 +72,12 @@ public final class Constants {
      * Constants for the Intake subsystem rollers.
      */
     public static final class ShooterConstants {
-        /** CAN IDs for the Talon FX motor controllers. */
+        /** CAN ID for the left SparkFlex motor controller. */
         public static final int kLMotorID = 40;
+        /** CAN ID for the right SparkFlex motor controller. */
         public static final int kRMotorID = 41;
+        /** SmartCurrentLimit in amps*/
+        public static final int kCurrentLimit = 40; //TODO: filler value
         /** PWM channer for the linear actuator servo. */
         public static final int kChannel = 0; //TODO: filler value
     }
