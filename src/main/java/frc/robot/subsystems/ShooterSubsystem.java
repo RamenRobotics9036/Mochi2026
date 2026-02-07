@@ -7,9 +7,10 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 
-public class ShooterSubsystem {
+public class ShooterSubsystem extends SubsystemBase {
     private SparkFlex m_lMotor;
     private SparkFlex m_rMotor;
 
