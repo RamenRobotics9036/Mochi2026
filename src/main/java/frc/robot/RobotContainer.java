@@ -26,7 +26,6 @@ import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.LimelightOdometry;
 
@@ -75,9 +74,6 @@ public class RobotContainer {
     public final ShowVisionOnField m_showVisionOnField;
 
     public final LimelightOdometry m_limelightOdometry;
-
-    /** The vision subsystem handles Limelight MegaTag2 localization. */
-    public final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain);
 
     /**
      * Constructs the RobotContainer.
