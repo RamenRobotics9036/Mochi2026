@@ -7,15 +7,17 @@ import frc.robot.Constants.ShooterConstants;
 public class ShooterSubsystem {
     private TalonFX m_lMotor;
     private TalonFX m_rMotor;
+    private Servo m_hood;
 
     public ShooterSubsystem(){
         m_lMotor = new TalonFX(ShooterConstants.kLMotorID);
         m_rMotor = new TalonFX(ShooterConstants.kRMotorID);
+        m_hood = new Servo(ShooterConstants.kChannel);
     }
 
     public void SetSpeed(double speed){
         m_lMotor.set(speed);
-        //Inverted. Facing the opposite direction.
+        //Facing the opposite direction.
         m_rMotor.set(-speed);
     }
     
