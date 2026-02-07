@@ -87,6 +87,8 @@ public final class Constants {
     /**
      * Constants for the Vision subsystem and dual Limelight configuration.
      */
+    // To upload fmap:
+    // curl -X POST http://10.90.36.15:5807/upload-fieldmap -H "Content-Type: application/json" --data-binary @FRC2026_ANDYMARK.fmap
     public static final class VisionConstants {
         /** Limelight name for odometry on real robot. */
         public static final String kLimelightNameReal = "limelight-fixed";
