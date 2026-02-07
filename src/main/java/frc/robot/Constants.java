@@ -55,17 +55,127 @@ public final class Constants {
     }
 
     /**
-     * Constants for the Intake subsystem rollers.
+     * Constants for the 2026 Intake subsystems.
      */
     public static final class IntakeConstants {
-        /** CAN ID for the intake SPARK MAX motor controller. */
-        public static final int kIntakeMotorID = 30;
-        /** Default speed for pulling game pieces into the robot. */
-        public static final double kIntakeSpeed = 0.8;
-        /** Default speed for ejecting game pieces from the robot. */
-        public static final double kOuttakeSpeed = -0.8;
-        /** Current threshold in Amps used to detect if a game piece is fully secured. */
-        public static final int kStallLimit = 40; // Amps
+        private IntakeConstants() {
+            throw new UnsupportedOperationException("This is a utility class!");
+        }
+
+        /**
+         * Intake lift configuration (dual SPARK FLEX + NEO Vortex).
+         * Encoder units are rotations.
+         */
+        public static final class Lift {
+            /** CAN ID for the left lift SPARK FLEX. */
+            public static final int kLeftMotorId = 31;
+            /** CAN ID for the right lift SPARK FLEX. */
+            public static final int kRightMotorId = 32;
+
+            /** True if the left lift motor should be inverted. */
+            public static final boolean kLeftMotorInverted = false;
+            /** True if the right lift motor should be inverted. */
+            public static final boolean kRightMotorInverted = true;
+
+            /** Closed-loop PID gains for position control. */
+            public static final double kP = 3.0;
+            public static final double kI = 0.0;
+            public static final double kD = 0.0;
+
+            /** Feedforward gains (volts) for gravity compensation. */
+            public static final double kS = 0.0;
+            public static final double kG = 0.35;
+            public static final double kV = 0.0;
+            public static final double kA = 0.0;
+
+            /**
+             * Conversion from encoder rotations to arm angle (radians).
+             * This must match the lift's gear ratio and geometry.
+             */
+            public static final double kRotationsToRadians = 2.0 * Math.PI;
+            /** Angle offset in radians applied to the feedforward model. */
+            public static final double kAngleOffsetRadians = 0.0;
+
+            /** Target positions for the lift in rotations. */
+            public static final double kStowedPositionRotations = 0.0;
+            public static final double kDeployedPositionRotations = 12.0;
+
+            /** Soft limit buffer added beyond the min/max target positions. */
+            public static final double kSoftLimitBufferRotations = 0.5;
+            /** Forward soft limit (rotations). */
+            public static final double kSoftLimitForwardRotations =
+                Math.max(kStowedPositionRotations, kDeployedPositionRotations) + kSoftLimitBufferRotations;
+            /** Reverse soft limit (rotations). */
+            public static final double kSoftLimitReverseRotations =
+                Math.min(kStowedPositionRotations, kDeployedPositionRotations) - kSoftLimitBufferRotations;
+
+            /** Enable forward/reverse limit switches (normally-closed wiring). */
+            public static final boolean kEnableForwardLimitSwitch = true;
+            public static final boolean kEnableReverseLimitSwitch = true;
+
+            /**
+             * Output range for the lift closed loop (percent output).
+             * Keep this conservative to protect the arm and gearbox.
+             */
+            public static final double kMinOutput = -0.8;
+            public static final double kMaxOutput = 0.8;
+
+            /** Smart current limit for each lift motor (amps). */
+            public static final int kSmartCurrentLimitAmps = 50;
+            /** Current threshold (amps) used for stall detection. */
+            public static final double kStallCurrentThresholdAmps = 60.0;
+            /** Minimum applied output required to evaluate stall detection. */
+            public static final double kStallMinAppliedOutput = 0.2;
+            /** Time the current must exceed the threshold before a stall fault is latched. */
+            public static final double kStallTimeSeconds = 0.25;
+
+            /** Tolerance for determining if the lift has reached its target (rotations). */
+            public static final double kPositionToleranceRotations = 0.15;
+        }
+
+        /**
+         * Intake roller configuration (single SPARK MAX + NEO Vortex).
+         */
+        public static final class Roller {
+            /** CAN ID for the intake roller SPARK MAX. */
+            public static final int kRollerMotorId = 30;
+
+            /** True if positive output should correspond to intake direction (CCW). */
+            public static final boolean kMotorInverted = false;
+
+            /** Percent outputs for roller modes (positive = intake direction). */
+            public static final double kIntakeSpeed = 0.75;
+            public static final double kOuttakeSpeed = 0.75;
+            public static final double kEjectJamSpeed = 0.6;
+
+            /** Smart current limit for the roller motor (amps). */
+            public static final int kSmartCurrentLimitAmps = 40;
+
+            /** Minimum applied output required before current-based detection is evaluated. */
+            public static final double kMinOutputForDetection = 0.1;
+
+            /** Current threshold (amps) used to detect a secured game piece. */
+            public static final double kPieceDetectCurrentThresholdAmps = 35.0;
+            /** Debounce time for piece detection (seconds). */
+            public static final double kPieceDetectTimeSeconds = 0.15;
+
+            /** Current threshold (amps) used for jam detection. */
+            public static final double kJamCurrentThresholdAmps = 50.0;
+            /** Debounce time for jam detection (seconds). */
+            public static final double kJamDetectTimeSeconds = 0.10;
+        }
+
+        /**
+         * Intake sequence timing and safety limits.
+         */
+        public static final class Sequence {
+            /** Max time allowed to deploy the lift before faulting (seconds). */
+            public static final double kDeployTimeoutSeconds = 1.5;
+            /** Max time allowed to stow the lift before faulting (seconds). */
+            public static final double kStowTimeoutSeconds = 1.5;
+            /** Time to reverse the roller when a jam is detected (seconds). */
+            public static final double kJamReverseSeconds = 0.25;
+        }
     }
 
     /**
