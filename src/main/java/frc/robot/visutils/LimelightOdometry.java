@@ -38,6 +38,7 @@ public class LimelightOdometry {
     /** Periodic update; should be called from robot periodic. */
     public void periodic() {
         addVisionMeasurementV1();
+        System.out.println("Hi");
     }
 
     private void clearResults() {
@@ -67,10 +68,20 @@ public class LimelightOdometry {
 
     private void addVisionMeasurementV1() {
         LimelightHelpers.PoseEstimate mt1 =
-            LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+            LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-fixed");
+        double tx = LimelightHelpers.getTX("limelight-fixed");
+//        System.out.println(tx);
+
+        Pose2d tempPose = LimelightHelpers.getBotPose2d_wpiBlue("limelight-fixed");
+        System.out.println("Pose: " +  tempPose);
+
+        double id = LimelightHelpers.getFiducialID("limelight-fixed");
+        System.out.println("ID"+ id); 
+  
 
         // Save the latest vision estimate so that it can be queried
         m_latestVisPose = Optional.ofNullable(mt1).map(est -> est.pose);
+        System.out.println(m_latestVisPose);
 
         if (mt1 == null) {
             // In simulation, limelight may not be present until a few cycles of periodic, since we
