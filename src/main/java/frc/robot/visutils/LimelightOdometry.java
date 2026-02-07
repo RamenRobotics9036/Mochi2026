@@ -71,9 +71,35 @@ public class LimelightOdometry {
         }
     }
 
+    // $TODO - This should go away
+    private void printDebugLimelightInfo(LimelightHelpers.PoseEstimate mt1) {
+        StringBuilder sb = new StringBuilder("LimelightOdometry: ");
+
+        // Horizontal offset to primary target (degrees)
+        double tempTx = LimelightHelpers.getTX(m_limelightName);
+        sb.append(String.format("tx=%7.2f°", tempTx));
+
+        double tempId = LimelightHelpers.getFiducialID(m_limelightName);
+        sb.append(String.format(", ID=%4s", tempId >= 0 ? String.valueOf((int) tempId) : "None"));
+
+        if (mt1 == null) {
+            sb.append(", No pose estimate");
+        } else {
+            sb.append(String.format(", tags=%d, pose=(%6.2f, %6.2f, %7.1f°)",
+                mt1.tagCount,
+                mt1.pose.getX(),
+                mt1.pose.getY(),
+                mt1.pose.getRotation().getDegrees()));
+        }
+
+        System.out.println(sb.toString());
+    }
+
     private void addVisionMeasurementV1() {
         LimelightHelpers.PoseEstimate mt1 =
             LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName);
+
+        printDebugLimelightInfo(mt1);
 
         // Save the latest vision estimate so that it can be queried
         m_latestVisPose = Optional.ofNullable(mt1).map(est -> est.pose);
