@@ -8,7 +8,9 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers;
+import frc.robot.Robot;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.Arrays;
 import java.util.Optional;
@@ -20,6 +22,7 @@ import java.util.stream.Collectors;
  * Limelight-based odometry measurement source.
  */
 public class LimelightOdometry {
+    private final String m_limelightName;
     private VisionSimInterface.EstimateConsumer m_estConsumer;
     private Matrix<N3, N1> m_curStdDevs = kSingleTagStdDevs;
     private double m_lastTimestamp = 0;
@@ -33,6 +36,9 @@ public class LimelightOdometry {
     /** Constructor. */
     public LimelightOdometry(VisionSimInterface.EstimateConsumer poseConsumer) {
         this.m_estConsumer = poseConsumer;
+        this.m_limelightName = Robot.isSimulation()
+            ? VisionConstants.kLimelightNameSim
+            : VisionConstants.kLimelightNameReal;
     }
 
     /** Periodic update; should be called from robot periodic. */
@@ -53,7 +59,7 @@ public class LimelightOdometry {
         m_numLockedTags = numLockedTags;
 
         // Horizontal offset to primary target (degrees)
-        m_tx = LimelightHelpers.getTX("limelight");
+        m_tx = LimelightHelpers.getTX(m_limelightName);
 
         // Build comma-separated list of visible tag IDs
         if (rawFiducials != null && rawFiducials.length > 0) {
@@ -67,7 +73,7 @@ public class LimelightOdometry {
 
     private void addVisionMeasurementV1() {
         LimelightHelpers.PoseEstimate mt1 =
-            LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight");
+            LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName);
 
         // Save the latest vision estimate so that it can be queried
         m_latestVisPose = Optional.ofNullable(mt1).map(est -> est.pose);

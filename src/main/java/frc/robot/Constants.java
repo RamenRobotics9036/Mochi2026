@@ -126,8 +126,12 @@ public final class Constants {
         /** Number of visible tags required before the Pose Estimator accepts a vision update. */
         public static final int MIN_TAG_COUNT = 1;
 
-        /** Default camera name for legacy support modules. */
-        public static final String LIMELIGHT_NAME = kFixedCameraName;
+        /** Limelight name for odometry on real robot. */
+        public static final String kLimelightNameReal = "limelight-fixed";
+
+        /** Limelight name for odometry in simulation. */
+        public static final String kLimelightNameSim = "limelight";
+
         /** The 0,0,0 coordinate reference for the 2026 FRC field. */
         public static final Pose2d FIELD_ORIGIN = new Pose2d();
     }
