@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -23,7 +24,7 @@ public class ShooterTestCommand extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
-        m_shooter.SetSpeed(m_controller.getLeftY());
+        m_shooter.SetSpeed(MathUtil.applyDeadband(m_controller.getLeftY(), 0.1)*0.1);
     }
 
     // Called once the command ends or is interrupted.
