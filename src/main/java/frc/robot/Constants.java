@@ -73,8 +73,8 @@ public final class Constants {
      */
     public static final class ShooterConstants {
         /** CAN IDs for the Talon FX motor controllers. */
-        public static final int kLMotorID = 20; //TODO: filler value
-        public static final int kRMotorID = 21; //TODO: filler value
+        public static final int kLMotorID = 40;
+        public static final int kRMotorID = 41;
         /** PWM channer for the linear actuator servo. */
         public static final int kChannel = 0; //TODO: filler value
     }
