@@ -106,22 +106,16 @@ public class RobotContainer {
         m_showVisionOnField = new ShowVisionOnField(
             m_glassField, debugField);
 
-        // For now, we do vision odemetry only in simulation.  Eventually, this will
-        // be replaced by our real Vision Subsystem.
-        if (Robot.isSimulation()) {
-            m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
-            basicInfoDashboard.setVisionConfidenceSupplier(
-                m_limelightOdometry::getCurrentConfidenceScore);
-            basicInfoDashboard.setNumLockedTagsSupplier(
-                m_limelightOdometry::getNumLockedTags);
-            basicInfoDashboard.setTxSupplier(
-                m_limelightOdometry::getTx);
-            basicInfoDashboard.setTargetListSupplier(
-                m_limelightOdometry::getTargetList);
-        }
-        else {
-            m_limelightOdometry = null;
-        }
+        // Setup vision system
+        m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
+        basicInfoDashboard.setVisionConfidenceSupplier(
+            m_limelightOdometry::getCurrentConfidenceScore);
+        basicInfoDashboard.setNumLockedTagsSupplier(
+            m_limelightOdometry::getNumLockedTags);
+        basicInfoDashboard.setTxSupplier(
+            m_limelightOdometry::getTx);
+        basicInfoDashboard.setTargetListSupplier(
+            m_limelightOdometry::getTargetList);
     }
 
     /**
