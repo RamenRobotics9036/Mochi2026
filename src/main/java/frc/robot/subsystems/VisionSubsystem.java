@@ -232,7 +232,7 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public boolean isTagVisible() {
-        return LimelightHelpers.getTV(getName());
+        return (LimelightHelpers.getFiducialID("limelight") != -1.0);
     }
 
     /** @return The current vision mode for the turret camera. */
