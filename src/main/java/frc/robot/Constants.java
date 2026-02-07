@@ -85,6 +85,22 @@ public final class Constants {
     }
 
     /**
+     * Constants for joystick processing and smooth driving.
+     */
+    public static final class DriveConstants {
+        /** Joystick deadband threshold (10%). */
+        public static final double kJoystickDeadband = 0.1;
+        /** Response curve exponent for translation (2.0 = squared). */
+        public static final double kTranslationExponent = 2.0;
+        /** Response curve exponent for rotation (2.0 = squared). */
+        public static final double kRotationExponent = 2.0;
+        /** Slew rate limit for translation inputs (units per second). */
+        public static final double kTranslationSlewRate = 3.0;
+        /** Slew rate limit for rotation input (units per second). */
+        public static final double kRotationSlewRate = 3.0;
+    }
+
+    /**
      * Constants for the Vision subsystem and dual Limelight configuration.
      */
     // To upload fmap:
