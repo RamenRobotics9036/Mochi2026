@@ -197,7 +197,7 @@ public class RobotContainer {
             })
         );
 
-        shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
+        //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
 
         // Keep the drivetrain in an Idle state while the robot is disabled
         final var idle = new SwerveRequest.Idle();

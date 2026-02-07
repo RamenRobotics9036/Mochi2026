@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.subsystems.ShooterSubsystem;
 
+/**FOR TESTING PURPOSES ONLY. Uses joystick input to manually change the flywheel speed.*/
 public class ShooterTestCommand extends Command {
     private final ShooterSubsystem m_shooter;
 
@@ -24,6 +25,7 @@ public class ShooterTestCommand extends Command {
     // Called every time the scheduler runs while the command is scheduled.
     @Override
     public void execute() {
+        //May want to chaneg input for testing different things.
         m_shooter.SetSpeed(MathUtil.applyDeadband(m_controller.getLeftY(), 0.1)*0.1);
     }
 
