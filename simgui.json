@@ -114,6 +114,20 @@
         }
       },
       "/SmartDashboard/VisionSystemSim-main/Sim Field": {
+        "AAABlueTape": {
+          "arrows": false,
+          "image": "bluetape.png",
+          "length": 0.20543478429317474,
+          "selectable": false,
+          "width": 1.0499999523162842
+        },
+        "AAARedTape": {
+          "arrows": false,
+          "image": "redtape.png",
+          "length": 0.20543478429317474,
+          "selectable": false,
+          "width": 1.0499999523162842
+        },
         "EstimatedRobot": {
           "arrowWeight": 3.0,
           "length": 0.800000011920929,

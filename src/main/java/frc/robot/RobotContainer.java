@@ -31,6 +31,7 @@ import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.VisionKalmanFilter;
+import java.util.Optional;
 
 /**
  * The RobotContainer class is where the bulk of the robot structure is declared.
@@ -83,6 +84,12 @@ public class RobotContainer {
     /** Simulation wrapper - null when not in simulation. */
     public final SimWrapper m_simWrapper;
     public final ShowVisionOnField m_showVisionOnField;
+
+    /** Pose of the blue tape on the field, or empty to hide. */
+    public Optional<Pose2d> m_blueTapePose = Optional.empty();
+
+    /** Pose of the red tape on the field, or empty to hide. */
+    public Optional<Pose2d> m_redTapePose = Optional.empty();
 
     public final LimelightOdometry m_limelightOdometry;
 
