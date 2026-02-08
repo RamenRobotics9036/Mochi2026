@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 
 /**
@@ -31,13 +32,18 @@ public class DriveAccuracyTester {
     /** Vision-only Kalman filter for precise stationary position estimation. */
     private final VisionKalmanFilter m_visionKalmanFilter;
 
+    /** Callback to force-disable or re-enable vision injection into odometry. */
+    private final Consumer<Boolean> m_forceDisableVision;
+
     /**
      * @param driveSubsystem The drive subsystem
      * @param visionKalmanFilter The Kalman filter used to get converged pose estimates
+     * @param forceDisableVision Callback to force-disable (true) or re-enable (false) vision
      */
     public DriveAccuracyTester(
         CommandSwerveDrivetrain driveSubsystem,
-        VisionKalmanFilter visionKalmanFilter) {
+        VisionKalmanFilter visionKalmanFilter,
+        Consumer<Boolean> forceDisableVision) {
 
         if (driveSubsystem == null) {
             throw new IllegalArgumentException("driveSubsystem cannot be null");
@@ -45,6 +51,7 @@ public class DriveAccuracyTester {
 
         m_driveSubsystem = driveSubsystem;
         m_visionKalmanFilter = visionKalmanFilter;
+        m_forceDisableVision = forceDisableVision;
     }
 
     /** @return Current blue tape pose, or empty if hidden */
@@ -84,9 +91,14 @@ public class DriveAccuracyTester {
     }
 
     private void initializeTest() {
+        // Disable vision injection into driveTrain.  We want the path to drive PURELY based on
+        // odometry, so we can see how far off it is at the end of the path.
+        m_forceDisableVision.accept(true);
     }
 
     private void cleanupAfterTest() {
+        // Always re-enable vision (which we temporarily disabled)
+        m_forceDisableVision.accept(false);
     }
 
     /**
