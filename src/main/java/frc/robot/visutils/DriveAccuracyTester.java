@@ -1,13 +1,16 @@
 package frc.robot.visutils;
 
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.auto.AutoLogic;
-
 import java.util.Optional;
+
 
 /**
  * Manages the tape-drop accuracy test workflow.
@@ -24,13 +27,25 @@ public class DriveAccuracyTester {
     /** Pose of the red tape on the field, or empty to hide. */
     private Optional<Pose2d> m_redTapePose = Optional.of(new Pose2d(2.0, 1.0, new Rotation2d()));
 
+    /** The drive subsystem. */
+    private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_driveSubsystem;
+
     /** Vision-only Kalman filter for precise stationary position estimation. */
     private final VisionKalmanFilter m_visionKalmanFilter;
 
     /**
+     * @param driveSubsystem The drive subsystem
      * @param visionKalmanFilter The Kalman filter used to get converged pose estimates
      */
-    public DriveAccuracyTester(VisionKalmanFilter visionKalmanFilter) {
+    public DriveAccuracyTester(
+        SwerveDrivetrain<TalonFX, TalonFX, CANcoder> driveSubsystem,
+        VisionKalmanFilter visionKalmanFilter) {
+
+        if (driveSubsystem == null) {
+            throw new IllegalArgumentException("driveSubsystem cannot be null");
+        }
+
+        m_driveSubsystem = driveSubsystem;
         m_visionKalmanFilter = visionKalmanFilter;
     }
 

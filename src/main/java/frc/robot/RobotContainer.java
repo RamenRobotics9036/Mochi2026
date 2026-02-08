@@ -111,7 +111,7 @@ public class RobotContainer {
         SmartDashboard.putData("GlassField", m_glassField);
 
         AutoLogic.initShuffleboard(drivetrain);
-        m_driveAccuracyTester = new DriveAccuracyTester(m_visionKalmanFilter);
+        m_driveAccuracyTester = new DriveAccuracyTester(drivetrain, m_visionKalmanFilter);
         configureBindings();
 
         // $VISIONSIM - Wrapper for sim features
