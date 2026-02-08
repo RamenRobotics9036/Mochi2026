@@ -314,13 +314,9 @@ public class RobotContainer {
             Commands.sequence(
                 Commands.runOnce(this::clearTape),
                 Commands.runOnce(() -> {
-                    Pose2d autoStartPose = AutoLogic.getSelectedAutoStartingPose();
-                    // PathPlanner paths are authored for Blue alliance; flip for Red
-                    if (AllianceCalc.isRedAlliance()) {
-                        autoStartPose = AllianceCalc.flipFieldPose(autoStartPose);
-                    }
-                    m_blueTapePose = Optional.of(computeFrontTapePose(autoStartPose));
-                    System.out.println("Blue tape dropped at auto start: " + m_blueTapePose.get());
+                    Pose2d kalmanPose = m_visionKalmanFilter.getEstimate();
+                    m_blueTapePose = Optional.of(computeFrontTapePose(kalmanPose));
+                    System.out.println("Blue tape dropped at Kalman estimate: " + m_blueTapePose.get());
                 }),
                 Commands.waitSeconds(1.0),
                 AutoLogic.getSelectedAutoCommand(),
