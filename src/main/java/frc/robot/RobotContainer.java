@@ -260,10 +260,6 @@ public class RobotContainer {
 
         // Hook up the telemetry logger to the drivetrain periodic updates
         drivetrain.registerTelemetry(logger::telemeterize);
-
-        // Y button: tape-drop auto sequence
-        // Checks Kalman convergence, drops blue tape, runs auto, drops red tape
-        driveController.y().onTrue(m_driveAccuracyTester.createTapeDropAutoCommand());
     }
 
     /**
