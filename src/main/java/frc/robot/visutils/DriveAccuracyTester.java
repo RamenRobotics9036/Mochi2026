@@ -70,6 +70,12 @@ public class DriveAccuracyTester {
             new Transform2d(frontOffset, 0, Rotation2d.fromDegrees(90)));
     }
 
+    private void initializeTest() {
+    }
+
+    private void cleanupAfterTest() {
+    }
+
     /**
      * Creates a command sequence that:
      * 1) Checks Kalman filter convergence (aborts if not converged)
@@ -117,6 +123,7 @@ public class DriveAccuracyTester {
                 System.out.println("Kalman filter not converged — tape drop auto aborted")),
             // Condition: is the Kalman filter converged?
             m_visionKalmanFilter::hasConverged
-        );
+        ).beforeStarting(this::initializeTest)
+         .finallyDo(this::cleanupAfterTest);
     }
 }
