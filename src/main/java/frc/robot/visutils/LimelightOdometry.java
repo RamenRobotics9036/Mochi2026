@@ -14,6 +14,7 @@ import frc.robot.Robot;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 
@@ -79,7 +80,8 @@ public class LimelightOdometry {
             m_targetList = Arrays.stream(rawFiducials)
                 .map(f -> String.valueOf(f.id))
                 .collect(Collectors.joining(", "));
-        } else {
+        }
+        else {
             m_targetList = "";
         }
     }
@@ -166,6 +168,9 @@ public class LimelightOdometry {
         }
 
         setResults(m_curConfidenceScore, mt1.tagCount, mt1.rawFiducials);
+
+        // $TODO - This should go away
+        System.out.println("m_visionKalmanFilter: " + m_visionKalmanFilter + ", m_isMotionlessSupplier: " + m_isMotionlessSupplier);
 
         // Inject into vision Kalman filter if robot is motionless and we have multi-tag
         if (m_visionKalmanFilter != null && m_isMotionlessSupplier != null) {

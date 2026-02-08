@@ -87,8 +87,7 @@ public class Robot extends TimedRobot {
             .transformBy(new Transform2d(kKalmanPoseDisplayOffset, 0, new Rotation2d())))
         : Optional.empty();
     boolean hasConverged = m_robotContainer.m_visionKalmanFilter.hasConverged();
-    m_showVisionOnField.showKalmanVisionPose(
-        ShowVisionOnField.FieldType.SIMULATION_FIELD, kalmanPose, hasConverged);
+    m_robotContainer.m_showVisionOnField.showKalmanVisionPose(kalmanPose, hasConverged);
 
     CommandScheduler.getInstance().run();
 

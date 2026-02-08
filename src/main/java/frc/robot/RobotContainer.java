@@ -126,7 +126,10 @@ public class RobotContainer {
 
         // Setup vision system
         drivetrain.setVisionEnabledSupplier(basicInfoDashboard::isVisionEnabled);
+
         m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
+        m_limelightOdometry.setVisionKalmanFilter(m_visionKalmanFilter, this::isRobotMotionless);
+
         basicInfoDashboard.setVisionConfidenceSupplier(
             m_limelightOdometry::getCurrentConfidenceScore);
         basicInfoDashboard.setNumLockedTagsSupplier(
@@ -135,9 +138,10 @@ public class RobotContainer {
             m_limelightOdometry::getTx);
         basicInfoDashboard.setTargetListSupplier(
             m_limelightOdometry::getTargetList);
-            basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
-            basicInfoDashboard.setIsRobotMotionlessSupplier(this::isRobotMotionless);
-            basicInfoDashboard.setSecondsStillSupplier(this::getSecondsStill);
+
+        basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
+        basicInfoDashboard.setIsRobotMotionlessSupplier(this::isRobotMotionless);
+        basicInfoDashboard.setSecondsStillSupplier(this::getSecondsStill);
     }
 
     /**
