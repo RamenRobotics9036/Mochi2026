@@ -7,8 +7,6 @@ package frc.robot;
 import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -81,13 +79,9 @@ public class Robot extends TimedRobot {
     }
 
     // Show VisionKalmanFilter converged pose (offset forward for visibility)
-    final double kKalmanPoseDisplayOffset = 0.4; // meters forward offset for visibility
-    Optional<Pose2d> kalmanPose = m_robotContainer.m_visionKalmanFilter.isInitialized()
-        ? Optional.of(m_robotContainer.m_visionKalmanFilter.getEstimate()
-            .transformBy(new Transform2d(kKalmanPoseDisplayOffset, 0, new Rotation2d())))
-        : Optional.empty();
-    boolean hasConverged = m_robotContainer.m_visionKalmanFilter.hasConverged();
-    m_robotContainer.m_showVisionOnField.showKalmanVisionPose(kalmanPose, hasConverged);
+    var kalmanDisplay = m_robotContainer.m_visionKalmanFilter.getFieldDisplayInfo(0.4);
+    m_robotContainer.m_showVisionOnField.showKalmanVisionPose(
+        kalmanDisplay.pose(), kalmanDisplay.hasConverged());
 
     CommandScheduler.getInstance().run();
 
