@@ -36,7 +36,7 @@ public class ShooterSubsystem extends SubsystemBase {
 
         m_lMotor.configure(m_lConfig, ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
-        m_lMotor.configure(m_lConfig, ResetMode.kResetSafeParameters,
+        m_rMotor.configure(m_rConfig, ResetMode.kResetSafeParameters,
                 PersistMode.kPersistParameters);
 
         m_hood = new Servo(ShooterConstants.kChannel);
