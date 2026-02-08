@@ -31,6 +31,7 @@ import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
 import frc.robot.visutils.AllianceCalc;
+import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.Optional;
@@ -87,11 +88,8 @@ public class RobotContainer {
     public final SimWrapper m_simWrapper;
     public final ShowVisionOnField m_showVisionOnField;
 
-    /** Pose of the blue tape on the field, or empty to hide. */
-    public Optional<Pose2d> m_blueTapePose = Optional.of(new Pose2d(1.0, 1.0, new Rotation2d()));
-
-    /** Pose of the red tape on the field, or empty to hide. */
-    public Optional<Pose2d> m_redTapePose = Optional.of(new Pose2d(2.0, 1.0, new Rotation2d()));
+    /** Manages the tape-drop accuracy test workflow. */
+    public final DriveAccuracyTester m_driveAccuracyTester;
 
     public final LimelightOdometry m_limelightOdometry;
 
@@ -113,6 +111,7 @@ public class RobotContainer {
         SmartDashboard.putData("GlassField", m_glassField);
 
         AutoLogic.initShuffleboard(drivetrain);
+        m_driveAccuracyTester = new DriveAccuracyTester(m_visionKalmanFilter);
         configureBindings();
 
         // $VISIONSIM - Wrapper for sim features
@@ -263,7 +262,7 @@ public class RobotContainer {
 
         // Y button: tape-drop auto sequence
         // Checks Kalman convergence, drops blue tape, runs auto, drops red tape
-        driveController.y().onTrue(createTapeDropAutoCommand());
+        driveController.y().onTrue(m_driveAccuracyTester.createTapeDropAutoCommand());
     }
 
     /**
@@ -280,89 +279,12 @@ public class RobotContainer {
     }
 
     /**
-     * Computes a tape pose at the front of the robot, parallel to the front face.
-     * The tape is placed just beyond the front edge so it doesn't overlap the robot.
-     *
-     * @param robotPose The robot's current pose
-     * @return The tape Pose2d positioned in front of the robot
-     */
-    private Pose2d computeFrontTapePose(Pose2d robotPose) {
-        // Half the bumper length (center to front edge): 0.864m / 2 = 0.432m
-        // Then push out by the tape width so it doesn't overlap the bumpers
-        double halfBumperLength = 0.864 / 2.0;
-        double tapeWidth = 0.137;
-        double frontOffset = halfBumperLength + (tapeWidth / 2);
-
-        // Transform to place tape in front of the robot, rotated 90° so the
-        // tape's long axis is parallel to the robot's front face
-        return robotPose.transformBy(
-            new Transform2d(frontOffset, 0, Rotation2d.fromDegrees(90)));
-    }
-
-    /**
-     * Creates a command sequence that:
-     * 1) Checks Kalman filter convergence (aborts if not converged)
-     * 2) Drops blue tape at the front of the auto starting pose
-     * 3) Runs the currently selected auto
-     * 4) Drops red tape at the front of the robot
-     *
-     * @return The composed command
-     */
-    private Command createTapeDropAutoCommand() {
-        return Commands.either(
-            // Converged path: check that the auto is relative (no fixed starting pose)
-            Commands.either(
-                // Relative auto: clear tape, drop blue tape, pause, run auto, drop red tape
-                Commands.sequence(
-                    Commands.runOnce(this::clearTape),
-                    Commands.runOnce(() -> {
-                        Pose2d kalmanPose = m_visionKalmanFilter.getEstimate();
-                        m_blueTapePose = Optional.of(computeFrontTapePose(kalmanPose));
-                        System.out.println("Blue tape dropped at Kalman estimate: " + m_blueTapePose.get());
-                    }),
-                    Commands.waitSeconds(1.0),
-                    AutoLogic.getSelectedAutoCommand(),
-
-                    Commands.print("Waiting for Camera to lock on again..."),
-                    Commands.waitUntil(m_visionKalmanFilter::hasConverged).withTimeout(10),
-                    Commands.either(
-                        Commands.runOnce(() -> {
-                            Pose2d kalmanPose = m_visionKalmanFilter.getEstimate();
-                            m_redTapePose = Optional.of(computeFrontTapePose(kalmanPose));
-                            System.out.println("Red tape dropped at Kalman estimate: " + m_redTapePose.get());
-                        }),
-                        Commands.print("Failed to lock onto camera at end of cycle."),
-                        m_visionKalmanFilter::hasConverged
-                    )
-                ),
-                // Auto has a fixed starting pose — not supported
-                Commands.print("Only relative auto paths are supported."),
-                // Condition: auto has no starting pose (is relative)
-                () -> AutoLogic.getSelectedAutoStartingPose().equals(Pose2d.kZero)
-            ),
-            // Not converged path: print warning and do nothing
-            Commands.runOnce(() ->
-                System.out.println("Kalman filter not converged — tape drop auto aborted")),
-            // Condition: is the Kalman filter converged?
-            m_visionKalmanFilter::hasConverged
-        );
-    }
-
-    /**
      * Retrieves the autonomous routine selected via the dashboard at the start of the match.
      *
      * @return The command to execute during the autonomous period.
      */
     public Command getAutonomousCommand() {
         return AutoLogic.getSelectedAutoCommand();
-    }
-
-    /**
-     * Clears both tape poses so they are no longer displayed on the field.
-     */
-    private void clearTape() {
-        m_blueTapePose = Optional.empty();
-        m_redTapePose = Optional.empty();
     }
 
     /**
@@ -391,6 +313,6 @@ public class RobotContainer {
         m_visionKalmanFilter.reset();
 
         // Remove any tape from the field
-        clearTape();
+        m_driveAccuracyTester.clearTape();
     }
 }

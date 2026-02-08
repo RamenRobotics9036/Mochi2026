@@ -85,8 +85,8 @@ public class Robot extends TimedRobot {
         kalmanDisplay.hasConverged() ? 0 : 1);
 
     // Show tape locations on field
-    m_robotContainer.m_showVisionOnField.showBlueTape(m_robotContainer.m_blueTapePose);
-    m_robotContainer.m_showVisionOnField.showRedTape(m_robotContainer.m_redTapePose);
+    m_robotContainer.m_showVisionOnField.showBlueTape(m_robotContainer.m_driveAccuracyTester.getBlueTapePose());
+    m_robotContainer.m_showVisionOnField.showRedTape(m_robotContainer.m_driveAccuracyTester.getRedTapePose());
 
     CommandScheduler.getInstance().run();
 
