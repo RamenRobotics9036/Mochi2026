@@ -119,41 +119,40 @@ public class ShowVisionOnField {
         }
     }
 
-    /**
-     * Shows or hides the Kalman-filtered vision pose on the field.
-     * Color changes based on convergence: green when converged, purple when not.
-     *
-     * @param fieldType The field to display on (REAL_FIELD or SIMULATION_FIELD)
-     * @param kalmanPose The Kalman-filtered pose if present, or empty to hide
-     * @param hasConverged Whether the Kalman filter has converged
-     */
-    public void showKalmanVisionPose(Optional<Pose2d> kalmanPose, boolean hasConverged) {
-        // Always show Kalman vision pose on real/glass field
-        m_realGlassField.ifPresent(f -> {
+    private void showKalmanVisionPoseHelper(
+        Optional<Field2d> field,
+        Optional<Pose2d> kalmanPose,
+        boolean hasConverged) {
+
+        field.ifPresent(f -> {
             // Clear both objects first
             f.getObject("ZKalmanVisionPoseConverged").setPoses();
             f.getObject("ZKalmanVisionPoseNotConverged").setPoses();
 
             // Show on the appropriate object based on convergence
             kalmanPose.ifPresent(pose -> {
-                String objectName = hasConverged ? "ZKalmanVisionPoseConverged" : "ZKalmanVisionPoseNotConverged";
+                String objectName = hasConverged ?
+                    "ZKalmanVisionPoseConverged" :
+                    "ZKalmanVisionPoseNotConverged";
                 f.getObject(objectName).setPose(pose);
             });
         });
+    }
+
+    /**
+     * Shows or hides the Kalman-filtered vision pose on the field.
+     * Color changes based on convergence: green when converged, purple when not.
+     *
+     * @param kalmanPose The Kalman-filtered pose if present, or empty to hide
+     * @param hasConverged Whether the Kalman filter has converged
+     */
+    public void showKalmanVisionPose(Optional<Pose2d> kalmanPose, boolean hasConverged) {
+        // Always show Kalman vision pose on real/glass field
+        showKalmanVisionPoseHelper(m_realGlassField, kalmanPose, hasConverged);
 
         // Only show on debug field if simulation is running in debug mode
         if (Robot.isSimulation()) {
-            m_simulationField.ifPresent(f -> {
-                // Clear both objects first
-                f.getObject("ZKalmanVisionPoseConverged").setPoses();
-                f.getObject("ZKalmanVisionPoseNotConverged").setPoses();
-
-                // Show on the appropriate object based on convergence
-                kalmanPose.ifPresent(pose -> {
-                    String objectName = hasConverged ? "ZKalmanVisionPoseConverged" : "ZKalmanVisionPoseNotConverged";
-                    f.getObject(objectName).setPose(pose);
-                });
-            });
+            showKalmanVisionPoseHelper(m_simulationField, kalmanPose, hasConverged);
         }
     }
 
