@@ -8,9 +8,12 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.util.FlippingUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -258,6 +261,10 @@ public class RobotContainer {
 
         // Hook up the telemetry logger to the drivetrain periodic updates
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        // Y button: tape-drop auto sequence
+        // Checks Kalman convergence, drops blue tape, runs auto, drops red tape
+        driveController.y().onTrue(createTapeDropAutoCommand());
     }
 
     /**
@@ -271,6 +278,61 @@ public class RobotContainer {
             return Commands.none();
         }
         return command;
+    }
+
+    /**
+     * Computes a tape pose at the front of the robot, parallel to the front face.
+     * The tape is placed just beyond the front edge so it doesn't overlap the robot.
+     *
+     * @param robotPose The robot's current pose
+     * @return The tape Pose2d positioned in front of the robot
+     */
+    private Pose2d computeFrontTapePose(Pose2d robotPose) {
+        // Front edge is at the front module X location + a small margin
+        double frontOffset = TunerConstants.FrontLeft.LocationX + 0.05;
+
+        // Transform to place tape in front of the robot, rotated 90° so the
+        // tape's long axis is parallel to the robot's front face
+        return robotPose.transformBy(
+            new Transform2d(frontOffset, 0, Rotation2d.fromDegrees(90)));
+    }
+
+    /**
+     * Creates a command sequence that:
+     * 1) Checks Kalman filter convergence (aborts if not converged)
+     * 2) Drops blue tape at the front of the auto starting pose
+     * 3) Runs the currently selected auto
+     * 4) Drops red tape at the front of the robot
+     *
+     * @return The composed command
+     */
+    private Command createTapeDropAutoCommand() {
+        return Commands.either(
+            // Converged path: drop blue tape, run auto, drop red tape
+            Commands.sequence(
+                Commands.runOnce(() -> {
+                    Pose2d autoStartPose = AutoLogic.getSelectedAutoStartingPose();
+                    // PathPlanner paths are authored for Blue alliance; flip for Red
+                    if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)
+                            == DriverStation.Alliance.Red) {
+                        autoStartPose = FlippingUtil.flipFieldPose(autoStartPose);
+                    }
+                    m_blueTapePose = Optional.of(computeFrontTapePose(autoStartPose));
+                    System.out.println("Blue tape dropped at auto start: " + m_blueTapePose.get());
+                }),
+                AutoLogic.getSelectedAutoCommand(),
+                Commands.runOnce(() -> {
+                    Pose2d currentPose = drivetrain.getState().Pose;
+                    m_redTapePose = Optional.of(computeFrontTapePose(currentPose));
+                    System.out.println("Red tape dropped at: " + m_redTapePose.get());
+                })
+            ),
+            // Not converged path: print warning and do nothing
+            Commands.runOnce(() ->
+                System.out.println("Kalman filter not converged — tape drop auto aborted")),
+            // Condition: is the Kalman filter converged?
+            m_visionKalmanFilter::hasConverged
+        );
     }
 
     /**
