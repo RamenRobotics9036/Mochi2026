@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
+import frc.robot.sim.visutils.ShowIcon;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,6 +26,10 @@ public class ShowVisionOnField {
 
     private final Optional<Field2d> m_realGlassField;
     private final Optional<Field2d> m_simulationField;
+
+    /** Icon for displaying the Kalman-filtered vision pose (converged vs not). */
+    private final ShowIcon m_kalmanIcon = new ShowIcon(
+        List.of("ZKalmanVisionPoseConverged", "ZKalmanVisionPoseNotConverged"));
 
     /**
      * Creates a new ShowVisionOnField.
@@ -120,39 +125,33 @@ public class ShowVisionOnField {
         }
     }
 
-    private void showIconHelper(
-        Optional<Field2d> field,
-        Optional<Pose2d> pose,
-        List<String> objectNames,
-        int showIndex) {
-
-        field.ifPresent(f -> {
-            // Clear all objects first
-            for (String name : objectNames) {
-                f.getObject(name).setPoses();
-            }
-
-            // Show on the selected object
-            pose.ifPresent(p -> f.getObject(objectNames.get(showIndex)).setPose(p));
-        });
+    /**
+     * Shows or hides the Kalman-filtered vision pose on the field.
+     * Uses different field objects based on showIndex for different appearances
+     * (e.g. converged=0, not converged=1).
+     *
+     * @param kalmanPose The Kalman-filtered pose if present, or empty to hide
+     * @param showIndex Index selecting which appearance to use (0=converged, 1=not converged)
+     */
+    public void showKalmanVisionPose(Optional<Pose2d> kalmanPose, int showIndex) {
+        showIcon(m_kalmanIcon, kalmanPose, showIndex);
     }
 
     /**
-     * Shows or hides an icon on the field, selecting one of several named objects.
-     * All objects are cleared first, then the pose is set on the object at showIndex.
-     * This allows different field object appearances (e.g. color) based on state.
+     * Shows or hides an icon on both fields (real and simulation).
+     * Delegates to ShowIcon.show() for each field.
      *
+     * @param icon The ShowIcon instance defining which field objects to use
      * @param pose The pose to display, or empty to hide all objects
-     * @param objectNames The list of field object names (each can have a different appearance)
-     * @param showIndex Index into objectNames selecting which object to display
+     * @param showIndex Index into the icon's object names selecting which to display
      */
-    public void showIcon(Optional<Pose2d> pose, List<String> objectNames, int showIndex) {
+    public void showIcon(ShowIcon icon, Optional<Pose2d> pose, int showIndex) {
         // Always show on real/glass field
-        showIconHelper(m_realGlassField, pose, objectNames, showIndex);
+        icon.show(m_realGlassField, pose, showIndex);
 
         // Only show on debug field if simulation is running in debug mode
         if (Robot.isSimulation()) {
-            showIconHelper(m_simulationField, pose, objectNames, showIndex);
+            icon.show(m_simulationField, pose, showIndex);
         }
     }
 

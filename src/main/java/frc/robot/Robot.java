@@ -80,9 +80,8 @@ public class Robot extends TimedRobot {
 
     // Show VisionKalmanFilter converged pose (offset forward for visibility)
     var kalmanDisplay = m_robotContainer.m_visionKalmanFilter.getFieldDisplayInfo(0.4);
-    m_robotContainer.m_showVisionOnField.showIcon(
+    m_robotContainer.m_showVisionOnField.showKalmanVisionPose(
         kalmanDisplay.pose(),
-        java.util.List.of("ZKalmanVisionPoseConverged", "ZKalmanVisionPoseNotConverged"),
         kalmanDisplay.hasConverged() ? 0 : 1);
 
     CommandScheduler.getInstance().run();
