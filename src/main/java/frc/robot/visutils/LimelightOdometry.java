@@ -70,7 +70,8 @@ public class LimelightOdometry {
         }
     }
 
-    // $TODO - This should go away
+    // Optional method to help debug limelight vision
+    @SuppressWarnings("unused")
     private void printDebugLimelightInfo(LimelightHelpers.PoseEstimate mt1) {
         StringBuilder sb = new StringBuilder("LimelightOdometry: ");
 
@@ -83,7 +84,8 @@ public class LimelightOdometry {
 
         if (mt1 == null) {
             sb.append(", No pose estimate");
-        } else {
+        }
+        else {
             sb.append(String.format(", tags=%d, pose=(%6.2f, %6.2f, %7.1f°)",
                 mt1.tagCount,
                 mt1.pose.getX(),
@@ -114,7 +116,7 @@ public class LimelightOdometry {
             mt1 = null;
         }
 
-        printDebugLimelightInfo(mt1);
+        // printDebugLimelightInfo(mt1);
 
         // Save the latest vision estimate so that it can be queried
         m_latestVisPose = Optional.ofNullable(mt1).map(est -> est.pose);
