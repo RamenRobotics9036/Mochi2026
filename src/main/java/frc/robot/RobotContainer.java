@@ -114,6 +114,7 @@ public class RobotContainer {
             m_glassField, debugField);
 
         // Setup vision system
+        drivetrain.setVisionEnabledSupplier(basicInfoDashboard::isVisionEnabled);
         m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
         basicInfoDashboard.setVisionConfidenceSupplier(
             m_limelightOdometry::getCurrentConfidenceScore);
