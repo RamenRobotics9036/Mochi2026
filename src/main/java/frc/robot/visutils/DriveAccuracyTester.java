@@ -20,10 +20,10 @@ import java.util.Optional;
 public class DriveAccuracyTester {
 
     /** Pose of the blue tape on the field, or empty to hide. */
-    private Optional<Pose2d> m_blueTapePose = Optional.of(new Pose2d(1.0, 1.0, new Rotation2d()));
+    private Optional<Pose2d> m_blueTapePose = Optional.empty();
 
     /** Pose of the red tape on the field, or empty to hide. */
-    private Optional<Pose2d> m_redTapePose = Optional.of(new Pose2d(2.0, 1.0, new Rotation2d()));
+    private Optional<Pose2d> m_redTapePose = Optional.empty();
 
     /** The drive subsystem. */
     private final CommandSwerveDrivetrain m_driveSubsystem;
