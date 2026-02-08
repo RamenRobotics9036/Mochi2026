@@ -310,28 +310,35 @@ public class RobotContainer {
      */
     private Command createTapeDropAutoCommand() {
         return Commands.either(
-            // Converged path: clear tape, drop blue tape, pause, run auto, drop red tape
-            Commands.sequence(
-                Commands.runOnce(this::clearTape),
-                Commands.runOnce(() -> {
-                    Pose2d kalmanPose = m_visionKalmanFilter.getEstimate();
-                    m_blueTapePose = Optional.of(computeFrontTapePose(kalmanPose));
-                    System.out.println("Blue tape dropped at Kalman estimate: " + m_blueTapePose.get());
-                }),
-                Commands.waitSeconds(1.0),
-                AutoLogic.getSelectedAutoCommand(),
-
-                Commands.print("Waiting for Camera to lock on again..."),
-                Commands.waitUntil(m_visionKalmanFilter::hasConverged).withTimeout(10),
-                Commands.either(
+            // Converged path: check that the auto is relative (no fixed starting pose)
+            Commands.either(
+                // Relative auto: clear tape, drop blue tape, pause, run auto, drop red tape
+                Commands.sequence(
+                    Commands.runOnce(this::clearTape),
                     Commands.runOnce(() -> {
-                        Pose2d currentPose = drivetrain.getState().Pose;
-                        m_redTapePose = Optional.of(computeFrontTapePose(currentPose));
-                        System.out.println("Red tape dropped at: " + m_redTapePose.get());
+                        Pose2d kalmanPose = m_visionKalmanFilter.getEstimate();
+                        m_blueTapePose = Optional.of(computeFrontTapePose(kalmanPose));
+                        System.out.println("Blue tape dropped at Kalman estimate: " + m_blueTapePose.get());
                     }),
-                    Commands.print("Failed to lock onto camera at end of cycle."),
-                    m_visionKalmanFilter::hasConverged
-                )
+                    Commands.waitSeconds(1.0),
+                    AutoLogic.getSelectedAutoCommand(),
+
+                    Commands.print("Waiting for Camera to lock on again..."),
+                    Commands.waitUntil(m_visionKalmanFilter::hasConverged).withTimeout(10),
+                    Commands.either(
+                        Commands.runOnce(() -> {
+                            Pose2d currentPose = drivetrain.getState().Pose;
+                            m_redTapePose = Optional.of(computeFrontTapePose(currentPose));
+                            System.out.println("Red tape dropped at: " + m_redTapePose.get());
+                        }),
+                        Commands.print("Failed to lock onto camera at end of cycle."),
+                        m_visionKalmanFilter::hasConverged
+                    )
+                ),
+                // Auto has a fixed starting pose — not supported
+                Commands.print("Only relative auto paths are supported."),
+                // Condition: auto has no starting pose (is relative)
+                () -> AutoLogic.getSelectedAutoStartingPose().equals(Pose2d.kZero)
             ),
             // Not converged path: print warning and do nothing
             Commands.runOnce(() ->
