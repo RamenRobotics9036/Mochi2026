@@ -287,8 +287,11 @@ public class RobotContainer {
      * @return The tape Pose2d positioned in front of the robot
      */
     private Pose2d computeFrontTapePose(Pose2d robotPose) {
-        // Front edge is at the front module X location + a small margin
-        double frontOffset = TunerConstants.FrontLeft.LocationX + 0.05;
+        // Half the bumper length (center to front edge): 0.864m / 2 = 0.432m
+        // Then push out by the tape width so it doesn't overlap the bumpers
+        double halfBumperLength = 0.864 / 2.0;
+        double tapeWidth = 0.137;
+        double frontOffset = halfBumperLength + (tapeWidth / 2);
 
         // Transform to place tape in front of the robot, rotated 90° so the
         // tape's long axis is parallel to the robot's front face
@@ -307,8 +310,9 @@ public class RobotContainer {
      */
     private Command createTapeDropAutoCommand() {
         return Commands.either(
-            // Converged path: drop blue tape, run auto, drop red tape
+            // Converged path: clear tape, drop blue tape, pause, run auto, drop red tape
             Commands.sequence(
+                Commands.runOnce(this::clearTape),
                 Commands.runOnce(() -> {
                     Pose2d autoStartPose = AutoLogic.getSelectedAutoStartingPose();
                     // PathPlanner paths are authored for Blue alliance; flip for Red
@@ -318,6 +322,7 @@ public class RobotContainer {
                     m_blueTapePose = Optional.of(computeFrontTapePose(autoStartPose));
                     System.out.println("Blue tape dropped at auto start: " + m_blueTapePose.get());
                 }),
+                Commands.waitSeconds(1.0),
                 AutoLogic.getSelectedAutoCommand(),
                 Commands.runOnce(() -> {
                     Pose2d currentPose = drivetrain.getState().Pose;
@@ -340,6 +345,14 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         return AutoLogic.getSelectedAutoCommand();
+    }
+
+    /**
+     * Clears both tape poses so they are no longer displayed on the field.
+     */
+    private void clearTape() {
+        m_blueTapePose = Optional.empty();
+        m_redTapePose = Optional.empty();
     }
 
     /**
@@ -368,7 +381,6 @@ public class RobotContainer {
         m_visionKalmanFilter.reset();
 
         // Remove any tape from the field
-        m_blueTapePose = Optional.empty();
-        m_redTapePose = Optional.empty();
+        clearTape();
     }
 }
