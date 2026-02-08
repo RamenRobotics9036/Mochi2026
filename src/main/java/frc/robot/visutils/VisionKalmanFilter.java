@@ -1,9 +1,12 @@
 package frc.robot.visutils;
 
+import java.util.Optional;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants.VisionKalmanConstants;
@@ -20,6 +23,15 @@ import frc.robot.Constants.VisionKalmanConstants;
  * with the covariance matrix P shrinking to indicate increased certainty.
  */
 public class VisionKalmanFilter {
+
+    /**
+     * Bundles the Kalman filter's display state for field visualization.
+     *
+     * @param pose The display pose (with forward offset applied), or empty if not initialized
+     * @param hasConverged Whether the filter has converged
+     */
+    public record DisplayInfo(Optional<Pose2d> pose, boolean hasConverged) {}
+
     /** State vector: [x, y, θ] */
     private Matrix<N3, N1> m_x;
 
@@ -203,6 +215,21 @@ public class VisionKalmanFilter {
             return Double.MAX_VALUE;
         }
         return Math.toDegrees(Math.sqrt(m_P.get(2, 2)));
+    }
+
+    /**
+     * Gets display info for field visualization, applying a forward offset
+     * to the estimated pose for visibility.
+     *
+     * @param forwardOffsetMeters Forward offset to apply to the pose (meters)
+     * @return DisplayInfo with the offset pose and convergence status
+     */
+    public DisplayInfo getFieldDisplayInfo(double forwardOffsetMeters) {
+        Optional<Pose2d> pose = m_initialized
+            ? Optional.of(getEstimate()
+                .transformBy(new Transform2d(forwardOffsetMeters, 0, new Rotation2d())))
+            : Optional.empty();
+        return new DisplayInfo(pose, hasConverged());
     }
 
     /**
