@@ -7,6 +7,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
@@ -47,6 +48,10 @@ public class BasicInfoDashboard {
     private final DoublePublisher m_visionTx = m_basicInfoTable.getDoubleTopic("VisionTx").publish();
     private final StringPublisher m_targetList = m_basicInfoTable.getStringTopic("TargetList").publish();
 
+    /** Bidirectional toggle for enabling/disabling vision measurement injection. */
+    private final BooleanEntry m_visionEnabled =
+        m_basicInfoTable.getBooleanTopic("VisionEnabled").getEntry(Constants.VisionConstants.kVisionEnabledDefault);
+
     /* Vision Kalman filter outputs */
     private final DoubleArrayPublisher m_visionKalmanPose =
         m_basicInfoTable.getDoubleArrayTopic("VisionKalmanPose").publish();
@@ -85,6 +90,19 @@ public class BasicInfoDashboard {
     public BasicInfoDashboard(SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain) {
         m_drivetrain = drivetrain;
         m_pigeon = drivetrain.getPigeon2();
+
+        // Publish the default value so the toggle appears in Elastic immediately.
+        m_visionEnabled.set(Constants.VisionConstants.kVisionEnabledDefault);
+    }
+
+    /**
+     * Returns whether vision measurements should be injected into odometry.
+     * This value can be toggled live from the Elastic dashboard.
+     *
+     * @return true if vision is enabled
+     */
+    public boolean isVisionEnabled() {
+        return m_visionEnabled.get(Constants.VisionConstants.kVisionEnabledDefault);
     }
 
     /**

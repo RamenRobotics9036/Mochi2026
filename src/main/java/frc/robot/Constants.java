@@ -125,6 +125,9 @@ public final class Constants {
 
         /** Limelight name for odometry in simulation. */
         public static final String kLimelightNameSim = "limelight";
+
+        /** Default value for the VisionEnabled toggle (true = vision on). */
+        public static final boolean kVisionEnabledDefault = true;
     }
 
     /**
