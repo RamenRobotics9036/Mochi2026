@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -119,40 +120,39 @@ public class ShowVisionOnField {
         }
     }
 
-    private void showKalmanVisionPoseHelper(
+    private void showIconHelper(
         Optional<Field2d> field,
-        Optional<Pose2d> kalmanPose,
-        boolean hasConverged) {
+        Optional<Pose2d> pose,
+        List<String> objectNames,
+        int showIndex) {
 
         field.ifPresent(f -> {
-            // Clear both objects first
-            f.getObject("ZKalmanVisionPoseConverged").setPoses();
-            f.getObject("ZKalmanVisionPoseNotConverged").setPoses();
+            // Clear all objects first
+            for (String name : objectNames) {
+                f.getObject(name).setPoses();
+            }
 
-            // Show on the appropriate object based on convergence
-            kalmanPose.ifPresent(pose -> {
-                String objectName = hasConverged ?
-                    "ZKalmanVisionPoseConverged" :
-                    "ZKalmanVisionPoseNotConverged";
-                f.getObject(objectName).setPose(pose);
-            });
+            // Show on the selected object
+            pose.ifPresent(p -> f.getObject(objectNames.get(showIndex)).setPose(p));
         });
     }
 
     /**
-     * Shows or hides the Kalman-filtered vision pose on the field.
-     * Color changes based on convergence: green when converged, purple when not.
+     * Shows or hides an icon on the field, selecting one of several named objects.
+     * All objects are cleared first, then the pose is set on the object at showIndex.
+     * This allows different field object appearances (e.g. color) based on state.
      *
-     * @param kalmanPose The Kalman-filtered pose if present, or empty to hide
-     * @param hasConverged Whether the Kalman filter has converged
+     * @param pose The pose to display, or empty to hide all objects
+     * @param objectNames The list of field object names (each can have a different appearance)
+     * @param showIndex Index into objectNames selecting which object to display
      */
-    public void showKalmanVisionPose(Optional<Pose2d> kalmanPose, boolean hasConverged) {
-        // Always show Kalman vision pose on real/glass field
-        showKalmanVisionPoseHelper(m_realGlassField, kalmanPose, hasConverged);
+    public void showIcon(Optional<Pose2d> pose, List<String> objectNames, int showIndex) {
+        // Always show on real/glass field
+        showIconHelper(m_realGlassField, pose, objectNames, showIndex);
 
         // Only show on debug field if simulation is running in debug mode
         if (Robot.isSimulation()) {
-            showKalmanVisionPoseHelper(m_simulationField, kalmanPose, hasConverged);
+            showIconHelper(m_simulationField, pose, objectNames, showIndex);
         }
     }
 
