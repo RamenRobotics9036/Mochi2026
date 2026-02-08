@@ -186,6 +186,19 @@
               "true_icon": "None",
               "false_icon": "None"
             }
+          },
+          {
+            "title": "VisionEnabled",
+            "x": 0.0,
+            "y": 384.0,
+            "width": 384.0,
+            "height": 128.0,
+            "type": "Toggle Switch",
+            "properties": {
+              "topic": "/BasicInfo/VisionEnabled",
+              "period": 0.06,
+              "data_type": "boolean"
+            }
           }
         ]
       }
