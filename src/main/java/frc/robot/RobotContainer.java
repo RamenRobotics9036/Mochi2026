@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,6 +30,11 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
+import frc.robot.visutils.AllianceCalc;
+import frc.robot.visutils.DriveAccuracyTester;
+import frc.robot.visutils.MotionlessTracker;
+import frc.robot.visutils.VisionKalmanFilter;
+import java.util.Optional;
 
 /**
  * The RobotContainer class is where the bulk of the robot structure is declared.
@@ -82,9 +88,18 @@ public class RobotContainer {
     public final SimWrapper m_simWrapper;
     public final ShowVisionOnField m_showVisionOnField;
 
+    /** Manages the tape-drop accuracy test workflow. */
+    public final DriveAccuracyTester m_driveAccuracyTester;
+
     public final LimelightOdometry m_limelightOdometry;
 
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+
+    /** Vision-only Kalman filter for precise stationary position estimation. */
+    public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
+
+    /** Tracks whether the robot is motionless and for how long. */
+    public final MotionlessTracker m_motionlessTracker;
 
     /**
      * Constructs the RobotContainer.
@@ -96,6 +111,12 @@ public class RobotContainer {
         SmartDashboard.putData("GlassField", m_glassField);
 
         AutoLogic.initShuffleboard(drivetrain);
+        m_driveAccuracyTester = new DriveAccuracyTester(
+            drivetrain, m_visionKalmanFilter, basicInfoDashboard::forceDisableVision);
+
+        // Add a button on dashboard to launch Accuracy Drive Test
+        SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
+
         configureBindings();
 
         // $VISIONSIM - Wrapper for sim features
@@ -115,7 +136,13 @@ public class RobotContainer {
 
         // Setup vision system
         drivetrain.setVisionEnabledSupplier(basicInfoDashboard::isVisionEnabled);
+
+        m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
+        m_motionlessTracker.setOnStartedMoving(m_visionKalmanFilter::reset);
+
         m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
+        m_limelightOdometry.setVisionKalmanFilter(m_visionKalmanFilter, m_motionlessTracker::isMotionless);
+
         basicInfoDashboard.setVisionConfidenceSupplier(
             m_limelightOdometry::getCurrentConfidenceScore);
         basicInfoDashboard.setNumLockedTagsSupplier(
@@ -124,6 +151,10 @@ public class RobotContainer {
             m_limelightOdometry::getTx);
         basicInfoDashboard.setTargetListSupplier(
             m_limelightOdometry::getTargetList);
+
+        basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
+        basicInfoDashboard.setIsRobotMotionlessSupplier(m_motionlessTracker::isMotionless);
+        basicInfoDashboard.setSecondsStillSupplier(m_motionlessTracker::getSecondsStill);
     }
 
     /**
@@ -273,7 +304,16 @@ public class RobotContainer {
 
         // $VISIONSIM - Clean reset
         if (Robot.isSimulation()) {
+            // NOTE: This is only reset in simulation since m_simWrapper isnt ever
+            // instantiated in real mode.  This is because the pose we reset
+            // here is the ground truth pose which is only relevent in simulation.
             m_simWrapper.resetSimPose(pose);
         }
+
+        // Reset the vision-only Kalman filter
+        m_visionKalmanFilter.reset();
+
+        // Remove any tape from the field
+        m_driveAccuracyTester.clearTape();
     }
 }

@@ -7,8 +7,6 @@ package frc.robot;
 import java.util.Optional;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -58,6 +56,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    // Update motionless tracking early - this resets Kalman filter when robot moves
+    m_robotContainer.m_motionlessTracker.update();
+
     // $VISIONSIM - Wrapper for sim features
     if (Robot.isSimulation() && m_robotContainer.m_simWrapper != null) {
         // NOTE: We run the vision period FIRST in robotPeriodic, since it updates
@@ -76,6 +77,16 @@ public class Robot extends TimedRobot {
     else {
         m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(Optional.empty());
     }
+
+    // Show VisionKalmanFilter converged pose (offset forward for visibility)
+    var kalmanDisplay = m_robotContainer.m_visionKalmanFilter.getFieldDisplayInfo(0.4);
+    m_robotContainer.m_showVisionOnField.showKalmanVisionPose(
+        kalmanDisplay.pose(),
+        kalmanDisplay.hasConverged() ? 0 : 1);
+
+    // Show tape locations on field
+    m_robotContainer.m_showVisionOnField.showBlueTape(m_robotContainer.m_driveAccuracyTester.getBlueTapePose());
+    m_robotContainer.m_showVisionOnField.showRedTape(m_robotContainer.m_driveAccuracyTester.getRedTapePose());
 
     CommandScheduler.getInstance().run();
 
