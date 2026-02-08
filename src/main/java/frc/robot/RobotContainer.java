@@ -29,6 +29,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
+import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.VisionKalmanFilter;
 
 /**
@@ -90,12 +91,8 @@ public class RobotContainer {
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
 
-    /** Tracks whether robot was still on the previous cycle (for edge detection). */
-    private boolean m_wasStillLastCycle = false;
-    /** Timestamp when robot became still (seconds). */
-    private double m_stillStartTime = 0.0;
-    /** Cached value of whether robot is currently still. */
-    private boolean m_isCurrentlyStill = false;
+    /** Tracks whether the robot is motionless and for how long. */
+    public final MotionlessTracker m_motionlessTracker;
 
     /**
      * Constructs the RobotContainer.
@@ -127,8 +124,11 @@ public class RobotContainer {
         // Setup vision system
         drivetrain.setVisionEnabledSupplier(basicInfoDashboard::isVisionEnabled);
 
+        m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
+        m_motionlessTracker.setOnStartedMoving(m_visionKalmanFilter::reset);
+
         m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
-        m_limelightOdometry.setVisionKalmanFilter(m_visionKalmanFilter, this::isRobotMotionless);
+        m_limelightOdometry.setVisionKalmanFilter(m_visionKalmanFilter, m_motionlessTracker::isMotionless);
 
         basicInfoDashboard.setVisionConfidenceSupplier(
             m_limelightOdometry::getCurrentConfidenceScore);
@@ -140,60 +140,8 @@ public class RobotContainer {
             m_limelightOdometry::getTargetList);
 
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
-        basicInfoDashboard.setIsRobotMotionlessSupplier(this::isRobotMotionless);
-        basicInfoDashboard.setSecondsStillSupplier(this::getSecondsStill);
-    }
-
-    /**
-     * Updates the motionless state tracking. Call this from Robot.robotPeriodic().
-     * Resets the Kalman filter when the robot starts moving.
-     */
-    public void updateMotionlessTracking() {
-        m_isCurrentlyStill = computeIsMotionless();
-
-        if (m_isCurrentlyStill && !m_wasStillLastCycle) {
-            // Robot just became still - record the time
-            m_stillStartTime = edu.wpi.first.wpilibj.Timer.getFPGATimestamp();
-        } else if (!m_isCurrentlyStill && m_wasStillLastCycle) {
-            // Robot just started moving - reset the Kalman filter
-            m_visionKalmanFilter.reset();
-        }
-
-        m_wasStillLastCycle = m_isCurrentlyStill;
-    }
-
-    /**
-     * Checks if the robot is motionless based on chassis speeds.
-     * Uses drivetrain state speeds rather than raw gyro for better simulation compatibility.
-     *
-     * @return true if robot is stationary
-     */
-    private boolean isRobotMotionless() {
-        return m_isCurrentlyStill;
-    }
-
-    /**
-     * Computes whether the robot is motionless based on chassis speeds.
-     */
-    private boolean computeIsMotionless() {
-        var speeds = drivetrain.getState().Speeds;
-        double linearSpeed = Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
-        double angularRateDegPerSec = Math.abs(Math.toDegrees(speeds.omegaRadiansPerSecond));
-
-        return linearSpeed < Constants.VisionKalmanConstants.kMotionlessLinearThreshold
-            && angularRateDegPerSec < Constants.VisionKalmanConstants.kMotionlessGyroThreshold;
-    }
-
-    /**
-     * Gets how long the robot has been still, in seconds.
-     *
-     * @return Seconds the robot has been motionless, or 0.0 if moving
-     */
-    public double getSecondsStill() {
-        if (!m_isCurrentlyStill) {
-            return 0.0;
-        }
-        return edu.wpi.first.wpilibj.Timer.getFPGATimestamp() - m_stillStartTime;
+        basicInfoDashboard.setIsRobotMotionlessSupplier(m_motionlessTracker::isMotionless);
+        basicInfoDashboard.setSecondsStillSupplier(m_motionlessTracker::getSecondsStill);
     }
 
     /**

@@ -59,7 +59,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     // Update motionless tracking early - this resets Kalman filter when robot moves
-    m_robotContainer.updateMotionlessTracking();
+    m_robotContainer.m_motionlessTracker.update();
 
     // $VISIONSIM - Wrapper for sim features
     if (Robot.isSimulation() && m_robotContainer.m_simWrapper != null) {

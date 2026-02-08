@@ -169,9 +169,6 @@ public class LimelightOdometry {
 
         setResults(m_curConfidenceScore, mt1.tagCount, mt1.rawFiducials);
 
-        // $TODO - This should go away
-        System.out.println("m_visionKalmanFilter: " + m_visionKalmanFilter + ", m_isMotionlessSupplier: " + m_isMotionlessSupplier);
-
         // Inject into vision Kalman filter if robot is motionless and we have multi-tag
         if (m_visionKalmanFilter != null && m_isMotionlessSupplier != null) {
             if (m_isMotionlessSupplier.getAsBoolean() && mt1.tagCount >= 2) {
