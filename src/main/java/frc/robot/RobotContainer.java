@@ -26,7 +26,6 @@ import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
@@ -62,7 +61,7 @@ public class RobotContainer {
 
     /** Telemetry helper for logging drivetrain state to AdvantageScope/Dashboard. */
     private final Telemetry logger = new Telemetry(MaxSpeed);
-    
+
     /** Primary driver controller (Port 0). */
     private final CommandXboxController driveController = new CommandXboxController(0);
     /** Primary operator controller (Port 1). */
@@ -84,9 +83,6 @@ public class RobotContainer {
     public final ShowVisionOnField m_showVisionOnField;
 
     public final LimelightOdometry m_limelightOdometry;
-
-    /** The vision subsystem handles Limelight MegaTag2 localization. */
-    public final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain);
 
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
