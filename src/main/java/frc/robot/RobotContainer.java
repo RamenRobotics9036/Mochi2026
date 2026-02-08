@@ -86,10 +86,10 @@ public class RobotContainer {
     public final ShowVisionOnField m_showVisionOnField;
 
     /** Pose of the blue tape on the field, or empty to hide. */
-    public Optional<Pose2d> m_blueTapePose = Optional.empty();
+    public Optional<Pose2d> m_blueTapePose = Optional.of(new Pose2d(1.0, 1.0, new Rotation2d()));
 
     /** Pose of the red tape on the field, or empty to hide. */
-    public Optional<Pose2d> m_redTapePose = Optional.empty();
+    public Optional<Pose2d> m_redTapePose = Optional.of(new Pose2d(2.0, 1.0, new Rotation2d()));
 
     public final LimelightOdometry m_limelightOdometry;
 
