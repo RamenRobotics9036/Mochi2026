@@ -8,12 +8,10 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.pathplanner.lib.util.FlippingUtil;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,6 +30,7 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
+import frc.robot.visutils.AllianceCalc;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.Optional;
@@ -313,9 +312,8 @@ public class RobotContainer {
                 Commands.runOnce(() -> {
                     Pose2d autoStartPose = AutoLogic.getSelectedAutoStartingPose();
                     // PathPlanner paths are authored for Blue alliance; flip for Red
-                    if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)
-                            == DriverStation.Alliance.Red) {
-                        autoStartPose = FlippingUtil.flipFieldPose(autoStartPose);
+                    if (AllianceCalc.isRedAlliance()) {
+                        autoStartPose = AllianceCalc.flipFieldPose(autoStartPose);
                     }
                     m_blueTapePose = Optional.of(computeFrontTapePose(autoStartPose));
                     System.out.println("Blue tape dropped at auto start: " + m_blueTapePose.get());
