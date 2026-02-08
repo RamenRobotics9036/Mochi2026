@@ -100,46 +100,70 @@ public class DriveAccuracyTester {
      * @return The composed command
      */
     public Command createTapeDropAutoCommand() {
-        Command cmd = Commands.either(
-            // Converged path: check that the auto is relative (no fixed starting pose)
-            Commands.either(
-                // Relative auto: clear tape, drop blue tape, pause, run auto, drop red tape
-                Commands.sequence(
-                    Commands.runOnce(this::clearTape),
-                    Commands.runOnce(() -> {
-                        Pose2d kalmanPose = m_visionKalmanFilter.getEstimate();
-                        m_blueTapePose = Optional.of(computeFrontTapePose(kalmanPose));
-                        System.out.println("Blue tape dropped at Kalman estimate: " + m_blueTapePose.get());
-                    }),
-                    Commands.waitSeconds(1.0),
-                    AutoLogic.getSelectedAutoCommand(),
-
-                    Commands.print("Waiting for Camera to lock on again..."),
-                    Commands.waitUntil(m_visionKalmanFilter::hasConverged).withTimeout(10),
-                    Commands.either(
-                        Commands.runOnce(() -> {
-                            Pose2d kalmanPose = m_visionKalmanFilter.getEstimate();
-                            m_redTapePose = Optional.of(computeFrontTapePose(kalmanPose));
-                            System.out.println("Red tape dropped at Kalman estimate: " + m_redTapePose.get());
-                        }),
-                        Commands.print("Failed to lock onto camera at end of cycle."),
-                        m_visionKalmanFilter::hasConverged
-                    )
-                ),
-                // Auto has a fixed starting pose — not supported
-                Commands.print("Only relative auto paths are supported."),
-                // Condition: auto has no starting pose (is relative)
-                () -> AutoLogic.getSelectedAutoStartingPose().equals(Pose2d.kZero)
-            ),
-            // Not converged path: print warning and do nothing
-            Commands.runOnce(() ->
-                System.out.println("Kalman filter not converged — tape drop auto aborted")),
-            // Condition: is the Kalman filter converged?
-            m_visionKalmanFilter::hasConverged
-        ).beforeStarting(this::initializeTest)
-         .finallyDo(this::cleanupAfterTest);
+        Command cmd = runTestSequence()
+            .onlyIf(this::checkPreconditions)
+            .beforeStarting(this::initializeTest)
+            .finallyDo(this::cleanupAfterTest);
 
         cmd.addRequirements(m_driveSubsystem);
         return cmd;
+    }
+
+    /**
+     * Checks all preconditions before running the test. Prints a message and
+     * returns false to abort if any check fails.
+     */
+    private boolean checkPreconditions() {
+        if (!m_visionKalmanFilter.hasConverged()) {
+            System.out.println("Kalman filter not converged — tape drop auto aborted.");
+            return false;
+        }
+        if (!AutoLogic.getSelectedAutoStartingPose().equals(Pose2d.kZero)) {
+            System.out.println("Only relative auto paths are supported.");
+            return false;
+        }
+        return true;
+    }
+
+    /** Clear tape → blue tape → pause → auto → wait for convergence → red tape. */
+    private Command runTestSequence() {
+        return Commands.sequence(
+            Commands.runOnce(this::clearTape),
+            dropBlueTape(),
+            Commands.waitSeconds(1.0),
+            AutoLogic.getSelectedAutoCommand(),
+            waitForConvergenceAndDropRedTape()
+        );
+    }
+
+    /** Drops blue tape at the Kalman-estimated front pose. */
+    private Command dropBlueTape() {
+        return Commands.runOnce(() -> {
+            Pose2d kalmanPose = m_visionKalmanFilter.getEstimate();
+            m_blueTapePose = Optional.of(computeFrontTapePose(kalmanPose));
+            System.out.println("Blue tape dropped at Kalman estimate: " + m_blueTapePose.get());
+        });
+    }
+
+    /** Drops red tape at the Kalman-estimated front pose. */
+    private Command dropRedTape() {
+        return Commands.runOnce(() -> {
+            Pose2d kalmanPose = m_visionKalmanFilter.getEstimate();
+            m_redTapePose = Optional.of(computeFrontTapePose(kalmanPose));
+            System.out.println("Red tape dropped at Kalman estimate: " + m_redTapePose.get());
+        });
+    }
+
+    /** Waits up to 10 s for the Kalman filter to re-converge, then drops red tape or prints failure. */
+    private Command waitForConvergenceAndDropRedTape() {
+        return Commands.sequence(
+            Commands.print("Waiting for Camera to lock on again..."),
+            Commands.waitUntil(m_visionKalmanFilter::hasConverged).withTimeout(10),
+            Commands.either(
+                dropRedTape(),
+                Commands.print("Failed to lock onto camera at end of cycle."),
+                m_visionKalmanFilter::hasConverged
+            )
+        );
     }
 }
