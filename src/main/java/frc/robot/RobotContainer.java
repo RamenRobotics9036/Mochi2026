@@ -327,9 +327,9 @@ public class RobotContainer {
                     Commands.waitUntil(m_visionKalmanFilter::hasConverged).withTimeout(10),
                     Commands.either(
                         Commands.runOnce(() -> {
-                            Pose2d currentPose = drivetrain.getState().Pose;
-                            m_redTapePose = Optional.of(computeFrontTapePose(currentPose));
-                            System.out.println("Red tape dropped at: " + m_redTapePose.get());
+                            Pose2d kalmanPose = m_visionKalmanFilter.getEstimate();
+                            m_redTapePose = Optional.of(computeFrontTapePose(kalmanPose));
+                            System.out.println("Red tape dropped at Kalman estimate: " + m_redTapePose.get());
                         }),
                         Commands.print("Failed to lock onto camera at end of cycle."),
                         m_visionKalmanFilter::hasConverged
