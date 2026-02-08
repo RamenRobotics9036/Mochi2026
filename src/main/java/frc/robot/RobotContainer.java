@@ -320,11 +320,18 @@ public class RobotContainer {
                 }),
                 Commands.waitSeconds(1.0),
                 AutoLogic.getSelectedAutoCommand(),
-                Commands.runOnce(() -> {
-                    Pose2d currentPose = drivetrain.getState().Pose;
-                    m_redTapePose = Optional.of(computeFrontTapePose(currentPose));
-                    System.out.println("Red tape dropped at: " + m_redTapePose.get());
-                })
+
+                Commands.print("Waiting for Camera to lock on again..."),
+                Commands.waitUntil(m_visionKalmanFilter::hasConverged).withTimeout(10),
+                Commands.either(
+                    Commands.runOnce(() -> {
+                        Pose2d currentPose = drivetrain.getState().Pose;
+                        m_redTapePose = Optional.of(computeFrontTapePose(currentPose));
+                        System.out.println("Red tape dropped at: " + m_redTapePose.get());
+                    }),
+                    Commands.print("Failed to lock onto camera at end of cycle."),
+                    m_visionKalmanFilter::hasConverged
+                )
             ),
             // Not converged path: print warning and do nothing
             Commands.runOnce(() ->
