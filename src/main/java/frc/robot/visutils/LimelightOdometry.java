@@ -14,6 +14,7 @@ import frc.robot.Robot;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 
@@ -32,12 +33,26 @@ public class LimelightOdometry {
     private double m_tx = 0.0;
     private String m_targetList = "";
 
+    private VisionKalmanFilter m_visionKalmanFilter = null;
+    private BooleanSupplier m_isMotionlessSupplier = null;
+
     /** Constructor. */
     public LimelightOdometry(VisionSimInterface.EstimateConsumer poseConsumer) {
         this.m_estConsumer = poseConsumer;
         this.m_limelightName = Robot.isSimulation()
             ? VisionConstants.kLimelightNameSim
             : VisionConstants.kLimelightNameReal;
+    }
+
+    /**
+     * Sets the vision Kalman filter and motionless detection for precise stationary estimation.
+     *
+     * @param filter The VisionKalmanFilter instance to inject measurements into
+     * @param isMotionlessSupplier Supplier that returns true when robot is motionless
+     */
+    public void setVisionKalmanFilter(VisionKalmanFilter filter, BooleanSupplier isMotionlessSupplier) {
+        m_visionKalmanFilter = filter;
+        m_isMotionlessSupplier = isMotionlessSupplier;
     }
 
     /** Periodic update; should be called from robot periodic. */
@@ -65,7 +80,8 @@ public class LimelightOdometry {
             m_targetList = Arrays.stream(rawFiducials)
                 .map(f -> String.valueOf(f.id))
                 .collect(Collectors.joining(", "));
-        } else {
+        }
+        else {
             m_targetList = "";
         }
     }
@@ -152,6 +168,13 @@ public class LimelightOdometry {
         }
 
         setResults(m_curConfidenceScore, mt1.tagCount, mt1.rawFiducials);
+
+        // Inject into vision Kalman filter if robot is motionless and we have multi-tag
+        if (m_visionKalmanFilter != null && m_isMotionlessSupplier != null) {
+            if (m_isMotionlessSupplier.getAsBoolean() && mt1.tagCount >= 2) {
+                m_visionKalmanFilter.injectVisionMeasurement(mt1.pose, mt1.tagCount);
+            }
+        }
 
         if (m_estConsumer != null) {
             m_estConsumer.accept(mt1.pose, mt1.timestampSeconds, m_curStdDevs);

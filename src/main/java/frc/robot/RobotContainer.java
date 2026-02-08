@@ -29,6 +29,8 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
+import frc.robot.visutils.MotionlessTracker;
+import frc.robot.visutils.VisionKalmanFilter;
 
 /**
  * The RobotContainer class is where the bulk of the robot structure is declared.
@@ -86,6 +88,12 @@ public class RobotContainer {
 
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
+    /** Vision-only Kalman filter for precise stationary position estimation. */
+    public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
+
+    /** Tracks whether the robot is motionless and for how long. */
+    public final MotionlessTracker m_motionlessTracker;
+
     /**
      * Constructs the RobotContainer.
      * Initializes autonomous selection dashboards and binds controller inputs to commands.
@@ -115,7 +123,13 @@ public class RobotContainer {
 
         // Setup vision system
         drivetrain.setVisionEnabledSupplier(basicInfoDashboard::isVisionEnabled);
+
+        m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
+        m_motionlessTracker.setOnStartedMoving(m_visionKalmanFilter::reset);
+
         m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
+        m_limelightOdometry.setVisionKalmanFilter(m_visionKalmanFilter, m_motionlessTracker::isMotionless);
+
         basicInfoDashboard.setVisionConfidenceSupplier(
             m_limelightOdometry::getCurrentConfidenceScore);
         basicInfoDashboard.setNumLockedTagsSupplier(
@@ -124,6 +138,10 @@ public class RobotContainer {
             m_limelightOdometry::getTx);
         basicInfoDashboard.setTargetListSupplier(
             m_limelightOdometry::getTargetList);
+
+        basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
+        basicInfoDashboard.setIsRobotMotionlessSupplier(m_motionlessTracker::isMotionless);
+        basicInfoDashboard.setSecondsStillSupplier(m_motionlessTracker::getSecondsStill);
     }
 
     /**
@@ -273,7 +291,13 @@ public class RobotContainer {
 
         // $VISIONSIM - Clean reset
         if (Robot.isSimulation()) {
+            // NOTE: This is only reset in simulation since m_simWrapper isnt ever
+            // instantiated in real mode.  This is because the pose we reset
+            // here is the ground truth pose which is only relevent in simulation.
             m_simWrapper.resetSimPose(pose);
         }
+
+        // Reset the vision-only Kalman filter
+        m_visionKalmanFilter.reset();
     }
 }
