@@ -306,5 +306,9 @@ public class RobotContainer {
 
         // Reset the vision-only Kalman filter
         m_visionKalmanFilter.reset();
+
+        // Remove any tape from the field
+        m_blueTapePose = Optional.empty();
+        m_redTapePose = Optional.empty();
     }
 }
