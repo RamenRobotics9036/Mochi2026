@@ -58,6 +58,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    // Update motionless tracking early - this resets Kalman filter when robot moves
+    m_robotContainer.updateMotionlessTracking();
+
     // $VISIONSIM - Wrapper for sim features
     if (Robot.isSimulation() && m_robotContainer.m_simWrapper != null) {
         // NOTE: We run the vision period FIRST in robotPeriodic, since it updates
@@ -76,6 +79,16 @@ public class Robot extends TimedRobot {
     else {
         m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(Optional.empty());
     }
+
+    // Show VisionKalmanFilter converged pose (offset forward for visibility)
+    final double kKalmanPoseDisplayOffset = 0.4; // meters forward offset for visibility
+    Optional<Pose2d> kalmanPose = m_robotContainer.m_visionKalmanFilter.isInitialized()
+        ? Optional.of(m_robotContainer.m_visionKalmanFilter.getEstimate()
+            .transformBy(new Transform2d(kKalmanPoseDisplayOffset, 0, new Rotation2d())))
+        : Optional.empty();
+    boolean hasConverged = m_robotContainer.m_visionKalmanFilter.hasConverged();
+    m_showVisionOnField.showKalmanVisionPose(
+        ShowVisionOnField.FieldType.SIMULATION_FIELD, kalmanPose, hasConverged);
 
     CommandScheduler.getInstance().run();
 
