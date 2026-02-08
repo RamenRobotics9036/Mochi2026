@@ -19,12 +19,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
+import frc.robot.commands.ShooterTestCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
@@ -60,8 +61,11 @@ public class RobotContainer {
 
     /** Telemetry helper for logging drivetrain state to AdvantageScope/Dashboard. */
     private final Telemetry logger = new Telemetry(MaxSpeed);
+
     /** Primary driver controller (Port 0). */
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController driveController = new CommandXboxController(0);
+    /** Primary operator controller (Port 1). */
+    private final CommandXboxController operateController = new CommandXboxController(1);
 
     /** Joystick processing pipeline: deadband + response curve + slew-rate limiting. */
     private final DriveSmooth m_driveSmooth = new DriveSmooth();
@@ -79,6 +83,8 @@ public class RobotContainer {
     public final ShowVisionOnField m_showVisionOnField;
 
     public final LimelightOdometry m_limelightOdometry;
+
+    public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
 
     /**
      * Constructs the RobotContainer.
@@ -126,9 +132,9 @@ public class RobotContainer {
      * @return Scaled velocity in meters per second.
      */
     private double getDriveX() {
-        double input = m_driveSmooth.processTranslationX(-joystick.getLeftY());
+        double input = m_driveSmooth.processTranslationX(-driveController.getLeftY());
         // Reduce speed by 50% if the Right Bumper is held for fine positioning
-        double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
+        double inputScale = driveController.rightBumper().getAsBoolean() ? 0.5 : 1.0;
         return input * TeleoperatedSpeed * inputScale;
     }
 
@@ -139,8 +145,8 @@ public class RobotContainer {
      * @return Scaled velocity in meters per second.
      */
     private double getDriveY() {
-        double input = m_driveSmooth.processTranslationY(-joystick.getLeftX());
-        double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
+        double input = m_driveSmooth.processTranslationY(-driveController.getLeftX());
+        double inputScale = driveController.rightBumper().getAsBoolean() ? 0.5 : 1.0;
         return input * TeleoperatedSpeed * inputScale;
     }
 
@@ -151,8 +157,8 @@ public class RobotContainer {
      * @return Scaled angular velocity in radians per second.
      */
     private double getDriveRotate() {
-        double input = m_driveSmooth.processRotation(-joystick.getRightX());
-        double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
+        double input = m_driveSmooth.processRotation(-driveController.getRightX());
+        double inputScale = driveController.rightBumper().getAsBoolean() ? 0.5 : 1.0;
         return input * MaxAngularRate * inputScale;
     }
 
@@ -187,6 +193,8 @@ public class RobotContainer {
             })
         );
 
+        //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
+
         // Keep the drivetrain in an Idle state while the robot is disabled
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
@@ -194,30 +202,30 @@ public class RobotContainer {
         );
 
         // Map Button A to the brake command for defensive positioning
-        joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
+        driveController.a().whileTrue(drivetrain.applyRequest(() -> brake));
 
         // Map Button B to orient wheels based on the left joystick angle (useful for testing)
-        joystick.b().whileTrue(drivetrain.applyRequest(() ->
-            point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
+        driveController.b().whileTrue(drivetrain.applyRequest(() ->
+            point.withModuleDirection(new Rotation2d(-driveController.getLeftY(), -driveController.getLeftX()))
         ));
 
         // SysId Characterization bindings (Back/Start + X/Y) for automated PID tuning
-        joystick.back().and(joystick.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
-        joystick.back().and(joystick.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
-        joystick.start().and(joystick.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
-        joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
+        driveController.back().and(driveController.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
+        driveController.back().and(driveController.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
+        driveController.start().and(driveController.y()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kForward));
+        driveController.start().and(driveController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Recalibrate the gyro's forward heading using the Left Bumper
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        driveController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         // $VISIONSIM - POV buttons for sim
         if (Robot.isSimulation()) {
             // In simulation, inject drift with POV right to test vision correction
-            joystick.povRight()
+            driveController.povRight()
                 .onTrue(drivetrain.runOnce(() -> m_simWrapper.injectDrift(0.5, 15.0)));
 
             // POV left resets robot to the starting pose of the selected auto
-            joystick.povLeft().onTrue(
+            driveController.povLeft().onTrue(
                 drivetrain
                     .runOnce(() -> m_simWrapper.cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
         }
