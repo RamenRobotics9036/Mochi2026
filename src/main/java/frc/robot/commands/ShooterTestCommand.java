@@ -26,7 +26,7 @@ public class ShooterTestCommand extends Command {
     @Override
     public void execute() {
         //May want to chaneg input for testing different things.
-        m_shooter.SetSpeed(MathUtil.applyDeadband(m_controller.getLeftY(), 0.1)*0.1);
+        m_shooter.setSpeed(MathUtil.applyDeadband(m_controller.getLeftY(), 0.1)*0.1);
     }
 
     // Called once the command ends or is interrupted.
@@ -40,5 +40,5 @@ public class ShooterTestCommand extends Command {
     public boolean isFinished() {
         return false;
     }
-    
+
 }
