@@ -132,7 +132,7 @@ public class RobotContainer {
      * @return Scaled velocity in meters per second.
      */
     private double getDriveX() {
-        double input = m_driveSmooth.processTranslationX(-joystick.getLeftY());
+        double input = m_driveSmooth.processTranslationX(-driveController.getLeftY());
         // Reduce speed by 50% if the Right Bumper is held for fine positioning
         double inputScale = driveController.rightBumper().getAsBoolean() ? 0.5 : 1.0;
         return input * TeleoperatedSpeed * inputScale;
@@ -145,8 +145,8 @@ public class RobotContainer {
      * @return Scaled velocity in meters per second.
      */
     private double getDriveY() {
-        double input = m_driveSmooth.processTranslationY(-joystick.getLeftX());
-        double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
+        double input = m_driveSmooth.processTranslationY(-driveController.getLeftX());
+        double inputScale = driveController.rightBumper().getAsBoolean() ? 0.5 : 1.0;
         return input * TeleoperatedSpeed * inputScale;
     }
 
@@ -157,8 +157,8 @@ public class RobotContainer {
      * @return Scaled angular velocity in radians per second.
      */
     private double getDriveRotate() {
-        double input = m_driveSmooth.processRotation(-joystick.getRightX());
-        double inputScale = joystick.rightBumper().getAsBoolean() ? 0.5 : 1.0;
+        double input = m_driveSmooth.processRotation(-driveController.getRightX());
+        double inputScale = driveController.rightBumper().getAsBoolean() ? 0.5 : 1.0;
         return input * MaxAngularRate * inputScale;
     }
 
