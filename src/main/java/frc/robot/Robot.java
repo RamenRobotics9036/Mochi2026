@@ -68,9 +68,14 @@ public class Robot extends TimedRobot {
 
     m_robotContainer.m_limelightOdometry.periodic();
 
-    Optional<Pose2d> showVisPose = Optional.empty();
-    showVisPose = m_robotContainer.m_limelightOdometry.getLatestVisPose();
-    m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(showVisPose);
+    // If vision is diabled for drivetrain, dont show the point in time vision estimate.
+    if (m_robotContainer.basicInfoDashboard.isVisionEnabled()) {
+        Optional<Pose2d> showVisPose = m_robotContainer.m_limelightOdometry.getLatestVisPose();
+        m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(showVisPose);
+    }
+    else {
+        m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(Optional.empty());
+    }
 
     CommandScheduler.getInstance().run();
 

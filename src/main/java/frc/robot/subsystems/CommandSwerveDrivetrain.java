@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -54,6 +55,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /** Filter for ignoring stale vision measurements around pose resets. */
     // $VISIONSIM - Inject Filter
     private final VisionInjectFilter m_visionFilter;
+
+    /** Supplier that returns true when vision measurements should be injected. */
+    private BooleanSupplier m_visionEnabledSupplier = () -> true;
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -176,12 +180,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
 
         // $VISIONSIM - Inject Filter
-        if (Robot.isSimulation()) {
-            m_visionFilter = new VisionInjectFilter();
-        }
-        else {
-            m_visionFilter = null;
-        }
+        m_visionFilter = new VisionInjectFilter();
 
         // configure PathPlanner AutoBuilder
         configureAutoBuilder();
@@ -211,12 +210,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
 
         // $VISIONSIM - Inject Filter
-        if (Robot.isSimulation()) {
-            m_visionFilter = new VisionInjectFilter();
-        }
-        else {
-            m_visionFilter = null;
-        }
+        m_visionFilter = new VisionInjectFilter();
     }
 
     /**
@@ -251,12 +245,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
 
         // $VISIONSIM - Inject Filter
-        if (Robot.isSimulation()) {
-            m_visionFilter = new VisionInjectFilter();
-        }
-        else {
-            m_visionFilter = null;
-        }
+        m_visionFilter = new VisionInjectFilter();
     }
 
     /**
@@ -337,9 +326,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     @Override
     public void resetPose(Pose2d pose) {
         // $VISIONSIM - Inject Filter
-        if (Robot.isSimulation() && m_visionFilter != null) {
-            m_visionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
-        }
+        m_visionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
+
         super.resetPose(pose);
     }
 
@@ -350,11 +338,42 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
      * @param timestampSeconds The timestamp of the vision measurement in seconds.
      */
+    /**
+     * Sets the supplier for whether vision measurements should be injected.
+     *
+     * @param supplier A BooleanSupplier returning true when vision is enabled
+     */
+    public void setVisionEnabledSupplier(BooleanSupplier supplier) {
+        m_visionEnabledSupplier = supplier;
+    }
+
+    // A wrapper that calls InjectFilter to determine whether to ignore this vision measurement or not
+    private boolean shouldIgnoreVisionMeas(
+        Pose2d newVisionRobotPose,
+        Pose2d currentRobotPose,
+        double timestampSeconds) {
+
+        if (!m_visionEnabledSupplier.getAsBoolean()) {
+            return true;
+        }
+
+        return m_visionFilter.shouldIgnore(
+                newVisionRobotPose,
+                currentRobotPose,
+                timestampSeconds);
+    }
+
     @Override
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
-        // $TODOIDO - Thiru changed this from Utils.fpgaToCurrentTime(timestampSeconds)
-        // - follow up on whether that is needed
-        super.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
+        if (shouldIgnoreVisionMeas(
+            visionRobotPoseMeters,
+            getState().Pose,
+            timestampSeconds)) {
+
+            return;
+        }
+
+        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
     }
 
     /**
@@ -374,18 +393,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void addVisionMeasurement(
         Pose2d visionRobotPoseMeters,
         double timestampSeconds,
-        Matrix<N3, N1> visionMeasurementStdDevs
-    ) {
-        // $VISIONSIM - Inject Filter
-        if (Robot.isSimulation() && m_visionFilter != null) {
-            if (m_visionFilter.shouldIgnore(
-                visionRobotPoseMeters,
-                getState().Pose,
-                timestampSeconds)) {
+        Matrix<N3, N1> visionMeasurementStdDevs) {
 
-                return;
-            }
+        if (shouldIgnoreVisionMeas(
+            visionRobotPoseMeters,
+            getState().Pose,
+            timestampSeconds)) {
+
+            return;
         }
-        super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds), visionMeasurementStdDevs);
+
+        super.addVisionMeasurement(
+            visionRobotPoseMeters,
+            Utils.fpgaToCurrentTime(timestampSeconds),
+            visionMeasurementStdDevs);
     }
 }
