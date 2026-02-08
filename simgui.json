@@ -117,6 +117,20 @@
           "selectable": false,
           "weight": 2.0
         },
+        "ZKalmanVisionPoseConverged": {
+          "arrows": false,
+          "image": "camera-locked.png",
+          "length": 0.8399999737739563,
+          "selectable": false,
+          "width": 1.0499999523162842
+        },
+        "ZKalmanVisionPoseNotConverged": {
+          "arrows": false,
+          "image": "camera-nolock.png",
+          "length": 0.8399999737739563,
+          "selectable": false,
+          "width": 1.0499999523162842
+        },
         "bottom": 1914,
         "height": 8.069275856018066,
         "left": 245,
