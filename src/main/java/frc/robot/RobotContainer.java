@@ -291,7 +291,9 @@ public class RobotContainer {
 
         // $VISIONSIM - Clean reset
         if (Robot.isSimulation()) {
-            // $TODO - Ido: Check if this should really be only done in isSimulation
+            // NOTE: This is only reset in simulation since m_simWrapper isnt ever
+            // instantiated in real mode.  This is because the pose we reset
+            // here is the ground truth pose which is only relevent in simulation.
             m_simWrapper.resetSimPose(pose);
         }
 
