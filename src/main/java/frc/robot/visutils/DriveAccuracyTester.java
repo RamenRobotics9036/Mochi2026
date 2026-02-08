@@ -1,13 +1,11 @@
 package frc.robot.visutils;
 
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
 import java.util.Optional;
 
@@ -28,7 +26,7 @@ public class DriveAccuracyTester {
     private Optional<Pose2d> m_redTapePose = Optional.of(new Pose2d(2.0, 1.0, new Rotation2d()));
 
     /** The drive subsystem. */
-    private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_driveSubsystem;
+    private final CommandSwerveDrivetrain m_driveSubsystem;
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     private final VisionKalmanFilter m_visionKalmanFilter;
@@ -38,7 +36,7 @@ public class DriveAccuracyTester {
      * @param visionKalmanFilter The Kalman filter used to get converged pose estimates
      */
     public DriveAccuracyTester(
-        SwerveDrivetrain<TalonFX, TalonFX, CANcoder> driveSubsystem,
+        CommandSwerveDrivetrain driveSubsystem,
         VisionKalmanFilter visionKalmanFilter) {
 
         if (driveSubsystem == null) {
@@ -102,7 +100,7 @@ public class DriveAccuracyTester {
      * @return The composed command
      */
     public Command createTapeDropAutoCommand() {
-        return Commands.either(
+        Command cmd = Commands.either(
             // Converged path: check that the auto is relative (no fixed starting pose)
             Commands.either(
                 // Relative auto: clear tape, drop blue tape, pause, run auto, drop red tape
@@ -140,5 +138,8 @@ public class DriveAccuracyTester {
             m_visionKalmanFilter::hasConverged
         ).beforeStarting(this::initializeTest)
          .finallyDo(this::cleanupAfterTest);
+
+        cmd.addRequirements(m_driveSubsystem);
+        return cmd;
     }
 }
