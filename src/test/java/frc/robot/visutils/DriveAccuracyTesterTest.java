@@ -14,19 +14,19 @@ import org.junit.jupiter.api.*;
 class DriveAccuracyTesterTest {
 
     @BeforeAll
-    static void initHAL() {
+    static void initHal() {
         HAL.initialize(500, 0);
     }
 
-    private CommandSwerveDrivetrain mockDrive;
-    private VisionKalmanFilter mockKalman;
-    private DriveAccuracyTester tester;
+    private CommandSwerveDrivetrain m_mockDrive;
+    private VisionKalmanFilter m_mockKalman;
+    private DriveAccuracyTester m_tester;
 
     @BeforeEach
     void setUp() {
-        mockDrive = mock(CommandSwerveDrivetrain.class);
-        mockKalman = mock(VisionKalmanFilter.class);
-        tester = new DriveAccuracyTester(mockDrive, mockKalman, b -> {});
+        m_mockDrive = mock(CommandSwerveDrivetrain.class);
+        m_mockKalman = mock(VisionKalmanFilter.class);
+        m_tester = new DriveAccuracyTester(m_mockDrive, m_mockKalman, b -> {});
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().unregisterAllSubsystems();
     }
@@ -40,30 +40,37 @@ class DriveAccuracyTesterTest {
     @Test
     void createTapeDropAutoCommand_abortsWhenKalmanNotConverged() {
         // Setup mock return-values
-        when(mockKalman.hasConverged()).thenReturn(false);
+        when(m_mockKalman.hasConverged()).thenReturn(false);
 
-        Command cmd = tester.createTapeDropAutoCommand();
+        Command cmd = m_tester.createTapeDropAutoCommand();
 
-        // Capture System.out to verify the abort message
-        PrintStream originalOut = System.out;
-        ByteArrayOutputStream captured = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(captured));
-
-        try {
-            // Drive the command lifecycle directly so System.out capture works
+        String output = runAndCaptureOutput(() -> {
             cmd.initialize();
             cmd.execute();
             cmd.end(cmd.isFinished());
-        } finally {
-            System.setOut(originalOut);
-        }
+        });
 
-        String output = captured.toString();
         assertTrue(
             output.contains("Kalman filter not converged \u2014 tape drop auto aborted."),
             "Expected abort message but got: " + output);
 
         // Blue tape should NOT have been placed
-        assertTrue(tester.getBlueTapePose().isEmpty());
+        assertTrue(m_tester.getBlueTapePose().isEmpty());
+    }
+
+    /**
+     * Runs the given action while capturing everything written to System.out,
+     * then restores the original stream and returns the captured text.
+     */
+    private String runAndCaptureOutput(Runnable action) {
+        PrintStream originalOut = System.out;
+        ByteArrayOutputStream captured = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(captured));
+        try {
+            action.run();
+        } finally {
+            System.setOut(originalOut);
+        }
+        return captured.toString();
     }
 }
