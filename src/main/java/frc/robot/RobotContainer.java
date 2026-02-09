@@ -113,6 +113,10 @@ public class RobotContainer {
         AutoLogic.initShuffleboard(drivetrain);
         m_driveAccuracyTester = new DriveAccuracyTester(
             drivetrain, m_visionKalmanFilter, basicInfoDashboard::forceDisableVision);
+
+        // Add a button on dashboard to launch Accuracy Drive Test
+        SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
+
         configureBindings();
 
         // $VISIONSIM - Wrapper for sim features
