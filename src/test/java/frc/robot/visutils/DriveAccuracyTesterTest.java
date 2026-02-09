@@ -37,27 +37,6 @@ class DriveAccuracyTesterTest {
         CommandScheduler.getInstance().unregisterAllSubsystems();
     }
 
-    @Test
-    void createTapeDropAutoCommand_abortsWhenKalmanNotConverged() {
-        // Setup mock return-values
-        when(m_mockKalman.hasConverged()).thenReturn(false);
-
-        Command cmd = m_tester.createTapeDropAutoCommand();
-
-        String output = runAndCaptureOutput(() -> {
-            cmd.initialize();
-            cmd.execute();
-            cmd.end(cmd.isFinished());
-        });
-
-        assertTrue(
-            output.contains("Kalman filter not converged \u2014 tape drop auto aborted."),
-            "Expected abort message but got: " + output);
-
-        // Blue tape should NOT have been placed
-        assertTrue(m_tester.getBlueTapePose().isEmpty());
-    }
-
     /**
      * Runs the given action while capturing everything written to System.out,
      * then restores the original stream and returns the captured text.
@@ -72,5 +51,26 @@ class DriveAccuracyTesterTest {
             System.setOut(originalOut);
         }
         return captured.toString();
+    }
+
+    @Test
+    void test_createTapeDropAutoCommand_abortsWhenKalmanNotConverged() {
+        // Setup mock return-values
+        when(m_mockKalman.hasConverged()).thenReturn(false);
+
+        Command cmd = m_tester.createTapeDropAutoCommand();
+
+        String output = runAndCaptureOutput(() -> {
+            cmd.initialize();
+            cmd.execute();
+            cmd.end(cmd.isFinished());
+        });
+
+        assertEquals(
+            "Kalman filter not converged, tape drop auto aborted.",
+            output.trim());
+
+        // Blue tape should NOT have been placed
+        assertTrue(m_tester.getBlueTapePose().isEmpty());
     }
 }

@@ -127,7 +127,7 @@ public class DriveAccuracyTester {
      */
     private boolean checkPreconditions() {
         if (!m_visionKalmanFilter.hasConverged()) {
-            System.out.println("Kalman filter not converged — tape drop auto aborted.");
+            System.out.println("Kalman filter not converged, tape drop auto aborted.");
             return false;
         }
         if (!AutoLogic.getSelectedAutoStartingPose().equals(Pose2d.kZero)) {
