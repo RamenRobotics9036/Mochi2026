@@ -47,7 +47,7 @@ public class IntakeCommand extends Command {
     @Override
     public void execute() {
         // Run the intake motor at the predefined speed
-        m_intake.setSpeed(IntakeConstants.kIntakeSpeed);
+        m_intake.runIntake();
     }
 
     /**

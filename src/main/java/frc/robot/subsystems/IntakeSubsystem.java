@@ -1,9 +1,10 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -24,29 +25,83 @@ public class IntakeSubsystem extends SubsystemBase {
     private final SparkFlex m_lArmMotor;
     private final SparkFlex m_rArmMotor;
     private final SparkFlex m_intakeMotor;
-    /** The configuration object applied to the intake motor controller. */
-    //private final SparkMaxConfig m_config;
+
+    /** The configuration objects applied to the intake motor controller. */
+    private final SparkFlexConfig m_lArmConfig;
+    private final SparkFlexConfig m_rArmConfig;
+    private final SparkFlexConfig m_intakeConfig;
 
     /**
      * Constructs a new IntakeSubsystem.
      * Configures the motor with brake mode and a smart current limit for safety.
      */
     public IntakeSubsystem() {
-        //left and right arm motors
+        // Left and right arm motors; intake motor:
         m_lArmMotor = new SparkFlex(IntakeConstants.kLeftArmMotorID, MotorType.kBrushless);
         m_rArmMotor = new SparkFlex(IntakeConstants.kRightArmMotorID, MotorType.kBrushless);
-        //instake motor
         m_intakeMotor = new SparkFlex(IntakeConstants.kIntakeMotorID, MotorType.kBrushless);
+        
+        // Configure the motors:
+    m_lArmConfig = new SparkFlexConfig();
+    m_rArmConfig = new SparkFlexConfig();
+    m_intakeConfig = new SparkFlexConfig();
+
+        m_lArmConfig.idleMode(IdleMode.kBrake)
+            .smartCurrentLimit(IntakeConstants.kStallLimit);
+        m_rArmConfig.idleMode(IdleMode.kBrake)
+            .smartCurrentLimit(IntakeConstants.kStallLimit)
+            .inverted(true)
+            .follow(m_lArmMotor);
+        m_intakeConfig.idleMode(IdleMode.kBrake)
+            .smartCurrentLimit(IntakeConstants.kStallLimit);
+
+    // Apply configs to controllers (matches pattern used in ShooterSubsystem)
+    m_lArmMotor.configure(m_lArmConfig, ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
+    m_rArmMotor.configure(m_rArmConfig, ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
+    m_intakeMotor.configure(m_intakeConfig, ResetMode.kResetSafeParameters,
+        PersistMode.kPersistParameters);
     }
 
-    /**
-     * Immediately cuts power to the intake motor.
-     */
-    public void stop() {
-        // stop the motor
-        m_intakeMotor.stopMotor();
+    // closed loop control for the arm motors to lower the intake arm
+    public void deployArm() {
+        // todo
+    }
+
+    // closed loop control for the arm motors to raise the intake arm
+    public void raiseArm() {
+        // todo
+    }
+
+    // Returns true if the intake arm is currently deployed (lowered).
+    public boolean isArmDeployed() {
+        // todo
+        return false;
+    }
+
+    // Runs the intake rollers at the default speed defined in Constants.
+    public void runIntake() {
+        // todo
+    }
+
+    // Cut power to the arm motors
+    public void stopArm() {
+        // todo: reset mode to idle
         m_lArmMotor.stopMotor();
         m_rArmMotor.stopMotor();
+    }
+
+    // Immediately cuts power to the intake motor
+    public void stopIntake() {
+        // todo: reset mode to idle
+        m_intakeMotor.stopMotor();
+    }
+
+    // Stop all motors in the intake subsystem
+    public void stop() {
+        stopIntake();
+        stopArm();
     }
 
     /**
