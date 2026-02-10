@@ -43,6 +43,30 @@ class DriveAccuracyTesterTest {
     }
 
     /**
+     * Initializes and repeatedly executes a command until it finishes or the
+     * step limit is reached. Calls end() when done.
+     *
+     * @param cmd The command to run
+     * @param maxSteps Maximum number of execute() cycles before giving up
+     * @throws IllegalStateException if the command did not finish within maxSteps
+     */
+    private void runCommandToCompletion(Command cmd, int maxSteps) {
+        cmd.initialize();
+        int steps = 0;
+        while (!cmd.isFinished() && steps < maxSteps) {
+            cmd.execute();
+            steps++;
+        }
+
+        if (!cmd.isFinished()) {
+            throw new IllegalStateException(
+                "Command did not finish within " + maxSteps + " steps");
+        }
+
+        cmd.end(false);
+    }
+
+    /**
      * Runs the given action while capturing everything written to System.out,
      * then restores the original stream and returns the captured text.
      */
@@ -66,9 +90,7 @@ class DriveAccuracyTesterTest {
         Command cmd = m_tester.createTapeDropAutoCommand();
 
         String output = runAndCaptureOutput(() -> {
-            cmd.initialize();
-            cmd.execute();
-            cmd.end(cmd.isFinished());
+            runCommandToCompletion(cmd, 100);
         });
 
         assertEquals(
@@ -94,9 +116,7 @@ class DriveAccuracyTesterTest {
             Command cmd = m_tester.createTapeDropAutoCommand();
 
             String output = runAndCaptureOutput(() -> {
-                cmd.initialize();
-                cmd.execute();
-                cmd.end(cmd.isFinished());
+                runCommandToCompletion(cmd, 100);
             });
 
             assertEquals(
@@ -106,5 +126,27 @@ class DriveAccuracyTesterTest {
 
         // Blue tape should NOT have been placed
         assertTrue(m_tester.getBlueTapePose().isEmpty());
+    }
+
+    @Test
+    void test_happyDayCase_dropsBlueTape() {
+        // Kalman converged and returns a known pose
+        when(m_mockKalman.hasConverged()).thenReturn(true);
+        Pose2d kalmanPose = new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(45));
+        when(m_mockKalman.getEstimate()).thenReturn(kalmanPose);
+
+        try (MockedStatic<AutoLogic> mockedAutoLogic = mockStatic(AutoLogic.class)) {
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoStartingPose)
+                .thenReturn(Pose2d.kZero);
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoCommand)
+                .thenReturn(Commands.none());
+
+            Command cmd = m_tester.createTapeDropAutoCommand();
+
+            runCommandToCompletion(cmd, 100);
+
+            assertTrue(m_tester.getBlueTapePose().isPresent(),
+                "Blue tape should have been placed");
+        }
     }
 }
