@@ -159,4 +159,38 @@ class DriveAccuracyTesterTest {
                 "Red tape should have been placed");
         }
     }
+
+    @Test
+    void test_kalmanDoesntConvergeAtEndOfTest() {
+        // First call returns true (passes precondition), then false thereafter
+        when(m_mockKalman.hasConverged()).thenReturn(true, false);
+        Pose2d kalmanPose = new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(45));
+        when(m_mockKalman.getEstimate()).thenReturn(kalmanPose);
+
+        try (MockedStatic<AutoLogic> mockedAutoLogic = mockStatic(AutoLogic.class)) {
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoStartingPose)
+                .thenReturn(Pose2d.kZero);
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoCommand)
+                .thenReturn(Commands.none());
+
+            Command cmd = m_tester.createTapeDropAutoCommand();
+
+            String output = runAndCaptureOutput(() -> {
+                // We need to run a lot of cycles to pass 10s
+                runCommandToCompletion(cmd, 1000);
+            });
+
+            // Blue tape should still be placed (happens before the auto)
+            assertTrue(m_tester.getBlueTapePose().isPresent(),
+                "Blue tape should have been placed");
+
+            // Red tape should NOT be placed (Kalman never re-converged)
+            assertTrue(m_tester.getRedTapePose().isEmpty(),
+                "Red tape should not have been placed");
+
+            // Should see the failure message
+            assertTrue(output.contains("Failed to lock onto camera at end of cycle."),
+                "Expected camera lock failure message but got: " + output);
+        }
+    }
 }
