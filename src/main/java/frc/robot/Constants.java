@@ -28,6 +28,42 @@ public final class Constants {
         public static final double kIntakeSpeed = 0.8;
         /** Default speed for ejecting game pieces from the robot. */
         public static final double kOuttakeSpeed = -0.8;
+        /** Current threshold in Amps used to detect if a game piece is fully secured. */
+        public static final int kStallLimit = 40; // Amps
+
+        public static final int kLeftArmMotorID = 20;
+        public static final int kRightArmMotorID = 21;
+        public static final int kIntakeMotorID = 22;
+    }
+
+    /**
+     * Constants for the Intake subsystem rollers.
+     */
+    public static final class ShooterConstants {
+        /** CAN ID for the left SparkFlex motor controller. */
+        public static final int kLMotorID = 40;
+        /** CAN ID for the right SparkFlex motor controller. */
+        public static final int kRMotorID = 41;
+        /** SmartCurrentLimit in amps*/
+        public static final int kCurrentLimit = 40; //TODO: filler value
+        /** PWM channer for the linear actuator servo. */
+        public static final int kChannel = 0; //TODO: filler value
+    }
+
+    /**
+     * Configuration constants for the Operator Interface and telemetry.
+     */
+    public static final class OperatorConstants {
+        /** When true, non-essential telemetry is disabled to conserve CAN bus bandwidth. */
+        public static final boolean kCompetitionMode = false;
+    }
+
+    /**
+     * Tuning constants for the manual elevator control command.
+     */
+    public static final class ElevatorDefaultCommandConstants {
+        /** Sensitivity multiplier for joystick-based elevator movement. */
+        public static final double kElevatorSpeed = 0.5;
     }
 
     /**

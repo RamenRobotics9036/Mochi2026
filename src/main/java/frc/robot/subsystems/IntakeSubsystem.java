@@ -32,9 +32,11 @@ public class IntakeSubsystem extends SubsystemBase {
      * Configures the motor with brake mode and a smart current limit for safety.
      */
     public IntakeSubsystem() {
-        m_lArmMotor = new SparkFlex(IntakeConstants.kLeftArmMotorID);
-        m_rArmMotor = new SparkFlex(IntakeConstants.kRightArmMotorID);
-        m_intakeMotor = new SparkFlex(IntakeConstants.kIntakeMotorID);
+        //left and right arm motors
+        m_lArmMotor = new SparkFlex(IntakeConstants.kLeftArmMotorID, MotorType.kBrushless);
+        m_rArmMotor = new SparkFlex(IntakeConstants.kRightArmMotorID, MotorType.kBrushless);
+        //instake motor
+        m_intakeMotor = new SparkFlex(IntakeConstants.kIntakeMotorID, MotorType.kBrushless);
     }
 
     /**
@@ -43,6 +45,8 @@ public class IntakeSubsystem extends SubsystemBase {
     public void stop() {
         // stop the motor
         m_intakeMotor.stopMotor();
+        m_lArmMotor.stopMotor();
+        m_rArmMotor.stopMotor();
     }
 
     /**
