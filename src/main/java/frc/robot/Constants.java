@@ -34,6 +34,9 @@ public final class Constants {
         public static final int kLeftArmMotorID = 20;
         public static final int kRightArmMotorID = 21;
         public static final int kIntakeMotorID = 22;
+
+        public static final double kMaxArmAngle = 90; //TODO: filler value
+        public static final double kMinArmAngle = 0; //TODO: filler value
     }
 
     /**
