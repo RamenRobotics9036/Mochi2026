@@ -14,6 +14,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.*;
 import org.mockito.MockedStatic;
 
@@ -199,6 +200,56 @@ class DriveAccuracyTesterTest {
             // Note: We only check the LAST line of output since theres other text too
             assertTrue(output.contains("Failed to lock onto camera at end of cycle."),
                 "Expected camera lock failure message but got: " + output);
+        }
+    }
+
+    @Test
+    void test_forceDisableVision_calledCorrectly() {
+        @SuppressWarnings("unchecked")
+        Consumer<Boolean> mockForceDisableVision = mock(Consumer.class);
+
+        DriveAccuracyTester tester = new DriveAccuracyTester(
+            m_mockDrive, m_mockKalman, mockForceDisableVision);
+
+        when(m_mockKalman.hasConverged()).thenReturn(true);
+        when(m_mockKalman.getEstimate())
+            .thenReturn(new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(45)));
+
+        try (MockedStatic<AutoLogic> mockedAutoLogic = mockStatic(AutoLogic.class)) {
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoStartingPose)
+                .thenReturn(Pose2d.kZero);
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoCommand)
+                .thenReturn(Commands.none());
+
+            Command cmd = tester.createTapeDropAutoCommand();
+
+            // After creation, forceDisableVision should NOT have been called
+            verify(mockForceDisableVision, never()).accept(any());
+
+            // $TODO - I dont like how the command loop is reimplemented here
+            // Run the command lifecycle manually so we can verify intermediate state
+            SimHooks.pauseTiming();
+            try {
+                cmd.initialize();
+
+                // After initialize, vision should be disabled (true)
+                verify(mockForceDisableVision).accept(true);
+                verify(mockForceDisableVision, never()).accept(false);
+
+                int steps = 0;
+                while (!cmd.isFinished() && steps < 100) {
+                    SimHooks.stepTiming(0.02);
+                    cmd.execute();
+                    steps++;
+                }
+                assertTrue(cmd.isFinished(), "Command should have finished");
+                cmd.end(false);
+            } finally {
+                SimHooks.resumeTiming();
+            }
+
+            // After end, vision should be re-enabled (false)
+            verify(mockForceDisableVision).accept(false);
         }
     }
 }
