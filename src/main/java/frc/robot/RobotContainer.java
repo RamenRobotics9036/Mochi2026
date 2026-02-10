@@ -135,12 +135,11 @@ public class RobotContainer {
             m_glassField, debugField);
 
         // Setup vision system
-        drivetrain.setVisionEnabledSupplier(basicInfoDashboard::isVisionEnabled);
-
         m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
         m_motionlessTracker.setOnStartedMoving(m_visionKalmanFilter::reset);
 
         m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
+        m_limelightOdometry.setVisionEnabledSupplier(basicInfoDashboard::isVisionEnabled);
         m_limelightOdometry.setVisionKalmanFilter(m_visionKalmanFilter, m_motionlessTracker::isMotionless);
 
         basicInfoDashboard.setVisionConfidenceSupplier(

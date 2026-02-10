@@ -35,6 +35,7 @@ public class LimelightOdometry {
 
     private VisionKalmanFilter m_visionKalmanFilter = null;
     private BooleanSupplier m_isMotionlessSupplier = null;
+    private BooleanSupplier m_visionEnabledSupplier = () -> true;
 
     /** Constructor. */
     public LimelightOdometry(VisionSimInterface.EstimateConsumer poseConsumer) {
@@ -42,6 +43,15 @@ public class LimelightOdometry {
         this.m_limelightName = Robot.isSimulation()
             ? VisionConstants.kLimelightNameSim
             : VisionConstants.kLimelightNameReal;
+    }
+
+    /**
+     * Sets the supplier that controls whether vision measurements are injected.
+     *
+     * @param supplier A BooleanSupplier returning true when vision is enabled
+     */
+    public void setVisionEnabledSupplier(BooleanSupplier supplier) {
+        m_visionEnabledSupplier = supplier;
     }
 
     /**
@@ -168,6 +178,11 @@ public class LimelightOdometry {
         }
 
         setResults(m_curConfidenceScore, mt1.tagCount, mt1.rawFiducials);
+
+        // Skip injecting vision measurements if vision is disabled
+        if (!m_visionEnabledSupplier.getAsBoolean()) {
+            return;
+        }
 
         // Inject into vision Kalman filter if robot is motionless and we have multi-tag
         if (m_visionKalmanFilter != null && m_isMotionlessSupplier != null) {

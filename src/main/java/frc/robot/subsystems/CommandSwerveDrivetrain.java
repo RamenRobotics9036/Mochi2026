@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -56,8 +55,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     // $VISIONSIM - Inject Filter
     private final VisionInjectFilter m_visionFilter;
 
-    /** Supplier that returns true when vision measurements should be injected. */
-    private BooleanSupplier m_visionEnabledSupplier = () -> true;
+
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -338,24 +336,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
      * @param timestampSeconds The timestamp of the vision measurement in seconds.
      */
-    /**
-     * Sets the supplier for whether vision measurements should be injected.
-     *
-     * @param supplier A BooleanSupplier returning true when vision is enabled
-     */
-    public void setVisionEnabledSupplier(BooleanSupplier supplier) {
-        m_visionEnabledSupplier = supplier;
-    }
-
     // A wrapper that calls InjectFilter to determine whether to ignore this vision measurement or not
     private boolean shouldIgnoreVisionMeas(
         Pose2d newVisionRobotPose,
         Pose2d currentRobotPose,
         double timestampSeconds) {
-
-        if (!m_visionEnabledSupplier.getAsBoolean()) {
-            return true;
-        }
 
         return m_visionFilter.shouldIgnore(
                 newVisionRobotPose,
