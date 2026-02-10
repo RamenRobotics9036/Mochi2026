@@ -77,7 +77,7 @@ public class DriveAccuracyTester {
      * @param robotPose The robot's current pose
      * @return The tape Pose2d positioned in front of the robot
      */
-    private Pose2d computeFrontTapePose(Pose2d robotPose) {
+    public Pose2d computeFrontTapePose(Pose2d robotPose) {
         // Half the bumper length (center to front edge): 0.864m / 2 = 0.432m
         // Then push out by the tape width so it doesn't overlap the bumpers
         double halfBumperLength = 0.864 / 2.0;

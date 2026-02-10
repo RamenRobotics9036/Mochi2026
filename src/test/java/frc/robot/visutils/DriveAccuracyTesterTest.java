@@ -155,6 +155,13 @@ class DriveAccuracyTesterTest {
             assertTrue(m_tester.getBlueTapePose().isPresent(),
                 "Blue tape should have been placed");
 
+            // Verify blue tape position matches expected front-of-robot offset
+            Pose2d expectedTapePose = m_tester.computeFrontTapePose(kalmanPose);
+            Pose2d blueTape = m_tester.getBlueTapePose().get();
+            assertEquals(expectedTapePose.getX(), blueTape.getX(), 1e-6, "Blue tape X");
+            assertEquals(expectedTapePose.getY(), blueTape.getY(), 1e-6, "Blue tape Y");
+            assertEquals(expectedTapePose.getRotation().getDegrees(), blueTape.getRotation().getDegrees(), 1e-6, "Blue tape rotation");
+
             assertTrue(m_tester.getRedTapePose().isPresent(),
                 "Red tape should have been placed");
         }
