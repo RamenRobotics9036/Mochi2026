@@ -189,6 +189,7 @@ class DriveAccuracyTesterTest {
                 "Red tape should not have been placed");
 
             // Should see the failure message
+            // Note: We only check the LAST line of output since theres other text too
             assertTrue(output.contains("Failed to lock onto camera at end of cycle."),
                 "Expected camera lock failure message but got: " + output);
         }
