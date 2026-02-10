@@ -72,6 +72,9 @@ public class BasicInfoDashboard {
     private BooleanSupplier m_isRobotMotionlessSupplier = null;
     private DoubleSupplier m_secondsStillSupplier = null;
 
+    /** When true, vision is forcibly disabled regardless of the dashboard toggle. */
+    private boolean m_forceDisableVision = false;
+
     // Debouncers for locked indicators (prevents flickering)
     private static final double kLockedDebounceSeconds = 0.25;
     private final Debouncer m_oneLockedDebouncer =
@@ -97,12 +100,26 @@ public class BasicInfoDashboard {
 
     /**
      * Returns whether vision measurements should be injected into odometry.
-     * This value can be toggled live from the Elastic dashboard.
+     * Returns false if vision is force-disabled, otherwise reads the dashboard toggle.
      *
      * @return true if vision is enabled
      */
     public boolean isVisionEnabled() {
+        if (m_forceDisableVision) {
+            return false;
+        }
         return m_visionEnabled.get(Constants.VisionConstants.kVisionEnabledDefault);
+    }
+
+    /**
+     * Force-disables or re-enables vision measurement injection.
+     * When force-disabled, {@link #isVisionEnabled()} always returns false
+     * regardless of the dashboard toggle.
+     *
+     * @param disable true to force-disable vision, false to resume normal behavior
+     */
+    public void forceDisableVision(boolean disable) {
+        m_forceDisableVision = disable;
     }
 
     /**

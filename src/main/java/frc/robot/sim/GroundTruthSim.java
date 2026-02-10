@@ -16,14 +16,12 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
-import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
+import frc.robot.visutils.AllianceCalc;
 import java.util.function.Consumer;
 
 
@@ -150,13 +148,13 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         Pose2d blueAlliancePose,
         boolean useCorrectTeamSide) {
 
-        boolean shouldFlipPose = isRedAlliance();
+        boolean shouldFlipPose = AllianceCalc.isRedAlliance();
         if (!useCorrectTeamSide) {
             shouldFlipPose = !shouldFlipPose;
         }
 
         Pose2d pose = shouldFlipPose
-            ? FlippingUtil.flipFieldPose(blueAlliancePose)
+            ? AllianceCalc.flipFieldPose(blueAlliancePose)
             : blueAlliancePose;
 
         // Trigger robot pose reset
@@ -198,14 +196,6 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         // Advance to next state
         m_currrentCycleState = (m_currrentCycleState + 1) % 4;
     }
-
-    /**
-     * True if the robot is currently configured as red alliance.
-     */
-    private boolean isRedAlliance() {
-        return DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red;
-    }
-
 
     /**
      * Introduces simulated odometry drift by offsetting the pose estimator.
