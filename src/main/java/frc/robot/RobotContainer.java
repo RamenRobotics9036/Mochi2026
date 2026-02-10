@@ -53,11 +53,11 @@ public class RobotContainer {
     private double TeleoperatedSpeed = Math.min(TunerConstants.kSpeedInTeleop.in(MetersPerSecond), MaxSpeed);
 
     /** Standard field-centric swerve request. Uses Velocity control for smoother movement.
-     *  Small deadband catches residual near-zero commands from the slew limiter;
-     *  main joystick deadband is handled by DriveSmooth. */
+     *  Near-zero deadband catches floating-point residuals only;
+     *  main joystick deadband and smoothing is handled by DriveSmooth. */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-            .withDeadband(0.02 * TeleoperatedSpeed)
-            .withRotationalDeadband(0.02 * MaxAngularRate)
+            .withDeadband(0.001 * TeleoperatedSpeed)
+            .withRotationalDeadband(0.001 * MaxAngularRate)
             .withDriveRequestType(DriveRequestType.Velocity);
 
     /** Brake request: Forces all modules into an X-pattern to resist movement. */
