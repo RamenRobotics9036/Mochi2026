@@ -123,39 +123,28 @@ public class BasicInfoDashboard {
     }
 
     /**
-     * Sets the supplier for vision confidence score.
+     * Sets the suppliers for querying basic vision information.
      *
-     * @param supplier A DoubleSupplier returning confidence 0-100
+     * @param confidenceSupplier    A DoubleSupplier returning confidence 0-100
+     * @param numLockedTagsSupplier An IntSupplier returning the locked tag count
+     * @param txSupplier            A DoubleSupplier returning tx in degrees
+     * @param targetListSupplier    A Supplier returning comma-separated tag IDs
+     * @param isMotionlessSupplier  A BooleanSupplier returning true when robot is motionless
+     * @param secondsStillSupplier  A DoubleSupplier returning seconds the robot has been still
      */
-    public void setVisionConfidenceSupplier(DoubleSupplier supplier) {
-        m_visionConfidenceSupplier = supplier;
-    }
-
-    /**
-     * Sets the supplier for number of locked AprilTags.
-     *
-     * @param supplier An IntSupplier returning the tag count
-     */
-    public void setNumLockedTagsSupplier(IntSupplier supplier) {
-        m_numLockedTagsSupplier = supplier;
-    }
-
-    /**
-     * Sets the supplier for vision tx (horizontal offset to target).
-     *
-     * @param supplier A DoubleSupplier returning tx in degrees
-     */
-    public void setTxSupplier(DoubleSupplier supplier) {
-        m_txSupplier = supplier;
-    }
-
-    /**
-     * Sets the supplier for the visible target list.
-     *
-     * @param supplier A Supplier returning comma-separated tag IDs
-     */
-    public void setTargetListSupplier(Supplier<String> supplier) {
-        m_targetListSupplier = supplier;
+    public void setVisionDependencies(
+            DoubleSupplier confidenceSupplier,
+            IntSupplier numLockedTagsSupplier,
+            DoubleSupplier txSupplier,
+            Supplier<String> targetListSupplier,
+            BooleanSupplier isMotionlessSupplier,
+            DoubleSupplier secondsStillSupplier) {
+        m_visionConfidenceSupplier = confidenceSupplier;
+        m_numLockedTagsSupplier = numLockedTagsSupplier;
+        m_txSupplier = txSupplier;
+        m_targetListSupplier = targetListSupplier;
+        m_isRobotMotionlessSupplier = isMotionlessSupplier;
+        m_secondsStillSupplier = secondsStillSupplier;
     }
 
     /**
@@ -165,24 +154,6 @@ public class BasicInfoDashboard {
      */
     public void setVisionKalmanSupplier(Supplier<VisionKalmanFilter> supplier) {
         m_visionKalmanSupplier = supplier;
-    }
-
-    /**
-     * Sets the supplier for robot motionless state.
-     *
-     * @param supplier A BooleanSupplier returning true when robot is motionless
-     */
-    public void setIsRobotMotionlessSupplier(BooleanSupplier supplier) {
-        m_isRobotMotionlessSupplier = supplier;
-    }
-
-    /**
-     * Sets the supplier for how long the robot has been still.
-     *
-     * @param supplier A DoubleSupplier returning seconds the robot has been still
-     */
-    public void setSecondsStillSupplier(DoubleSupplier supplier) {
-        m_secondsStillSupplier = supplier;
     }
 
     private boolean isRedAlliance() {

@@ -139,21 +139,20 @@ public class RobotContainer {
         m_motionlessTracker.setOnStartedMoving(m_visionKalmanFilter::reset);
 
         m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
-        m_limelightOdometry.setVisionEnabledSupplier(basicInfoDashboard::isVisionEnabled);
-        m_limelightOdometry.setVisionKalmanFilter(m_visionKalmanFilter, m_motionlessTracker::isMotionless);
+        m_limelightOdometry.setVisionDependencies(
+            basicInfoDashboard::isVisionEnabled,
+            m_visionKalmanFilter,
+            m_motionlessTracker::isMotionless);
 
-        basicInfoDashboard.setVisionConfidenceSupplier(
-            m_limelightOdometry::getCurrentConfidenceScore);
-        basicInfoDashboard.setNumLockedTagsSupplier(
-            m_limelightOdometry::getNumLockedTags);
-        basicInfoDashboard.setTxSupplier(
-            m_limelightOdometry::getTx);
-        basicInfoDashboard.setTargetListSupplier(
-            m_limelightOdometry::getTargetList);
+        basicInfoDashboard.setVisionDependencies(
+            m_limelightOdometry::getCurrentConfidenceScore,
+            m_limelightOdometry::getNumLockedTags,
+            m_limelightOdometry::getTx,
+            m_limelightOdometry::getTargetList,
+            m_motionlessTracker::isMotionless,
+            m_motionlessTracker::getSecondsStill);
 
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
-        basicInfoDashboard.setIsRobotMotionlessSupplier(m_motionlessTracker::isMotionless);
-        basicInfoDashboard.setSecondsStillSupplier(m_motionlessTracker::getSecondsStill);
     }
 
     /**

@@ -46,21 +46,17 @@ public class LimelightOdometry {
     }
 
     /**
-     * Sets the supplier that controls whether vision measurements are injected.
+     * Sets the dependencies needed for vision processing.
      *
-     * @param supplier A BooleanSupplier returning true when vision is enabled
-     */
-    public void setVisionEnabledSupplier(BooleanSupplier supplier) {
-        m_visionEnabledSupplier = supplier;
-    }
-
-    /**
-     * Sets the vision Kalman filter and motionless detection for precise stationary estimation.
-     *
+     * @param visionEnabledSupplier A BooleanSupplier returning true when vision is enabled
      * @param filter The VisionKalmanFilter instance to inject measurements into
      * @param isMotionlessSupplier Supplier that returns true when robot is motionless
      */
-    public void setVisionKalmanFilter(VisionKalmanFilter filter, BooleanSupplier isMotionlessSupplier) {
+    public void setVisionDependencies(
+            BooleanSupplier visionEnabledSupplier,
+            VisionKalmanFilter filter,
+            BooleanSupplier isMotionlessSupplier) {
+        m_visionEnabledSupplier = visionEnabledSupplier;
         m_visionKalmanFilter = filter;
         m_isMotionlessSupplier = isMotionlessSupplier;
     }
