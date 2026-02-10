@@ -4,12 +4,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.auto.AutoLogic;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import org.junit.jupiter.api.*;
+import org.mockito.MockedStatic;
 
 class DriveAccuracyTesterTest {
 
@@ -69,6 +74,35 @@ class DriveAccuracyTesterTest {
         assertEquals(
             "Kalman filter not converged, tape drop auto aborted.",
             output.trim());
+
+        // Blue tape should NOT have been placed
+        assertTrue(m_tester.getBlueTapePose().isEmpty());
+    }
+
+    @Test
+    void test_createTapeDropAutoCommand_abortsWhenAutoHasStartPose() {
+        // Kalman converged — passes first check
+        when(m_mockKalman.hasConverged()).thenReturn(true);
+
+        try (MockedStatic<AutoLogic> mockedAutoLogic = mockStatic(AutoLogic.class)) {
+            // Auto has a non-zero starting pose — should fail second check
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoStartingPose)
+                .thenReturn(new Pose2d(1, 2, new Rotation2d()));
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoCommand)
+                .thenReturn(Commands.none());
+
+            Command cmd = m_tester.createTapeDropAutoCommand();
+
+            String output = runAndCaptureOutput(() -> {
+                cmd.initialize();
+                cmd.execute();
+                cmd.end(cmd.isFinished());
+            });
+
+            assertEquals(
+                "Only relative auto paths are supported.",
+                output.trim());
+        }
 
         // Blue tape should NOT have been placed
         assertTrue(m_tester.getBlueTapePose().isEmpty());
