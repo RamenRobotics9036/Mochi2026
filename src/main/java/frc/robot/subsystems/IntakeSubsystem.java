@@ -1,6 +1,6 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -13,45 +13,28 @@ import frc.robot.botconfig.BotConfigInterface;
 
 /**
  * Subsystem responsible for the robot's game piece intake mechanism.
- *
- * <p>This subsystem manages a single SPARK MAX motor controller and provides methods
- * for running the intake at specific speeds, stopping the system, and monitoring
- * motor current to detect when a game piece has been successfully acquired.
+ * 
+ * <p>This subsystem manages 3 SPARK FLEX motor controllers and provides methods 
+ * for running the intake motor and raising/lowering the intake arm, stopping the system
  */
 public class IntakeSubsystem extends SubsystemBase {
     private final BotConfigInterface m_configInterface;
 
     /** The motor controller driving the intake rollers. */
-    private final SparkMax m_intakeMotor;
+    private final SparkFlex m_lArmMotor;
+    private final SparkFlex m_rArmMotor;
+    private final SparkFlex m_intakeMotor;
     /** The configuration object applied to the intake motor controller. */
-    private final SparkMaxConfig m_config;
+    //private final SparkMaxConfig m_config;
 
     /**
      * Constructs a new IntakeSubsystem.
      * Configures the motor with brake mode and a smart current limit for safety.
      */
-    public IntakeSubsystem(BotConfigInterface configInterface) {
-        m_configInterface = configInterface;
-
-        m_intakeMotor = new SparkMax(m_configInterface.getIntakeMotorId(), MotorType.kBrushless);
-        m_config = new SparkMaxConfig();
-
-        // Basic motor configuration
-        m_config.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(m_configInterface.getIntakeStallLimit());
-
-        m_intakeMotor.configure(m_config,
-            SparkBase.ResetMode.kResetSafeParameters,
-            SparkBase.PersistMode.kPersistParameters);
-    }
-
-    /**
-     * Sets the intake motor speed.
-     *
-     * @param speed Percent output from -1.0 to 1.0 (positive is intake, negative is outtake).
-     */
-    public void setSpeed(double speed) {
-        m_intakeMotor.set(speed);
+    public IntakeSubsystem() {
+        m_lArmMotor = new SparkFlex(IntakeConstants.kLeftArmMotorID);
+        m_rArmMotor = new SparkFlex(IntakeConstants.kRightArmMotorID);
+        m_intakeMotor = new SparkFlex(IntakeConstants.kIntakeMotorID);
     }
 
     /**
