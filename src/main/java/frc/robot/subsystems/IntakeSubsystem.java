@@ -42,9 +42,9 @@ public class IntakeSubsystem extends SubsystemBase {
         m_intakeMotor = new SparkFlex(IntakeConstants.kIntakeMotorID, MotorType.kBrushless);
         
         // Configure the motors:
-    m_lArmConfig = new SparkFlexConfig();
-    m_rArmConfig = new SparkFlexConfig();
-    m_intakeConfig = new SparkFlexConfig();
+        m_lArmConfig = new SparkFlexConfig();
+        m_rArmConfig = new SparkFlexConfig();
+        m_intakeConfig = new SparkFlexConfig();
 
         m_lArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kStallLimit);
@@ -55,34 +55,52 @@ public class IntakeSubsystem extends SubsystemBase {
         m_intakeConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kStallLimit);
 
-    // Apply configs to controllers (matches pattern used in ShooterSubsystem)
-    m_lArmMotor.configure(m_lArmConfig, ResetMode.kResetSafeParameters,
-        PersistMode.kPersistParameters);
-    m_rArmMotor.configure(m_rArmConfig, ResetMode.kResetSafeParameters,
-        PersistMode.kPersistParameters);
-    m_intakeMotor.configure(m_intakeConfig, ResetMode.kResetSafeParameters,
-        PersistMode.kPersistParameters);
+        // Apply configs to controllers (matches pattern used in ShooterSubsystem)
+        m_lArmMotor.configure(m_lArmConfig, ResetMode.kResetSafeParameters,
+            PersistMode.kPersistParameters);
+        m_rArmMotor.configure(m_rArmConfig, ResetMode.kResetSafeParameters,
+            PersistMode.kPersistParameters);
+        m_intakeMotor.configure(m_intakeConfig, ResetMode.kResetSafeParameters,
+            PersistMode.kPersistParameters);
     }
 
-    // closed loop control for the arm motors to lower the intake arm
-    public void deployArm() {
-        // todo
+    /**
+     * Sets the open-loop percent output for the intake arm motors.
+     *
+     * <p>Positive values should correspond to "deploy" and negative values to "raise",
+     * but the sign convention ultimately depends on motor inversion/mechanics.
+     *
+     * @param speed Percent output in the range [-1.0, 1.0].
+     */
+    public void setArmSpeed(double speed) {
+        m_lArmMotor.set(speed);
+        // Right arm follows left via configuration, but set it anyway for clarity/safety.
+        m_rArmMotor.set(speed);
     }
 
-    // closed loop control for the arm motors to raise the intake arm
-    public void raiseArm() {
-        // todo
+    /** Convenience wrapper for setting an explicit deploy (down) speed. */
+    public void setDeployArmSpeed(double speed) {
+        setArmSpeed(speed);
     }
 
-    // Returns true if the intake arm is currently deployed (lowered).
+    /** Convenience wrapper for setting an explicit raise (up) speed. */
+    public void setRaiseArmSpeed(double speed) {
+        setArmSpeed(speed);
+    }
+
+    // 
     public boolean isArmDeployed() {
         // todo
         return false;
     }
 
-    // Runs the intake rollers at the default speed defined in Constants.
-    public void runIntake() {
-        // todo
+    /**
+     * Sets the intake roller motor output.
+     *
+     * @param speed Percent output in the range [-1.0, 1.0].
+     */
+    public void setIntakeSpeed(double speed) {
+        m_intakeMotor.set(speed);
     }
 
     // Cut power to the arm motors
