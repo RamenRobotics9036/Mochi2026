@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -51,19 +52,25 @@ class DriveAccuracyTesterTest {
      * @throws IllegalStateException if the command did not finish within maxSteps
      */
     private void runCommandToCompletion(Command cmd, int maxSteps) {
-        cmd.initialize();
-        int steps = 0;
-        while (!cmd.isFinished() && steps < maxSteps) {
-            cmd.execute();
-            steps++;
-        }
+        SimHooks.pauseTiming();
+        try {
+            cmd.initialize();
+            int steps = 0;
+            while (!cmd.isFinished() && steps < maxSteps) {
+                SimHooks.stepTiming(0.02); // Advance simulated clock by one 20ms cycle
+                cmd.execute();
+                steps++;
+            }
 
-        if (!cmd.isFinished()) {
-            throw new IllegalStateException(
-                "Command did not finish within " + maxSteps + " steps");
-        }
+            if (!cmd.isFinished()) {
+                throw new IllegalStateException(
+                    "Command did not finish within " + maxSteps + " steps");
+            }
 
-        cmd.end(false);
+            cmd.end(false);
+        } finally {
+            SimHooks.resumeTiming();
+        }
     }
 
     /**
@@ -147,6 +154,9 @@ class DriveAccuracyTesterTest {
 
             assertTrue(m_tester.getBlueTapePose().isPresent(),
                 "Blue tape should have been placed");
+
+            assertTrue(m_tester.getRedTapePose().isPresent(),
+                "Red tape should have been placed");
         }
     }
 }
