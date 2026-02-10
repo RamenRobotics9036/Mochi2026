@@ -1,7 +1,9 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.PersistMode;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkFlexConfig;
@@ -25,6 +27,9 @@ public class IntakeSubsystem extends SubsystemBase {
     private final SparkFlex m_lArmMotor;
     private final SparkFlex m_rArmMotor;
     private final SparkFlex m_intakeMotor;
+
+    private RelativeEncoder m_encoder;
+    private SparkClosedLoopController m_PIDController;
 
     /** The configuration objects applied to the intake motor controller. */
     private final SparkFlexConfig m_lArmConfig;
@@ -62,7 +67,11 @@ public class IntakeSubsystem extends SubsystemBase {
             PersistMode.kPersistParameters);
         m_intakeMotor.configure(m_intakeConfig, ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters);
-    }
+
+        // Initialize the encoder and PID controller for the arm motors
+        m_encoder = m_lArmMotor.getEncoder();
+        m_PIDController = m_lArmMotor.getClosedLoopController();
+     }
 
     /**
      * Sets the open-loop percent output for the intake arm motors.
