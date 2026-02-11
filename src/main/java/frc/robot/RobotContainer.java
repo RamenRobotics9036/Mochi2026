@@ -21,12 +21,14 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.AlignToTagCommand;
+import frc.robot.commands.TestingCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
+import frc.robot.subsystems.auto.DriveForwardNow;
 import frc.robot.visutils.LimelightOdometry;
 
 /**
@@ -207,6 +209,7 @@ public class RobotContainer {
         
         // Try to align to an AprilTag with the Left Trigger
         joystick.leftTrigger().onTrue(drivetrain.AlignToTag(joystick));
+        joystick.rightTrigger().onTrue(new DriveForwardNow(drivetrain, MaxAngularRate, false));
 
         // $SIM - POV buttons for sim
         if (Robot.isSimulation()) {
