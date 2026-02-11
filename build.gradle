@@ -79,6 +79,8 @@ dependencies {
 // $TODO - Temporarily exclude tests that depend on Mockito
 compileTestJava {
     exclude '**/TestDriveAccuracyTester.java'
+    exclude '**/TestVisionInjectFilter.java'
+    exclude '**/TestGroundTruthSim.java'
 }
 
 test {
