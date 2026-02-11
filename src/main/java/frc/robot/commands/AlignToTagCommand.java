@@ -1,6 +1,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -12,6 +14,10 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.visutils.LimelightOdometry;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.generated.TunerConstants;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import java.util.function.DoubleSupplier;
 
@@ -24,6 +30,9 @@ public class AlignToTagCommand extends Command {
     private CommandSwerveDrivetrain m_drivetrain;
     private String m_limelightName;
     private CommandXboxController m_joystick;
+    private Rotation2d m_targetRotation;
+    private FieldCentricFacingAngle m_rotationRequest = new FieldCentricFacingAngle();
+    private boolean isComplete = false;
 
     /**
      * Creates a new VisonDefaultCommand.
@@ -46,13 +55,29 @@ public class AlignToTagCommand extends Command {
 
     @Override
     public void initialize() {
-        // No initialization required; the subsystem maintains its current state
+        /** Ensures the limelight is even locked on to any AprilTags to align to */
+        if (LimelightHelpers.getFiducialID(m_limelightName) == -1.0) {
+            isComplete = true;
+            return;
+        }
+
+        /** If so, calculate the desired rotation */
+        double targetRotationDegrees = LimelightHelpers.getTX(m_limelightName);
+        SwerveDriveState driveState = m_drivetrain.getState();
+        Pose2d driveStatePose = driveState.Pose;
+        
+        /** Gets the desired rotation using the relative
+         * rotation needed and the current Rotation2D */
+        m_targetRotation = Rotation2d.fromDegrees (
+            driveStatePose.getRotation().getDegrees()
+            + targetRotationDegrees
+        );
     }
 
     @Override
     public void execute() {
-        boolean TagVisible = (LimelightHelpers.getFiducialID(m_limelightName) != -1.0);
-        System.out.println(TagVisible);
+        System.out.println("Target Angle: " + m_targetRotation.getDegrees());
+        m_drivetrain.setControl(m_rotationRequest.withTargetDirection(m_targetRotation));
     }
 
     /**
@@ -62,6 +87,12 @@ public class AlignToTagCommand extends Command {
      */
     @Override
     public boolean isFinished() {
+        /** Checks to see if the command is done */
+        if (isComplete) {
+            System.out.println("Alignment to AprilTag complete!");
+            return true;
+        }
+
         /** Gets the absolute value of the user's left joystick input */
         double absoluteMoveInput = Math.abs(
             /** Gets the total value of the user's left joystick input
@@ -92,21 +123,9 @@ public class AlignToTagCommand extends Command {
         else if (absoluteTurnInput > TunerConstants.kSwerveTurnInterruptionSensitivity) {
             return true;
         }
-        /** Otherwise continues the command, as there is no finished
-         * state for this unfinished command */
+        /** Otherwise checks if the commmand is complete */
         else {
             return false;
         }
     }
-
-    // /**
-    //  * Stops elevator movement when the command is interrupted or cleared.
-    //  * 
-    //  * @param interrupted whether the command was interrupted/canceled
-    //  */
-    // @Override
-    // public void end(boolean interrupted) {
-    //     // Stop the elevator motor to prevent unintended movement
-    //     //m_elevator.stopSystem();
-    // }
 }
