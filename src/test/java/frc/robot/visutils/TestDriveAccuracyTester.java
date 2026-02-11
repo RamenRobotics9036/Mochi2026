@@ -251,4 +251,187 @@ class TestDriveAccuracyTester {
             verify(mockForceDisableVision).accept(false);
         }
     }
+
+    @Test
+    void test_clearTape_clearsBothPoses() {
+        // First, run a happy path to place both tapes
+        when(m_mockKalman.hasConverged()).thenReturn(true);
+        when(m_mockKalman.getEstimate())
+            .thenReturn(new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(45)));
+
+        try (MockedStatic<AutoLogic> mockedAutoLogic = mockStatic(AutoLogic.class)) {
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoStartingPose)
+                .thenReturn(Pose2d.kZero);
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoCommand)
+                .thenReturn(Commands.none());
+
+            Command cmd = m_tester.createTapeDropAutoCommand();
+            runCommandToCompletion(cmd, 100);
+        }
+
+        // Both tapes should be present after happy path
+        assertTrue(m_tester.getBlueTapePose().isPresent(), "Blue tape should exist before clear");
+        assertTrue(m_tester.getRedTapePose().isPresent(), "Red tape should exist before clear");
+
+        // Clear and verify
+        m_tester.clearTape();
+        assertTrue(m_tester.getBlueTapePose().isEmpty(), "Blue tape should be empty after clear");
+        assertTrue(m_tester.getRedTapePose().isEmpty(), "Red tape should be empty after clear");
+    }
+
+    @Test
+    void test_preExistingTape_clearedAtSequenceStart() {
+        Pose2d firstPose = new Pose2d(1.0, 2.0, Rotation2d.fromDegrees(0));
+        Pose2d secondPose = new Pose2d(5.0, 6.0, Rotation2d.fromDegrees(90));
+
+        when(m_mockKalman.hasConverged()).thenReturn(true);
+
+        try (MockedStatic<AutoLogic> mockedAutoLogic = mockStatic(AutoLogic.class)) {
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoStartingPose)
+                .thenReturn(Pose2d.kZero);
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoCommand)
+                .thenAnswer(invocation -> Commands.none());
+
+            // First run — places tape at firstPose
+            when(m_mockKalman.getEstimate()).thenReturn(firstPose);
+            Command cmd1 = m_tester.createTapeDropAutoCommand();
+            runCommandToCompletion(cmd1, 100);
+
+            Pose2d firstBlueTape = m_tester.getBlueTapePose().get();
+            Pose2d firstRedTape = m_tester.getRedTapePose().get();
+
+            // Second run with a different Kalman estimate
+            when(m_mockKalman.getEstimate()).thenReturn(secondPose);
+            Command cmd2 = m_tester.createTapeDropAutoCommand();
+            runCommandToCompletion(cmd2, 100);
+
+            // Verify tape positions changed — old tape was cleared, new tape placed
+            Pose2d expectedNewBlue = m_tester.computeFrontTapePose(secondPose);
+            Pose2d newBlueTape = m_tester.getBlueTapePose().get();
+
+            assertNotEquals(firstBlueTape.getX(), newBlueTape.getX(), 1e-6,
+                "Blue tape X should differ between runs");
+            assertEquals(expectedNewBlue.getX(), newBlueTape.getX(), 1e-6,
+                "Blue tape X should match second estimate");
+            assertEquals(expectedNewBlue.getY(), newBlueTape.getY(), 1e-6,
+                "Blue tape Y should match second estimate");
+
+            Pose2d expectedNewRed = m_tester.computeFrontTapePose(secondPose);
+            Pose2d newRedTape = m_tester.getRedTapePose().get();
+            assertNotEquals(firstRedTape.getX(), newRedTape.getX(), 1e-6,
+                "Red tape X should differ between runs");
+            assertEquals(expectedNewRed.getX(), newRedTape.getX(), 1e-6,
+                "Red tape X should match second estimate");
+        }
+    }
+
+    @Test
+    void test_forceDisableVision_reenabledWhenPreconditionsFail() {
+        @SuppressWarnings("unchecked")
+        Consumer<Boolean> mockForceDisableVision = mock(Consumer.class);
+
+        DriveAccuracyTester tester = new DriveAccuracyTester(
+            m_mockDrive, m_mockKalman, mockForceDisableVision);
+
+        // Kalman NOT converged — preconditions will fail
+        when(m_mockKalman.hasConverged()).thenReturn(false);
+
+        Command cmd = tester.createTapeDropAutoCommand();
+
+        runAndCaptureOutput(() -> {
+            runCommandToCompletion(cmd, 100);
+        });
+
+        // Even though preconditions failed, vision should have been
+        // disabled (beforeStarting) then re-enabled (finallyDo)
+        var inOrder = inOrder(mockForceDisableVision);
+        inOrder.verify(mockForceDisableVision).accept(true);
+        inOrder.verify(mockForceDisableVision).accept(false);
+    }
+
+    @Test
+    void test_cancelledMidWay_reenablesVision() {
+        @SuppressWarnings("unchecked")
+        Consumer<Boolean> mockForceDisableVision = mock(Consumer.class);
+
+        DriveAccuracyTester tester = new DriveAccuracyTester(
+            m_mockDrive, m_mockKalman, mockForceDisableVision);
+
+        when(m_mockKalman.hasConverged()).thenReturn(true);
+        when(m_mockKalman.getEstimate())
+            .thenReturn(new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(45)));
+
+        try (MockedStatic<AutoLogic> mockedAutoLogic = mockStatic(AutoLogic.class)) {
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoStartingPose)
+                .thenReturn(Pose2d.kZero);
+            // Use a long-running auto so we can cancel mid-way
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoCommand)
+                .thenReturn(Commands.waitSeconds(100));
+
+            Command cmd = tester.createTapeDropAutoCommand();
+
+            SimHooks.pauseTiming();
+            try {
+                cmd.initialize();
+
+                // Run a few cycles — enough to get past clearTape/dropBlueTape,
+                // into the long-running auto
+                for (int i = 0; i < 100; i++) {
+                    SimHooks.stepTiming(0.02);
+                    cmd.execute();
+                }
+
+                // Vision was disabled at start
+                verify(mockForceDisableVision).accept(true);
+                verify(mockForceDisableVision, never()).accept(false);
+
+                // Simulate scheduler cancellation (interrupted = true)
+                cmd.end(true);
+
+                // Vision should be re-enabled after cancellation
+                verify(mockForceDisableVision).accept(false);
+            } finally {
+                SimHooks.resumeTiming();
+            }
+        }
+    }
+
+    @Test
+    void test_commandCanBeReusedTwice() {
+        when(m_mockKalman.hasConverged()).thenReturn(true);
+        Pose2d firstPose = new Pose2d(1.0, 2.0, Rotation2d.fromDegrees(0));
+        Pose2d secondPose = new Pose2d(5.0, 6.0, Rotation2d.fromDegrees(90));
+
+        try (MockedStatic<AutoLogic> mockedAutoLogic = mockStatic(AutoLogic.class)) {
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoStartingPose)
+                .thenReturn(Pose2d.kZero);
+            mockedAutoLogic.when(AutoLogic::getSelectedAutoCommand)
+                .thenReturn(Commands.none());
+
+            // Create ONE command instance
+            when(m_mockKalman.getEstimate()).thenReturn(firstPose);
+            Command cmd = m_tester.createTapeDropAutoCommand();
+
+            // First run
+            runCommandToCompletion(cmd, 100);
+            assertTrue(m_tester.getBlueTapePose().isPresent(), "First run: blue tape");
+            assertTrue(m_tester.getRedTapePose().isPresent(), "First run: red tape");
+            Pose2d firstBlue = m_tester.getBlueTapePose().get();
+
+            // Second run — SAME Command instance, different Kalman estimate
+            when(m_mockKalman.getEstimate()).thenReturn(secondPose);
+            runCommandToCompletion(cmd, 100);
+
+            assertTrue(m_tester.getBlueTapePose().isPresent(), "Second run: blue tape");
+            assertTrue(m_tester.getRedTapePose().isPresent(), "Second run: red tape");
+
+            Pose2d secondBlue = m_tester.getBlueTapePose().get();
+            Pose2d expectedSecondBlue = m_tester.computeFrontTapePose(secondPose);
+
+            assertEquals(expectedSecondBlue.getX(), secondBlue.getX(), 1e-6,
+                "Second run blue tape should use new estimate");
+            assertNotEquals(firstBlue.getX(), secondBlue.getX(), 1e-6,
+                "Tape positions should differ between runs");
+        }
+    }
 }
