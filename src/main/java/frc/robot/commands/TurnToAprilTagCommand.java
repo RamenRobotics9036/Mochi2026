@@ -31,11 +31,7 @@ public class TurnToAprilTagCommand extends Command {
     /** The CTRE request that drives the robot to face a target angle. */
     private final SwerveRequest.FieldCentricFacingAngle m_facingAngle =
         new SwerveRequest.FieldCentricFacingAngle()
-            .withDriveRequestType(DriveRequestType.Velocity)
-            // Use blue-alliance coordinates so the target angle matches our
-            // bearing math (which is in WPILib blue-origin field coords).
-            // Without this, the default OperatorPerspective flips 180° on Red alliance.
-            .withForwardPerspective(SwerveRequest.ForwardPerspectiveValue.BlueAlliance);
+            .withDriveRequestType(DriveRequestType.Velocity);
 
     /** Pre-computed target angle (robot-to-tag bearing). */
     private Rotation2d m_targetAngle = Rotation2d.kZero;
@@ -91,16 +87,20 @@ public class TurnToAprilTagCommand extends Command {
             m_targetAngle = new Rotation2d(dx, dy);
         }
 
+        // Convert from field (blue-origin) frame to operator-perspective frame
+        Rotation2d operatorAngle = toOperatorFrame(m_targetAngle);
+
         // Print target angle
         System.out.println("TurnToAprilTag: Target angle to tag " + m_tagId + " is " +
-            m_targetAngle.getDegrees() + " degrees");
+            m_targetAngle.getDegrees() + " deg (field), " +
+            operatorAngle.getDegrees() + " deg (operator)");
 
         // Drive with zero translation, facing the computed angle
         m_drivetrain.setControl(
             m_facingAngle
                 .withVelocityX(0)
                 .withVelocityY(0)
-                .withTargetDirection(m_targetAngle)
+                .withTargetDirection(operatorAngle)
         );
     }
 
@@ -114,5 +114,18 @@ public class TurnToAprilTagCommand extends Command {
     public boolean isFinished() {
         // Run as long as the button is held (whileTrue binding)
         return false;
+    }
+
+    /**
+     * Converts an absolute field-frame angle (0° = toward red wall) into the
+     * operator-perspective frame used by {@link SwerveRequest.FieldCentricFacingAngle}.
+     *
+     * <p>On blue alliance the operator forward is 0° so this is a no-op.
+     * On red alliance the operator forward is 180°, so this subtracts 180°.
+     * The result is automatically normalized to (−180°, 180°] by {@link Rotation2d},
+     * and the heading controller's continuous-input wrapping handles the rest.
+     */
+    private Rotation2d toOperatorFrame(Rotation2d fieldAngle) {
+        return fieldAngle.minus(m_drivetrain.getOperatorForwardDirection());
     }
 }
