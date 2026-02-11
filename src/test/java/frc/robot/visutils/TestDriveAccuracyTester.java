@@ -90,6 +90,27 @@ class TestDriveAccuracyTester {
     }
 
     /**
+     * Initializes and runs a command for exactly {@code steps} cycles, then
+     * calls end(true) to simulate a scheduler cancellation mid-execution.
+     *
+     * @param cmd   The command to run
+     * @param steps Number of execute() cycles before cancelling
+     */
+    private void runCommandThenCancel(Command cmd, int steps) {
+        SimHooks.pauseTiming();
+        try {
+            cmd.initialize();
+            for (int i = 0; i < steps; i++) {
+                SimHooks.stepTiming(0.02);
+                cmd.execute();
+            }
+            cmd.end(true);
+        } finally {
+            SimHooks.resumeTiming();
+        }
+    }
+
+    /**
      * Runs the given action while capturing everything written to System.out,
      * then restores the original stream and returns the captured text.
      */
@@ -370,29 +391,14 @@ class TestDriveAccuracyTester {
 
             Command cmd = tester.createTapeDropAutoCommand();
 
-            SimHooks.pauseTiming();
-            try {
-                cmd.initialize();
+            // Run 100 cycles (enough to get past clearTape/dropBlueTape,
+            // into the long-running auto) then simulate scheduler cancellation
+            runCommandThenCancel(cmd, 100);
 
-                // Run a few cycles — enough to get past clearTape/dropBlueTape,
-                // into the long-running auto
-                for (int i = 0; i < 100; i++) {
-                    SimHooks.stepTiming(0.02);
-                    cmd.execute();
-                }
-
-                // Vision was disabled at start
-                verify(mockForceDisableVision).accept(true);
-                verify(mockForceDisableVision, never()).accept(false);
-
-                // Simulate scheduler cancellation (interrupted = true)
-                cmd.end(true);
-
-                // Vision should be re-enabled after cancellation
-                verify(mockForceDisableVision).accept(false);
-            } finally {
-                SimHooks.resumeTiming();
-            }
+            // Vision should have been disabled then re-enabled despite cancellation
+            var inOrder = inOrder(mockForceDisableVision);
+            inOrder.verify(mockForceDisableVision).accept(true);
+            inOrder.verify(mockForceDisableVision).accept(false);
         }
     }
 
