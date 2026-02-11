@@ -80,10 +80,14 @@ public final class Constants {
         public static final int kCurrentLimit = 40; //TODO: filler value
         /** PWM channer for the linear actuator servo. */
         public static final int kChannel = 0; //TODO: filler value
+        /** Shooting speed */
+        public static final double kShootSpeed = 0.7; //TODO: filler value
     }
 
     public static final class IndexerConstants {
         public static final int kMotorID = 30; //TODO: filler value
+        /** Indexer flywheel speed */
+        public static final double kIndexSpeed = 0.3; //TODO: filler value
     }
 
     /**
