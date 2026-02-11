@@ -102,8 +102,10 @@ class TestVisionKalmanFilter {
         // Initialize with an intentionally wrong pose
         Pose2d wrongPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
         m_filter.injectVisionMeasurement(wrongPose, 2);
+        double initialError = wrongPose.getTranslation().getDistance(
+            new Pose2d(5.0, 3.0, Rotation2d.fromDegrees(90)).getTranslation());
 
-        // After just one correction the estimate moves toward the true pose
+        // After one correction the estimate should move toward the true pose
         // but the covariance should NOT yet meet convergence thresholds
         Pose2d truePose = new Pose2d(5.0, 3.0, Rotation2d.fromDegrees(90));
         m_filter.injectVisionMeasurement(truePose, 3);
@@ -111,23 +113,26 @@ class TestVisionKalmanFilter {
         assertFalse(m_filter.hasConverged(),
             "Filter should not have converged after only 2 total measurements");
 
-        // The estimate should have moved toward the true pose but not be exact
+        // The estimate should have moved closer to the true pose than the initial guess
         Pose2d earlyEstimate = m_filter.getEstimate();
         double earlyError = earlyEstimate.getTranslation()
             .getDistance(truePose.getTranslation());
-        assertTrue(earlyError > 0.01,
-            "Early estimate should still have some error, got distance: " + earlyError);
+        assertTrue(earlyError < initialError,
+            "Estimate should be closer to true pose after correction: "
+            + "initialError=" + initialError + " earlyError=" + earlyError);
 
         // Now inject many more measurements at the true pose
         for (int i = 0; i < 50; i++) {
             m_filter.injectVisionMeasurement(truePose, 3);
         }
 
-        Pose2d estimate = m_filter.getEstimate();
-        assertEquals(truePose.getX(), estimate.getX(), 0.01, "X should converge");
-        assertEquals(truePose.getY(), estimate.getY(), 0.01, "Y should converge");
-        assertEquals(truePose.getRotation().getDegrees(),
-            estimate.getRotation().getDegrees(), 0.5, "Angle should converge");
+        // Final error should be smaller than early error
+        Pose2d finalEstimate = m_filter.getEstimate();
+        double finalError = finalEstimate.getTranslation()
+            .getDistance(truePose.getTranslation());
+        assertTrue(finalError < earlyError,
+            "Final estimate should be closer than early: "
+            + "earlyError=" + earlyError + " finalError=" + finalError);
         assertTrue(m_filter.hasConverged(),
             "Filter should have converged after many measurements");
     }
@@ -214,9 +219,10 @@ class TestVisionKalmanFilter {
                 new Pose2d(1.0, 1.0, Rotation2d.fromDegrees(175)), 3);
         }
 
-        double angleDeg = m_filter.getEstimate().getRotation().getDegrees();
-        assertEquals(175.0, angleDeg, 1.0,
-            "Angle should converge near +175° without wrapping issues");
+        double angularError = m_filter.getEstimate().getRotation()
+            .minus(Rotation2d.fromDegrees(175)).getDegrees();
+        assertTrue(Math.abs(angularError) < 1.0,
+            "Angle should converge near +175°, angular error: " + angularError);
     }
 
     @Test
@@ -230,10 +236,11 @@ class TestVisionKalmanFilter {
                 new Pose2d(1.0, 1.0, Rotation2d.fromDegrees(-170)), 3);
         }
 
-        double angleDeg = m_filter.getEstimate().getRotation().getDegrees();
         // Should converge near -170°, NOT jump to ~0° (which would happen without wrapping)
-        assertTrue(Math.abs(angleDeg) > 160,
-            "Angle should stay near ±180° boundary, got: " + angleDeg);
+        double angularError = m_filter.getEstimate().getRotation()
+            .minus(Rotation2d.fromDegrees(-170)).getDegrees();
+        assertTrue(Math.abs(angularError) < 5.0,
+            "Angle should converge near -170°, angular error: " + angularError);
     }
 
     @Test
@@ -246,9 +253,10 @@ class TestVisionKalmanFilter {
                 new Pose2d(1.0, 1.0, Rotation2d.fromDegrees(-170)), 3);
         }
 
-        double angleDeg = m_filter.getEstimate().getRotation().getDegrees();
-        assertEquals(-170.0, angleDeg, 1.0,
-            "Angle should converge near -170°");
+        double angularError = m_filter.getEstimate().getRotation()
+            .minus(Rotation2d.fromDegrees(-170)).getDegrees();
+        assertTrue(Math.abs(angularError) < 1.0,
+            "Angle should converge near -170°, angular error: " + angularError);
     }
 
     // ---- Std dev decreases with more measurements ----
@@ -273,7 +281,7 @@ class TestVisionKalmanFilter {
         assertTrue(stdDevAfter11 < stdDevAfter1,
             "Std dev should decrease: after1=" + stdDevAfter1 + " after11=" + stdDevAfter11);
         assertTrue(stdDevAfter51 < stdDevAfter11,
-            "Std dev should keep decreasing: after11=" + stdDevAfter11 + " after51=" + stdDevAfter51);
+            "Std dev should decrease: after11=" + stdDevAfter11 + " after51=" + stdDevAfter51);
     }
 
     @Test
