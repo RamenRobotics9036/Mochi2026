@@ -26,7 +26,7 @@ class TestMotionlessTracker {
 
     @BeforeAll
     static void initHal() {
-        HAL.initialize(500, 0);
+        assertTrue(HAL.initialize(500, 0));
     }
 
     /** Mutable speeds that the tracker reads each cycle. */
