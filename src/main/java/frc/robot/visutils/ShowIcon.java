@@ -1,4 +1,4 @@
-package frc.robot.sim.visutils;
+package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
