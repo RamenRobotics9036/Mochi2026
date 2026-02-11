@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.ShooterTestCommand;
+import frc.robot.commands.TurnToAprilTagCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
@@ -262,6 +263,10 @@ public class RobotContainer {
 
         // Hook up the telemetry logger to the drivetrain periodic updates
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        // POV Down: rotate in place to face the configured AprilTag
+        driveController.povDown().whileTrue(
+            new TurnToAprilTagCommand(drivetrain, Constants.VisionConstants.kTurnToTagID));
     }
 
     /**
