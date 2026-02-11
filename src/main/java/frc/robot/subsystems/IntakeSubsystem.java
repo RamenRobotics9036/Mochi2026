@@ -51,7 +51,10 @@ public class IntakeSubsystem extends SubsystemBase {
         m_intakeConfig = new SparkFlexConfig();
 
         m_lArmConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit);
+            .smartCurrentLimit(IntakeConstants.kStallLimit)
+            .positionConversionFactor(1.0 / IntakeConstants.kGearRatio) // TODO: fix syntax
+            .velocityConversionFactor((1.0 / IntakeConstants.kGearRatio) / 60.0);
+
         m_rArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kStallLimit)
             .inverted(true)
