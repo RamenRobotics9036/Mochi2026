@@ -11,6 +11,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
@@ -22,6 +23,18 @@ import frc.robot.Constants.IntakeConstants;
  * for running the intake motor and raising/lowering the intake arm, stopping the system
  */
 public class IntakeSubsystem extends SubsystemBase {
+    // Enum state to track if the arm has homed
+    private enum ArmHomedState {
+        HOMED,
+        HOMING,
+        NOT_HOMED
+    }
+    private ArmHomedState m_HomingState = ArmHomedState.NOT_HOMED;
+
+    // Homing bookkeeping
+    private final Timer m_homingTimer = new Timer();
+    private double m_stallStartSec = -1.0;
+
     /** The motor controller driving the intake rollers. */
     private final SparkFlex m_lArmMotor;
     private final SparkFlex m_rArmMotor;
@@ -86,6 +99,15 @@ public class IntakeSubsystem extends SubsystemBase {
         m_rArmMotor.set(speed);
     }
 
+    // Homes the intake arm by moving it to the zero position
+    public void beginHoming() {
+        if(m_HomingState != ArmHomedState.HOMING) {
+            m_HomingState = ArmHomedState.HOMING;
+            m_homingTimer.restart();
+            m_stallStartSec = -1.0;
+        }
+    }
+
     /** Convenience wrapper for setting an explicit deploy (down) speed. */
     public void setDeployArmSpeed(double speed) {
         setArmSpeed(speed);
@@ -102,8 +124,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     // 
     public boolean isArmDeployed() {
-        // todo
-        return false;
+        return m_encoder.getPosition() >= (IntakeConstants.kMaxArmAngle - 1.0);
     }
 
     /**
@@ -113,6 +134,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public void setIntakeSpeed(double speed) {
         m_intakeMotor.set(speed);
+        // TODO: check soft limits on arm position
     }
 
     // Cut power to the arm motors
@@ -163,5 +185,53 @@ public class IntakeSubsystem extends SubsystemBase {
         // Publish intake telemetry
         SmartDashboard.putNumber("Intake/Current", getCurrent());
         SmartDashboard.putBoolean("Intake/Is Stalled", isStalled());
+        SmartDashboard.putString("Intake/ArmHomingState", m_HomingState.name());
+        SmartDashboard.putNumber("Intake/ArmPosition", m_encoder.getPosition());
+        SmartDashboard.putNumber("Intake/ArmVelocity", m_encoder.getVelocity());
+        if(m_HomingState == ArmHomedState.HOMING) {
+            homingHelper();
+        }
+    }
+
+    public void homingHelper() {
+        if (m_HomingState != ArmHomedState.HOMING) {
+            return;
+        }
+
+        // Creep toward the hard stop. You may need to flip this sign once the mechanism is on the robot.
+        m_lArmMotor.set(IntakeConstants.kArmHomingSpeed);
+        m_rArmMotor.set(IntakeConstants.kArmHomingSpeed);
+
+        final double current = m_lArmMotor.getOutputCurrent();
+        final double velocity = Math.abs(m_encoder.getVelocity());
+        final boolean looksStalled = current >= IntakeConstants.kArmHomingStallCurrent
+                && velocity <= IntakeConstants.kArmHomingStallVelocity;
+
+        if (looksStalled) {
+            if (m_stallStartSec < 0.0) {
+                m_stallStartSec = m_homingTimer.get();
+            }
+        } else {
+            m_stallStartSec = -1.0;
+        }
+
+        final boolean stallLongEnough = m_stallStartSec >= 0.0
+                && (m_homingTimer.get() - m_stallStartSec) >= IntakeConstants.kArmHomingStallSeconds;
+
+        if (stallLongEnough) {
+            stopArm();
+            // This stop is the mechanical reference (0). Adjust if your "zero" should be some other angle.
+            m_encoder.setPosition(IntakeConstants.kArmHomePosition);
+            m_HomingState = ArmHomedState.HOMED;
+            m_homingTimer.stop();
+            return;
+        }
+
+        if (m_homingTimer.get() >= IntakeConstants.kArmHomingTimeoutSeconds) {
+            // Timeout: stop and mark as NOT_HOMED so higher-level code can decide what to do.
+            stopArm();
+            m_HomingState = ArmHomedState.NOT_HOMED;
+            m_homingTimer.stop();
+        }
     }
 }
