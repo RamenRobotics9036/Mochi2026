@@ -1,9 +1,11 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,20 +33,25 @@ public class AlignToTagCommand extends Command {
     private String m_limelightName;
     private CommandXboxController m_joystick;
     private Rotation2d m_targetRotation;
-    private final SwerveRequest.RobotCentric m_driveRequest = new SwerveRequest.RobotCentric();
-    private boolean isComplete = false;
+    private SwerveRequest.RobotCentric m_driveRequest;
+    private boolean alignmentFailed = false;
     private double m_targetRotationDegrees;
-    private double m_rotationDirection;
+    private final Timer m_timer = new Timer();
+    private PIDController pid = new PIDController(0.1, 0, 0);
+    private double m_maxAngularVelocity;
 
     /**
-     * Creates a new VisionDefaultCommand.
+     * Creates a new AlignToTagCommand.
      *
-     * @param vision The vision subsystem to be supplied
+     * @param drivetrain The drivetrain subsystem to be supplied
+     * @param joystick The Xbox controller to use for interruption
      */
-    public AlignToTagCommand(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick) {
+    public AlignToTagCommand(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, double MaxAngularVelocity) {
         m_drivetrain = drivetrain;
         m_joystick = joystick;
+        m_maxAngularVelocity = MaxAngularVelocity;
 
+        /** The limelight's name is different in simulation. */
         if (Robot.isSimulation()) {
             m_limelightName = VisionConstants.kLimelightNameSim;
         }
@@ -57,14 +64,24 @@ public class AlignToTagCommand extends Command {
 
     @Override
     public void initialize() {
+        /** Ensures that the PID system understands that
+         * its motion is circular */
+        pid.enableContinuousInput(-180, 180);
+        pid.setTolerance(TunerConstants.kAlignmentErrorMargin);
+        
+        /** Resets the command */
+        alignmentFailed = false;
+        m_timer.restart();
+        m_driveRequest = new SwerveRequest.RobotCentric();
+
         /** Ensures the limelight is even locked on to any AprilTags to align to */
         if (LimelightHelpers.getFiducialID(m_limelightName) == -1.0) {
-            isComplete = true;
+            alignmentFailed = true;
             return;
         }
 
         /** If so, calculate the desired rotation */
-        double targetRotationDegrees = LimelightHelpers.getTX(m_limelightName);
+        double targetRotationDegrees = -1 * LimelightHelpers.getTX(m_limelightName);
         SwerveDriveState driveState = m_drivetrain.getState();
         Pose2d driveStatePose = driveState.Pose;
         
@@ -75,25 +92,29 @@ public class AlignToTagCommand extends Command {
             + targetRotationDegrees
         );
 
-        m_rotationDirection = Math.signum(targetRotationDegrees);
         m_targetRotationDegrees = m_targetRotation.getDegrees();
+        System.out.println("Attempting to align to AprilTag.");
     }
 
     @Override
     public void execute() {
+        /** Annoyingly enough, execute will run once before
+         * isFinished can check to see if it's done, so this
+         * counteracts that and ensures the robot doesn't
+         * randomly turn slightly. */
+        if (alignmentFailed) {
+            return;
+        }
+
         SwerveDriveState driveState = m_drivetrain.getState();
         Pose2d driveStatePose = driveState.Pose;
         double rotationOffset = driveStatePose.getRotation().getDegrees() - m_targetRotationDegrees;
 
-        if (
-            Math.abs(rotationOffset) < TunerConstants.kAlignmentErrorMargin
-        ) {
-            System.out.println(rotationOffset);
-            isComplete = true;
-        }
-        else {
-            m_drivetrain.setControl(m_driveRequest.withRotationalRate(3.0));
-        }
+        m_drivetrain.setControl(m_driveRequest.withRotationalRate(
+            /** Ensures that the angular velocity doesn't exceed
+             * the maximum angular speed. */
+            Math.min(pid.calculate(rotationOffset), m_maxAngularVelocity)
+            ));
     }
 
     /**
@@ -103,9 +124,23 @@ public class AlignToTagCommand extends Command {
      */
     @Override
     public boolean isFinished() {
+        /** Safety exit after 15 seconds */
+        if (m_timer.get() > 15.0) {
+            System.out.println("Alignment command timed out.");
+            return true;
+        }
+        
+        /** If the robot isn't locked onto any AprilTags,
+         * the command fails rather than using a default
+         * position. */
+        if (alignmentFailed) {
+            System.out.println("WARNING: Failed to align to AprilTag!");
+            return true;
+        }
+
         /** Checks to see if the command is done */
-        if (isComplete) {
-            System.out.println("Alignment to AprilTag complete!");
+        if (pid.atSetpoint()) {
+            System.out.println("Alignment complete!");
             return true;
         }
 
@@ -133,13 +168,15 @@ public class AlignToTagCommand extends Command {
 
         /** Stops if the user tries to manually move the robot */
         if (absoluteMoveInput > TunerConstants.kSwerveMoveInterruptionSensitivity) {
+            System.out.println("Command interrupted.");
             return true;
         }
         /** Stops if the user tries to manually turn the robot */
         else if (absoluteTurnInput > TunerConstants.kSwerveTurnInterruptionSensitivity) {
+            System.out.println("Command interrupted.");
             return true;
         }
-        /** Otherwise checks if the commmand is complete */
+        /** Otherwise, keep going! */
         else {
             return false;
         }

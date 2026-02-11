@@ -208,8 +208,7 @@ public class RobotContainer {
         joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         
         // Try to align to an AprilTag with the Left Trigger
-        joystick.leftTrigger().onTrue(drivetrain.AlignToTag(joystick));
-        joystick.rightTrigger().onTrue(new DriveForwardNow(drivetrain, MaxAngularRate, false));
+        joystick.leftTrigger().onTrue(drivetrain.AlignToTag(joystick, MaxAngularRate));
 
         // $SIM - POV buttons for sim
         if (Robot.isSimulation()) {
