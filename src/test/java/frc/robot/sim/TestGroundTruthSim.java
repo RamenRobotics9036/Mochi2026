@@ -32,12 +32,10 @@ class TestGroundTruthSim {
     private Pose2d m_estimatedPose;
 
     /** Captures poses passed to drivetrain resetPose. */
-    @SuppressWarnings("unchecked")
-    private Consumer<Pose2d> m_mockDrivetrainResetPose = mock(Consumer.class);
+    private Consumer<Pose2d> m_mockDrivetrainResetPose;
 
     /** Captures poses passed to the poseResetConsumer (for cycle/auto resets). */
-    @SuppressWarnings("unchecked")
-    private Consumer<Pose2d> m_mockPoseResetConsumer = mock(Consumer.class);
+    private Consumer<Pose2d> m_mockPoseResetConsumer;
 
     private MockedStatic<RobotBase> m_mockedRobot;
     private MockedStatic<Utils> m_mockedUtils;
@@ -45,7 +43,6 @@ class TestGroundTruthSim {
     /** Controllable clock for Utils.getCurrentTimeSeconds(). */
     private double m_currentTime;
 
-    @SuppressWarnings("unchecked")
     @BeforeEach
     void setUp() {
         m_mockedRobot = mockStatic(RobotBase.class);
@@ -58,8 +55,8 @@ class TestGroundTruthSim {
         m_speeds = new ChassisSpeeds(0, 0, 0);
         m_estimatedPose = new Pose2d();
 
-        m_mockDrivetrainResetPose = mock(Consumer.class);
-        m_mockPoseResetConsumer = mock(Consumer.class);
+        m_mockDrivetrainResetPose = mockConsumer();
+        m_mockPoseResetConsumer = mockConsumer();
     }
 
     @AfterEach
@@ -69,6 +66,11 @@ class TestGroundTruthSim {
     }
 
     // ── Factory helpers ──────────────────────────────────────────────
+
+    @SuppressWarnings("unchecked")
+    private static <T> Consumer<T> mockConsumer() {
+        return mock(Consumer.class);
+    }
 
     /** Creates a GroundTruthSim with default (Math::random) randomness. */
     private GroundTruthSim createSim() {
