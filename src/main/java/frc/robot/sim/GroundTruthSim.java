@@ -23,6 +23,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.visutils.AllianceCalc;
 import java.util.function.Consumer;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 
 /**
@@ -32,10 +34,20 @@ import java.util.function.Consumer;
  */
 public class GroundTruthSim implements GroundTruthSimInterface {
 
-    private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_drivetrain;
+    /** Supplier for the current chassis speeds (robot-relative). */
+    private final Supplier<ChassisSpeeds> m_speedsSupplier;
+
+    /** Supplier for the current estimated pose from the pose estimator. */
+    private final Supplier<Pose2d> m_estimatedPoseSupplier;
+
+    /** Consumer to reset the pose estimator (e.g. drivetrain.resetPose). */
+    private final Consumer<Pose2d> m_drivetrainResetPose;
 
     /** Consumer to notify RobotContainer when pose is reset. */
     private final Consumer<Pose2d> m_poseResetConsumer;
+
+    /** Source of randomness for drift injection (injectable for testing). */
+    private final DoubleSupplier m_randomSource;
 
     /** The ground truth pose tracks where the robot actually is in simulation physics. */
     private Pose2d m_groundTruthPose = new Pose2d();
@@ -69,11 +81,41 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
         Consumer<Pose2d> poseResetConsumer) {
 
+        this(
+            () -> drivetrain.getState().Speeds,
+            () -> drivetrain.getState().Pose,
+            drivetrain::resetPose,
+            poseResetConsumer,
+            Math::random);
+    }
+
+    /**
+     * Constructs a GroundTruthSim instance with fully injectable dependencies.
+     * Package-private to allow unit tests to supply deterministic collaborators
+     * without depending on vendor hardware classes.
+     *
+     * @param speedsSupplier Supplies the current robot-relative chassis speeds
+     * @param estimatedPoseSupplier Supplies the current estimated pose from the pose estimator
+     * @param drivetrainResetPose Consumer to reset the drivetrain's pose estimator
+     * @param poseResetConsumer Consumer to be called when pose is reset (e.g. for vision)
+     * @param randomSource Supplies values in [0, 1) for drift injection
+     * @throws IllegalStateException if called outside of simulation mode
+     */
+    GroundTruthSim(
+        Supplier<ChassisSpeeds> speedsSupplier,
+        Supplier<Pose2d> estimatedPoseSupplier,
+        Consumer<Pose2d> drivetrainResetPose,
+        Consumer<Pose2d> poseResetConsumer,
+        DoubleSupplier randomSource) {
+
         if (!Robot.isSimulation()) {
             throw new IllegalStateException("GroundTruthSim only instantiated in simulation mode");
         }
-        this.m_drivetrain = drivetrain;
+        this.m_speedsSupplier = speedsSupplier;
+        this.m_estimatedPoseSupplier = estimatedPoseSupplier;
+        this.m_drivetrainResetPose = drivetrainResetPose;
         this.m_poseResetConsumer = poseResetConsumer;
+        this.m_randomSource = randomSource;
         this.m_lastUpdateTime = Utils.getCurrentTimeSeconds();
     }
 
@@ -86,7 +128,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         double deltaTime = currentTime - m_lastUpdateTime;
         m_lastUpdateTime = currentTime;
 
-        ChassisSpeeds speeds = m_drivetrain.getState().Speeds;
+        ChassisSpeeds speeds = m_speedsSupplier.get();
 
         // Calculate how much the robot moved this timestep
         double dx = speeds.vxMetersPerSecond * deltaTime;
@@ -208,15 +250,15 @@ public class GroundTruthSim implements GroundTruthSimInterface {
     @Override
     public void injectDrift(double translationOffsetMeters, double rotationOffsetDegrees) {
         // Get current estimated pose
-        Pose2d currentPose = m_drivetrain.getState().Pose;
+        Pose2d currentPose = m_estimatedPoseSupplier.get();
 
         // Create offset - add random direction for translation
-        double angle = Math.random() * 2 * Math.PI;
+        double angle = m_randomSource.getAsDouble() * 2 * Math.PI;
         double dx = translationOffsetMeters * Math.cos(angle);
         double dy = translationOffsetMeters * Math.sin(angle);
 
         // Apply random sign to rotation
-        double dtheta = rotationOffsetDegrees * (Math.random() > 0.5 ? 1 : -1);
+        double dtheta = rotationOffsetDegrees * (m_randomSource.getAsDouble() > 0.5 ? 1 : -1);
 
         // Create the drifted pose
         Pose2d driftedPose = new Pose2d(
@@ -227,7 +269,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
 
         // Reset the pose estimator to the drifted position
         // The ground truth pose remains at the actual position
-        m_drivetrain.resetPose(driftedPose);
+        m_drivetrainResetPose.accept(driftedPose);
     }
 
     /**
@@ -241,7 +283,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
             "Sim/GroundTruth/RotationDeg",
             m_groundTruthPose.getRotation().getDegrees());
 
-        Pose2d estimatedPose = m_drivetrain.getState().Pose;
+        Pose2d estimatedPose = m_estimatedPoseSupplier.get();
         SmartDashboard.putNumber("Sim/EstimatedPose/X", estimatedPose.getX());
         SmartDashboard.putNumber("Sim/EstimatedPose/Y", estimatedPose.getY());
         SmartDashboard.putNumber(

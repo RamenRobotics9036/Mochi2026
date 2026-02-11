@@ -8,7 +8,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
-import frc.robot.sim.visutils.ShowIcon;
+import frc.robot.visutils.ShowIcon;
+
 import java.util.List;
 import java.util.Optional;
 
