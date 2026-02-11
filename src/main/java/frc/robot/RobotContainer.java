@@ -30,6 +30,7 @@ import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
+import frc.robot.subsystems.auto.DriveForwardNow;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
 import frc.robot.visutils.AllianceCalc;
@@ -251,6 +252,11 @@ public class RobotContainer {
         driveController.start().and(driveController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Recalibrate the gyro's forward heading using the Left Bumper
+        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        
+        // Try to align to an AprilTag with the Left Trigger
+        joystick.leftTrigger().onTrue(drivetrain.AlignToTag(joystick));
+        joystick.rightTrigger().onTrue(new DriveForwardNow(drivetrain, MaxAngularRate, false));
         driveController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         // $SIM - POV buttons for sim

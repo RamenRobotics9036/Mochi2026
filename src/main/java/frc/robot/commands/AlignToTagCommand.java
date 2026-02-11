@@ -31,11 +31,13 @@ public class AlignToTagCommand extends Command {
     private String m_limelightName;
     private CommandXboxController m_joystick;
     private Rotation2d m_targetRotation;
-    private FieldCentricFacingAngle m_rotationRequest = new FieldCentricFacingAngle();
+    private final SwerveRequest.RobotCentric m_driveRequest = new SwerveRequest.RobotCentric();
     private boolean isComplete = false;
+    private double m_targetRotationDegrees;
+    private double m_rotationDirection;
 
     /**
-     * Creates a new VisonDefaultCommand.
+     * Creates a new VisionDefaultCommand.
      *
      * @param vision The vision subsystem to be supplied
      */
@@ -72,12 +74,26 @@ public class AlignToTagCommand extends Command {
             driveStatePose.getRotation().getDegrees()
             + targetRotationDegrees
         );
+
+        m_rotationDirection = Math.signum(targetRotationDegrees);
+        m_targetRotationDegrees = m_targetRotation.getDegrees();
     }
 
     @Override
     public void execute() {
-        System.out.println("Target Angle: " + m_targetRotation.getDegrees());
-        m_drivetrain.setControl(m_rotationRequest.withTargetDirection(m_targetRotation));
+        SwerveDriveState driveState = m_drivetrain.getState();
+        Pose2d driveStatePose = driveState.Pose;
+        double rotationOffset = driveStatePose.getRotation().getDegrees() - m_targetRotationDegrees;
+
+        if (
+            Math.abs(rotationOffset) < TunerConstants.kAlignmentErrorMargin
+        ) {
+            System.out.println(rotationOffset);
+            isComplete = true;
+        }
+        else {
+            m_drivetrain.setControl(m_driveRequest.withRotationalRate(3.0));
+        }
     }
 
     /**
