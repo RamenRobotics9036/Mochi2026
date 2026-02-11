@@ -82,6 +82,10 @@ public final class Constants {
         public static final int kChannel = 0; //TODO: filler value
     }
 
+    public static final class IndexerConstants {
+        public static final int kMotorID = 30; //TODO: filler value
+    }
+
     /**
      * Configuration constants for the Operator Interface and telemetry.
      */
