@@ -27,8 +27,10 @@ public class TurnToAprilTagCommand extends Command {
     private final SwerveRequest.FieldCentricFacingAngle m_facingAngle =
         TurnToAngleHelper.createFacingAngleRequest();
 
-    /** Pre-computed target angle (robot-to-tag bearing) in field coordinates. */
-    private Rotation2d m_targetAngle = Rotation2d.kZero;
+    /** Field-coordinate X of the point to face (blue-origin, metres). */
+    private double m_targetX;
+    /** Field-coordinate Y of the point to face (blue-origin, metres). */
+    private double m_targetY;
 
     /**
      * Creates a new TurnToAprilTagCommand.
@@ -44,37 +46,38 @@ public class TurnToAprilTagCommand extends Command {
 
     @Override
     public void initialize() {
-        // Look up the tag pose on the field
+        // Resolve the tag ID to a field coordinate once at start
         Optional<Pose3d> tagPose = TurnToAngleHelper.getTagPose(m_tagId);
         if (tagPose.isEmpty()) {
             System.err.println("TurnToAprilTag: Tag ID " + m_tagId
                 + " not found in field layout!");
-            m_targetAngle = Rotation2d.kZero;
+            m_targetX = 0;
+            m_targetY = 0;
             return;
         }
 
-        System.out.println("TurnToAprilTag: Tag " + m_tagId + " pose: x="
-            + tagPose.get().getX() + " y=" + tagPose.get().getY());
-
-        // Compute bearing from the robot to the tag (field frame)
-        Pose2d robotPose = m_drivetrain.getState().Pose;
-        m_targetAngle = TurnToAngleHelper.bearingToTag(m_tagId, robotPose);
+        m_targetX = tagPose.get().getX();
+        m_targetY = tagPose.get().getY();
+        System.out.println("TurnToAprilTag: Tag " + m_tagId
+            + " pose: x=" + m_targetX + " y=" + m_targetY);
     }
 
     @Override
     public void execute() {
-        // Re-compute the bearing each cycle so the heading tracks if the odometry
-        // pose drifts slightly while rotating.
+        // Re-compute the bearing each cycle so the heading tracks as the
+        // robot moves (the target point stays fixed).
         Pose2d robotPose = m_drivetrain.getState().Pose;
-        m_targetAngle = TurnToAngleHelper.bearingToTag(m_tagId, robotPose);
+        Rotation2d fieldAngle = TurnToAngleHelper.bearingToPoint(
+            m_targetX, m_targetY, robotPose);
 
         // Convert from field (blue-origin) frame to operator-perspective frame
         Rotation2d operatorAngle = TurnToAngleHelper.toOperatorFrame(
-            m_targetAngle, m_drivetrain.getOperatorForwardDirection());
+            fieldAngle, m_drivetrain.getOperatorForwardDirection());
 
         // Print target angle
-        System.out.println("TurnToAprilTag: Target angle to tag " + m_tagId
-            + " is " + m_targetAngle.getDegrees() + " deg (field), "
+        System.out.println("TurnToAprilTag: Target angle to ("
+            + m_targetX + ", " + m_targetY + ") is "
+            + fieldAngle.getDegrees() + " deg (field), "
             + operatorAngle.getDegrees() + " deg (operator)");
 
         // Drive with zero translation, facing the computed angle

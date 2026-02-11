@@ -60,6 +60,22 @@ public final class TurnToAngleHelper {
     }
 
     /**
+     * Computes the field-frame bearing from a robot pose to an arbitrary
+     * point on the field.
+     *
+     * @param targetX   the target X coordinate (blue-origin, metres)
+     * @param targetY   the target Y coordinate (blue-origin, metres)
+     * @param robotPose the robot's current field-relative pose
+     * @return the bearing as a {@link Rotation2d}
+     */
+    public static Rotation2d bearingToPoint(
+            double targetX, double targetY, Pose2d robotPose) {
+        double dx = targetX - robotPose.getX();
+        double dy = targetY - robotPose.getY();
+        return new Rotation2d(dx, dy);
+    }
+
+    /**
      * Converts an absolute field-frame angle (0° = toward red wall) into the
      * operator-perspective frame used by
      * {@link SwerveRequest.FieldCentricFacingAngle}.
