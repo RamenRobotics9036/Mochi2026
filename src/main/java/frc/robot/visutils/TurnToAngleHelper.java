@@ -106,8 +106,11 @@ public final class TurnToAngleHelper {
      */
     public static void configureFacingAngle(
             SwerveRequest.FieldCentricFacingAngle request) {
-        // P of 8 → 8 rad/s per radian of error; D of 0.5 damps oscillation.
-        request.HeadingController.setPID(8, 0, 0.5);
+        // P of 5 keeps corrections within the swerve's physical angular-rate
+        // limit (~4.7 rad/s) for typical aiming errors, avoiding saturation
+        // and the overshoot-oscillation cycle that a higher P causes.
+        // D of 0.4 damps residual oscillation without sluggish feel.
+        request.HeadingController.setPID(5, 0, 0.4);
         // Shortest-path across the ±180° wrap.
         request.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
     }

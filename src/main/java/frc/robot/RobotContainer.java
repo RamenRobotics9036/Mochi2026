@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -34,6 +35,7 @@ import frc.robot.visutils.LimelightOdometry;
 import frc.robot.visutils.AllianceCalc;
 import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.MotionlessTracker;
+import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.Optional;
 
@@ -60,6 +62,15 @@ public class RobotContainer {
             .withDeadband(0.001 * TeleoperatedSpeed)
             .withRotationalDeadband(0.001 * MaxAngularRate)
             .withDriveRequestType(DriveRequestType.Velocity);
+
+    /** Field-centric request with heading lock — used when POV-UP aims at a tag. */
+    private final SwerveRequest.FieldCentricFacingAngle driveAimAtTag =
+        TurnToAngleHelper.createFacingAngleRequest()
+            .withDeadband(0.001 * TeleoperatedSpeed);
+
+    /** Tracks whether the previous cycle was in aim-at-tag mode,
+     *  so we can reset the heading PID on the transition edge. */
+    private boolean m_wasAiming = false;
 
     /** Brake request: Forces all modules into an X-pattern to resist movement. */
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -197,7 +208,10 @@ public class RobotContainer {
      * Defines trigger-to-command mappings.
      */
     private void configureBindings() {
-        // Set the default command for the drivetrain to follow joystick inputs continuously
+        // Set the default command for the drivetrain to follow joystick inputs continuously.
+        // When POV-UP is held, rotation locks onto AprilTag 26 while X/Y remain free.
+        final double[] aimTarget = resolveTagTarget(Constants.VisionConstants.kTurnToTagID);
+
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
                 double leftX = getDriveX();
@@ -218,6 +232,26 @@ public class RobotContainer {
                     rightX = newJoystickInputs.rotatetX();
                 }
 
+                // POV-UP held: auto-aim rotation at the tag while keeping X/Y translation
+                if (driveController.getHID().getPOV() == 0) {
+                    // Reset the heading PID on the rising edge so stale
+                    // derivative / integral state doesn't cause a jerk.
+                    if (!m_wasAiming) {
+                        driveAimAtTag.HeadingController.reset();
+                        m_wasAiming = true;
+                    }
+
+                    Rotation2d fieldAngle = TurnToAngleHelper.bearingToPoint(
+                        aimTarget[0], aimTarget[1], drivetrain.getState().Pose);
+                    Rotation2d operatorAngle = TurnToAngleHelper.toOperatorFrame(
+                        fieldAngle, drivetrain.getOperatorForwardDirection());
+                    return driveAimAtTag
+                        .withVelocityX(leftX)
+                        .withVelocityY(leftY)
+                        .withTargetDirection(operatorAngle);
+                }
+
+                m_wasAiming = false;
                 return drive.withVelocityX(leftX)
                      .withVelocityY(leftY)
                      .withRotationalRate(rightX);
@@ -318,5 +352,21 @@ public class RobotContainer {
 
         // Remove any tape from the field
         m_driveAccuracyTester.clearTape();
+    }
+
+    /**
+     * Resolves an AprilTag ID to a field-coordinate (x, y) target.
+     *
+     * @param tagId the AprilTag ID
+     * @return a two-element array {x, y} in blue-origin metres,
+     *         or {0, 0} if the tag is not found
+     */
+    private static double[] resolveTagTarget(int tagId) {
+        Optional<Pose3d> pose = TurnToAngleHelper.getTagPose(tagId);
+        if (pose.isPresent()) {
+            return new double[] {pose.get().getX(), pose.get().getY()};
+        }
+        System.err.println("RobotContainer: Tag ID " + tagId + " not found!");
+        return new double[] {0, 0};
     }
 }
