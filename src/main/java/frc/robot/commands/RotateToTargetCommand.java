@@ -2,7 +2,6 @@ package frc.robot.commands;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -18,7 +17,7 @@ import java.util.Optional;
  * built-in profiled PID heading controller for silky-smooth rotation.
  * X/Y velocity is kept at zero so the robot only rotates.
  */
-public class TurnToAprilTagCommand extends Command {
+public class RotateToTargetCommand extends Command {
 
     private final CommandSwerveDrivetrain m_drivetrain;
     private final int m_tagId;
@@ -33,12 +32,12 @@ public class TurnToAprilTagCommand extends Command {
     private double m_targetY;
 
     /**
-     * Creates a new TurnToAprilTagCommand.
+     * Creates a new RotateToTargetCommand.
      *
      * @param drivetrain The swerve drivetrain subsystem
      * @param tagId      The AprilTag ID to face
      */
-    public TurnToAprilTagCommand(CommandSwerveDrivetrain drivetrain, int tagId) {
+    public RotateToTargetCommand(CommandSwerveDrivetrain drivetrain, int tagId) {
         m_drivetrain = drivetrain;
         m_tagId = tagId;
         addRequirements(drivetrain);
@@ -49,7 +48,7 @@ public class TurnToAprilTagCommand extends Command {
         // Resolve the tag ID to a field coordinate once at start
         Optional<Pose3d> tagPose = TurnToAngleHelper.getTagPose(m_tagId);
         if (tagPose.isEmpty()) {
-            System.err.println("TurnToAprilTag: Tag ID " + m_tagId
+            System.err.println("RotateToTarget: Tag ID " + m_tagId
                 + " not found in field layout!");
             m_targetX = 0;
             m_targetY = 0;
@@ -58,7 +57,7 @@ public class TurnToAprilTagCommand extends Command {
 
         m_targetX = tagPose.get().getX();
         m_targetY = tagPose.get().getY();
-        System.out.println("TurnToAprilTag: Tag " + m_tagId
+        System.out.println("RotateToTarget: Tag " + m_tagId
             + " pose: x=" + m_targetX + " y=" + m_targetY);
     }
 
@@ -66,18 +65,15 @@ public class TurnToAprilTagCommand extends Command {
     public void execute() {
         // Re-compute the bearing each cycle so the heading tracks as the
         // robot moves (the target point stays fixed).
-        Pose2d robotPose = m_drivetrain.getState().Pose;
-        Rotation2d fieldAngle = TurnToAngleHelper.bearingToPoint(
-            m_targetX, m_targetY, robotPose);
-
-        // Convert from field (blue-origin) frame to operator-perspective frame
-        Rotation2d operatorAngle = TurnToAngleHelper.toOperatorFrame(
-            fieldAngle, m_drivetrain.getOperatorForwardDirection());
+        Rotation2d operatorAngle =
+            TurnToAngleHelper.bearingToPointInOperatorFrame(
+                m_targetX, m_targetY,
+                m_drivetrain.getState().Pose,
+                m_drivetrain.getOperatorForwardDirection());
 
         // Print target angle
-        System.out.println("TurnToAprilTag: Target angle to ("
+        System.out.println("RotateToTarget: Target angle to ("
             + m_targetX + ", " + m_targetY + ") is "
-            + fieldAngle.getDegrees() + " deg (field), "
             + operatorAngle.getDegrees() + " deg (operator)");
 
         // Drive with zero translation, facing the computed angle

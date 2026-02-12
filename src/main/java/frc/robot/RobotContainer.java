@@ -21,8 +21,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterTestCommand;
-import frc.robot.commands.TurnToAprilTagCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
@@ -241,10 +241,11 @@ public class RobotContainer {
                         m_wasAiming = true;
                     }
 
-                    Rotation2d fieldAngle = TurnToAngleHelper.bearingToPoint(
-                        aimTarget[0], aimTarget[1], drivetrain.getState().Pose);
-                    Rotation2d operatorAngle = TurnToAngleHelper.toOperatorFrame(
-                        fieldAngle, drivetrain.getOperatorForwardDirection());
+                    Rotation2d operatorAngle =
+                        TurnToAngleHelper.bearingToPointInOperatorFrame(
+                            aimTarget[0], aimTarget[1],
+                            drivetrain.getState().Pose,
+                            drivetrain.getOperatorForwardDirection());
                     return driveAimAtTag
                         .withVelocityX(leftX)
                         .withVelocityY(leftY)
@@ -300,7 +301,7 @@ public class RobotContainer {
 
         // POV Down: rotate in place to face the configured AprilTag
         driveController.povDown().whileTrue(
-            new TurnToAprilTagCommand(drivetrain, Constants.VisionConstants.kTurnToTagID));
+            new RotateToTargetCommand(drivetrain, Constants.VisionConstants.kTurnToTagID));
     }
 
     /**

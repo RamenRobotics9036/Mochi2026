@@ -16,7 +16,7 @@ import java.util.Optional;
  * between field-frame and operator-perspective angles.
  *
  * <p>Designed to be shared by any command or lambda that needs to aim
- * the robot at a field element (e.g. {@code TurnToAprilTagCommand},
+ * the robot at a field element (e.g. {@code RotateToTargetCommand},
  * the default drive command's POV-UP lock-on, etc.).
  */
 public final class TurnToAngleHelper {
@@ -96,6 +96,28 @@ public final class TurnToAngleHelper {
     }
 
     /**
+     * Computes the bearing from a robot pose to an arbitrary field point
+     * and converts it to the operator-perspective frame in one step.
+     *
+     * <p>Equivalent to
+     * {@code toOperatorFrame(bearingToPoint(targetX, targetY, robotPose),
+     * operatorForwardDir)}.
+     *
+     * @param targetX          target X coordinate (blue-origin, metres)
+     * @param targetY          target Y coordinate (blue-origin, metres)
+     * @param robotPose        the robot's current field-relative pose
+     * @param operatorForwardDir the current operator forward direction
+     * @return the bearing in operator-perspective coordinates
+     */
+    public static Rotation2d bearingToPointInOperatorFrame(
+            double targetX, double targetY,
+            Pose2d robotPose, Rotation2d operatorForwardDir) {
+        return toOperatorFrame(
+            bearingToPoint(targetX, targetY, robotPose),
+            operatorForwardDir);
+    }
+
+    /**
      * Configures a {@link SwerveRequest.FieldCentricFacingAngle} with
      * standard heading-PID tuning and continuous-input wrapping.
      *
@@ -124,7 +146,7 @@ public final class TurnToAngleHelper {
     public static SwerveRequest.FieldCentricFacingAngle createFacingAngleRequest() {
         SwerveRequest.FieldCentricFacingAngle request =
             new SwerveRequest.FieldCentricFacingAngle()
-                .withDriveRequestType(DriveRequestType.Velocity);
+                .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
         configureFacingAngle(request);
         return request;
     }
