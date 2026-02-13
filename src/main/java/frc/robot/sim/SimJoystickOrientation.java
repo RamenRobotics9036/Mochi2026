@@ -11,6 +11,13 @@ public class SimJoystickOrientation {
 
     private enum ScreenDirection { EAST, WEST }
 
+    /** Constructor. */
+    public SimJoystickOrientation() {
+        if (!Robot.isSimulation()) {
+            throw new IllegalStateException("SimJoystickOrientation should only be instantiated in simulation mode");
+        }
+    }
+
     /**
      * Determines the operator's screen direction based on the operator forward angle.
      *
@@ -18,25 +25,24 @@ public class SimJoystickOrientation {
      * @return The screen direction (EAST for blue alliance, WEST for red alliance)
      * @throws IllegalStateException if the degrees don't match expected alliance orientations
      */
-    private static ScreenDirection getOperatorScreenDirection(double degrees) {
+    private ScreenDirection getOperatorScreenDirection(double degrees) {
         if (degrees >= -45 && degrees < 45) {
             return ScreenDirection.EAST;  // Blue alliance: forward toward red wall
-        } else if (degrees >= 135 || degrees < -135) {
+        }
+        else if (degrees >= 135 || degrees < -135) {
             return ScreenDirection.WEST;  // Red alliance: forward toward blue wall
-        } else {
+        }
+        else {
             throw new IllegalStateException("Unexpected operator direction: " + degrees);
         }
     }
 
-    public static JoystickInputsRecord simTransformJoystickOrientation(
+    /** Transforms joystick inputs based on operator screen direction for simulation. */
+    public JoystickInputsRecord transformJoystickOrientation(
         double degreesFieldForward,
         double driveX,
         double driveY,
         double rotateX) {
-
-        if (!Robot.isSimulation()) {
-            throw new IllegalStateException("simTransformJoystickOrientation should only be called in simulation");
-        }
 
         ScreenDirection direction = getOperatorScreenDirection(degreesFieldForward);
         // System.out.println("direction = " + direction);
@@ -45,9 +51,10 @@ public class SimJoystickOrientation {
         // on the field, rather than forward on the field.  Additionally, invert (multiple -1) the
         // X axis depending on which way 'forward' is, to keep controls consistent.
         if (direction == ScreenDirection.EAST) {
-            return new JoystickInputsRecord(driveY, -driveX, rotateX);
-        } else {
-            return new JoystickInputsRecord(-driveY, driveX, rotateX);
+            return new JoystickInputsRecord(-1 * driveY, driveX, rotateX);
+        }
+        else {
+            return new JoystickInputsRecord(driveY, -1 * driveX, rotateX);
         }
     }
 }
