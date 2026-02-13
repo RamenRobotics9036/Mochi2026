@@ -12,8 +12,7 @@ import java.util.function.Consumer;
 
 
 /**
- * Unified simulation wrapper combining ground truth physics, vision simulation,
- * and joystick orientation handling.
+ * Unified simulation wrapper combining ground truth physics and vision simulation.
  *
  * <p>This class encapsulates all simulation-specific logic, keeping Robot and
  * RobotContainer free from simulation implementation details.
@@ -93,19 +92,6 @@ public class SimWrapper {
     public void resetSimPose(Pose2d pose) {
         m_groundTruthSim.resetGroundTruthPoseForSim(pose);
         m_visionSim.resetSimPose(pose);
-    }
-
-    /**
-     * Transforms joystick inputs based on the operator's forward direction.
-     * Static method that can be called without a SimWrapper instance.
-     */
-    public static JoystickInputsRecord transformJoystickOrientation(
-            double degreesFieldForward,
-            double driveX,
-            double driveY,
-            double rotateX) {
-        return SimJoystickOrientation.simTransformJoystickOrientation(
-            degreesFieldForward, driveX, driveY, rotateX);
     }
 
     /**
