@@ -128,6 +128,9 @@ public final class Constants {
 
         /** Default value for the VisionEnabled toggle (true = vision on). */
         public static final boolean kVisionEnabledDefault = true;
+
+        /** AprilTag ID the robot should turn towards when POV Down is pressed. */
+        public static final int kTurnToTagID = 26;
     }
 
     /**

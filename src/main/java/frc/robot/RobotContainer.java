@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterTestCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.sim.JoystickInputsRecord;
@@ -33,8 +34,8 @@ import frc.robot.visutils.LimelightOdometry;
 import frc.robot.visutils.AllianceCalc;
 import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.MotionlessTracker;
+import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
-import java.util.Optional;
 
 /**
  * The RobotContainer class is where the bulk of the robot structure is declared.
@@ -196,7 +197,10 @@ public class RobotContainer {
      * Defines trigger-to-command mappings.
      */
     private void configureBindings() {
-        // Set the default command for the drivetrain to follow joystick inputs continuously
+        // Set the default command for the drivetrain to follow joystick inputs continuously.
+        // When POV-UP is held, rotation locks onto AprilTag 26 while X/Y remain free.
+        final double[] aimTarget = TurnToAngleHelper.resolveTagTarget(Constants.VisionConstants.kTurnToTagID);
+
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
                 double leftX = getDriveX();
@@ -212,8 +216,8 @@ public class RobotContainer {
                         leftX,
                         leftY,
                         rightX);
-                    leftX = -newJoystickInputs.driveX();
-                    leftY =- newJoystickInputs.driveY();
+                    leftX = -1 * newJoystickInputs.driveX();
+                    leftY = -1 * newJoystickInputs.driveY();
                     rightX = newJoystickInputs.rotatetX();
                 }
 
@@ -262,6 +266,10 @@ public class RobotContainer {
 
         // Hook up the telemetry logger to the drivetrain periodic updates
         drivetrain.registerTelemetry(logger::telemeterize);
+
+        // POV Down: rotate in place to face the configured AprilTag
+        driveController.povDown().whileTrue(
+            new RotateToTargetCommand(drivetrain, Constants.VisionConstants.kTurnToTagID));
     }
 
     /**
