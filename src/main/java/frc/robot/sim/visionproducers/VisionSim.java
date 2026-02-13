@@ -48,16 +48,20 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class VisionSim implements VisionSimInterface {
     private final PhotonCamera m_camera;
+    private final PhotonCamera m_camera2;
     private final PhotonPoseEstimator m_photonEstimator;
+    private final PhotonPoseEstimator m_photonEstimator2;
     @SuppressWarnings("unused")
     private Matrix<N3, N1> m_curStdDevs;
 
     // Simulation
     private PhotonCameraSim m_cameraSim;
+    private PhotonCameraSim m_cameraSim2;
     private VisionSystemSim m_visionSystemSim;
 
     // Limelight NetworkTables publisher
     private final LimelightTablePublisher m_limelightPublisher;
+    private final LimelightTablePublisher m_limelightPublisher2;
 
     /** Constructor. */
     public VisionSim() {
@@ -70,8 +74,11 @@ public class VisionSim implements VisionSimInterface {
         }
 
         m_camera = new PhotonCamera(kCameraName);
+        m_camera2 = new PhotonCamera(kCameraName2);
         m_photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
+        m_photonEstimator2 = new PhotonPoseEstimator(kTagLayout, kRobotToCam2);
         m_limelightPublisher = new LimelightTablePublisher("limelight");
+        m_limelightPublisher2 = new LimelightTablePublisher("limelight2");
 
         // ----- Simulation
         if (Robot.isSimulation()) {
@@ -98,7 +105,14 @@ public class VisionSim implements VisionSimInterface {
             // Add the simulated camera to view the targets on this simulated field.
             m_visionSystemSim.addCamera(m_cameraSim, kRobotToCam);
 
+            m_cameraSim2 = new PhotonCameraSim(m_camera2, cameraProp);
+            m_cameraSim2.setMinTargetAreaPixels(kMinTargetAreaPixels);
+            m_cameraSim2.setMaxSightRange(kMaxSightRangeMeters);
+            m_visionSystemSim.addCamera(m_cameraSim2, kRobotToCam2);
+
+            // $TODO - Double check that both wireframes should be drawn
             m_cameraSim.enableDrawWireframe(true);
+            m_cameraSim2.enableDrawWireframe(true);
         }
     }
 
@@ -109,26 +123,35 @@ public class VisionSim implements VisionSimInterface {
     }
 
     private void generatePoseEstimate() {
+        processCamera(m_camera, m_photonEstimator, kRobotToCam, m_limelightPublisher);
+        processCamera(m_camera2, m_photonEstimator2, kRobotToCam2, m_limelightPublisher2);
+    }
+
+    private void processCamera(
+            PhotonCamera camera,
+            PhotonPoseEstimator estimator,
+            edu.wpi.first.math.geometry.Transform3d robotToCam,
+            LimelightTablePublisher publisher) {
         Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        for (var result : m_camera.getAllUnreadResults()) {
-            visionEst = m_photonEstimator.estimateCoprocMultiTagPose(result);
+        for (var result : camera.getAllUnreadResults()) {
+            visionEst = estimator.estimateCoprocMultiTagPose(result);
             if (visionEst.isEmpty()) {
-                visionEst = m_photonEstimator.estimateLowestAmbiguityPose(result);
+                visionEst = estimator.estimateLowestAmbiguityPose(result);
             }
-            updateEstimationStdDevs(visionEst, result.getTargets());
+            updateEstimationStdDevs(visionEst, result.getTargets(), estimator);
 
             // Publish to Limelight NetworkTables for LimelightOdometry to consume
             LimelightData data = PhotonToLimelightConverter.convertPipelineResult(
                 result,
-                kRobotToCam);
+                robotToCam);
             double totalLatencyMs = data.pipelineLatencyMs + data.captureLatencyMs;
             PhotonToLimelightConverter.convertBotpose(
                 visionEst.map(est -> est.estimatedPose).orElse(null),
                 result.getTargets(),
-                kRobotToCam,
+                robotToCam,
                 totalLatencyMs,
                 data);
-            m_limelightPublisher.publish(data);
+            publisher.publish(data);
         }
     }
 
@@ -140,8 +163,12 @@ public class VisionSim implements VisionSimInterface {
      * @param estimatedPose The estimated pose to guess standard deviations for.
      * @param targets All targets in this camera frame
      */
+    // $TODO - Is m_curStdDevs actually used anywhere? Is calling updateEstimationStdDevs
+    // doing anything?
     private void updateEstimationStdDevs(
-            Optional<EstimatedRobotPose> estimatedPose, List<PhotonTrackedTarget> targets) {
+            Optional<EstimatedRobotPose> estimatedPose,
+            List<PhotonTrackedTarget> targets,
+            PhotonPoseEstimator estimator) {
         if (estimatedPose.isEmpty()) {
             // No pose input. Default to single-tag std devs
             m_curStdDevs = kSingleTagStdDevs;
@@ -155,7 +182,7 @@ public class VisionSim implements VisionSimInterface {
 
             // Precalculation - see how many tags we found, and calculate an average-distance metric
             for (var tgt : targets) {
-                var tagPose = m_photonEstimator.getFieldTags().getTagPose(tgt.getFiducialId());
+                var tagPose = estimator.getFieldTags().getTagPose(tgt.getFiducialId());
                 if (tagPose.isEmpty()) {
                     continue;
                 }
