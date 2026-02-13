@@ -14,12 +14,19 @@ public class VisionSimConstants {
     public static class Vision {
         // Camera name (must match PhotonVision camera name)
         public static final String kCameraName = "photonvision";
+        public static final String kCameraName2 = "photonvision2";
 
         // Camera position relative to robot center
         // Example: mounted facing forward, 0.5m forward of center, 0.5m up from center
         public static final Transform3d kRobotToCam = new Transform3d(
             new Translation3d(0.5, 0.0, 0.5),
             new Rotation3d(0, 0, 0)
+        );
+
+        // Second camera position relative to robot center
+        public static final Transform3d kRobotToCam2 = new Transform3d(
+            new Translation3d(-0.5, 0.0, 0.5),
+            new Rotation3d(0, 0, Math.PI)
         );
 
         // The layout of the AprilTags on the field
