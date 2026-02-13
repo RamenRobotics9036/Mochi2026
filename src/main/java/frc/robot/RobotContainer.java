@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterTestCommand;
@@ -237,8 +238,13 @@ public class RobotContainer {
         // Hook up the telemetry logger to the drivetrain periodic updates
         drivetrain.registerTelemetry(logger::telemeterize);
 
-        // POV Down: rotate in place to face the configured AprilTag
-        driveController.povDown().whileTrue(
+        // POV Down: rotate in place to face the configured AprilTag.
+        // Use a tolerant trigger (135°–225°) instead of exact povDown() (180° only)
+        // to avoid command cancellation from D-pad diagonal flicker.
+        new Trigger(() -> {
+            int pov = driveController.getHID().getPOV();
+            return pov >= 135 && pov <= 225;
+        }).whileTrue(
             new RotateToTargetCommand(drivetrain, Constants.VisionConstants.kTurnToTagID));
     }
 

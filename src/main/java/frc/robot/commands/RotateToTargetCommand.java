@@ -45,6 +45,8 @@ public class RotateToTargetCommand extends Command {
 
     @Override
     public void initialize() {
+        System.out.println("Start rotating to target tag ID " + m_tagId);
+
         // Resolve the tag ID to a field coordinate once at start
         Optional<Pose3d> tagPose = TurnToAngleHelper.getTagPose(m_tagId);
         if (tagPose.isEmpty()) {
@@ -57,8 +59,6 @@ public class RotateToTargetCommand extends Command {
 
         m_targetX = tagPose.get().getX();
         m_targetY = tagPose.get().getY();
-        System.out.println("RotateToTarget: Tag " + m_tagId
-            + " pose: x=" + m_targetX + " y=" + m_targetY);
     }
 
     @Override
@@ -72,9 +72,9 @@ public class RotateToTargetCommand extends Command {
                 m_drivetrain.getOperatorForwardDirection());
 
         // Print target angle
-        System.out.println("RotateToTarget: Target angle to ("
-            + m_targetX + ", " + m_targetY + ") is "
-            + operatorAngle.getDegrees() + " deg (operator)");
+        // System.out.println("RotateToTarget: Target angle to ("
+        //     + m_targetX + ", " + m_targetY + ") is "
+        //     + operatorAngle.getDegrees() + " deg (operator)");
 
         // Drive with zero translation, facing the computed angle
         m_drivetrain.setControl(
@@ -89,6 +89,8 @@ public class RotateToTargetCommand extends Command {
     public void end(boolean interrupted) {
         // Stop all motion when the command ends
         m_drivetrain.setControl(new SwerveRequest.Idle());
+
+        System.out.println("Stopped rotating.");
     }
 
     @Override
