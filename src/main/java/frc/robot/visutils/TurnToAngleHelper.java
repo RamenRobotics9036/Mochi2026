@@ -39,6 +39,22 @@ public final class TurnToAngleHelper {
     }
 
     /**
+     * Resolves an AprilTag ID to a field-coordinate (x, y) target.
+     *
+     * @param tagId the AprilTag ID
+     * @return a two-element array {x, y} in blue-origin metres,
+     *         or {0, 0} if the tag is not found
+     */
+    public static double[] resolveTagTarget(int tagId) {
+        Optional<Pose3d> pose = getTagPose(tagId);
+        if (pose.isPresent()) {
+            return new double[] {pose.get().getX(), pose.get().getY()};
+        }
+        System.err.println("TurnToAngleHelper: Tag ID " + tagId + " not found!");
+        return new double[] {0, 0};
+    }
+
+    /**
      * Computes the field-frame bearing from a robot pose to an AprilTag.
      *
      * <p>The returned angle is in the blue-origin field frame
