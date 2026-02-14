@@ -11,10 +11,12 @@ import java.util.Optional;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -66,10 +68,9 @@ public class RobotContainer {
             .withRotationalDeadband(0.001 * MaxAngularRate)
             .withDriveRequestType(DriveRequestType.Velocity);
 
-    /** Field-centric request with heading lock — used when POV-UP aims at a tag. */
-    private final SwerveRequest.FieldCentricFacingAngle driveAimAtTag =
-        TurnToAngleHelper.createFacingAngleRequest();
-            // $TODO .withDeadband(0.001 * TeleoperatedSpeed);
+    /** Heading PID for aim-while-driving (PID + translational FF). */
+    private final PIDController m_aimPID =
+        TurnToAngleHelper.createAimPID();
 
     /** Tracks whether the previous cycle was in aim-at-tag mode,
      *  so we can reset the heading PID on the transition edge. */
@@ -204,23 +205,30 @@ public class RobotContainer {
 
                 // POV-UP held: auto-aim rotation at the tag
                 // while keeping X/Y translation.
+                // Uses PID + translational feedforward for
+                // smooth combined driving and aiming.
                 if (isPovUp()) {
-                    // Reset the heading PID on the rising edge so stale
-                    // derivative / integral state doesn't cause a jerk.
                     if (!m_wasAiming) {
-                        driveAimAtTag.HeadingController.reset();
+                        m_aimPID.reset();
                         m_wasAiming = true;
                     }
 
-                    Rotation2d operatorAngle =
-                        TurnToAngleHelper.bearingToPointInOperatorFrame(
+                    Pose2d pose = drivetrain.getState().Pose;
+                    ChassisSpeeds fieldSpeeds =
+                        ChassisSpeeds.fromRobotRelativeSpeeds(
+                            drivetrain.getState().Speeds,
+                            pose.getRotation());
+
+                    double aimRate =
+                        TurnToAngleHelper.computeAimRate(
                             aimTarget[0], aimTarget[1],
-                            drivetrain.getState().Pose,
-                            drivetrain.getOperatorForwardDirection());
-                    return driveAimAtTag
+                            pose, fieldSpeeds,
+                            m_aimPID, MaxAngularRate);
+
+                    return drive
                         .withVelocityX(inputs.driveX())
                         .withVelocityY(inputs.driveY())
-                        .withTargetDirection(operatorAngle);
+                        .withRotationalRate(aimRate);
                 }
 
                 m_wasAiming = false;
