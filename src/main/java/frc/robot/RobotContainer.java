@@ -207,7 +207,7 @@ public class RobotContainer {
                 // while keeping X/Y translation.
                 // Uses PID + translational feedforward for
                 // smooth combined driving and aiming.
-                if (isPovUp()) {
+                if (isLeftPovUpward()) {
                     if (!m_wasAiming) {
                         m_aimPID.reset();
                         m_wasAiming = true;
@@ -284,10 +284,7 @@ public class RobotContainer {
         // POV Down: rotate in place to face the configured AprilTag.
         // Use a tolerant trigger (135°–225°) instead of exact povDown() (180° only)
         // to avoid command cancellation from D-pad diagonal flicker.
-        new Trigger(() -> {
-            int pov = driveController.getHID().getPOV();
-            return pov >= 135 && pov <= 225;
-        }).whileTrue(
+        new Trigger(this::isLeftPovDownward).whileTrue(
             new RotateToTargetCommand(drivetrain, () -> {
                 int bestTag = m_limelightOdometry.getBestTarget();
                 if (bestTag == -1) return new Translation2d(-1, -1);
@@ -348,31 +345,15 @@ public class RobotContainer {
         m_driveAccuracyTester.clearTape();
     }
 
-    /** Returns {@code true} when the D-pad is in the UP region (±45°). */
-    private boolean isPovUp() {
+    /** Returns {@code true} when the left D-pad is in the downward region (135°–225°). */
+    private boolean isLeftPovDownward() {
+        int pov = driveController.getHID().getPOV();
+        return pov != -1 && (pov >= 135 && pov <= 225);
+    }
+
+    /** Returns {@code true} when the left D-pad is in the upward region (315°–360° or 0°–45°). */
+    private boolean isLeftPovUpward() {
         int pov = driveController.getHID().getPOV();
         return pov != -1 && (pov <= 45 || pov >= 315);
-    }
-
-    /** Returns {@code true} when the D-pad is in the DOWN region (±45°). */
-    private boolean isPovDown() {
-        int pov = driveController.getHID().getPOV();
-        return pov >= 135 && pov <= 225;
-    }
-
-    /**
-     * Resolves an AprilTag ID to a field-coordinate (x, y) target.
-     *
-     * @param tagId the AprilTag ID
-     * @return a two-element array {x, y} in blue-origin metres,
-     *         or {0, 0} if the tag is not found
-     */
-    private static double[] resolveTagTarget(int tagId) {
-        Optional<Pose3d> pose = TurnToAngleHelper.getTagPose(tagId);
-        if (pose.isPresent()) {
-            return new double[] {pose.get().getX(), pose.get().getY()};
-        }
-        System.err.println("RobotContainer: Tag ID " + tagId + " not found!");
-        return new double[] {0, 0};
     }
 }
