@@ -32,7 +32,7 @@ public class LimelightOdometry {
     private int m_numLockedTags = 0;
     private double m_tx = 0.0;
     private String m_targetList = "";
-    private int m_bestTarget = -1;
+    private int m_lastTarget = -1;
 
     private VisionKalmanFilter m_visionKalmanFilter = null;
     private BooleanSupplier m_isMotionlessSupplier = null;
@@ -72,7 +72,6 @@ public class LimelightOdometry {
         m_numLockedTags = 0;
         m_tx = 0.0;
         m_targetList = "";
-        m_bestTarget = -1;
     }
 
     private void setResults(double confidenceScore, int numLockedTags,
@@ -88,11 +87,10 @@ public class LimelightOdometry {
             m_targetList = Arrays.stream(rawFiducials)
                 .map(f -> String.valueOf(f.id))
                 .collect(Collectors.joining(", "));
-            m_bestTarget = rawFiducials[0].id;
+            m_lastTarget = rawFiducials[0].id;
         }
         else {
             m_targetList = "";
-            m_bestTarget = -1;
         }
     }
 
@@ -270,8 +268,8 @@ public class LimelightOdometry {
         return m_targetList;
     }
 
-    /** Returns the ID of the first visible fiducial, or -1 if none. */
-    public int getBestTarget() {
-        return m_bestTarget;
+    /** Returns the ID of the last seen fiducial, or -1 if none. */
+    public int getLastTarget() {
+        return m_lastTarget;
     }
 }

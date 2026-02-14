@@ -10,6 +10,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 import java.util.Optional;
@@ -42,19 +43,23 @@ public final class TurnToAngleHelper {
     }
 
     /**
-     * Resolves an AprilTag ID to a field-coordinate (x, y) target.
+     * Resolves an AprilTag ID to a field-coordinate target.
      *
      * @param tagId the AprilTag ID
-     * @return a two-element array {x, y} in blue-origin metres,
-     *         or {0, 0} if the tag is not found
+     * @return the tag position in blue-origin metres,
+     *         or (-1, -1) if the tag is not found
      */
-    public static double[] resolveTagTarget(int tagId) {
+    public static Translation2d resolveTagTarget(int tagId) {
+        if (tagId == -1) {
+            return new Translation2d(-1, -1);
+        }
+
         Optional<Pose3d> pose = getTagPose(tagId);
         if (pose.isPresent()) {
-            return new double[] {pose.get().getX(), pose.get().getY()};
+            return new Translation2d(pose.get().getX(), pose.get().getY());
         }
         System.err.println("TurnToAngleHelper: Tag ID " + tagId + " not found!");
-        return new double[] {0, 0};
+        return new Translation2d(-1, -1);
     }
 
     /**
@@ -238,8 +243,7 @@ public final class TurnToAngleHelper {
      * {@link SwerveRequest.FieldCentricFacingAngle} when driving
      * and aiming simultaneously.
      *
-     * @param targetX        target X (blue-origin, m)
-     * @param targetY        target Y (blue-origin, m)
+     * @param target         target position (blue-origin, m)
      * @param robotPose      current robot pose
      * @param fieldSpeeds    field-relative chassis speeds
      * @param headingPID     the caller's heading PID (radians)
@@ -247,17 +251,17 @@ public final class TurnToAngleHelper {
      * @return clamped rotational rate in rad/s
      */
     public static double computeAimRate(
-            double targetX, double targetY,
+            Translation2d target,
             Pose2d robotPose, ChassisSpeeds fieldSpeeds,
             PIDController headingPID, double maxOmega) {
         // Desired heading in field frame
         double desiredRad = bearingToPoint(
-            targetX, targetY, robotPose).getRadians();
+            target.getX(), target.getY(), robotPose).getRadians();
         double currentRad = robotPose.getRotation().getRadians();
 
         double pidOut = headingPID.calculate(currentRad, desiredRad);
         double ff = aimFeedforward(
-            targetX, targetY, robotPose, fieldSpeeds);
+            target.getX(), target.getY(), robotPose, fieldSpeeds);
 
         return MathUtil.clamp(pidOut + ff, -maxOmega, maxOmega);
     }

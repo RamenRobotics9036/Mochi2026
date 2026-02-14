@@ -195,10 +195,6 @@ public class RobotContainer {
      * Defines trigger-to-command mappings.
      */
     private void configureBindings() {
-        // Set the default command for the drivetrain to follow joystick inputs continuously.
-        // When POV-UP is held, rotation locks onto AprilTag 26 while X/Y remain free.
-        final double[] aimTarget = TurnToAngleHelper.resolveTagTarget(Constants.VisionConstants.kTurnToTagID);
-
         drivetrain.setDefaultCommand(
             drivetrain.applyRequest(() -> {
                 JoystickInputsRecord inputs = m_joystickInput.getJoystickInputs();
@@ -208,27 +204,35 @@ public class RobotContainer {
                 // Uses PID + translational feedforward for
                 // smooth combined driving and aiming.
                 if (isLeftPovUpward()) {
-                    if (!m_wasAiming) {
-                        m_aimPID.reset();
-                        m_wasAiming = true;
-                    }
 
                     Pose2d pose = drivetrain.getState().Pose;
-                    ChassisSpeeds fieldSpeeds =
-                        ChassisSpeeds.fromRobotRelativeSpeeds(
-                            drivetrain.getState().Speeds,
-                            pose.getRotation());
 
-                    double aimRate =
-                        TurnToAngleHelper.computeAimRate(
-                            aimTarget[0], aimTarget[1],
-                            pose, fieldSpeeds,
-                            m_aimPID, MaxAngularRate);
+                    Translation2d targetTranslation =
+                        TurnToAngleHelper.resolveTagTarget(m_limelightOdometry.getLastTarget());
 
-                    return drive
-                        .withVelocityX(inputs.driveX())
-                        .withVelocityY(inputs.driveY())
-                        .withRotationalRate(aimRate);
+                    // $TODO - Check for distance later after we add the annoider
+                    if (targetTranslation.getX() != -1 && targetTranslation.getY() != -1) {
+                        if (!m_wasAiming) {
+                            m_aimPID.reset();
+                            m_wasAiming = true;
+                        }
+
+                        ChassisSpeeds fieldSpeeds =
+                            ChassisSpeeds.fromRobotRelativeSpeeds(
+                                drivetrain.getState().Speeds,
+                                pose.getRotation());
+
+                        double aimRate =
+                            TurnToAngleHelper.computeAimRate(
+                                targetTranslation,
+                                pose, fieldSpeeds,
+                                m_aimPID, MaxAngularRate);
+
+                        return drive
+                            .withVelocityX(inputs.driveX())
+                            .withVelocityY(inputs.driveY())
+                            .withRotationalRate(aimRate);
+                    }
                 }
 
                 m_wasAiming = false;
@@ -285,13 +289,8 @@ public class RobotContainer {
         // Use a tolerant trigger (135°–225°) instead of exact povDown() (180° only)
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(this::isLeftPovDownward).whileTrue(
-            new RotateToTargetCommand(drivetrain, () -> {
-                int bestTag = m_limelightOdometry.getBestTarget();
-                if (bestTag == -1) return new Translation2d(-1, -1);
-                return TurnToAngleHelper.getTagPose(bestTag)
-                    .map(p -> new Translation2d(p.getX(), p.getY()))
-                    .orElse(new Translation2d(-1, -1));
-            }));
+            new RotateToTargetCommand(drivetrain, () ->
+                TurnToAngleHelper.resolveTagTarget(m_limelightOdometry.getLastTarget())));
     }
 
     /**
