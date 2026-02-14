@@ -147,9 +147,10 @@ public final class TurnToAngleHelper {
      */
     public static void configureFacingAngle(
             SwerveRequest.FieldCentricFacingAngle request) {
-        // P of 3 keeps heading corrections gentle enough that module
-        // angles stay stable when translation and rotation are combined.
-        // D of 0.6 damps residual oscillation for a smooth settle.
+        // P of 5 keeps corrections within the swerve's physical angular-rate
+        // limit (~4.7 rad/s) for typical aiming errors, avoiding saturation
+        // and the overshoot-oscillation cycle that a higher P causes.
+        // D of 0.4 damps residual oscillation without sluggish feel.
         request.HeadingController.setPID(5, 0, 0.4);
         // Shortest-path across the ±180° wrap.
         request.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
@@ -179,8 +180,8 @@ public final class TurnToAngleHelper {
     // ── Aim-while-driving with feedforward ──────────────────────
 
     /** Heading PID gains used by {@link #createAimPID()}. */
-    private static final double kAimP = 3.0;
-    private static final double kAimD = 0.6;
+    private static final double kAimP = 5.0;
+    private static final double kAimD = 0.4;
 
     /**
      * Creates a WPILib PID controller pre-configured for heading
