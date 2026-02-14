@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -200,22 +202,9 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> {
                 JoystickInputsRecord inputs = m_joystickInput.getJoystickInputs();
 
-                // $VISIONSIM - Wrapper for sim features
-                if (Robot.isSimulation()) {
-                    JoystickInputsRecord newJoystickInputs =
-
-                        SimWrapper.transformJoystickOrientation(
-                        drivetrain.getOperatorForwardDirection().getDegrees(),
-                        leftX,
-                        leftY,
-                        rightX);
-                    leftX = -1 * newJoystickInputs.driveX();
-                    leftY = -1 * newJoystickInputs.driveY();
-                    rightX = newJoystickInputs.rotatetX();
-                }
-
-                // POV-UP held: auto-aim rotation at the tag while keeping X/Y translation
-                if (driveController.getHID().getPOV() == 0) {
+                // POV-UP held: auto-aim rotation at the tag
+                // while keeping X/Y translation.
+                if (isPovUp()) {
                     // Reset the heading PID on the rising edge so stale
                     // derivative / integral state doesn't cause a jerk.
                     if (!m_wasAiming) {
@@ -229,15 +218,15 @@ public class RobotContainer {
                             drivetrain.getState().Pose,
                             drivetrain.getOperatorForwardDirection());
                     return driveAimAtTag
-                        .withVelocityX(leftX)
-                        .withVelocityY(leftY)
+                        .withVelocityX(inputs.driveX())
+                        .withVelocityY(inputs.driveY())
                         .withTargetDirection(operatorAngle);
                 }
 
                 m_wasAiming = false;
-                return drive.withVelocityX(leftX)
-                     .withVelocityY(leftY)
-                     .withRotationalRate(rightX);
+                return drive.withVelocityX(inputs.driveX())
+                     .withVelocityY(inputs.driveY())
+                     .withRotationalRate(inputs.rotatetX());
             })
         );
 
@@ -349,6 +338,18 @@ public class RobotContainer {
 
         // Remove any tape from the field
         m_driveAccuracyTester.clearTape();
+    }
+
+    /** Returns {@code true} when the D-pad is in the UP region (±45°). */
+    private boolean isPovUp() {
+        int pov = driveController.getHID().getPOV();
+        return pov != -1 && (pov <= 45 || pov >= 315);
+    }
+
+    /** Returns {@code true} when the D-pad is in the DOWN region (±45°). */
+    private boolean isPovDown() {
+        int pov = driveController.getHID().getPOV();
+        return pov >= 135 && pov <= 225;
     }
 
     /**
