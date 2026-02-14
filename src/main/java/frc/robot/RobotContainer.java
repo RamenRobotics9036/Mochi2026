@@ -252,11 +252,11 @@ public class RobotContainer {
         driveController.start().and(driveController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Recalibrate the gyro's forward heading using the Left Bumper
-        joystick.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        driveController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
         
         // Try to align to an AprilTag with the Left Trigger
         driveController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-        joystick.leftTrigger().onTrue(drivetrain.AlignToTag(joystick, MaxAngularRate));
+        driveController.leftTrigger().onTrue(drivetrain.AlignToTag(driveController, MaxAngularRate));
 
         // $SIM - POV buttons for sim
         if (Robot.isSimulation()) {

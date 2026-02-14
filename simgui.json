@@ -11,6 +11,7 @@
       "/FMSInfo": "FMSInfo",
       "/Pose": "Field2d",
       "/Shuffleboard/Autos/Auto Selector": "String Chooser",
+      "/SmartDashboard/Accuracy Drive Test": "Command",
       "/SmartDashboard/Auto Mode": "String Chooser",
       "/SmartDashboard/GlassField": "Field2d",
       "/SmartDashboard/Module 0": "Mechanism2d",
