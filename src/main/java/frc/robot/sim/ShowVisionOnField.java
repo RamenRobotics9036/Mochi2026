@@ -7,7 +7,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
-import frc.robot.generated.TunerConstants;
+import frc.robot.generated.PancakeConstants;
 import frc.robot.visutils.ShowIcon;
 
 import java.util.List;
@@ -19,10 +19,10 @@ import java.util.Optional;
 public class ShowVisionOnField {
     /** Module locations relative to robot center (from TunerConstants). */
     private static final Translation2d[] MODULE_LOCATIONS = {
-        new Translation2d(TunerConstants.FrontLeft.LocationX, TunerConstants.FrontLeft.LocationY),
-        new Translation2d(TunerConstants.FrontRight.LocationX, TunerConstants.FrontRight.LocationY),
-        new Translation2d(TunerConstants.BackLeft.LocationX, TunerConstants.BackLeft.LocationY),
-        new Translation2d(TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
+        new Translation2d(PancakeConstants.FrontLeft.LocationX, PancakeConstants.FrontLeft.LocationY),
+        new Translation2d(PancakeConstants.FrontRight.LocationX, PancakeConstants.FrontRight.LocationY),
+        new Translation2d(PancakeConstants.BackLeft.LocationX, PancakeConstants.BackLeft.LocationY),
+        new Translation2d(PancakeConstants.BackRight.LocationX, PancakeConstants.BackRight.LocationY)
     };
 
     private final Optional<Field2d> m_realGlassField;
