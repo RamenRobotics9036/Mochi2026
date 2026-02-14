@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.generated.PancakeConstants;
 import frc.robot.visutils.ShowIcon;
 
 import java.util.List;
