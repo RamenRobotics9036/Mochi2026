@@ -15,7 +15,7 @@ import frc.robot.RobotContainer;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.visutils.LimelightOdometry;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.generated.TunerConstants;
+import frc.robot.generated.PancakeConstants;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
@@ -67,7 +67,7 @@ public class AlignToTagCommand extends Command {
         /** Ensures that the PID system understands that
          * its motion is circular */
         pid.enableContinuousInput(-180, 180);
-        pid.setTolerance(TunerConstants.kAlignmentErrorMargin);
+        pid.setTolerance(PancakeConstants.kAlignmentErrorMargin);
         
         /** Resets the command */
         alignmentFailed = false;
@@ -171,12 +171,12 @@ public class AlignToTagCommand extends Command {
         );
 
         /** Stops if the user tries to manually move the robot */
-        if (absoluteMoveInput > TunerConstants.kSwerveMoveInterruptionSensitivity) {
+        if (absoluteMoveInput > PancakeConstants.kSwerveMoveInterruptionSensitivity) {
             System.out.println("Command interrupted.");
             return true;
         }
         /** Stops if the user tries to manually turn the robot */
-        else if (absoluteTurnInput > TunerConstants.kSwerveTurnInterruptionSensitivity) {
+        else if (absoluteTurnInput > PancakeConstants.kSwerveTurnInterruptionSensitivity) {
             System.out.println("Command interrupted.");
             return true;
         }

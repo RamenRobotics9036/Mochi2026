@@ -5,7 +5,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import edu.wpi.first.units.measure.LinearVelocity;
-import frc.robot.generated.TunerConstants;
+import frc.robot.generated.PancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /**
@@ -17,56 +17,56 @@ public class PancakeConfig implements BotConfigInterface {
 
     @Override
     public LinearVelocity getSpeedAt12Volts() {
-        return TunerConstants.kSpeedAt12Volts;
+        return PancakeConstants.kSpeedAt12Volts;
     }
 
     @Override
     public LinearVelocity getSpeedInTeleop() {
-        return TunerConstants.kSpeedInTeleop;
+        return PancakeConstants.kSpeedInTeleop;
     }
 
     @Override
     public double getAlignmentErrorMargin() {
-        return TunerConstants.kAlignmentErrorMargin;
+        return PancakeConstants.kAlignmentErrorMargin;
     }
 
     @Override
     public double getSwerveMoveInterruptionSensitivity() {
-        return TunerConstants.kSwerveMoveInterruptionSensitivity;
+        return PancakeConstants.kSwerveMoveInterruptionSensitivity;
     }
 
     @Override
     public double getSwerveTurnInterruptionSensitivity() {
-        return TunerConstants.kSwerveTurnInterruptionSensitivity;
+        return PancakeConstants.kSwerveTurnInterruptionSensitivity;
     }
 
     @Override
     public SwerveDrivetrainConstants getDrivetrainConstants() {
-        return TunerConstants.DrivetrainConstants;
+        return PancakeConstants.DrivetrainConstants;
     }
 
     @Override
     public SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getFrontLeft() {
-        return TunerConstants.FrontLeft;
+        return PancakeConstants.FrontLeft;
     }
 
     @Override
     public SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getFrontRight() {
-        return TunerConstants.FrontRight;
+        return PancakeConstants.FrontRight;
     }
 
     @Override
     public SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getBackLeft() {
-        return TunerConstants.BackLeft;
+        return PancakeConstants.BackLeft;
     }
 
     @Override
     public SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getBackRight() {
-        return TunerConstants.BackRight;
+        return PancakeConstants.BackRight;
     }
 
     @Override
     public CommandSwerveDrivetrain createDrivetrain() {
-        return TunerConstants.createDrivetrain();
+        return PancakeConstants.createDrivetrain();
     }
 }

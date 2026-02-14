@@ -16,61 +16,61 @@ public interface BotConfigInterface {
 
     /**
      * The theoretical free speed at 12 V applied output.
-     * @see TunerConstants.kSpeedAt12Volts
+     * @see PancakeConstants.kSpeedAt12Volts
      */
     LinearVelocity getSpeedAt12Volts();
 
     /**
      * The teleop max speed (may be divided down from kSpeedAt12Volts for testing).
-     * @see TunerConstants.kSpeedInTeleop
+     * @see PancakeConstants.kSpeedInTeleop
      */
     LinearVelocity getSpeedInTeleop();
 
     /**
      * The margin of error (in degrees) for AprilTag alignment.
-     * @see TunerConstants.kAlignmentErrorMargin
+     * @see PancakeConstants.kAlignmentErrorMargin
      */
     double getAlignmentErrorMargin();
 
     /**
      * Sensitivity threshold for manual move interruption of swerve requests.
-     * @see TunerConstants.kSwerveMoveInterruptionSensitivity
+     * @see PancakeConstants.kSwerveMoveInterruptionSensitivity
      */
     double getSwerveMoveInterruptionSensitivity();
 
     /**
      * Sensitivity threshold for manual turn interruption of swerve requests.
-     * @see TunerConstants.kSwerveTurnInterruptionSensitivity
+     * @see PancakeConstants.kSwerveTurnInterruptionSensitivity
      */
     double getSwerveTurnInterruptionSensitivity();
 
     /**
      * Drivetrain-wide constants (CAN bus, Pigeon ID, Pigeon configs).
-     * @see TunerConstants.DrivetrainConstants
+     * @see PancakeConstants.DrivetrainConstants
      */
     SwerveDrivetrainConstants getDrivetrainConstants();
 
     /**
      * Front-left swerve module constants.
-     * @see TunerConstants.FrontLeft
+     * @see PancakeConstants.FrontLeft
      */
     SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getFrontLeft();
 
     /**
      * Front-right swerve module constants.
-     * @see TunerConstants.FrontRight
+     * @see PancakeConstants.FrontRight
      */
     SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getFrontRight();
 
     /**
      * Back-left swerve module constants.
-     * @see TunerConstants.BackLeft
+     * @see PancakeConstants.BackLeft
      */
     SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getBackLeft();
 
     /**
      * Back-right swerve module constants.
-     * @see TunerConstants.BackRight
+     * @see PancakeConstants.BackRight
      */
     SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getBackRight();
 

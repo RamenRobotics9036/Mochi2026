@@ -31,7 +31,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
 import frc.robot.commands.AlignToTagCommand;
-import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.generated.TunerSwerveDrivetrain;
 import frc.robot.visutils.VisionInjectFilter;
 import frc.robot.LimelightHelpers;
 
