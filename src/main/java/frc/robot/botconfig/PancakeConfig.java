@@ -13,7 +13,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  * For now this delegates directly to TunerConstants; when a second robot
  * is added, this class can be swapped or extended to select between configs.
  */
-public class ConfigAdapter implements BotConfigInterface {
+public class PancakeConfig implements BotConfigInterface {
 
     @Override
     public LinearVelocity getSpeedAt12Volts() {
