@@ -27,6 +27,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.botconfig.BotConfigInterface;
+import frc.robot.botconfig.PancakeConfig;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterTestCommand;
 import frc.robot.generated.PancakeConstants;
@@ -124,11 +126,15 @@ public class RobotContainer {
     /** Tracks whether the robot is motionless and for how long. */
     public final MotionlessTracker m_motionlessTracker;
 
+    public final BotConfigInterface m_configInterface;
     /**
      * Constructs the RobotContainer.
      * Initializes autonomous selection dashboards and binds controller inputs to commands.
      */
     public RobotContainer() {
+
+        m_configInterface = new PancakeConfig();
+
         m_joystickInput = new JoystickInput(
             m_driveSmooth,
             () -> -driveController.getLeftY(),
@@ -166,7 +172,7 @@ public class RobotContainer {
         }
 
         m_showVisionOnField = new ShowVisionOnField(
-            m_glassField, debugField);
+            m_glassField, debugField, m_configInterface);
 
         // Setup vision system
         m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
@@ -187,6 +193,7 @@ public class RobotContainer {
             m_motionlessTracker::getSecondsStill);
 
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
+
     }
 
 
