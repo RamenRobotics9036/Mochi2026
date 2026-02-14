@@ -6,12 +6,17 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -62,6 +67,14 @@ public class RobotContainer {
             .withDeadband(0.001 * TeleoperatedSpeed)
             .withRotationalDeadband(0.001 * MaxAngularRate)
             .withDriveRequestType(DriveRequestType.Velocity);
+
+    /** Heading PID for aim-while-driving (PID + translational FF). */
+    private final PIDController m_aimPID =
+        TurnToAngleHelper.createAimPID();
+
+    /** Tracks whether the previous cycle was in aim-at-tag mode,
+     *  so we can reset the heading PID on the transition edge. */
+    private boolean m_wasAiming = false;
 
     /** Brake request: Forces all modules into an X-pattern to resist movement. */
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -190,6 +203,35 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> {
                 JoystickInputsRecord inputs = m_joystickInput.getJoystickInputs();
 
+                // POV-UP held: auto-aim rotation at the tag
+                // while keeping X/Y translation.
+                // Uses PID + translational feedforward for
+                // smooth combined driving and aiming.
+                if (isLeftPovUpward()) {
+                    if (!m_wasAiming) {
+                        m_aimPID.reset();
+                        m_wasAiming = true;
+                    }
+
+                    Pose2d pose = drivetrain.getState().Pose;
+                    ChassisSpeeds fieldSpeeds =
+                        ChassisSpeeds.fromRobotRelativeSpeeds(
+                            drivetrain.getState().Speeds,
+                            pose.getRotation());
+
+                    double aimRate =
+                        TurnToAngleHelper.computeAimRate(
+                            aimTarget[0], aimTarget[1],
+                            pose, fieldSpeeds,
+                            m_aimPID, MaxAngularRate);
+
+                    return drive
+                        .withVelocityX(inputs.driveX())
+                        .withVelocityY(inputs.driveY())
+                        .withRotationalRate(aimRate);
+                }
+
+                m_wasAiming = false;
                 return drive.withVelocityX(inputs.driveX())
                      .withVelocityY(inputs.driveY())
                      .withRotationalRate(inputs.rotatetX());
@@ -242,10 +284,7 @@ public class RobotContainer {
         // POV Down: rotate in place to face the configured AprilTag.
         // Use a tolerant trigger (135°–225°) instead of exact povDown() (180° only)
         // to avoid command cancellation from D-pad diagonal flicker.
-        new Trigger(() -> {
-            int pov = driveController.getHID().getPOV();
-            return pov >= 135 && pov <= 225;
-        }).whileTrue(
+        new Trigger(this::isLeftPovDownward).whileTrue(
             new RotateToTargetCommand(drivetrain, () -> {
                 int bestTag = m_limelightOdometry.getBestTarget();
                 if (bestTag == -1) return new Translation2d(-1, -1);
@@ -304,5 +343,17 @@ public class RobotContainer {
 
         // Remove any tape from the field
         m_driveAccuracyTester.clearTape();
+    }
+
+    /** Returns {@code true} when the left D-pad is in the downward region (135°–225°). */
+    private boolean isLeftPovDownward() {
+        int pov = driveController.getHID().getPOV();
+        return pov != -1 && (pov >= 135 && pov <= 225);
+    }
+
+    /** Returns {@code true} when the left D-pad is in the upward region (315°–360° or 0°–45°). */
+    private boolean isLeftPovUpward() {
+        int pov = driveController.getHID().getPOV();
+        return pov != -1 && (pov <= 45 || pov >= 315);
     }
 }
