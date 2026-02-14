@@ -68,8 +68,8 @@ public class RobotContainer {
 
     /** Field-centric request with heading lock — used when POV-UP aims at a tag. */
     private final SwerveRequest.FieldCentricFacingAngle driveAimAtTag =
-        TurnToAngleHelper.createFacingAngleRequest()
-            .withDeadband(0.001 * TeleoperatedSpeed);
+        TurnToAngleHelper.createFacingAngleRequest();
+            // $TODO .withDeadband(0.001 * TeleoperatedSpeed);
 
     /** Tracks whether the previous cycle was in aim-at-tag mode,
      *  so we can reset the heading PID on the transition edge. */
