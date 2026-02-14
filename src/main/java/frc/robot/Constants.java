@@ -76,9 +76,15 @@ public final class Constants {
         public static final int kLMotorID = 40;
         /** CAN ID for the right SparkFlex motor controller. */
         public static final int kRMotorID = 41;
-        /** SmartCurrentLimit in amps*/
-        public static final int kCurrentLimit = 40; //TODO: filler value
-        /** PWM channer for the linear actuator servo. */
+        /** StatorCurrentLimit in amps
+         * This is the amount of power that the motor can access at once. 
+         * Notably, this filler value is also what is used for our drivetrain motors. */
+        public static final int kStatorCurrentLimit = 40; //TODO: filler value
+        /** SupplyCurrentLimit in amps
+         * This is the amount of power that can be requested from the battery. 
+         * Notably, this filler value is also what is used for our drivetrain motors.*/
+        public static final int kSupplyCurrentLimit = 50; //TODO: filler value
+        /** PWM channel for the linear actuator servo. */
         public static final int kChannel = 0; //TODO: filler value
     }
 

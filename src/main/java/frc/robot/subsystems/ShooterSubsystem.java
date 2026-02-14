@@ -1,43 +1,62 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.generated.TunerConstants;
 
 public class ShooterSubsystem extends SubsystemBase {
-    private SparkFlex m_lMotor;
-    private SparkFlex m_rMotor;
+    private TalonFX m_lMotor;
+    private TalonFX m_rMotor;
 
-    private SparkFlexConfig m_lConfig;
-    private SparkFlexConfig m_rConfig;
+    private TalonFXConfiguration m_lConfig;
+    private TalonFXConfiguration m_rConfig;
 
     private Servo m_hood;
 
+    /** Creates a new ShooterSubsystem using the ShooterConstants from Constants.java */
     public ShooterSubsystem(){
-        m_lMotor = new SparkFlex(ShooterConstants.kLMotorID, MotorType.kBrushless);
-        m_rMotor = new SparkFlex(ShooterConstants.kRMotorID, MotorType.kBrushless);
+        m_lMotor = new TalonFX(ShooterConstants.kLMotorID, TunerConstants.kCANBus);
+        m_rMotor = new TalonFX(ShooterConstants.kRMotorID, TunerConstants.kCANBus);
 
-        m_lConfig = new SparkFlexConfig();
-        m_rConfig = new SparkFlexConfig();
+        m_lConfig = new TalonFXConfiguration()
+            .withMotorOutput(
+                new MotorOutputConfigs()
+                    .withNeutralMode(NeutralModeValue.Brake)
+            )
+            .withCurrentLimits(
+                new CurrentLimitsConfigs()
+                    .withStatorCurrentLimit(ShooterConstants.kStatorCurrentLimit)
+                    .withSupplyCurrentLimit(ShooterConstants.kStatorCurrentLimit)
+            );
+        m_rConfig = new TalonFXConfiguration()
+            .withMotorOutput(
+                new MotorOutputConfigs()
+                    .withNeutralMode(NeutralModeValue.Brake)
+                    // Previously, we set this motor to be a follower and inverted it here
+                    // However, being a follower isn't part of the configuration for Kraken motors
+                    // This is instead done later, and inversion is done there too due to how following works
+            )
+            .withCurrentLimits(
+                new CurrentLimitsConfigs()
+                    .withStatorCurrentLimit(ShooterConstants.kStatorCurrentLimit)
+                    .withSupplyCurrentLimit(ShooterConstants.kStatorCurrentLimit)
+            );
 
-        m_lConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(ShooterConstants.kCurrentLimit);
-        m_rConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(ShooterConstants.kCurrentLimit)
-            .inverted(true)
-            .follow(m_lMotor);
+        m_lMotor.getConfigurator().apply(m_lConfig);
+        m_rMotor.getConfigurator().apply(m_rConfig);
 
-        m_lMotor.configure(m_lConfig, ResetMode.kResetSafeParameters,
-                PersistMode.kPersistParameters);
-        m_rMotor.configure(m_rConfig, ResetMode.kResetSafeParameters,
-                PersistMode.kPersistParameters);
+        // Sets the right motor to follow the left one
+        // Also sets its direction to be opposed rather than inverting it earlier in the code
+        m_rMotor.setControl(new Follower(ShooterConstants.kLMotorID, MotorAlignmentValue.Opposed));
 
         m_hood = new Servo(ShooterConstants.kChannel);
     }
