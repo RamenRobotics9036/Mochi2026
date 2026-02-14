@@ -64,7 +64,7 @@ public class AlignToTagCommand extends Command {
 
     @Override
     public void initialize() {
-        /** Ensures that the PID system understands that
+`        /** Ensures that the PID system understands that
          * its motion is circular */
         pid.enableContinuousInput(-180, 180);
         pid.setTolerance(TunerConstants.kAlignmentErrorMargin);
@@ -113,7 +113,11 @@ public class AlignToTagCommand extends Command {
         m_drivetrain.setControl(m_driveRequest.withRotationalRate(
             /** Ensures that the angular velocity doesn't exceed
              * the maximum angular speed. */
-            Math.min(pid.calculate(rotationOffset), m_maxAngularVelocity)
+            MathUtil.clamp(
+                pid.calculate(rotationOffset),
+                -m_maxAngularVelocity,
+                m_maxAngularVelocity
+                )
             ));
     }
 
