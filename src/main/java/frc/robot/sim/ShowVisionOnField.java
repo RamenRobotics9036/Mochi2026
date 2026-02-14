@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
+import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.generated.PancakeConstants;
 import frc.robot.visutils.ShowIcon;
 
@@ -18,12 +19,7 @@ import java.util.Optional;
  */
 public class ShowVisionOnField {
     /** Module locations relative to robot center (from TunerConstants). */
-    private static final Translation2d[] MODULE_LOCATIONS = {
-        new Translation2d(PancakeConstants.FrontLeft.LocationX, PancakeConstants.FrontLeft.LocationY),
-        new Translation2d(PancakeConstants.FrontRight.LocationX, PancakeConstants.FrontRight.LocationY),
-        new Translation2d(PancakeConstants.BackLeft.LocationX, PancakeConstants.BackLeft.LocationY),
-        new Translation2d(PancakeConstants.BackRight.LocationX, PancakeConstants.BackRight.LocationY)
-    };
+    private static Translation2d[] MODULE_LOCATIONS = new Translation2d[4];
 
     private final Optional<Field2d> m_realGlassField;
     private final Optional<Field2d> m_simulationField;
@@ -44,7 +40,7 @@ public class ShowVisionOnField {
      * @param realGlassField The field displaying real/estimated robot pose (may be null)
      * @param simulationField The field displaying simulated/ground truth pose (may be null)
      */
-    public ShowVisionOnField(Field2d realGlassField, Field2d simulationField) {
+    public ShowVisionOnField(Field2d realGlassField, Field2d simulationField, BotConfigInterface swerveConstants) {
         if (realGlassField == null) {
             throw new IllegalArgumentException("realField cannot be null");
         }
@@ -60,6 +56,11 @@ public class ShowVisionOnField {
 
         m_realGlassField = Optional.ofNullable(realGlassField);
         m_simulationField = Optional.ofNullable(simulationField);
+
+        MODULE_LOCATIONS[0] = new Translation2d(swerveConstants.getFrontLeft().LocationX, swerveConstants.getFrontLeft().LocationY);
+        MODULE_LOCATIONS[1] = new Translation2d(swerveConstants.getFrontRight().LocationX, swerveConstants.getFrontRight().LocationY);
+        MODULE_LOCATIONS[2] = new Translation2d(swerveConstants.getBackLeft().LocationX, swerveConstants.getBackLeft().LocationY);
+        MODULE_LOCATIONS[3] = new Translation2d(swerveConstants.getBackRight().LocationX, swerveConstants.getBackRight().LocationY);
     }
 
     /**
