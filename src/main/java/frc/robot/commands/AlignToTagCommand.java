@@ -15,7 +15,7 @@ import frc.robot.RobotContainer;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.visutils.LimelightOdometry;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.generated.PancakeConstants;
+import frc.robot.botconfig.BotConfigInterface;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
@@ -39,6 +39,7 @@ public class AlignToTagCommand extends Command {
     private final Timer m_timer = new Timer();
     private PIDController pid = new PIDController(0.1, 0, 0);
     private double m_maxAngularVelocity;
+    private final BotConfigInterface m_configInterafce;
 
     /**
      * Creates a new AlignToTagCommand.
@@ -46,10 +47,11 @@ public class AlignToTagCommand extends Command {
      * @param drivetrain The drivetrain subsystem to be supplied
      * @param joystick The Xbox controller to use for interruption
      */
-    public AlignToTagCommand(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, double MaxAngularVelocity) {
+    public AlignToTagCommand(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, double MaxAngularVelocity, BotConfigInterface configInterface) {
         m_drivetrain = drivetrain;
         m_joystick = joystick;
         m_maxAngularVelocity = MaxAngularVelocity;
+        m_configInterafce = configInterface;
 
         /** The limelight's name is different in simulation. */
         if (Robot.isSimulation()) {
@@ -67,7 +69,7 @@ public class AlignToTagCommand extends Command {
         /** Ensures that the PID system understands that
          * its motion is circular */
         pid.enableContinuousInput(-180, 180);
-        pid.setTolerance(PancakeConstants.kAlignmentErrorMargin);
+        pid.setTolerance(m_configInterafce.getAlignmentErrorMargin());
         
         /** Resets the command */
         alignmentFailed = false;
@@ -171,12 +173,12 @@ public class AlignToTagCommand extends Command {
         );
 
         /** Stops if the user tries to manually move the robot */
-        if (absoluteMoveInput > PancakeConstants.kSwerveMoveInterruptionSensitivity) {
+        if (absoluteMoveInput > m_configInterafce.getSwerveMoveInterruptionSensitivity()) {
             System.out.println("Command interrupted.");
             return true;
         }
         /** Stops if the user tries to manually turn the robot */
-        else if (absoluteTurnInput > PancakeConstants.kSwerveTurnInterruptionSensitivity) {
+        else if (absoluteTurnInput > m_configInterafce.getSwerveTurnInterruptionSensitivity()) {
             System.out.println("Command interrupted.");
             return true;
         }
