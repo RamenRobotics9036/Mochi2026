@@ -12,6 +12,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -219,7 +220,7 @@ public class RobotContainer {
 
         // Recalibrate the gyro's forward heading using the Left Bumper
         driveController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
-        
+
         // Try to align to an AprilTag with the Left Trigger
         driveController.leftTrigger().onTrue(drivetrain.AlignToTag(driveController, MaxAngularRate));
 
@@ -245,7 +246,13 @@ public class RobotContainer {
             int pov = driveController.getHID().getPOV();
             return pov >= 135 && pov <= 225;
         }).whileTrue(
-            new RotateToTargetCommand(drivetrain, Constants.VisionConstants.kTurnToTagID));
+            new RotateToTargetCommand(drivetrain, () -> {
+                int bestTag = m_limelightOdometry.getBestTarget();
+                if (bestTag == -1) return new Translation2d(-1, -1);
+                return TurnToAngleHelper.getTagPose(bestTag)
+                    .map(p -> new Translation2d(p.getX(), p.getY()))
+                    .orElse(new Translation2d(-1, -1));
+            }));
     }
 
     /**

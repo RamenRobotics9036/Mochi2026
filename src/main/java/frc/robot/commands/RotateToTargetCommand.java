@@ -2,16 +2,16 @@ package frc.robot.commands;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.visutils.TurnToAngleHelper;
 
-import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
- * Rotates the robot in place to face a specific AprilTag.
+ * Rotates the robot in place to face a supplied field point.
  *
  * <p>Uses CTRE's {@link SwerveRequest.FieldCentricFacingAngle} which has a
  * built-in profiled PID heading controller for silky-smooth rotation.
@@ -20,7 +20,7 @@ import java.util.Optional;
 public class RotateToTargetCommand extends Command {
 
     private final CommandSwerveDrivetrain m_drivetrain;
-    private final int m_tagId;
+    private final Supplier<Translation2d> m_pointSupplier;
 
     /** The CTRE request that drives the robot to face a target angle. */
     private final SwerveRequest.FieldCentricFacingAngle m_facingAngle =
@@ -30,39 +30,50 @@ public class RotateToTargetCommand extends Command {
     private double m_targetX;
     /** Field-coordinate Y of the point to face (blue-origin, metres). */
     private double m_targetY;
+    /** True when the supplier returned a valid (non -1) target. */
+    private boolean m_hasValidTarget;
 
     /**
      * Creates a new RotateToTargetCommand.
      *
-     * @param drivetrain The swerve drivetrain subsystem
-     * @param tagId      The AprilTag ID to face
+     * @param drivetrain    The swerve drivetrain subsystem
+     * @param pointSupplier Supplies the (x, y) field point to face.
+     *                      Return x or y as -1 to indicate no target.
      */
-    public RotateToTargetCommand(CommandSwerveDrivetrain drivetrain, int tagId) {
+    public RotateToTargetCommand(CommandSwerveDrivetrain drivetrain,
+                                 Supplier<Translation2d> pointSupplier) {
         m_drivetrain = drivetrain;
-        m_tagId = tagId;
+        m_pointSupplier = pointSupplier;
         addRequirements(drivetrain);
+
+        m_hasValidTarget = false;
     }
 
     @Override
     public void initialize() {
-        System.out.println("Start rotating to target tag ID " + m_tagId);
+        Translation2d point = m_pointSupplier.get();
+        double x = point.getX();
+        double y = point.getY();
 
-        // Resolve the tag ID to a field coordinate once at start
-        Optional<Pose3d> tagPose = TurnToAngleHelper.getTagPose(m_tagId);
-        if (tagPose.isEmpty()) {
-            System.err.println("RotateToTarget: Tag ID " + m_tagId
-                + " not found in field layout!");
-            m_targetX = 0;
-            m_targetY = 0;
+        if (x == -1 || y == -1) {
+            System.out.println("no target");
+            m_hasValidTarget = false;
             return;
         }
 
-        m_targetX = tagPose.get().getX();
-        m_targetY = tagPose.get().getY();
+        // Copy the current values so the goal is fixed for this run
+        m_targetX = x;
+        m_targetY = y;
+        m_hasValidTarget = true;
+        System.out.println("Start rotating to target (" + m_targetX + ", " + m_targetY + ")");
     }
 
     @Override
     public void execute() {
+        if (!m_hasValidTarget) {
+            return;
+        }
+
         // Re-compute the bearing each cycle so the heading tracks as the
         // robot moves (the target point stays fixed).
         Rotation2d operatorAngle =
@@ -95,7 +106,11 @@ public class RotateToTargetCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        // Run as long as the button is held (whileTrue binding)
+        // End immediately if there was no valid target
+        if (!m_hasValidTarget) {
+            return true;
+        }
+        // Otherwise, run as long as the button is held (whileTrue binding)
         return false;
     }
 }
