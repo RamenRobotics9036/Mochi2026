@@ -19,7 +19,7 @@ import java.util.Optional;
  */
 public class ShowVisionOnField {
     /** Module locations relative to robot center (from TunerConstants). */
-    private static Translation2d[] MODULE_LOCATIONS = new Translation2d[4];
+    private final Translation2d[] MODULE_LOCATIONS;
 
     private final Optional<Field2d> m_realGlassField;
     private final Optional<Field2d> m_simulationField;
@@ -41,6 +41,12 @@ public class ShowVisionOnField {
      * @param simulationField The field displaying simulated/ground truth pose (may be null)
      */
     public ShowVisionOnField(Field2d realGlassField, Field2d simulationField, BotConfigInterface swerveConstants) {
+        MODULE_LOCATIONS = new Translation2d[4];
+        MODULE_LOCATIONS[0] = new Translation2d(swerveConstants.getFrontLeft().LocationX, swerveConstants.getFrontLeft().LocationY);
+        MODULE_LOCATIONS[1] = new Translation2d(swerveConstants.getFrontRight().LocationX, swerveConstants.getFrontRight().LocationY);
+        MODULE_LOCATIONS[2] = new Translation2d(swerveConstants.getBackLeft().LocationX, swerveConstants.getBackLeft().LocationY);
+        MODULE_LOCATIONS[3] = new Translation2d(swerveConstants.getBackRight().LocationX, swerveConstants.getBackRight().LocationY);
+
         if (realGlassField == null) {
             throw new IllegalArgumentException("realField cannot be null");
         }
@@ -56,11 +62,6 @@ public class ShowVisionOnField {
 
         m_realGlassField = Optional.ofNullable(realGlassField);
         m_simulationField = Optional.ofNullable(simulationField);
-
-        MODULE_LOCATIONS[0] = new Translation2d(swerveConstants.getFrontLeft().LocationX, swerveConstants.getFrontLeft().LocationY);
-        MODULE_LOCATIONS[1] = new Translation2d(swerveConstants.getFrontRight().LocationX, swerveConstants.getFrontRight().LocationY);
-        MODULE_LOCATIONS[2] = new Translation2d(swerveConstants.getBackLeft().LocationX, swerveConstants.getBackLeft().LocationY);
-        MODULE_LOCATIONS[3] = new Translation2d(swerveConstants.getBackRight().LocationX, swerveConstants.getBackRight().LocationY);
     }
 
     /**
