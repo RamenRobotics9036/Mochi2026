@@ -125,7 +125,7 @@ public class LimelightOdometry {
             sb.append(", rawFiducials=[" + ids + "]");
         }
 
-        //System.out.println(sb.toString());
+        System.out.println(sb.toString());
     }
 
     private void addVisionMeasurementV1() {
