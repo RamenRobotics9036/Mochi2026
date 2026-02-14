@@ -64,7 +64,7 @@ public class AlignToTagCommand extends Command {
 
     @Override
     public void initialize() {
-`        /** Ensures that the PID system understands that
+        /** Ensures that the PID system understands that
          * its motion is circular */
         pid.enableContinuousInput(-180, 180);
         pid.setTolerance(TunerConstants.kAlignmentErrorMargin);
