@@ -168,16 +168,9 @@ public final class TurnToAngleHelper {
      * @return a ready-to-use facing-angle request
      */
     public static SwerveRequest.FieldCentricFacingAngle createFacingAngleRequest() {
-
-        // NOTE: Normally, we would use VelocityControl for smoother driving, since
-        // the CTRE motors are then doing PID themselves.  BUT, OpenLoopVoltage works
-        // better here, since FieldCentricFacingAngle is also implementing a
-        // separate PID that is constantly adjusting to a new field angle.
-        // These two PIDs were fighting each-other, so now we dont use closed
-        // loop for the drive motors when driving and aiming.
         SwerveRequest.FieldCentricFacingAngle request =
             new SwerveRequest.FieldCentricFacingAngle()
-                .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+                .withDriveRequestType(DriveRequestType.Velocity);
         configureFacingAngle(request);
         return request;
     }
