@@ -29,6 +29,8 @@ import java.util.function.DoubleSupplier;
  */
 @SuppressWarnings({"all"}) // suppress CheckStyle warnings in this file
 public class AlignToTagCommand extends Command {
+    private final BotConfigInterface m_configInterface;
+
     private CommandSwerveDrivetrain m_drivetrain;
     private String m_limelightName;
     private CommandXboxController m_joystick;
@@ -39,7 +41,6 @@ public class AlignToTagCommand extends Command {
     private final Timer m_timer = new Timer();
     private PIDController pid = new PIDController(0.1, 0, 0);
     private double m_maxAngularVelocity;
-    private final BotConfigInterface m_configInterface;
 
     /**
      * Creates a new AlignToTagCommand.
@@ -53,10 +54,11 @@ public class AlignToTagCommand extends Command {
         CommandXboxController joystick,
         double MaxAngularVelocity) {
 
+        m_configInterface = configInterface;
+
         m_drivetrain = drivetrain;
         m_joystick = joystick;
         m_maxAngularVelocity = MaxAngularVelocity;
-        m_configInterface = configInterface;
 
         /** The limelight's name is different in simulation. */
         if (Robot.isSimulation()) {
