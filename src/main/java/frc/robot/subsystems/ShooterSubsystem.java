@@ -11,9 +11,11 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.generated.TunerConstants;
+import frc.robot.botconfig.BotConfigInterface;
 
 public class ShooterSubsystem extends SubsystemBase {
+    private BotConfigInterface m_configInterface;
+
     private TalonFX m_lMotor;
     private TalonFX m_rMotor;
 
@@ -22,10 +24,12 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private Servo m_hood;
 
-    /** Creates a new ShooterSubsystem using the ShooterConstants from Constants.java */
-    public ShooterSubsystem(){
-        m_lMotor = new TalonFX(ShooterConstants.kLMotorID, TunerConstants.kCANBus);
-        m_rMotor = new TalonFX(ShooterConstants.kRMotorID, TunerConstants.kCANBus);
+    /** Creates a new ShooterSubsystem using the ShooterConstants from Constants.java. */
+    public ShooterSubsystem(BotConfigInterface configInterface){
+        m_configInterface = configInterface;
+
+        m_lMotor = new TalonFX(ShooterConstants.kLMotorID, m_configInterface.getCANBus());
+        m_rMotor = new TalonFX(ShooterConstants.kRMotorID, m_configInterface.getCANBus());
 
         m_lConfig = new TalonFXConfiguration()
             .withMotorOutput(

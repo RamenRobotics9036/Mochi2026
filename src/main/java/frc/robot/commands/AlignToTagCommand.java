@@ -15,7 +15,7 @@ import frc.robot.RobotContainer;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.visutils.LimelightOdometry;
 import frc.robot.Constants.VisionConstants;
-import frc.robot.generated.TunerConstants;
+import frc.robot.botconfig.BotConfigInterface;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
@@ -29,6 +29,8 @@ import java.util.function.DoubleSupplier;
  */
 @SuppressWarnings({"all"}) // suppress CheckStyle warnings in this file
 public class AlignToTagCommand extends Command {
+    private final BotConfigInterface m_configInterface;
+
     private CommandSwerveDrivetrain m_drivetrain;
     private String m_limelightName;
     private CommandXboxController m_joystick;
@@ -46,7 +48,14 @@ public class AlignToTagCommand extends Command {
      * @param drivetrain The drivetrain subsystem to be supplied
      * @param joystick The Xbox controller to use for interruption
      */
-    public AlignToTagCommand(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, double MaxAngularVelocity) {
+    public AlignToTagCommand(
+        BotConfigInterface configInterface,
+        CommandSwerveDrivetrain drivetrain,
+        CommandXboxController joystick,
+        double MaxAngularVelocity) {
+
+        m_configInterface = configInterface;
+
         m_drivetrain = drivetrain;
         m_joystick = joystick;
         m_maxAngularVelocity = MaxAngularVelocity;
@@ -67,8 +76,8 @@ public class AlignToTagCommand extends Command {
         /** Ensures that the PID system understands that
          * its motion is circular */
         pid.enableContinuousInput(-180, 180);
-        pid.setTolerance(TunerConstants.kAlignmentErrorMargin);
-        
+        pid.setTolerance(m_configInterface.getAlignmentErrorMargin());
+
         /** Resets the command */
         alignmentFailed = false;
         m_timer.restart();
@@ -84,7 +93,7 @@ public class AlignToTagCommand extends Command {
         double targetRotationDegrees = -1 * LimelightHelpers.getTX(m_limelightName);
         SwerveDriveState driveState = m_drivetrain.getState();
         Pose2d driveStatePose = driveState.Pose;
-        
+
         /** Gets the desired rotation using the relative
          * rotation needed and the current Rotation2D */
         m_targetRotation = Rotation2d.fromDegrees (
@@ -133,7 +142,7 @@ public class AlignToTagCommand extends Command {
             System.out.println("Alignment command timed out.");
             return true;
         }
-        
+
         /** If the robot isn't locked onto any AprilTags,
          * the command fails rather than using a default
          * position. */
@@ -171,12 +180,12 @@ public class AlignToTagCommand extends Command {
         );
 
         /** Stops if the user tries to manually move the robot */
-        if (absoluteMoveInput > TunerConstants.kSwerveMoveInterruptionSensitivity) {
+        if (absoluteMoveInput > m_configInterface.getSwerveMoveInterruptionSensitivity()) {
             System.out.println("Command interrupted.");
             return true;
         }
         /** Stops if the user tries to manually turn the robot */
-        else if (absoluteTurnInput > TunerConstants.kSwerveTurnInterruptionSensitivity) {
+        else if (absoluteTurnInput > m_configInterface.getSwerveTurnInterruptionSensitivity()) {
             System.out.println("Command interrupted.");
             return true;
         }

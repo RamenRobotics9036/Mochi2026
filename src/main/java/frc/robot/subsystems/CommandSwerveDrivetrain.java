@@ -30,8 +30,9 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
+import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.commands.AlignToTagCommand;
-import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.generated.TunerSwerveDrivetrain;
 import frc.robot.visutils.VisionInjectFilter;
 import frc.robot.LimelightHelpers;
 
@@ -264,8 +265,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      *
      * @return Command to run
      */
-    public Command AlignToTag(CommandXboxController joystick, double MaxAngularVelocity) {
-        return new AlignToTagCommand(this, joystick, MaxAngularVelocity);
+    public Command AlignToTag(
+        BotConfigInterface configInterface,
+        CommandXboxController joystick,
+        double MaxAngularVelocity) {
+
+        return new AlignToTagCommand(configInterface, this, joystick, MaxAngularVelocity);
     }
 
     /**
