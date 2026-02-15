@@ -11,6 +11,7 @@ import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers;
 import frc.robot.Robot;
+import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.Arrays;
 import java.util.Optional;
@@ -22,6 +23,8 @@ import java.util.stream.Collectors;
  * Limelight-based odometry measurement source.
  */
 public class LimelightOdometry {
+    BotConfigInterface m_configInterface;
+
     private final String m_limelightName;
     private VisionSimInterface.EstimateConsumer m_estConsumer;
     private Matrix<N3, N1> m_curStdDevs = kSingleTagStdDevs;
@@ -39,11 +42,16 @@ public class LimelightOdometry {
     private BooleanSupplier m_visionEnabledSupplier = () -> true;
 
     /** Constructor. */
-    public LimelightOdometry(VisionSimInterface.EstimateConsumer poseConsumer) {
+    public LimelightOdometry(
+        BotConfigInterface configInterface,
+        VisionSimInterface.EstimateConsumer poseConsumer) {
+
+        m_configInterface = configInterface;
+
         this.m_estConsumer = poseConsumer;
         this.m_limelightName = Robot.isSimulation()
             ? VisionConstants.kLimelightNameSim
-            : VisionConstants.kLimelightNameReal;
+            : m_configInterface.getVisionLimelightNameReal();
     }
 
     /**

@@ -65,7 +65,7 @@ public class AlignToTagCommand extends Command {
             m_limelightName = VisionConstants.kLimelightNameSim;
         }
         else {
-            m_limelightName = VisionConstants.kLimelightNameReal;
+            m_limelightName = m_configInterface.getVisionLimelightNameReal();
         }
 
         addRequirements(m_drivetrain);

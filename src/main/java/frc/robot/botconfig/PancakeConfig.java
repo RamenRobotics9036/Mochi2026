@@ -16,6 +16,12 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  */
 public class PancakeConfig implements BotConfigInterface {
 
+    /*************************************************************************************
+     *
+     * SWERVEDRIVE GENERATED CONSTANTS
+     *
+     ************************************************************************************/
+
     @Override
     public CANBus getCANBus() {
         return GeneratedPancakeConstants.kCANBus;
@@ -74,5 +80,66 @@ public class PancakeConfig implements BotConfigInterface {
     @Override
     public CommandSwerveDrivetrain createDrivetrain() {
         return GeneratedPancakeConstants.createDrivetrain();
+    }
+
+
+    /*************************************************************************************
+     *
+     * INTAKE CONSTANTS
+     *
+     ************************************************************************************/
+
+    @Override
+    public int getIntakeMotorId() {
+        return 30;
+    }
+
+    @Override
+    public int getIntakeStallLimit() {
+        return 40;
+    }
+
+
+    /*************************************************************************************
+     *
+     * SHOOTERCONSTANTS
+     *
+     ************************************************************************************/
+
+    @Override
+    public int getShooterLeftMotorId() {
+        return 40;
+    }
+
+    @Override
+    public int getShooterRightMotorId() {
+        return 41;
+    }
+
+    @Override
+    public int getShooterStatorCurrentLimit() {
+        return 40;
+    }
+
+    @Override
+    public int getShooterSupplyCurrentLimit() {
+        return 50;
+    }
+
+    @Override
+    public int getShooterHoodPwmChannel() {
+        return 0;
+    }
+
+
+    /*************************************************************************************
+     *
+     * VISION
+     *
+     ************************************************************************************/
+
+    @Override
+    public String getVisionLimelightNameReal() {
+        return "limelight-fixed";
     }
 }

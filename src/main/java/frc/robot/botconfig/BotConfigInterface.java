@@ -6,6 +6,8 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import edu.wpi.first.units.measure.LinearVelocity;
+import frc.robot.generated.GeneratedCompConstants;
+import frc.robot.generated.GeneratedPancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /**
@@ -14,6 +16,12 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  * for a specific robot.
  */
 public interface BotConfigInterface {
+
+    /*************************************************************************************
+     *
+     * SWERVEDRIVE GENERATED CONSTANTS
+     *
+     ************************************************************************************/
 
     /**
      * The CAN bus used by this robot's devices.
@@ -87,4 +95,65 @@ public interface BotConfigInterface {
      * Should only be called once in the robot program.
      */
     CommandSwerveDrivetrain createDrivetrain();
+
+
+    /*************************************************************************************
+     *
+     * INTAKE CONSTANTS
+     *
+     ************************************************************************************/
+
+    /**
+     * CAN ID for the intake Spark MAX motor controller.
+     */
+    int getIntakeMotorId();
+
+    /**
+     * Smart current limit and stall threshold for intake motor (amps).
+     */
+    int getIntakeStallLimit();
+
+
+    /*************************************************************************************
+     *
+     * SHOOTERCONSTANTS
+     *
+     ************************************************************************************/
+
+    /**
+     * CAN ID for the left shooter TalonFX.
+     */
+    int getShooterLeftMotorId();
+
+    /**
+     * CAN ID for the right shooter TalonFX.
+     */
+    int getShooterRightMotorId();
+
+    /**
+     * Stator current limit for shooter motors (amps).
+     */
+    int getShooterStatorCurrentLimit();
+
+    /**
+     * Supply current limit for shooter motors (amps).
+     */
+    int getShooterSupplyCurrentLimit();
+
+    /**
+     * PWM channel for shooter hood servo.
+     */
+    int getShooterHoodPwmChannel();
+
+
+    /*************************************************************************************
+     *
+     * VISION
+     *
+     ************************************************************************************/
+
+    /**
+     * Limelight name for odometry on real robot.
+     */
+    String getVisionLimelightNameReal();
 }

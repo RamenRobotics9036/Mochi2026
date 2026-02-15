@@ -174,7 +174,7 @@ public class RobotContainer {
         m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
         m_motionlessTracker.setOnStartedMoving(m_visionKalmanFilter::reset);
 
-        m_limelightOdometry = new LimelightOdometry(drivetrain::addVisionMeasurement);
+        m_limelightOdometry = new LimelightOdometry(m_configInterface, drivetrain::addVisionMeasurement);
         m_limelightOdometry.setVisionDependencies(
             basicInfoDashboard::isVisionEnabled,
             m_visionKalmanFilter,

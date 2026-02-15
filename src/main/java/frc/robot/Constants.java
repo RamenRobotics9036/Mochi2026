@@ -21,87 +21,13 @@ public final class Constants {
     }
 
     /**
-     * Constants for the Elevator subsystem hardware and control limits.
-     */
-    public static final class ElevatorConstants {
-        /** CAN ID for the leader SPARK MAX motor controller. */
-        public static final int kLeaderMotorID = 20;
-        /** CAN ID for the follower SPARK MAX motor controller. */
-        public static final int kFollowMotorID = 21;
-        /** Digital Input/Output port for the homing limit switch. */
-        public static final int kDIOIndex = 0;
-
-        /** The maximum allowable height for the elevator (Software Soft Limit). */
-        public static final double kMaxElevatorPosition = -100.0;
-        /** The bottom-most position for the elevator, usually zeroed at the limit switch. */
-        public static final double kDownElevatorPosition = 0.0;
-
-        /** Position setpoint for scoring on Reef Level 2. */
-        public static final double kLevel2ReefPosition = -25.0;
-        /** Position setpoint for scoring on Reef Level 3. */
-        public static final double kLevel3ReefPosition = -50.0;
-        /** Position setpoint for scoring on Reef Level 4. */
-        public static final double kLevel4ReefPosition = -75.0;
-
-        /** Acceptable error range (deadband) for determining if the elevator has reached its target. */
-        public static final double tolerance = 2.0;
-
-        /** Factor to convert motor rotations into real-world linear units. */
-        public static final double kRotationToElevatorRatio = 1.0;
-        /** Maximum percent output for the elevator motors (0.0 to 1.0). */
-        public static final double elevatorMaxSpeed = 0.5;
-        /** Current limit in Amps to prevent motor damage during a mechanical stall. */
-        public static final int kElevatorStallLimit = 40; // Amps
-    }
-
-    /**
      * Constants for the Intake subsystem rollers.
      */
     public static final class IntakeConstants {
-        /** CAN ID for the intake SPARK MAX motor controller. */
-        public static final int kIntakeMotorID = 30;
         /** Default speed for pulling game pieces into the robot. */
         public static final double kIntakeSpeed = 0.8;
         /** Default speed for ejecting game pieces from the robot. */
         public static final double kOuttakeSpeed = -0.8;
-        /** Current threshold in Amps used to detect if a game piece is fully secured. */
-        public static final int kStallLimit = 40; // Amps
-    }
-
-    /**
-     * Constants for the Intake subsystem rollers.
-     */
-    public static final class ShooterConstants {
-        /** CAN ID for the left SparkFlex motor controller. */
-        public static final int kLMotorID = 40;
-        /** CAN ID for the right SparkFlex motor controller. */
-        public static final int kRMotorID = 41;
-        /** StatorCurrentLimit in amps
-         * This is the amount of power that the motor can access at once. 
-         * Notably, this filler value is also what is used for our drivetrain motors. */
-        public static final int kStatorCurrentLimit = 40; //TODO: filler value
-        /** SupplyCurrentLimit in amps
-         * This is the amount of power that can be requested from the battery. 
-         * Notably, this filler value is also what is used for our drivetrain motors.*/
-        public static final int kSupplyCurrentLimit = 50; //TODO: filler value
-        /** PWM channel for the linear actuator servo. */
-        public static final int kChannel = 0; //TODO: filler value
-    }
-
-    /**
-     * Configuration constants for the Operator Interface and telemetry.
-     */
-    public static final class OperatorConstants {
-        /** When true, non-essential telemetry is disabled to conserve CAN bus bandwidth. */
-        public static final boolean kCompetitionMode = false;
-    }
-
-    /**
-     * Tuning constants for the manual elevator control command.
-     */
-    public static final class ElevatorDefaultCommandConstants {
-        /** Sensitivity multiplier for joystick-based elevator movement. */
-        public static final double kElevatorSpeed = 0.5;
     }
 
     /**
@@ -126,17 +52,11 @@ public final class Constants {
     // To upload fmap:
     // curl -X POST http://10.90.36.15:5807/upload-fieldmap -H "Content-Type: application/json" --data-binary @FRC2026_ANDYMARK.fmap
     public static final class VisionConstants {
-        /** Limelight name for odometry on real robot. */
-        public static final String kLimelightNameReal = "limelight-fixed";
-
         /** Limelight name for odometry in simulation. */
         public static final String kLimelightNameSim = "limelight";
 
         /** Default value for the VisionEnabled toggle (true = vision on). */
         public static final boolean kVisionEnabledDefault = true;
-
-        /** AprilTag ID the robot should turn towards when POV Down is pressed. */
-        public static final int kTurnToTagID = 26;
     }
 
     /**
