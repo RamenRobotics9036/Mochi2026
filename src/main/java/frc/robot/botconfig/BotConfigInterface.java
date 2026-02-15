@@ -10,7 +10,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /**
  * Interface for robot-specific tuner configuration.
- * Each implementation maps to a Tuner X-generated TunerConstants class
+ * Each implementation maps to a Tuner X-generated class
  * for a specific robot.
  */
 public interface BotConfigInterface {
@@ -85,7 +85,6 @@ public interface BotConfigInterface {
     /**
      * Creates a CommandSwerveDrivetrain instance for this robot configuration.
      * Should only be called once in the robot program.
-     * @see TunerConstants.createDrivetrain()
      */
     CommandSwerveDrivetrain createDrivetrain();
 }

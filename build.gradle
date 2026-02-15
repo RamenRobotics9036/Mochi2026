@@ -101,14 +101,13 @@ jacocoTestReport {
         files(classDirectories.files.collect {
             fileTree(dir: it, exclude: [
                 '**/test/**',
+                '**/generated/**',
                 '**/LimelightHelpers.class',
                 '**/LimelightHelpers$*.class',
                 '**/Constants.class',
                 '**/Constants$*.class',
                 '**/VisionSimConstants.class',
-                '**/VisionSimConstants$*.class',
-                '**/TunerConstants.class',
-                '**/TunerConstants$*.class'
+                '**/VisionSimConstants$*.class'
             ])
         })
     )

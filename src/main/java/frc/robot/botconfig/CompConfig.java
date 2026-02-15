@@ -10,8 +10,8 @@ import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /**
- * Adapter that bridges BotConfigInterface to the current TunerConstants.
- * For now this delegates directly to TunerConstants; when a second robot
+ * Adapter that bridges BotConfigInterface to the current constants.
+ * For now this delegates directly to GeneratedCompConstants; when a second robot
  * is added, this class can be swapped or extended to select between configs.
  */
 public class CompConfig implements BotConfigInterface {
