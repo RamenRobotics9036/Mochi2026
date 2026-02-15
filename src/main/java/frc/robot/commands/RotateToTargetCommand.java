@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.visutils.TurnToAngleHelper;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -20,72 +21,54 @@ import java.util.function.Supplier;
 public class RotateToTargetCommand extends Command {
 
     private final CommandSwerveDrivetrain m_drivetrain;
-    private final Supplier<Translation2d> m_pointSupplier;
+    private final Supplier<Optional<Translation2d>> m_pointSupplier;
 
     /** The CTRE request that drives the robot to face a target angle. */
     private final SwerveRequest.FieldCentricFacingAngle m_facingAngle =
         TurnToAngleHelper.createFacingAngleRequest();
 
-    /** Field-coordinate X of the point to face (blue-origin, metres). */
-    private double m_targetX;
-    /** Field-coordinate Y of the point to face (blue-origin, metres). */
-    private double m_targetY;
-    /** True when the supplier returned a valid (non -1) target. */
-    private boolean m_hasValidTarget;
+    /** The field point to face (blue-origin, metres), or empty if no target. */
+    private Optional<Translation2d> m_target = Optional.empty();
 
     /**
      * Creates a new RotateToTargetCommand.
      *
      * @param drivetrain    The swerve drivetrain subsystem
-     * @param pointSupplier Supplies the (x, y) field point to face.
-     *                      Return x or y as -1 to indicate no target.
+     * @param pointSupplier Supplies the (x, y) field point to face,
+     *                      or empty if no target is available.
      */
     public RotateToTargetCommand(CommandSwerveDrivetrain drivetrain,
-                                 Supplier<Translation2d> pointSupplier) {
+                                 Supplier<Optional<Translation2d>> pointSupplier) {
         m_drivetrain = drivetrain;
         m_pointSupplier = pointSupplier;
         addRequirements(drivetrain);
-
-        m_hasValidTarget = false;
     }
 
     @Override
     public void initialize() {
-        Translation2d point = m_pointSupplier.get();
-        double x = point.getX();
-        double y = point.getY();
+        m_target = m_pointSupplier.get();
 
-        if (x == -1 || y == -1) {
+        if (m_target.isEmpty()) {
             System.out.println("no target");
-            m_hasValidTarget = false;
-            return;
+        } else {
+            System.out.println("Start rotating to target (" + m_target.get().getX() + ", " + m_target.get().getY() + ")");
         }
-
-        // Copy the current values so the goal is fixed for this run
-        m_targetX = x;
-        m_targetY = y;
-        m_hasValidTarget = true;
-        System.out.println("Start rotating to target (" + m_targetX + ", " + m_targetY + ")");
     }
 
     @Override
     public void execute() {
-        if (!m_hasValidTarget) {
+        if (m_target.isEmpty()) {
             return;
         }
 
         // Re-compute the bearing each cycle so the heading tracks as the
         // robot moves (the target point stays fixed).
+        Translation2d target = m_target.get();
         Rotation2d operatorAngle =
             TurnToAngleHelper.bearingToPointInOperatorFrame(
-                m_targetX, m_targetY,
+                target.getX(), target.getY(),
                 m_drivetrain.getState().Pose,
                 m_drivetrain.getOperatorForwardDirection());
-
-        // Print target angle
-        // System.out.println("RotateToTarget: Target angle to ("
-        //     + m_targetX + ", " + m_targetY + ") is "
-        //     + operatorAngle.getDegrees() + " deg (operator)");
 
         // Drive with zero translation, facing the computed angle
         m_drivetrain.setControl(
@@ -106,11 +89,8 @@ public class RotateToTargetCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        // End immediately if there was no valid target
-        if (!m_hasValidTarget) {
-            return true;
-        }
-        // Otherwise, run as long as the button is held (whileTrue binding)
-        return false;
+        // End immediately if there was no valid target;
+        // otherwise run as long as the button is held (whileTrue binding)
+        return m_target.isEmpty();
     }
 }

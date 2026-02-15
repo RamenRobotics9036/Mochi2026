@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 /**
  * Static utility methods for computing bearings to AprilTags and converting
@@ -47,19 +48,19 @@ public final class TurnToAngleHelper {
      *
      * @param tagId the AprilTag ID
      * @return the tag position in blue-origin metres,
-     *         or (-1, -1) if the tag is not found
+     *         or empty if the tag is not found
      */
-    public static Translation2d resolveTagTarget(int tagId) {
+    public static Optional<Translation2d> resolveTagTarget(int tagId) {
         if (tagId == -1) {
-            return new Translation2d(-1, -1);
+            return Optional.empty();
         }
 
         Optional<Pose3d> pose = getTagPose(tagId);
         if (pose.isPresent()) {
-            return new Translation2d(pose.get().getX(), pose.get().getY());
+            return Optional.of(new Translation2d(pose.get().getX(), pose.get().getY()));
         }
         System.err.println("TurnToAngleHelper: Tag ID " + tagId + " not found!");
-        return new Translation2d(-1, -1);
+        return Optional.empty();
     }
 
     /**
@@ -182,6 +183,12 @@ public final class TurnToAngleHelper {
     private static final double kAimD = 0.4;
 
     /**
+     * Maximum distance (metres) at which we'll aim at a remembered tag.
+     * Beyond this the target is likely stale / on the far side of the field.
+     */
+    private static final double kMaxAimDistanceMeters = 5.0;
+
+    /**
      * Creates a WPILib PID controller pre-configured for heading
      * aim-while-driving. Caller owns the instance.
      *
@@ -224,6 +231,50 @@ public final class TurnToAngleHelper {
         double vx = fieldSpeeds.vxMetersPerSecond;
         double vy = fieldSpeeds.vyMetersPerSecond;
         return (dx * vy - dy * vx) / distSq;
+    }
+
+    /**
+     * Resolves a tag target and computes the aim rate in one step,
+     * handling target validity and field-speed conversion.
+     *
+     * <p>Call this from the drive loop when the driver is holding
+     * the aim button.  Returns empty if no valid target is available;
+     * otherwise returns the clamped rotational rate.
+     *
+     * <p><b>Note:</b> The caller is responsible for resetting
+     * {@code headingPID} on the aiming-start transition edge.
+     *
+     * @param tagId          the last-seen AprilTag ID (−1 = none)
+     * @param robotPose      current robot pose
+     * @param robotSpeeds    robot-relative chassis speeds
+     * @param headingPID     the caller's heading PID (radians)
+     * @param maxOmega       maximum angular velocity to clamp to (rad/s)
+     * @return the aim rate in rad/s, or empty if the target is invalid
+     */
+    public static OptionalDouble computeAimRateForTag(
+            int tagId,
+            Pose2d robotPose,
+            ChassisSpeeds robotSpeeds,
+            PIDController headingPID,
+            double maxOmega) {
+
+        Optional<Translation2d> target = resolveTagTarget(tagId);
+        if (target.isEmpty()) {
+            return OptionalDouble.empty();
+        }
+
+        // Ignore stale targets on the far side of the field
+        double dist = robotPose.getTranslation()
+            .getDistance(target.get());
+        if (dist > kMaxAimDistanceMeters) {
+            return OptionalDouble.empty();
+        }
+
+        ChassisSpeeds fieldSpeeds =
+            ChassisSpeeds.fromRobotRelativeSpeeds(robotSpeeds, robotPose.getRotation());
+
+        return OptionalDouble.of(
+            computeAimRate(target.get(), robotPose, fieldSpeeds, headingPID, maxOmega));
     }
 
     /**

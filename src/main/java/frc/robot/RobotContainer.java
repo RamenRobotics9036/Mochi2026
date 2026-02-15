@@ -7,11 +7,11 @@ package frc.robot;
 import static edu.wpi.first.units.Units.*;
 
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -41,6 +41,7 @@ import frc.robot.visutils.LimelightOdometry;
 import frc.robot.visutils.AllianceCalc;
 import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.MotionlessTracker;
+import frc.robot.visutils.AimController;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 
@@ -68,13 +69,9 @@ public class RobotContainer {
             .withRotationalDeadband(0.001 * MaxAngularRate)
             .withDriveRequestType(DriveRequestType.Velocity);
 
-    /** Heading PID for aim-while-driving (PID + translational FF). */
-    private final PIDController m_aimPID =
-        TurnToAngleHelper.createAimPID();
-
-    /** Tracks whether the previous cycle was in aim-at-tag mode,
-     *  so we can reset the heading PID on the transition edge. */
-    private boolean m_wasAiming = false;
+    /** Stateful aim-while-driving controller (PID + edge detection). */
+    private final AimController m_aimController =
+        new AimController(MaxAngularRate);
 
     /** Brake request: Forces all modules into an X-pattern to resist movement. */
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -201,41 +198,20 @@ public class RobotContainer {
 
                 // POV-UP held: auto-aim rotation at the tag
                 // while keeping X/Y translation.
-                // Uses PID + translational feedforward for
-                // smooth combined driving and aiming.
-                if (isLeftPovUpward()) {
+                var driveState = drivetrain.getState();
+                OptionalDouble aimRate = m_aimController.update(
+                    isLeftPovUpward(),
+                    m_limelightOdometry.getLastTarget(),
+                    driveState.Pose,
+                    driveState.Speeds);
 
-                    Pose2d pose = drivetrain.getState().Pose;
-
-                    Translation2d targetTranslation =
-                        TurnToAngleHelper.resolveTagTarget(m_limelightOdometry.getLastTarget());
-
-                    // $TODO - Check for distance later after we add the annoider
-                    if (targetTranslation.getX() != -1 && targetTranslation.getY() != -1) {
-                        if (!m_wasAiming) {
-                            m_aimPID.reset();
-                            m_wasAiming = true;
-                        }
-
-                        ChassisSpeeds fieldSpeeds =
-                            ChassisSpeeds.fromRobotRelativeSpeeds(
-                                drivetrain.getState().Speeds,
-                                pose.getRotation());
-
-                        double aimRate =
-                            TurnToAngleHelper.computeAimRate(
-                                targetTranslation,
-                                pose, fieldSpeeds,
-                                m_aimPID, MaxAngularRate);
-
-                        return drive
-                            .withVelocityX(inputs.driveX())
-                            .withVelocityY(inputs.driveY())
-                            .withRotationalRate(aimRate);
-                    }
+                if (aimRate.isPresent()) {
+                    return drive
+                        .withVelocityX(inputs.driveX())
+                        .withVelocityY(inputs.driveY())
+                        .withRotationalRate(aimRate.getAsDouble());
                 }
 
-                m_wasAiming = false;
                 return drive.withVelocityX(inputs.driveX())
                      .withVelocityY(inputs.driveY())
                      .withRotationalRate(inputs.rotatetX());
