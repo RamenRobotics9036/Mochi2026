@@ -1,5 +1,6 @@
 package frc.robot.botconfig;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -14,6 +15,11 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  * is added, this class can be swapped or extended to select between configs.
  */
 public class CompConfig implements BotConfigInterface {
+
+    @Override
+    public CANBus getCANBus() {
+        return CompConstants.kCANBus;
+    }
 
     @Override
     public LinearVelocity getSpeedAt12Volts() {

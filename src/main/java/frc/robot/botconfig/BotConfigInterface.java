@@ -1,5 +1,6 @@
 package frc.robot.botconfig;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
@@ -13,6 +14,13 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  * for a specific robot.
  */
 public interface BotConfigInterface {
+
+    /**
+     * The CAN bus used by this robot's devices.
+     * @see CompConstants.kCANBus
+     * @see PancakeConstants.kCANBus
+     */
+    CANBus getCANBus();
 
     /**
      * The theoretical free speed at 12 V applied output.

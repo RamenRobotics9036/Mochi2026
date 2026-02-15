@@ -114,7 +114,7 @@ public class RobotContainer {
 
     public final LimelightOdometry m_limelightOdometry;
 
-    public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+    public final ShooterSubsystem shooterSubsystem;
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
@@ -135,6 +135,7 @@ public class RobotContainer {
         TeleoperatedSpeed = Math.min( m_configInterface.getSpeedInTeleop().in(MetersPerSecond), MaxSpeed);
         drivetrain = m_configInterface.createDrivetrain();
         basicInfoDashboard = new BasicInfoDashboard(drivetrain);
+        shooterSubsystem = new ShooterSubsystem(m_configInterface);
 
         m_joystickInput = new JoystickInput(
             m_driveSmooth,
