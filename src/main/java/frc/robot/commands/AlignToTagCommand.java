@@ -47,7 +47,12 @@ public class AlignToTagCommand extends Command {
      * @param drivetrain The drivetrain subsystem to be supplied
      * @param joystick The Xbox controller to use for interruption
      */
-    public AlignToTagCommand(CommandSwerveDrivetrain drivetrain, CommandXboxController joystick, double MaxAngularVelocity, BotConfigInterface configInterface) {
+    public AlignToTagCommand(
+        BotConfigInterface configInterface,
+        CommandSwerveDrivetrain drivetrain,
+        CommandXboxController joystick,
+        double MaxAngularVelocity) {
+
         m_drivetrain = drivetrain;
         m_joystick = joystick;
         m_maxAngularVelocity = MaxAngularVelocity;
