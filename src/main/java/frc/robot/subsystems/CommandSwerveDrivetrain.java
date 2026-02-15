@@ -265,7 +265,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      *
      * @return Command to run
      */
-    public Command AlignToTag(CommandXboxController joystick, double MaxAngularVelocity, BotConfigInterface configInterface) {
+    public Command AlignToTag(
+        BotConfigInterface configInterface,
+        CommandXboxController joystick,
+        double MaxAngularVelocity) {
+
         return new AlignToTagCommand(configInterface, this, joystick, MaxAngularVelocity);
     }
 
