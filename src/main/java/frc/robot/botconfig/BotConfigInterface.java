@@ -17,68 +17,68 @@ public interface BotConfigInterface {
 
     /**
      * The CAN bus used by this robot's devices.
-     * @see CompConstants.kCANBus
-     * @see PancakeConstants.kCANBus
+     * @see GeneratedCompConstants.kCANBus
+     * @see GeneratedPancakeConstants.kCANBus
      */
     CANBus getCANBus();
 
     /**
      * The theoretical free speed at 12 V applied output.
-     * @see PancakeConstants.kSpeedAt12Volts
+     * @see GeneratedPancakeConstants.kSpeedAt12Volts
      */
     LinearVelocity getSpeedAt12Volts();
 
     /**
      * The teleop max speed (may be divided down from kSpeedAt12Volts for testing).
-     * @see PancakeConstants.kSpeedInTeleop
+     * @see GeneratedPancakeConstants.kSpeedInTeleop
      */
     LinearVelocity getSpeedInTeleop();
 
     /**
      * The margin of error (in degrees) for AprilTag alignment.
-     * @see PancakeConstants.kAlignmentErrorMargin
+     * @see GeneratedPancakeConstants.kAlignmentErrorMargin
      */
     double getAlignmentErrorMargin();
 
     /**
      * Sensitivity threshold for manual move interruption of swerve requests.
-     * @see PancakeConstants.kSwerveMoveInterruptionSensitivity
+     * @see GeneratedPancakeConstants.kSwerveMoveInterruptionSensitivity
      */
     double getSwerveMoveInterruptionSensitivity();
 
     /**
      * Sensitivity threshold for manual turn interruption of swerve requests.
-     * @see PancakeConstants.kSwerveTurnInterruptionSensitivity
+     * @see GeneratedPancakeConstants.kSwerveTurnInterruptionSensitivity
      */
     double getSwerveTurnInterruptionSensitivity();
 
     /**
      * Drivetrain-wide constants (CAN bus, Pigeon ID, Pigeon configs).
-     * @see PancakeConstants.DrivetrainConstants
+     * @see GeneratedPancakeConstants.DrivetrainConstants
      */
     SwerveDrivetrainConstants getDrivetrainConstants();
 
     /**
      * Front-left swerve module constants.
-     * @see PancakeConstants.FrontLeft
+     * @see GeneratedPancakeConstants.FrontLeft
      */
     SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getFrontLeft();
 
     /**
      * Front-right swerve module constants.
-     * @see PancakeConstants.FrontRight
+     * @see GeneratedPancakeConstants.FrontRight
      */
     SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getFrontRight();
 
     /**
      * Back-left swerve module constants.
-     * @see PancakeConstants.BackLeft
+     * @see GeneratedPancakeConstants.BackLeft
      */
     SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getBackLeft();
 
     /**
      * Back-right swerve module constants.
-     * @see PancakeConstants.BackRight
+     * @see GeneratedPancakeConstants.BackRight
      */
     SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getBackRight();
 

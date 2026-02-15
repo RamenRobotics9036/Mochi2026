@@ -6,7 +6,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import edu.wpi.first.units.measure.LinearVelocity;
-import frc.robot.generated.CompConstants;
+import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 /**
@@ -18,61 +18,61 @@ public class CompConfig implements BotConfigInterface {
 
     @Override
     public CANBus getCANBus() {
-        return CompConstants.kCANBus;
+        return GeneratedCompConstants.kCANBus;
     }
 
     @Override
     public LinearVelocity getSpeedAt12Volts() {
-        return CompConstants.kSpeedAt12Volts;
+        return GeneratedCompConstants.kSpeedAt12Volts;
     }
 
     @Override
     public LinearVelocity getSpeedInTeleop() {
-        return CompConstants.kSpeedInTeleop;
+        return GeneratedCompConstants.kSpeedInTeleop;
     }
 
     @Override
     public double getAlignmentErrorMargin() {
-        return CompConstants.kAlignmentErrorMargin;
+        return GeneratedCompConstants.kAlignmentErrorMargin;
     }
 
     @Override
     public double getSwerveMoveInterruptionSensitivity() {
-        return CompConstants.kSwerveMoveInterruptionSensitivity;
+        return GeneratedCompConstants.kSwerveMoveInterruptionSensitivity;
     }
 
     @Override
     public double getSwerveTurnInterruptionSensitivity() {
-        return CompConstants.kSwerveTurnInterruptionSensitivity;
+        return GeneratedCompConstants.kSwerveTurnInterruptionSensitivity;
     }
 
     @Override
     public SwerveDrivetrainConstants getDrivetrainConstants() {
-        return CompConstants.DrivetrainConstants;
+        return GeneratedCompConstants.DrivetrainConstants;
     }
 
     @Override
     public SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getFrontLeft() {
-        return CompConstants.FrontLeft;
+        return GeneratedCompConstants.FrontLeft;
     }
 
     @Override
     public SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getFrontRight() {
-        return CompConstants.FrontRight;
+        return GeneratedCompConstants.FrontRight;
     }
 
     @Override
     public SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getBackLeft() {
-        return CompConstants.BackLeft;
+        return GeneratedCompConstants.BackLeft;
     }
 
     @Override
     public SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration> getBackRight() {
-        return CompConstants.BackRight;
+        return GeneratedCompConstants.BackRight;
     }
 
     @Override
     public CommandSwerveDrivetrain createDrivetrain() {
-        return CompConstants.createDrivetrain();
+        return GeneratedCompConstants.createDrivetrain();
     }
 }
