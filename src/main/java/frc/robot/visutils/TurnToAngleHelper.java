@@ -34,28 +34,18 @@ public final class TurnToAngleHelper {
     }
 
     /**
-     * Returns the 3-D pose of an AprilTag from the field layout, if it exists.
-     *
-     * @param tagId the AprilTag ID
-     * @return the tag's pose, or empty if the ID is invalid
-     */
-    public static Optional<Pose3d> getTagPose(int tagId) {
-        return kFieldLayout.getTagPose(tagId);
-    }
-
-    /**
      * Resolves an AprilTag ID to a field-coordinate target.
      *
      * @param tagId the AprilTag ID
      * @return the tag position in blue-origin metres,
      *         or empty if the tag is not found
      */
-    public static Optional<Translation2d> resolveTagTarget(int tagId) {
+    public static Optional<Translation2d> getTag2dPose(int tagId) {
         if (tagId == -1) {
             return Optional.empty();
         }
 
-        Optional<Pose3d> pose = getTagPose(tagId);
+        Optional<Pose3d> pose = kFieldLayout.getTagPose(tagId);
         if (pose.isPresent()) {
             return Optional.of(new Translation2d(pose.get().getX(), pose.get().getY()));
         }
@@ -258,7 +248,7 @@ public final class TurnToAngleHelper {
             PIDController headingPID,
             double maxOmega) {
 
-        Optional<Translation2d> target = resolveTagTarget(tagId);
+        Optional<Translation2d> target = getTag2dPose(tagId);
         if (target.isEmpty()) {
             return OptionalDouble.empty();
         }

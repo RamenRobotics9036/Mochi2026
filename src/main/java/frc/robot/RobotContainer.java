@@ -266,7 +266,7 @@ public class RobotContainer {
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(this::isLeftPovDownward).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
-                TurnToAngleHelper.resolveTagTarget(m_limelightOdometry.getLastTarget())));
+                TurnToAngleHelper.getTag2dPose(m_limelightOdometry.getLastTarget())));
     }
 
     /**
