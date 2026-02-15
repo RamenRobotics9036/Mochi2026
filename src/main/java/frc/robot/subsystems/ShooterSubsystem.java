@@ -14,6 +14,8 @@ import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 
 public class ShooterSubsystem extends SubsystemBase {
+    private BotConfigInterface m_configInterface;
+
     private TalonFX m_lMotor;
     private TalonFX m_rMotor;
 
@@ -22,11 +24,10 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private Servo m_hood;
 
-    private BotConfigInterface m_configInterface;
-
     /** Creates a new ShooterSubsystem using the ShooterConstants from Constants.java. */
     public ShooterSubsystem(BotConfigInterface configInterface){
         m_configInterface = configInterface;
+
         m_lMotor = new TalonFX(ShooterConstants.kLMotorID, m_configInterface.getCANBus());
         m_rMotor = new TalonFX(ShooterConstants.kRMotorID, m_configInterface.getCANBus());
 

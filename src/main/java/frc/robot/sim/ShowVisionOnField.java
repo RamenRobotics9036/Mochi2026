@@ -17,8 +17,10 @@ import java.util.Optional;
  * Class to show vision targets on the field.
  */
 public class ShowVisionOnField {
-    /** Module locations relative to robot center (from TunerConstants). */
-    private final Translation2d[] MODULE_LOCATIONS;
+    private final BotConfigInterface m_configInterface;
+
+    /** Module locations relative to robot center (from BotConfigInterface). */
+    private final Translation2d[] m_moduleLocations;
 
     private final Optional<Field2d> m_realGlassField;
     private final Optional<Field2d> m_simulationField;
@@ -39,12 +41,19 @@ public class ShowVisionOnField {
      * @param realGlassField The field displaying real/estimated robot pose (may be null)
      * @param simulationField The field displaying simulated/ground truth pose (may be null)
      */
-    public ShowVisionOnField(Field2d realGlassField, Field2d simulationField, BotConfigInterface swerveConstants) {
-        MODULE_LOCATIONS = new Translation2d[4];
-        MODULE_LOCATIONS[0] = new Translation2d(swerveConstants.getFrontLeft().LocationX, swerveConstants.getFrontLeft().LocationY);
-        MODULE_LOCATIONS[1] = new Translation2d(swerveConstants.getFrontRight().LocationX, swerveConstants.getFrontRight().LocationY);
-        MODULE_LOCATIONS[2] = new Translation2d(swerveConstants.getBackLeft().LocationX, swerveConstants.getBackLeft().LocationY);
-        MODULE_LOCATIONS[3] = new Translation2d(swerveConstants.getBackRight().LocationX, swerveConstants.getBackRight().LocationY);
+    public ShowVisionOnField(
+        BotConfigInterface configInterface,
+        Field2d realGlassField,
+        Field2d simulationField) {
+
+        m_configInterface = configInterface;
+
+        m_moduleLocations = new Translation2d[] {
+            new Translation2d(m_configInterface.getFrontLeft().LocationX, m_configInterface.getFrontLeft().LocationY),
+            new Translation2d(m_configInterface.getFrontRight().LocationX, m_configInterface.getFrontRight().LocationY),
+            new Translation2d(m_configInterface.getBackLeft().LocationX, m_configInterface.getBackLeft().LocationY),
+            new Translation2d(m_configInterface.getBackRight().LocationX, m_configInterface.getBackRight().LocationY)
+        };
 
         if (realGlassField == null) {
             throw new IllegalArgumentException("realField cannot be null");
@@ -188,7 +197,7 @@ public class ShowVisionOnField {
         Pose2d[] modulePoses = new Pose2d[4];
         for (int i = 0; i < 4; i++) {
             modulePoses[i] = driveState.Pose.transformBy(
-                new Transform2d(MODULE_LOCATIONS[i], driveState.ModuleStates[i].angle)
+                new Transform2d(m_moduleLocations[i], driveState.ModuleStates[i].angle)
             );
         }
         return modulePoses;
