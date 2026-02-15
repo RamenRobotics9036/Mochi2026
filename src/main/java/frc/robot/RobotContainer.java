@@ -28,7 +28,7 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.botconfig.PancakeConfig;
+import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterTestCommand;
 import frc.robot.sim.JoystickInputsRecord;
@@ -132,7 +132,7 @@ public class RobotContainer {
      */
     public RobotContainer() {
 
-        m_configInterface = new PancakeConfig();
+        m_configInterface = RobotIdentity.getMode();
 
         MaxSpeed = m_configInterface.getSpeedAt12Volts().in(MetersPerSecond);
         TeleoperatedSpeed = Math.min( m_configInterface.getSpeedInTeleop().in(MetersPerSecond), MaxSpeed);
