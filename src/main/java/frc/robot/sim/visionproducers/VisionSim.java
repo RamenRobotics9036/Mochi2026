@@ -25,6 +25,8 @@
 package frc.robot.sim.visionproducers;
 
 import static frc.robot.sim.visionproducers.VisionSimConstants.Vision.*;
+import static frc.robot.Constants.VisionConstants.kRobotToCam;
+import static frc.robot.Constants.VisionConstants.kRobotToCam2;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;

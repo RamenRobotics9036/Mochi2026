@@ -56,6 +56,19 @@ public final class Constants {
         public static final String kLimelightNameSim = "limelight-sim";
         public static final String kLimelightNameSim2 = "limelight-sim2";
 
+        // Camera position relative to robot center
+        // Example: mounted facing forward, 0.5m forward of center, 0.5m up from center
+        public static final Transform3d kRobotToCam = new Transform3d(
+            new Translation3d(0.5, 0.0, 0.5),
+            new Rotation3d(0, 0, 0)
+        );
+
+        // Second camera position relative to robot center
+        public static final Transform3d kRobotToCam2 = new Transform3d(
+            new Translation3d(-0.5, 0.0, 0.5),
+            new Rotation3d(0, 0, Math.PI)
+        );
+
         /** Default value for the VisionEnabled toggle (true = vision on). */
         public static final boolean kVisionEnabledDefault = true;
     }

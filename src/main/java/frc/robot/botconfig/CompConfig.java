@@ -5,7 +5,9 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.LinearVelocity;
+import frc.robot.Constants;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
@@ -141,5 +143,15 @@ public class CompConfig implements BotConfigInterface {
     @Override
     public String getVisionLimelightNameReal() {
         return "limelight-fixed";
+    }
+
+    @Override
+    public Transform3d getRobotToCam() {
+        return Constants.VisionConstants.kRobotToCam;
+    }
+
+    @Override
+    public Transform3d getRobotToCam2() {
+        return Constants.VisionConstants.kRobotToCam2;
     }
 }
