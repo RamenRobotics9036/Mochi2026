@@ -35,6 +35,7 @@ import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
@@ -117,6 +118,8 @@ public class RobotContainer {
     public final LimelightOdometry m_limelightOdometry;
 
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(m_configInterface);
+
+    public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
