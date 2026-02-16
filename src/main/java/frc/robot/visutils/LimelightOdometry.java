@@ -6,6 +6,7 @@ import static frc.robot.sim.visionproducers.VisionSimConstants.Vision.kSingleTag
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants.VisionConstants;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 public class LimelightOdometry {
     BotConfigInterface m_configInterface;
 
-    private final String m_limelightName;
+    private final String m_limelightName1;
     private VisionSimInterface.EstimateConsumer m_estConsumer;
     private Matrix<N3, N1> m_curStdDevs = kSingleTagStdDevs;
     private double m_lastTimestamp = 0;
@@ -49,11 +50,29 @@ public class LimelightOdometry {
         m_configInterface = configInterface;
 
         this.m_estConsumer = poseConsumer;
-        this.m_limelightName = Robot.isSimulation()
+        this.m_limelightName1 = Robot.isSimulation()
             ? VisionConstants.kLimelightNameSim
             : m_configInterface.getVisionLimelightNameReal();
 
+        Transform3d robotToCam1 = Robot.isSimulation()
+            ? VisionConstants.kRobotToCam
+            : m_configInterface.getRobotToCam();
+
+        setCameraPoseRobotSpace(m_limelightName1, robotToCam1);
+
         // $TODO - Add m_limelightName2 here
+    }
+
+    private void setCameraPoseRobotSpace(String limelightName, Transform3d robotToCam) {
+        LimelightHelpers.setCameraPose_RobotSpace(
+            limelightName,
+            robotToCam.getX(),
+            robotToCam.getY(),
+            robotToCam.getZ(),
+            Math.toDegrees(robotToCam.getRotation().getX()),
+            Math.toDegrees(robotToCam.getRotation().getY()),
+            Math.toDegrees(robotToCam.getRotation().getZ())
+        );
     }
 
     /**
@@ -90,7 +109,7 @@ public class LimelightOdometry {
         m_numLockedTags = numLockedTags;
 
         // Horizontal offset to primary target (degrees)
-        m_tx = LimelightHelpers.getTX(m_limelightName);
+        m_tx = LimelightHelpers.getTX(m_limelightName1);
 
         // Build comma-separated list of visible tag IDs
         if (rawFiducials != null && rawFiducials.length > 0) {
@@ -110,10 +129,10 @@ public class LimelightOdometry {
         StringBuilder sb = new StringBuilder("LimelightOdometry: ");
 
         // Horizontal offset to primary target (degrees)
-        double tempTx = LimelightHelpers.getTX(m_limelightName);
+        double tempTx = LimelightHelpers.getTX(m_limelightName1);
         sb.append(String.format("tx=%7.2f°", tempTx));
 
-        double tempId = LimelightHelpers.getFiducialID(m_limelightName);
+        double tempId = LimelightHelpers.getFiducialID(m_limelightName1);
         sb.append(String.format(", ID=%4s", tempId >= 0 ? String.valueOf((int) tempId) : "None"));
 
         if (mt1 == null) {
@@ -129,7 +148,7 @@ public class LimelightOdometry {
 
         // Try getting RAW fiducials directly from NetworkTables
         LimelightHelpers.RawFiducial[] fiducials =
-            LimelightHelpers.getRawFiducials(m_limelightName);
+            LimelightHelpers.getRawFiducials(m_limelightName1);
         if (fiducials.length > 0) {
             String ids = Arrays.stream(fiducials)
                 .map(f -> String.valueOf(f.id))
@@ -142,7 +161,7 @@ public class LimelightOdometry {
 
     private void addVisionMeasurementV1() {
         LimelightHelpers.PoseEstimate mt1 =
-            LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName);
+            LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName1);
 
         // Limelighthelpers 2026.1 no longer returns null when no targets are visible.
         // So need to sanitize mt1 value so mt1 == null is still "no targets".
