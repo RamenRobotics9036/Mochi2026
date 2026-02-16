@@ -5,6 +5,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.generated.GeneratedPancakeConstants;
@@ -156,4 +157,14 @@ public interface BotConfigInterface {
      * Limelight name for odometry on real robot.
      */
     String getVisionLimelightNameReal();
+
+    /**
+     * Primary camera transform from robot origin.
+     */
+    Transform3d getRobotToCam();
+
+    /**
+     * Secondary camera transform from robot origin.
+     */
+    Transform3d getRobotToCam2();
 }

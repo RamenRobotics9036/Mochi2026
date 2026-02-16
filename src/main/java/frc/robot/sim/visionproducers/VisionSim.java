@@ -25,6 +25,8 @@
 package frc.robot.sim.visionproducers;
 
 import static frc.robot.sim.visionproducers.VisionSimConstants.Vision.*;
+import static frc.robot.Constants.VisionConstants.kRobotToCam;
+import static frc.robot.Constants.VisionConstants.kRobotToCam2;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -33,6 +35,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import frc.robot.Constants;
 import frc.robot.Robot;
 import java.util.List;
 import java.util.Optional;
@@ -51,8 +54,6 @@ public class VisionSim implements VisionSimInterface {
     private final PhotonCamera m_camera2;
     private final PhotonPoseEstimator m_photonEstimator;
     private final PhotonPoseEstimator m_photonEstimator2;
-    @SuppressWarnings("unused")
-    private Matrix<N3, N1> m_curStdDevs;
 
     // Simulation
     private PhotonCameraSim m_cameraSim;
@@ -77,8 +78,10 @@ public class VisionSim implements VisionSimInterface {
         m_camera2 = new PhotonCamera(kCameraName2);
         m_photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
         m_photonEstimator2 = new PhotonPoseEstimator(kTagLayout, kRobotToCam2);
-        m_limelightPublisher = new LimelightTablePublisher("limelight");
-        m_limelightPublisher2 = new LimelightTablePublisher("limelight2");
+        m_limelightPublisher = new LimelightTablePublisher(
+            Constants.VisionConstants.kLimelightNameSim);
+        m_limelightPublisher2 = new LimelightTablePublisher(
+            Constants.VisionConstants.kLimelightNameSim2);
 
         // ----- Simulation
         if (Robot.isSimulation()) {
@@ -138,7 +141,6 @@ public class VisionSim implements VisionSimInterface {
             if (visionEst.isEmpty()) {
                 visionEst = estimator.estimateLowestAmbiguityPose(result);
             }
-            updateEstimationStdDevs(visionEst, result.getTargets(), estimator);
 
             // Publish to Limelight NetworkTables for LimelightOdometry to consume
             LimelightData data = PhotonToLimelightConverter.convertPipelineResult(
@@ -152,73 +154,6 @@ public class VisionSim implements VisionSimInterface {
                 totalLatencyMs,
                 data);
             publisher.publish(data);
-        }
-    }
-
-    /**
-     * Calculates new standard deviations This algorithm is a heuristic that creates
-     * dynamic standard deviations based on number of tags, estimation strategy, and
-     * distance from the tags.
-     *
-     * @param estimatedPose The estimated pose to guess standard deviations for.
-     * @param targets All targets in this camera frame
-     */
-    // $TODO - Is m_curStdDevs actually used anywhere? Is calling updateEstimationStdDevs
-    // doing anything?
-    private void updateEstimationStdDevs(
-            Optional<EstimatedRobotPose> estimatedPose,
-            List<PhotonTrackedTarget> targets,
-            PhotonPoseEstimator estimator) {
-        if (estimatedPose.isEmpty()) {
-            // No pose input. Default to single-tag std devs
-            m_curStdDevs = kSingleTagStdDevs;
-
-        }
-        else {
-            // Pose present. Start running Heuristic
-            var estStdDevs = kSingleTagStdDevs;
-            int numTags = 0;
-            double avgDist = 0;
-
-            // Precalculation - see how many tags we found, and calculate an average-distance metric
-            for (var tgt : targets) {
-                var tagPose = estimator.getFieldTags().getTagPose(tgt.getFiducialId());
-                if (tagPose.isEmpty()) {
-                    continue;
-                }
-
-                numTags++;
-                avgDist += tagPose
-                    .get()
-                    .toPose2d()
-                    .getTranslation()
-                    .getDistance(estimatedPose.get().estimatedPose.toPose2d().getTranslation());
-            }
-
-            if (numTags == 0) {
-                // No tags visible. Default to single-tag std devs
-                m_curStdDevs = kSingleTagStdDevs;
-            }
-            else {
-                // One or more tags visible, run the full heuristic.
-                avgDist /= numTags;
-                // Decrease std devs if multiple targets are visible
-                if (numTags > 1) {
-                    estStdDevs = kMultiTagStdDevs;
-                }
-
-                // Increase std devs based on (average) distance
-                if (numTags == 1 && avgDist > 4) {
-                    estStdDevs = VecBuilder.fill(
-                        Double.MAX_VALUE,
-                        Double.MAX_VALUE,
-                        Double.MAX_VALUE);
-                }
-                else {
-                    estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
-                }
-                m_curStdDevs = estStdDevs;
-            }
         }
     }
 
