@@ -55,7 +55,8 @@ public class IntakeSubsystem extends SubsystemBase {
      * Constructs a new IntakeSubsystem.
      * Configures the motor with brake mode and a smart current limit for safety.
      */
-    public IntakeSubsystem() {
+    public IntakeSubsystem(BotConfigInterface configInterface) {
+        m_configInterface = configInterface;
         // Left and right arm motors; intake motor:
         m_lArmMotor = new SparkFlex(IntakeConstants.kLeftArmMotorID, MotorType.kBrushless);
         m_rArmMotor = new SparkFlex(IntakeConstants.kRightArmMotorID, MotorType.kBrushless);
