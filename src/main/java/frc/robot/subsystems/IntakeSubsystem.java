@@ -174,7 +174,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean isStalled() {
         // return true if the current draw is above the stall limit
-        return m_intakeMotor.getOutputCurrent() >= m_configInterface.getIntakeStallLimit();
+        return m_intakeMotor.getOutputCurrent() >= m_configInterface.getIntakeStallLimit(); //TODO: change to arm
     }
 
     /**

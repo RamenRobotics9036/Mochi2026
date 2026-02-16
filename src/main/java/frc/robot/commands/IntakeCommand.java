@@ -38,7 +38,6 @@ public class IntakeCommand extends Command {
      */
     @Override
     public void initialize() {
-        m_grabbedPiece = false;
     }
 
     /**
@@ -57,11 +56,6 @@ public class IntakeCommand extends Command {
      */
     @Override
     public boolean isFinished() {
-        // Check if the intake motor is stalled, indicating a piece has been secured
-        if (m_intake.isStalled()) {
-            m_grabbedPiece = true;
-            return true;
-        }
         return false;
     }
 
@@ -75,32 +69,5 @@ public class IntakeCommand extends Command {
     public void end(boolean interrupted) {
         // Stop the intake motor
         m_intake.stop();
-        
-        // Only rumble if we actually secured the piece and weren't interrupted manually
-        if (m_grabbedPiece && !interrupted) {
-            rumbleController();
-        }
-    }
-
-    /**
-     * Provides tactile feedback to the driver.
-     * 
-     * Starts a background thread to vibrate the controller for 500ms.
-     * Using a thread prevents blocking the main robot loop during the delay.
-     */
-    private void rumbleController() {
-        // Activate maximum rumble on the left side
-        m_controller.getHID().setRumble(RumbleType.kLeftRumble, 1.0);
-        
-        // Offload the wait time to a separate thread to prevent "Loop Overrun" errors
-        new Thread(() -> {
-            try {
-                Thread.sleep(500); // Duration of the vibration in milliseconds
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            // Ensure rumble is turned off after the delay
-            m_controller.getHID().setRumble(RumbleType.kLeftRumble, 0.0);
-        }).start();
     }
 }
