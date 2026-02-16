@@ -52,6 +52,8 @@ public class LimelightOdometry {
         this.m_limelightName = Robot.isSimulation()
             ? VisionConstants.kLimelightNameSim
             : m_configInterface.getVisionLimelightNameReal();
+
+        // $TODO - Add m_limelightName2 here
     }
 
     /**

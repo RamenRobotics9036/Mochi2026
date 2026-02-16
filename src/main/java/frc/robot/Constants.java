@@ -53,7 +53,8 @@ public final class Constants {
     // curl -X POST http://10.90.36.15:5807/upload-fieldmap -H "Content-Type: application/json" --data-binary @FRC2026_ANDYMARK.fmap
     public static final class VisionConstants {
         /** Limelight name for odometry in simulation. */
-        public static final String kLimelightNameSim = "limelight";
+        public static final String kLimelightNameSim = "limelight-sim";
+        public static final String kLimelightNameSim2 = "limelight-sim2";
 
         /** Default value for the VisionEnabled toggle (true = vision on). */
         public static final boolean kVisionEnabledDefault = true;

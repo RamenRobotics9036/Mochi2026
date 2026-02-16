@@ -33,6 +33,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import frc.robot.Constants;
 import frc.robot.Robot;
 import java.util.List;
 import java.util.Optional;
@@ -75,8 +76,10 @@ public class VisionSim implements VisionSimInterface {
         m_camera2 = new PhotonCamera(kCameraName2);
         m_photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
         m_photonEstimator2 = new PhotonPoseEstimator(kTagLayout, kRobotToCam2);
-        m_limelightPublisher = new LimelightTablePublisher("limelight");
-        m_limelightPublisher2 = new LimelightTablePublisher("limelight2");
+        m_limelightPublisher = new LimelightTablePublisher(
+            Constants.VisionConstants.kLimelightNameSim);
+        m_limelightPublisher2 = new LimelightTablePublisher(
+            Constants.VisionConstants.kLimelightNameSim2);
 
         // ----- Simulation
         if (Robot.isSimulation()) {

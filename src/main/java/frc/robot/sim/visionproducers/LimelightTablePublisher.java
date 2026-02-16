@@ -21,12 +21,18 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 public class LimelightTablePublisher {
     private final NetworkTable table;
 
+    /** Constructor. */
     public LimelightTablePublisher(String limelightName) {
-        String tableName = (limelightName == null || limelightName.isEmpty())
-            ? "limelight" : limelightName;
-        this.table = NetworkTableInstance.getDefault().getTable(tableName);
+        if (limelightName == null || limelightName.isEmpty()) {
+            throw new IllegalArgumentException("Limelight name cannot be null or empty");
+        }
+
+        this.table = NetworkTableInstance.getDefault().getTable(limelightName);
     }
 
+    /**
+     * Publishes the given LimelightData to NetworkTables.
+     */
     public void publish(LimelightData data) {
         // Basic targeting
         table.getEntry("tv").setDouble(data.targetValid ? 1 : 0);
