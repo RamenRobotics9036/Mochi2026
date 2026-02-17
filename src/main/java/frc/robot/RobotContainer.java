@@ -137,7 +137,7 @@ public class RobotContainer {
 
     /** Intake subsystem driven through the IO abstraction. */
     public final IntakeSubsystem intakeSubsystem =
-        new IntakeSubsystem(m_configInterface, m_intakeIO);
+        new IntakeSubsystem(m_configInterface);
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
