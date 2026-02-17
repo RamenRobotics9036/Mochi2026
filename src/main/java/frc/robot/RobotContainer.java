@@ -33,6 +33,7 @@ import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.RotateToTargetCommand;
+import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.ShooterTestCommand;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
@@ -233,6 +234,7 @@ public class RobotContainer {
         );
 
         //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
+        shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
 
         // Keep the drivetrain in an Idle state while the robot is disabled
         final var idle = new SwerveRequest.Idle();
