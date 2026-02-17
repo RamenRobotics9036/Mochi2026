@@ -24,8 +24,6 @@ public final class Constants {
      * Constants for the Intake subsystem rollers.
      */
     public static final class IntakeConstants {
-        /** CAN ID for the intake SPARK MAX motor controller. */
-        public static final int kIntakeMotorID = 30;
         /** Default speed for pulling game pieces into the robot. */
         public static final double kIntakeSpeed = 0.8;
         /** Default speed for ejecting game pieces from the robot. */
@@ -64,6 +62,8 @@ public final class Constants {
     }
 
     /**
+     * Constants for shooter.
+     */
     public static final class ShooterConstants {
         /** CAN ID for the left SparkFlex motor controller. */
         public static final int kLMotorID = 40;
@@ -77,14 +77,16 @@ public final class Constants {
         public static final double kShootSpeed = 0.20; //TODO: filler value
     }
 
+    /**
+     * Constants for Indexer.
+     */
     public static final class IndexerConstants {
         public static final int kMotorID = 30; //TODO: filler value
         /** Indexer flywheel speed */
         public static final double kIndexSpeed = 0.15; //TODO: filler value
     }
 
-     */
-     * Constants for shooter.
+    /**
      * Constants for joystick processing and smooth driving.
      */
     public static final class DriveConstants {
