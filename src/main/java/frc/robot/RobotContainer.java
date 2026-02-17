@@ -35,6 +35,10 @@ import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.ShooterTestCommand;
+import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.intake.IntakeIoInterface;
+import frc.robot.subsystems.intake.IntakeIoReal;
+import frc.robot.subsystems.intake.IntakeIoSim;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
@@ -125,6 +129,15 @@ public class RobotContainer {
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(m_configInterface);
 
     public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
+
+    /** Intake IO: real hardware or FlywheelSim depending on mode. */
+    private final IntakeIoInterface m_intakeIO = Robot.isSimulation()
+        ? new IntakeIoSim()
+        : new IntakeIoReal(m_configInterface);
+
+    /** Intake subsystem driven through the IO abstraction. */
+    public final IntakeSubsystem intakeSubsystem =
+        new IntakeSubsystem(m_configInterface, m_intakeIO);
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
@@ -276,6 +289,10 @@ public class RobotContainer {
                 drivetrain
                     .runOnce(() -> m_simWrapper.cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
         }
+
+        // Intake: run while X is held on the operator controller (TBD button)
+        operateController.x().whileTrue(
+            new IntakeCommand(intakeSubsystem, operateController));
 
         // Hook up the telemetry logger to the drivetrain periodic updates
         drivetrain.registerTelemetry(logger::telemeterize);
