@@ -9,7 +9,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IndexerConstants;
-import frc.robot.Constants.ShooterConstants;
+
 
 public class IndexerSubsystem extends SubsystemBase{
     private SparkFlex m_motor;
@@ -21,10 +21,10 @@ public class IndexerSubsystem extends SubsystemBase{
         m_config = new SparkFlexConfig();
 
         m_config.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(ShooterConstants.kCurrentLimit)
+            .smartCurrentLimit(IndexerConstants.kIndexerCurrentLimit)
             .inverted(true);
 
-        m_motor.configure(m_config, ResetMode.kResetSafeParameters, 
+        m_motor.configure(m_config, ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters);
     }
 

@@ -69,10 +69,14 @@ public final class Constants {
         public static final int kLMotorID = 40;
         /** CAN ID for the right SparkFlex motor controller. */
         public static final int kRMotorID = 41;
+
         /** SmartCurrentLimit in amps*/
-        public static final int kCurrentLimit = 40; //TODO: filler value
+        public static final int kCurrentSupplyLimit = 50; //TODO: filler value
+        public static final int kCurrentStatorLimit = 40; //TODO: filler value
+
         /** PWM channer for the linear actuator servo. */
-        public static final int kChannel = 0; //TODO: filler value
+        public static final int kHoodPwmChannel = 0; //TODO: filler value
+
         /** Shooting speed */
         public static final double kShootSpeed = 0.20; //TODO: filler value
     }
@@ -84,6 +88,8 @@ public final class Constants {
         public static final int kMotorID = 30; //TODO: filler value
         /** Indexer flywheel speed */
         public static final double kIndexSpeed = 0.15; //TODO: filler value
+
+        public static final int kIndexerCurrentLimit = 40; //TODO: filler value
     }
 
     /**
