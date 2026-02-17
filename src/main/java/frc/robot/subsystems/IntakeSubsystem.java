@@ -14,13 +14,14 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.botconfig.BotConfigInterface;
 
 /**
  * Subsystem responsible for the robot's game piece intake mechanism.
- * 
- * <p>This subsystem manages 3 SPARK FLEX motor controllers and provides methods 
+ *
+ * <p>This subsystem manages 3 SPARK FLEX motor controllers and provides methods
  * for running the intake motor and raising/lowering the intake arm, stopping the system
  */
 public class IntakeSubsystem extends SubsystemBase {
@@ -61,7 +62,7 @@ public class IntakeSubsystem extends SubsystemBase {
         m_lArmMotor = new SparkFlex(IntakeConstants.kLeftArmMotorID, MotorType.kBrushless);
         m_rArmMotor = new SparkFlex(IntakeConstants.kRightArmMotorID, MotorType.kBrushless);
         m_intakeMotor = new SparkFlex(IntakeConstants.kIntakeMotorID, MotorType.kBrushless);
-        
+
         // Configure the motors:
         m_lArmConfig = new SparkFlexConfig();
         m_rArmConfig = new SparkFlexConfig();
@@ -130,7 +131,7 @@ public class IntakeSubsystem extends SubsystemBase {
         m_PIDController.setSetpoint(MathUtil.clamp(position, IntakeConstants.kMinArmAngle, IntakeConstants.kMaxArmAngle), ControlType.kPosition);
     }
 
-    // 
+    //
     public boolean isArmDeployed() {
         return m_encoder.getPosition() >= (IntakeConstants.kMaxArmAngle - 1.0);
     }
@@ -174,7 +175,7 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public boolean isStalled() {
         // return true if the current draw is above the stall limit
-        return m_intakeMotor.getOutputCurrent() >= m_configInterface.getIntakeStallLimit(); //TODO: change to arm
+        return m_intakeMotor.getOutputCurrent() >= Constants.IntakeConstants.kStallLimit;
     }
 
     /**

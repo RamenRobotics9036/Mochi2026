@@ -53,10 +53,10 @@ public final class Constants {
         public static final double kArmHomePosition = 0.0;
 
         public static final double kGearRatio = 20.0; //TODO: filler value
-        
+
         public static final double kP = 0.1; //TODO: filler value
         public static final double kI = 0.0; //TODO: filler value
-        public static final double kD = 0.001; //TODO: filler 
+        public static final double kD = 0.001; //TODO: filler
     }
 
     /**
@@ -68,25 +68,10 @@ public final class Constants {
         /** CAN ID for the right SparkFlex motor controller. */
         public static final int kRMotorID = 41;
         /** SmartCurrentLimit in amps*/
-        public static final int kCurrentLimit = 40; //TODO: filler value
+        public static final int kSupplyCurrentLimit = 50; //TODO: filler value
+        public static final int kCurrentStatorLimit = 40; //TODO: filler value
         /** PWM channer for the linear actuator servo. */
-        public static final int kChannel = 0; //TODO: filler value
-    }
-
-    /**
-     * Configuration constants for the Operator Interface and telemetry.
-     */
-    public static final class OperatorConstants {
-        /** When true, non-essential telemetry is disabled to conserve CAN bus bandwidth. */
-        public static final boolean kCompetitionMode = false;
-    }
-
-    /**
-     * Tuning constants for the manual elevator control command.
-     */
-    public static final class ElevatorDefaultCommandConstants {
-        /** Sensitivity multiplier for joystick-based elevator movement. */
-        public static final double kElevatorSpeed = 0.5;
+        public static final int kHoodPwmChannel = 0; //TODO: filler value
     }
 
     /**

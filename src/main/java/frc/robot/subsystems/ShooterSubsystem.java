@@ -10,6 +10,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.botconfig.BotConfigInterface;
 
 public class ShooterSubsystem extends SubsystemBase {
@@ -27,8 +28,8 @@ public class ShooterSubsystem extends SubsystemBase {
     public ShooterSubsystem(BotConfigInterface configInterface){
         m_configInterface = configInterface;
 
-        m_lMotor = new TalonFX(m_configInterface.getShooterLeftMotorId(), m_configInterface.getCANBus());
-        m_rMotor = new TalonFX(m_configInterface.getShooterRightMotorId(), m_configInterface.getCANBus());
+        m_lMotor = new TalonFX(Constants.ShooterConstants.kLMotorID, m_configInterface.getCANBus());
+        m_rMotor = new TalonFX(Constants.ShooterConstants.kRMotorID, m_configInterface.getCANBus());
 
         m_lConfig = new TalonFXConfiguration()
             .withMotorOutput(
@@ -37,8 +38,8 @@ public class ShooterSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(m_configInterface.getShooterStatorCurrentLimit())
-                    .withSupplyCurrentLimit(m_configInterface.getShooterSupplyCurrentLimit())
+                    .withStatorCurrentLimit(Constants.ShooterConstants.kCurrentStatorLimit)
+                    .withSupplyCurrentLimit(Constants.ShooterConstants.kSupplyCurrentLimit)
             );
         m_rConfig = new TalonFXConfiguration()
             .withMotorOutput(
@@ -50,8 +51,8 @@ public class ShooterSubsystem extends SubsystemBase {
             )
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(m_configInterface.getShooterStatorCurrentLimit())
-                    .withSupplyCurrentLimit(m_configInterface.getShooterSupplyCurrentLimit())
+                    .withStatorCurrentLimit(Constants.ShooterConstants.kCurrentStatorLimit)
+                    .withSupplyCurrentLimit(Constants.ShooterConstants.kSupplyCurrentLimit)
             );
 
         m_lMotor.getConfigurator().apply(m_lConfig);
@@ -59,9 +60,9 @@ public class ShooterSubsystem extends SubsystemBase {
 
         // Sets the right motor to follow the left one
         // Also sets its direction to be opposed rather than inverting it earlier in the code
-        m_rMotor.setControl(new Follower(m_configInterface.getShooterLeftMotorId(), MotorAlignmentValue.Opposed));
+        m_rMotor.setControl(new Follower(Constants.ShooterConstants.kLMotorID, MotorAlignmentValue.Opposed));
 
-        m_hood = new Servo(m_configInterface.getShooterHoodPwmChannel());
+        m_hood = new Servo(Constants.ShooterConstants.kHoodPwmChannel);
     }
 
     public void setSpeed(double speed){
