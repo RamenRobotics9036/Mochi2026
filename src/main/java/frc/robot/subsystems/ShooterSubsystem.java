@@ -39,7 +39,7 @@ public class ShooterSubsystem extends SubsystemBase {
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
                     .withStatorCurrentLimit(Constants.ShooterConstants.kCurrentStatorLimit)
-                    .withSupplyCurrentLimit(Constants.ShooterConstants.kSupplyCurrentLimit)
+                    .withSupplyCurrentLimit(Constants.ShooterConstants.kCurrentSupplyLimit)
             );
         m_rConfig = new TalonFXConfiguration()
             .withMotorOutput(
@@ -52,7 +52,7 @@ public class ShooterSubsystem extends SubsystemBase {
             .withCurrentLimits(
                 new CurrentLimitsConfigs()
                     .withStatorCurrentLimit(Constants.ShooterConstants.kCurrentStatorLimit)
-                    .withSupplyCurrentLimit(Constants.ShooterConstants.kSupplyCurrentLimit)
+                    .withSupplyCurrentLimit(Constants.ShooterConstants.kCurrentSupplyLimit)
             );
 
         m_lMotor.getConfigurator().apply(m_lConfig);

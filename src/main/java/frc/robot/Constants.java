@@ -62,7 +62,7 @@ public final class Constants {
     }
 
     /**
-     * Constants for the Intake subsystem rollers.
+     * Constants for shooter.
      */
     public static final class ShooterConstants {
         /** CAN ID for the left SparkFlex motor controller. */
@@ -70,7 +70,7 @@ public final class Constants {
         /** CAN ID for the right SparkFlex motor controller. */
         public static final int kRMotorID = 41;
         /** SmartCurrentLimit in amps*/
-        public static final int kSupplyCurrentLimit = 50; //TODO: filler value
+        public static final int kCurrentSupplyLimit = 50; //TODO: filler value
         public static final int kCurrentStatorLimit = 40; //TODO: filler value
         /** PWM channer for the linear actuator servo. */
         public static final int kHoodPwmChannel = 0; //TODO: filler value
