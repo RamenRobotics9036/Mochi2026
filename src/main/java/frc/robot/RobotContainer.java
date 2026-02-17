@@ -33,12 +33,14 @@ import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.RotateToTargetCommand;
+import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.ShooterTestCommand;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
@@ -121,6 +123,8 @@ public class RobotContainer {
     public final LimelightOdometry m_limelightOdometry;
 
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(m_configInterface);
+
+    public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
@@ -230,6 +234,7 @@ public class RobotContainer {
         );
 
         //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
+        shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
 
         // Keep the drivetrain in an Idle state while the robot is disabled
         final var idle = new SwerveRequest.Idle();

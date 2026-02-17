@@ -77,6 +77,5 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public void stop(){
         m_lMotor.stopMotor();
-        m_rMotor.stopMotor();
     }
 }
