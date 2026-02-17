@@ -105,8 +105,6 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     public void setArmSpeed(double speed) {
         m_lArmMotor.set(speed);
-        // Right arm follows left via configuration, but set it anyway for clarity/safety.
-        m_rArmMotor.set(speed);
     }
 
     // Homes the intake arm by moving it to the zero position

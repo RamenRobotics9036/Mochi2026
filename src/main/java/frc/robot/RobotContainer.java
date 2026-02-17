@@ -27,9 +27,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterTestCommand;
 import frc.robot.sim.JoystickInputsRecord;
@@ -281,6 +283,11 @@ public class RobotContainer {
                 TurnToAngleHelper.getTag2dPose(m_limelightOdometry.getLastTarget())));
 
         operateController.a().whileTrue(new IntakeCommand(m_intake, operateController));
+
+        // Run the intake arm manually any time the operator moves the right stick.
+        // (Deadband prevents scheduling from tiny stick noise.)
+        new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
+            .whileTrue(new IntakeArmCommand(m_intake, operateController));
     }
 
     /**
