@@ -29,7 +29,7 @@ public final class Constants {
         /** Default speed for ejecting game pieces from the robot. */
         public static final double kOuttakeSpeed = -0.8;
         /** Default speed for raising and lowering the intake arm. */
-        public static final double kArmSpeed = 0.2;
+        public static final double kArmSpeed = 0.05;
         /** Current threshold in Amps used to detect if a game piece is fully secured. */
         public static final int kStallLimit = 40; // Amps
 

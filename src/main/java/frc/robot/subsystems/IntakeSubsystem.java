@@ -76,8 +76,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
         m_rArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kStallLimit)
-            .inverted(true)
-            .follow(m_lArmMotor);
+            .follow(m_lArmMotor, true);
         m_intakeConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kStallLimit)
             .inverted(true);
