@@ -9,13 +9,11 @@ package frc.robot.subsystems.intake;
 public interface IntakeIoInterface {
 
     /** Mutable container for intake sensor readings. */
-    class IntakeInputs {
+    class DeviceOutputs {
         /** Motor velocity in RPM. */
         public double velocityRPM;
         /** Motor output current in amps. */
         public double currentAmps;
-        /** Applied motor output (-1 to 1). */
-        public double appliedOutput;
     }
 
     /** Set the motor speed as a percentage (-1.0 to 1.0). */
@@ -24,6 +22,6 @@ public interface IntakeIoInterface {
     /** Stop the motor immediately. */
     void stop();
 
-    /** Read latest sensor data into the given inputs container. */
-    void updateInputs(IntakeInputs inputs);
+    /** Read latest sensor data into the given outputs container. */
+    void updateOutputs(DeviceOutputs outputs);
 }

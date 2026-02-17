@@ -1,46 +1,53 @@
 package frc.robot.subsystems.intake;
 
+import com.revrobotics.PersistMode;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.botconfig.BotConfigInterface;
 
 /**
  * Real-hardware implementation of {@link IntakeIoInterface} backed by a REV SparkMax.
  */
 public class IntakeIoReal implements IntakeIoInterface {
-    private final SparkMax m_motor;
+    private final SparkFlex m_intakeMotor;
 
-    /** Constructs the real intake IO with the given bot configuration. */
+    /** Constructor. */
     public IntakeIoReal(BotConfigInterface config) {
-        m_motor = new SparkMax(
-            config.getIntakeMotorId(), MotorType.kBrushless);
+        SparkFlexConfig intakeConfig;
 
-        var cfg = new SparkMaxConfig();
-        cfg.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(config.getIntakeStallLimit());
+        m_intakeMotor = new SparkFlex(
+            IntakeConstants.kIntakeMotorID,
+            MotorType.kBrushless);
 
-        m_motor.configure(cfg,
-            SparkBase.ResetMode.kResetSafeParameters,
-            SparkBase.PersistMode.kPersistParameters);
+        intakeConfig = new SparkFlexConfig();
+        intakeConfig.idleMode(IdleMode.kBrake)
+            .smartCurrentLimit(IntakeConstants.kStallLimit)
+            .inverted(true);
+        m_intakeMotor.configure(intakeConfig, ResetMode.kResetSafeParameters,
+            PersistMode.kPersistParameters);
     }
 
     @Override
     public void setSpeed(double speed) {
-        m_motor.set(speed);
+        m_intakeMotor.set(speed);
     }
 
     @Override
     public void stop() {
-        m_motor.stopMotor();
+        m_intakeMotor.stopMotor();
     }
 
     @Override
-    public void updateInputs(IntakeInputs inputs) {
-        inputs.velocityRPM = m_motor.getEncoder().getVelocity();
-        inputs.currentAmps = m_motor.getOutputCurrent();
-        inputs.appliedOutput = m_motor.getAppliedOutput();
+    public void updateOutputs(DeviceOutputs outputs) {
+        outputs.velocityRPM = m_intakeMotor.getEncoder().getVelocity();
+        outputs.currentAmps = m_intakeMotor.getOutputCurrent();
     }
 }

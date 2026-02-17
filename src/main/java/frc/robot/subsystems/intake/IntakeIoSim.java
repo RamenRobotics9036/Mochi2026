@@ -22,13 +22,11 @@ public class IntakeIoSim implements IntakeIoInterface {
     private static final double kMoiKgM2 = 0.001;
 
     private final FlywheelSim m_flyWheelSim;
-    private double m_appliedSpeed = 0.0;
 
     // Sim device entries visible in the WPILib sim GUI
     private final SimDevice m_simDevice;
     private final SimDouble m_simVelocity;
     private final SimDouble m_simCurrent;
-    private final SimDouble m_simAppliedOutput;
 
     /** Constructs the simulated intake IO. */
     public IntakeIoSim() {
@@ -43,34 +41,28 @@ public class IntakeIoSim implements IntakeIoInterface {
             "Velocity RPM", Direction.kOutput, 0.0);
         m_simCurrent = m_simDevice.createDouble(
             "Current Amps", Direction.kOutput, 0.0);
-        m_simAppliedOutput = m_simDevice.createDouble(
-            "Applied Output", Direction.kOutput, 0.0);
     }
 
     @Override
     public void setSpeed(double speed) {
-        m_appliedSpeed = speed;
         m_flyWheelSim.setInputVoltage(speed * 12.0);
     }
 
     @Override
     public void stop() {
-        m_appliedSpeed = 0.0;
         m_flyWheelSim.setInputVoltage(0.0);
     }
 
     @Override
-    public void updateInputs(IntakeInputs inputs) {
+    public void updateOutputs(DeviceOutputs outputs) {
         // Step the physics simulation forward by one robot loop period
         m_flyWheelSim.update(0.02);
 
-        inputs.velocityRPM = m_flyWheelSim.getAngularVelocityRPM();
-        inputs.currentAmps = m_flyWheelSim.getCurrentDrawAmps();
-        inputs.appliedOutput = m_appliedSpeed;
+        outputs.velocityRPM = m_flyWheelSim.getAngularVelocityRPM();
+        outputs.currentAmps = m_flyWheelSim.getCurrentDrawAmps();
 
         // Push values into the sim GUI
-        m_simVelocity.set(inputs.velocityRPM);
-        m_simCurrent.set(inputs.currentAmps);
-        m_simAppliedOutput.set(inputs.appliedOutput);
+        m_simVelocity.set(outputs.velocityRPM);
+        m_simCurrent.set(outputs.currentAmps);
     }
 }

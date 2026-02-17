@@ -42,7 +42,7 @@ public class IntakeSubsystem extends SubsystemBase {
     /** The motor controller driving the intake rollers. */
     private final SparkFlex m_lArmMotor;
     private final SparkFlex m_rArmMotor;
-    private final SparkFlex m_intakeMotor;
+    private final SparkFlex m_intakeMotor; // $TODO - Should go away
 
     private RelativeEncoder m_encoder;
     private SparkClosedLoopController m_PIDController;
@@ -50,7 +50,7 @@ public class IntakeSubsystem extends SubsystemBase {
     /** The configuration objects applied to the intake motor controller. */
     private final SparkFlexConfig m_lArmConfig;
     private final SparkFlexConfig m_rArmConfig;
-    private final SparkFlexConfig m_intakeConfig;
+    private final SparkFlexConfig m_intakeConfig; // $TODO - Should go away
 
     /**
      * Constructs a new IntakeSubsystem.
@@ -61,12 +61,12 @@ public class IntakeSubsystem extends SubsystemBase {
         // Left and right arm motors; intake motor:
         m_lArmMotor = new SparkFlex(IntakeConstants.kLeftArmMotorID, MotorType.kBrushless);
         m_rArmMotor = new SparkFlex(IntakeConstants.kRightArmMotorID, MotorType.kBrushless);
-        m_intakeMotor = new SparkFlex(IntakeConstants.kIntakeMotorID, MotorType.kBrushless);
+        m_intakeMotor = new SparkFlex(IntakeConstants.kIntakeMotorID, MotorType.kBrushless); // $TODO - Should go away
 
         // Configure the motors:
         m_lArmConfig = new SparkFlexConfig();
         m_rArmConfig = new SparkFlexConfig();
-        m_intakeConfig = new SparkFlexConfig();
+        m_intakeConfig = new SparkFlexConfig(); // $TODO - Should go away
 
         m_lArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kStallLimit);
