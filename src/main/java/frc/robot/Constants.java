@@ -28,6 +28,52 @@ public final class Constants {
         public static final double kIntakeSpeed = 0.8;
         /** Default speed for ejecting game pieces from the robot. */
         public static final double kOuttakeSpeed = -0.8;
+        /** Default speed for raising and lowering the intake arm. */
+        public static final double kArmSpeed = 0.05;
+        /** Current threshold in Amps used to detect if a game piece is fully secured. */
+        public static final int kStallLimit = 40; // Amps
+
+        public static final int kLeftArmMotorID = 20;
+        public static final int kRightArmMotorID = 21;
+        public static final int kIntakeMotorID = 22;
+
+        public static final double kMaxArmAngle = 90; //TODO: filler value
+        public static final double kMinArmAngle = 0; //TODO: filler value
+
+        // Arm homing (hard-stop) behavior
+        /** Open-loop speed used while homing toward the hard stop. Sign depends on mechanism. */
+        public static final double kArmHomingSpeed = -0.10;
+        /** Current (Amps) above which we consider the arm "stalled" against a stop while homing. */
+        public static final double kArmHomingStallCurrent = 25.0;
+        /** Encoder velocity (RPM for NEO internal encoder) below which we consider motion stopped. */
+        public static final double kArmHomingStallVelocity = 5.0;
+        /** How long the stall condition must be continuously true to count as homed (seconds). */
+        public static final double kArmHomingStallSeconds = 0.15;
+        /** Overall timeout for the homing routine (seconds). */
+        public static final double kArmHomingTimeoutSeconds = 2.0;
+        /** Encoder position to set when the hard stop is reached (your defined "home" reference). */
+        public static final double kArmHomePosition = 0.0;
+
+        public static final double kGearRatio = 20.0; //TODO: filler value
+
+        public static final double kP = 0.1; //TODO: filler value
+        public static final double kI = 0.0; //TODO: filler value
+        public static final double kD = 0.001; //TODO: filler
+    }
+
+    /**
+     * Constants for shooter.
+     */
+    public static final class ShooterConstants {
+        /** CAN ID for the left SparkFlex motor controller. */
+        public static final int kLMotorID = 40;
+        /** CAN ID for the right SparkFlex motor controller. */
+        public static final int kRMotorID = 41;
+        /** SmartCurrentLimit in amps*/
+        public static final int kCurrentSupplyLimit = 50; //TODO: filler value
+        public static final int kCurrentStatorLimit = 40; //TODO: filler value
+        /** PWM channer for the linear actuator servo. */
+        public static final int kHoodPwmChannel = 0; //TODO: filler value
     }
 
     /**

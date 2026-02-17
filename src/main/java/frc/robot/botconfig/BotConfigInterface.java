@@ -100,55 +100,6 @@ public interface BotConfigInterface {
 
     /*************************************************************************************
      *
-     * INTAKE CONSTANTS
-     *
-     ************************************************************************************/
-
-    /**
-     * CAN ID for the intake Spark MAX motor controller.
-     */
-    int getIntakeMotorId();
-
-    /**
-     * Smart current limit and stall threshold for intake motor (amps).
-     */
-    int getIntakeStallLimit();
-
-
-    /*************************************************************************************
-     *
-     * SHOOTERCONSTANTS
-     *
-     ************************************************************************************/
-
-    /**
-     * CAN ID for the left shooter TalonFX.
-     */
-    int getShooterLeftMotorId();
-
-    /**
-     * CAN ID for the right shooter TalonFX.
-     */
-    int getShooterRightMotorId();
-
-    /**
-     * Stator current limit for shooter motors (amps).
-     */
-    int getShooterStatorCurrentLimit();
-
-    /**
-     * Supply current limit for shooter motors (amps).
-     */
-    int getShooterSupplyCurrentLimit();
-
-    /**
-     * PWM channel for shooter hood servo.
-     */
-    int getShooterHoodPwmChannel();
-
-
-    /*************************************************************************************
-     *
      * VISION
      *
      ************************************************************************************/
