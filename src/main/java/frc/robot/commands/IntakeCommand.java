@@ -17,7 +17,6 @@ public class IntakeCommand extends Command {
     // Subsystem and controller references
     private final IntakeSubsystem m_intake;
     private final CommandXboxController m_controller;
-    private boolean m_grabbedPiece = false;
 
     /**
      * Creates a new IntakeCommand.

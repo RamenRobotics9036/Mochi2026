@@ -79,7 +79,8 @@ public class IntakeSubsystem extends SubsystemBase {
             .inverted(true)
             .follow(m_lArmMotor);
         m_intakeConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit);
+            .smartCurrentLimit(IntakeConstants.kStallLimit)
+            .inverted(true);
 
         // Apply configs to controllers (matches pattern used in ShooterSubsystem)
         m_lArmMotor.configure(m_lArmConfig, ResetMode.kResetSafeParameters,

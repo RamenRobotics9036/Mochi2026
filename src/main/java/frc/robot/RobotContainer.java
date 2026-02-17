@@ -29,12 +29,14 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterTestCommand;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
@@ -123,6 +125,8 @@ public class RobotContainer {
 
     /** Tracks whether the robot is motionless and for how long. */
     public final MotionlessTracker m_motionlessTracker;
+
+    public final IntakeSubsystem m_intake = new IntakeSubsystem(m_configInterface);
 
     /**
      * Constructs the RobotContainer.
@@ -275,6 +279,8 @@ public class RobotContainer {
         new Trigger(this::isLeftPovDownward).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_limelightOdometry.getLastTarget())));
+
+        operateController.a().whileTrue(new IntakeCommand(m_intake, operateController));
     }
 
     /**
