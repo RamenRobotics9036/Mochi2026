@@ -206,6 +206,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
         // Creep toward the hard stop. You may need to flip this sign once the mechanism is on the robot.
         m_lArmMotor.set(IntakeConstants.kArmHomingSpeed);
+
+        // $TODO - Is this right to set the right-arm speed when its a follower of left arm?  This may
+        // break the follower relationship, and cause the two motors to move independently?  We should
+        // verify and potentially fix.
         m_rArmMotor.set(IntakeConstants.kArmHomingSpeed);
 
         final double current = m_lArmMotor.getOutputCurrent();

@@ -77,5 +77,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     public void stop(){
         m_lMotor.stopMotor();
+
+        // $TODO - SAFETY: We should stop m_rMotor as well, since its possible for the follower relationship
+        // to get interrupted, in which case the right motor could keep spinning, and break the shooter.
     }
 }
