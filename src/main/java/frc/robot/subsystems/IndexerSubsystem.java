@@ -18,8 +18,11 @@ public class IndexerSubsystem extends SubsystemBase{
     public IndexerSubsystem(){
         m_motor = new SparkFlex(IndexerConstants.kMotorID, MotorType.kBrushless);
 
+        m_config = new SparkFlexConfig();
+
         m_config.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(ShooterConstants.kCurrentLimit);
+            .smartCurrentLimit(ShooterConstants.kCurrentLimit)
+            .inverted(true);
 
         m_motor.configure(m_config, ResetMode.kResetSafeParameters, 
             PersistMode.kPersistParameters);
