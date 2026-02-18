@@ -25,7 +25,7 @@ public class IntakeIoReal implements RollerIoInterface {
 
         intakeConfig = new SparkFlexConfig();
         intakeConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit)
+            .smartCurrentLimit(IntakeConstants.kIntakeCurrentLimit)
             .inverted(true);
         m_intakeMotor.configure(intakeConfig, ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters);
