@@ -69,16 +69,17 @@ public class IntakeSubsystem extends SubsystemBase {
         m_intakeConfig = new SparkFlexConfig();
 
         m_lArmConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit);
+            .smartCurrentLimit(IntakeConstants.kArmStallLimit);
         m_lArmConfig.encoder
             .positionConversionFactor(1.0 / IntakeConstants.kGearRatio)
             .velocityConversionFactor((1.0 / IntakeConstants.kGearRatio) / 60.0);
 
         m_rArmConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit)
+            .smartCurrentLimit(IntakeConstants.kArmStallLimit)
             .follow(m_lArmMotor, true);
+            
         m_intakeConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit)
+            .smartCurrentLimit(IntakeConstants.kIntakeStallLimit)
             .inverted(true);
 
         // Apply configs to controllers (matches pattern used in ShooterSubsystem)
@@ -164,16 +165,14 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     /**
-     * Checks if the intake is currently stalled (drawing high current).
+     * Checks if the intake arm is currently stalled (drawing high current).
      *
-     * <p>This is used by commands to detect when a game piece is secured against
-     * the rollers or fully inside the mechanism.
      *
      * @return true if the current draw meets or exceeds the threshold in {@link IntakeConstants}.
      */
-    public boolean isStalled() {
+    public boolean isArmStalled() {
         // return true if the current draw is above the stall limit
-        return m_intakeMotor.getOutputCurrent() >= Constants.IntakeConstants.kStallLimit;
+        return m_intakeMotor.getOutputCurrent() >= Constants.IntakeConstants.kArmStallLimit;
     }
 
     /**
@@ -190,7 +189,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public void periodic() {
         // Publish intake telemetry
         SmartDashboard.putNumber("Intake/Current", getCurrent());
-        SmartDashboard.putBoolean("Intake/Is Stalled", isStalled());
+        SmartDashboard.putBoolean("Intake/Arm is Stalled", isArmStalled());
         SmartDashboard.putString("Intake/ArmHomingState", m_HomingState.name());
         SmartDashboard.putNumber("Intake/ArmPosition", m_encoder.getPosition());
         SmartDashboard.putNumber("Intake/ArmVelocity", m_encoder.getVelocity());
