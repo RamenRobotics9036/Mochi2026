@@ -24,7 +24,7 @@ public class IntakeIoReal implements IntakeIoInterface {
 
         intakeConfig = new SparkFlexConfig();
         intakeConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit)
+            .smartCurrentLimit(IntakeConstants.kIntakeStallLimit)
             .inverted(true);
         m_intakeMotor.configure(intakeConfig, ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters);

@@ -169,7 +169,6 @@ public class IntakeSubsystem extends SubsystemBase {
         // smartCurrentLimit on the motor is also set to 40 Amps.  This means that
         // it is unlikely that isStalled will ever be true.
         // return true if the current draw is above the stall limit
-        //TODO: Investigate this further. I don't see the smartCurrentLimit for the intake being set anywhere, only the arm
         return m_intakeOutputs.currentAmps >= Constants.IntakeConstants.kIntakeStallLimit;
     }
 
