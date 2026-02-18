@@ -152,6 +152,16 @@ public class IntakeSubsystem extends SubsystemBase {
         m_encoder.setPosition(position);
     }
 
+    /**Gets the position, multiplied by gear ratio */
+    public double getPosition() {
+        return m_encoder.getPosition() * IntakeConstants.kArmGearRatio;
+    }
+
+    /**Gets the raw encoder value */
+    public double getEncoderPosition() {
+        return m_encoder.getPosition();
+    }
+
     //
     public boolean isArmDeployed() {
         return m_encoder.getPosition() >= (IntakeConstants.kMaxArmAngle - 1.0);

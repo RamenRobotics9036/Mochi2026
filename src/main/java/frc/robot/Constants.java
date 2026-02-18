@@ -63,6 +63,9 @@ public final class Constants {
         public static final double kP = 0.1; //TODO: filler value
         public static final double kI = 0.0; //TODO: filler value
         public static final double kD = 0.001; //TODO: filler
+
+        public static final double kMaxTime = 3.0; //TODO: filler value
+        public static final double kTolerance = 2.0; //TODO: filler value
     }
 
     public static final class SimIntakeConstants {
