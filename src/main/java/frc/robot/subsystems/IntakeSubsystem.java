@@ -168,6 +168,9 @@ public class IntakeSubsystem extends SubsystemBase {
      * @return true if the current draw meets or exceeds the threshold in {@link IntakeConstants}.
      */
     public boolean isStalled() {
+        // $TODO - Potential bug: The kStallLimit is set to 40 Amps, but the
+        // smartCurrentLimit on the motor is also set to 40 Amps.  This means that
+        // it is unlikely that isStalled will ever be true.
         // return true if the current draw is above the stall limit
         return m_intakeOutputs.currentAmps >= Constants.IntakeConstants.kStallLimit;
     }

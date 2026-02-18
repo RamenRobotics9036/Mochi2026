@@ -1,26 +1,21 @@
 package frc.robot.subsystems.intake;
 
 import com.revrobotics.PersistMode;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkMaxConfig;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.botconfig.BotConfigInterface;
 
 /**
- * Real-hardware implementation of {@link IntakeIoInterface} backed by a REV SparkMax.
+ * Real-hardware implementation of {@link IntakeIoInterface}.
  */
 public class IntakeIoReal implements IntakeIoInterface {
     private final SparkFlex m_intakeMotor;
 
     /** Constructor. */
-    public IntakeIoReal(BotConfigInterface config) {
+    public IntakeIoReal() {
         SparkFlexConfig intakeConfig;
 
         m_intakeMotor = new SparkFlex(

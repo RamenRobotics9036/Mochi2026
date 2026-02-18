@@ -132,7 +132,7 @@ public class RobotContainer {
     /** Intake IO: real hardware or FlywheelSim depending on mode. */
     private final IntakeIoInterface m_intakeIO = Robot.isSimulation()
         ? new IntakeIoSim()
-        : new IntakeIoReal(m_configInterface);
+        : new IntakeIoReal();
 
     /** Intake subsystem driven through the IO abstraction. */
     public final IntakeSubsystem intakeSubsystem =

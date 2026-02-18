@@ -3,6 +3,7 @@ package frc.robot.subsystems.intake;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import frc.robot.Constants;
 import edu.wpi.first.hal.SimDevice;
 import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.hal.SimDouble;
@@ -14,13 +15,12 @@ import edu.wpi.first.hal.SimDouble;
  * exposes velocity and current in the WPILib sim GUI for debugging.
  */
 public class IntakeIoSim implements IntakeIoInterface {
-    /** NEO motor model (single motor). */
-    private static final DCMotor kMotor = DCMotor.getNEO(1);
-    /** Gear ratio (motor rotations per mechanism rotation). */
-    private static final double kGearing = 5.0;
     /** Moment of inertia of the intake roller in kg·m². */
     private static final double kMoiKgM2 = 0.001;
+    private static final String deviceName = "IntakeSim";
 
+    /** NEO motor model (single motor). */
+    private static final DCMotor kMotor = DCMotor.getNeoVortex(1);
     private final FlywheelSim m_flyWheelSim;
 
     // Sim device entries visible in the WPILib sim GUI
@@ -31,12 +31,15 @@ public class IntakeIoSim implements IntakeIoInterface {
     /** Constructs the simulated intake IO. */
     public IntakeIoSim() {
         m_flyWheelSim = new FlywheelSim(
-            LinearSystemId.createFlywheelSystem(kMotor, kMoiKgM2, kGearing),
+            LinearSystemId.createFlywheelSystem(
+                kMotor,
+                kMoiKgM2,
+                Constants.IntakeConstants.kGearRatio),
             kMotor
         );
 
         // Register a SimDevice so values appear in the sim GUI
-        m_simDevice = SimDevice.create("IntakeSim");
+        m_simDevice = SimDevice.create(deviceName);
         m_simVelocity = m_simDevice.createDouble(
             "Velocity RPM", Direction.kOutput, 0.0);
         m_simCurrent = m_simDevice.createDouble(
