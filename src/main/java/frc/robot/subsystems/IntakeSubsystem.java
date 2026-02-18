@@ -26,8 +26,8 @@ import frc.robot.subsystems.intake.IntakeIoInterface;
  * for running the intake motor and raising/lowering the intake arm, stopping the system
  */
 public class IntakeSubsystem extends SubsystemBase {
-    private final BotConfigInterface m_configInterface;
-    private final IntakeIoInterface m_intakeIO;
+    private final BotConfigInterface m_configInterface; //TODO: Why is this never used?
+    private final IntakeIoInterface m_intakeIO; //TODO: Does this allow for stall limits? If so, how do you implement them? Are they implemented by default?
     private final IntakeIoInterface.DeviceOutputs m_intakeOutputs =
         new IntakeIoInterface.DeviceOutputs();
 
@@ -70,13 +70,13 @@ public class IntakeSubsystem extends SubsystemBase {
         m_rArmConfig = new SparkFlexConfig();
 
         m_lArmConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit);
+            .smartCurrentLimit(IntakeConstants.kArmStallLimit);
         m_lArmConfig.encoder
             .positionConversionFactor(1.0 / IntakeConstants.kArmGearRatio)
             .velocityConversionFactor((1.0 / IntakeConstants.kArmGearRatio) / 60.0);
 
         m_rArmConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit)
+            .smartCurrentLimit(IntakeConstants.kArmStallLimit)
             .follow(m_lArmMotor, true);
 
         // Apply configs to controllers (matches pattern used in ShooterSubsystem)
@@ -162,17 +162,28 @@ public class IntakeSubsystem extends SubsystemBase {
     /**
      * Checks if the intake is currently stalled (drawing high current).
      *
-     * <p>This is used by commands to detect when a game piece is secured against
-     * the rollers or fully inside the mechanism.
-     *
      * @return true if the current draw meets or exceeds the threshold in {@link IntakeConstants}.
      */
-    public boolean isStalled() {
+    public boolean isIntakeStalled() {
         // $TODO - Potential bug: The kStallLimit is set to 40 Amps, but the
         // smartCurrentLimit on the motor is also set to 40 Amps.  This means that
         // it is unlikely that isStalled will ever be true.
         // return true if the current draw is above the stall limit
-        return m_intakeOutputs.currentAmps >= Constants.IntakeConstants.kStallLimit;
+        //TODO: Investigate this further. I don't see the smartCurrentLimit for the intake being set anywhere, only the arm
+        return m_intakeOutputs.currentAmps >= Constants.IntakeConstants.kIntakeStallLimit;
+    }
+
+    /**
+     * Checks if the intake arm is currently stalled (drawing high current).
+     *
+     * @return true if the current draw meets or exceeds the threshold in {@link IntakeConstants}.
+     */
+    public boolean isArmStalled() {
+        // $TODO - Potential bug: The kStallLimit is set to 30 Amps, but the
+        // smartCurrentLimit on the motor is also set to 30 Amps.  This means that
+        // it is unlikely that isStalled will ever be true.
+        // return true if the current draw is above the stall limit
+        return m_lArmMotor.getOutputCurrent() >= Constants.IntakeConstants.kArmStallLimit;
     }
 
     /**
@@ -191,7 +202,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
         // Publish intake telemetry
         SmartDashboard.putNumber("Intake/Current", getCurrent());
-        SmartDashboard.putBoolean("Intake/Is Stalled", isStalled());
+        SmartDashboard.putBoolean("Intake/Is Arm Stalled", isArmStalled());
+        SmartDashboard.putBoolean("Intake/Is Intake Stalled", isIntakeStalled());
         SmartDashboard.putString("Intake/ArmHomingState", m_HomingState.name());
         SmartDashboard.putNumber("Intake/ArmPosition", m_encoder.getPosition());
         SmartDashboard.putNumber("Intake/ArmVelocity", m_encoder.getVelocity());
