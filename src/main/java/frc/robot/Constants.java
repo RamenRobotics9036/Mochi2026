@@ -108,9 +108,9 @@ public final class Constants {
         /** Max power (0.5 = 50% power). */ 
         public static final double kMaxOutputPercent = 0.40; 
         /** Amps limit (higher for single motor lifting full weight). */ 
-        public static final int kCurrentLimit = 40;
-        public static final double kClimbUpSpeed = 0.7;   // Positive usually extends
-        public static final double kClimbDownSpeed = -0.7; // Negative usually retracts
+        public static final int kCurrentLimit = 60;
+        public static final double kClimbUpSpeed = 0.9;   // Positive usually extends
+        public static final double kClimbDownSpeed = -0.9; // Negative usually retracts
         public static final double kClimbSlewRate = 2.0;
     } 
 
