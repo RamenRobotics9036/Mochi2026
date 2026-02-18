@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -42,6 +43,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
@@ -125,6 +127,8 @@ public class RobotContainer {
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(m_configInterface);
 
     public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
+
+    public final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
@@ -235,6 +239,16 @@ public class RobotContainer {
 
         //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
         shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
+
+        climberSubsystem.setDefaultCommand(
+            new RunCommand(
+                () -> climberSubsystem.setClimbSpeed(
+                    // Calculation: Right Trigger (Up) minus Left Trigger (Down)
+                    operateController.getRightTriggerAxis() - operateController.getLeftTriggerAxis()
+                ),
+                climberSubsystem
+            )
+        );
 
         // Keep the drivetrain in an Idle state while the robot is disabled
         final var idle = new SwerveRequest.Idle();

@@ -93,6 +93,24 @@ public final class Constants {
         public static final int kIndexerCurrentLimit = 40; //TODO: filler value
     }
 
+    /** 
+     * Constants for the Climber subsystem (Hook). 
+     */ 
+    public static final class ClimberConstants { 
+        /** CAN ID for the single climb motor. */ 
+        public static final int kClimberMotorID = 24; 
+         
+        /** Maximum extension limit (motor rotations). */ 
+        public static final double kMaxHeight = 4.6; 
+        /** Minimum retraction limit. */ 
+        public static final double kMinHeight = 0.0; 
+         
+        /** Max power (0.5 = 50% power). */ 
+        public static final double kMaxOutputPercent = 0.5; 
+        /** Amps limit (higher for single motor lifting full weight). */ 
+        public static final int kCurrentLimit = 60; 
+    } 
+
     /**
      * Constants for joystick processing and smooth driving.
      */
