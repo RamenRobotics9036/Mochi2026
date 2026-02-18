@@ -23,11 +23,14 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.ClimberConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.IntakeCommand;
@@ -45,6 +48,7 @@ import frc.robot.sim.RollerSim.RollerIoSim;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
@@ -74,8 +78,8 @@ public class RobotContainer {
     private double TeleoperatedSpeed = Math.min(m_configInterface.getSpeedInTeleop().in(MetersPerSecond), MaxSpeed);
 
     /** Standard field-centric swerve request. Uses Velocity control for smoother movement.
-     *  Near-zero deadband catches floating-point residuals only;
-     *  main joystick deadband and smoothing is handled by DriveSmooth. */
+     * Near-zero deadband catches floating-point residuals only;
+     * main joystick deadband and smoothing is handled by DriveSmooth. */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(0.001 * TeleoperatedSpeed)
             .withRotationalDeadband(0.001 * MaxAngularRate)
@@ -101,7 +105,7 @@ public class RobotContainer {
     /**
      * Joystick processing pipeline: deadband + response curve + slew-rate limiting.
      * Owned here (not inside JoystickInput) so we can reset it on mode transitions
-     * (e.g. auto → teleop).
+     * (e.g. auto teleop).
      */
     private final DriveSmooth m_driveSmooth = new DriveSmooth();
 
@@ -128,6 +132,8 @@ public class RobotContainer {
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(m_configInterface);
 
     public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
+
+    public final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
     /** Intake IO: real hardware or FlywheelSim depending on mode. */
     private final RollerIoInterface m_intakeIO = Robot.isSimulation()
@@ -246,7 +252,26 @@ public class RobotContainer {
         );
 
         //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
-        shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
+
+        // $TODO - Tarun, was commenting this out intentional?
+        //shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
+
+        // POV Up: Extend Climber
+        operateController.povUp().whileTrue(
+            new RunCommand(
+                () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbUpSpeed),
+                climberSubsystem
+            )
+        ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
+
+        // POV Down: Retract Climber
+        operateController.povDown().whileTrue(
+            new RunCommand(
+                () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbDownSpeed),
+                climberSubsystem
+            )
+        ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
+
 
         // Keep the drivetrain in an Idle state while the robot is disabled
         final var idle = new SwerveRequest.Idle();
@@ -293,7 +318,7 @@ public class RobotContainer {
         drivetrain.registerTelemetry(logger::telemeterize);
 
         // POV Down: rotate in place to face the configured AprilTag.
-        // Use a tolerant trigger (135°–225°) instead of exact povDown() (180° only)
+        // Use a tolerant trigger (135-225) instead of exact povDown() (180 only)
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(this::isLeftPovDownward).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
@@ -358,13 +383,13 @@ public class RobotContainer {
         m_driveAccuracyTester.clearTape();
     }
 
-    /** Returns {@code true} when the left D-pad is in the downward region (135°–225°). */
+    /** Returns {@code true} when the left D-pad is in the downward region (135-225). */
     private boolean isLeftPovDownward() {
         int pov = driveController.getHID().getPOV();
         return pov != -1 && (pov >= 135 && pov <= 225);
     }
 
-    /** Returns {@code true} when the left D-pad is in the upward region (315°–360° or 0°–45°). */
+    /** Returns {@code true} when the left D-pad is in the upward region (315-360 or 0-45). */
     private boolean isLeftPovUpward() {
         int pov = driveController.getHID().getPOV();
         return pov != -1 && (pov <= 45 || pov >= 315);
