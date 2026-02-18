@@ -34,7 +34,7 @@ public class IntakeIoSim implements IntakeIoInterface {
             LinearSystemId.createFlywheelSystem(
                 kMotor,
                 kMoiKgM2,
-                Constants.IntakeConstants.kGearRatio),
+                Constants.IntakeConstants.kIntakeRotorGearRatio),
             kMotor
         );
 

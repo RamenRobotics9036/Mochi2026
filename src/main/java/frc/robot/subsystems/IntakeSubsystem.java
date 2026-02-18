@@ -72,8 +72,8 @@ public class IntakeSubsystem extends SubsystemBase {
         m_lArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kStallLimit);
         m_lArmConfig.encoder
-            .positionConversionFactor(1.0 / IntakeConstants.kGearRatio)
-            .velocityConversionFactor((1.0 / IntakeConstants.kGearRatio) / 60.0);
+            .positionConversionFactor(1.0 / IntakeConstants.kArmGearRatio)
+            .velocityConversionFactor((1.0 / IntakeConstants.kArmGearRatio) / 60.0);
 
         m_rArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kStallLimit)

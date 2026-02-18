@@ -54,7 +54,8 @@ public final class Constants {
         /** Encoder position to set when the hard stop is reached (your defined "home" reference). */
         public static final double kArmHomePosition = 0.0;
 
-        public static final double kGearRatio = 20.0; //TODO: filler value
+        public static final double kArmGearRatio = 20.0; //TODO: filler value
+        public static final double kIntakeRotorGearRatio = 20.0; //TODO: filler value
 
         // $TODO - Are these PID values used anywhere?
         public static final double kP = 0.1; //TODO: filler value
