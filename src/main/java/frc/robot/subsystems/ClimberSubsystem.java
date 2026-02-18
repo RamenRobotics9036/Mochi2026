@@ -41,7 +41,7 @@ public class ClimberSubsystem extends SubsystemBase {
      */
     public void setClimbSpeed(double request) {
         double filteredSpeed = m_rampFilter.calculate(request);
-        double speed = MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxOutputPercent, ClimberConstants.kMaxOutputPercent);
+        double speed = MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxSpeed, ClimberConstants.kMaxSpeed);
         
         double currentPos = getEncoderValue();
 
@@ -57,7 +57,7 @@ public class ClimberSubsystem extends SubsystemBase {
 
     public void setClimbSpeedAdmin(double speed) {
         double filteredSpeed = m_rampFilter.calculate(speed);
-        m_motor.set(MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxOutputPercent, ClimberConstants.kMaxOutputPercent));
+        m_motor.set(MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxSpeed, ClimberConstants.kMaxSpeed));
     }
 
     public double getEncoderValue() { 
