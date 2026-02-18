@@ -68,6 +68,11 @@ public final class Constants {
         public static final double kMoiKgM2 = 0.001;
     }
 
+    public static final class SimShooterConstants {
+        public static final String kDeviceName = "ShooterSim";
+        public static final double kMoiKgM2 = 0.001;
+    }
+
     /**
      * Constants for shooter.
      */
@@ -86,6 +91,8 @@ public final class Constants {
 
         /** Shooting speed */
         public static final double kShootSpeed = 0.40; //TODO: filler value
+
+        public static final double kShooterGearRatio = 20.0; //TODO: filler value
     }
 
     /**

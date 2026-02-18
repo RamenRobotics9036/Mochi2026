@@ -34,7 +34,11 @@ public class TwoMotorRollerIoSim implements TwoMotorRollerIoInterface {
      * @param momentOfInertia MOI of the flywheel in kg·m²
      * @param gearRatio       Gear ratio (motor rotations per flywheel rotation)
      */
-    public TwoMotorRollerIoSim(String deviceName, double momentOfInertia, double gearRatio) {
+    public TwoMotorRollerIoSim(
+        String deviceName,
+        double momentOfInertia,
+        double gearRatio) {
+
         m_flyWheelSim = new FlywheelSim(
             LinearSystemId.createFlywheelSystem(kMotor, momentOfInertia, gearRatio),
             kMotor
