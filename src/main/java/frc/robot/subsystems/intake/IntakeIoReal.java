@@ -7,11 +7,12 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.sim.RollerSim.RollerIoInterface;
 
 /**
- * Real-hardware implementation of {@link IntakeIoInterface}.
+ * Real-hardware implementation of {@link RollerIoInterface}.
  */
-public class IntakeIoReal implements IntakeIoInterface {
+public class IntakeIoReal implements RollerIoInterface {
     private final SparkFlex m_intakeMotor;
 
     /** Constructor. */

@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.subsystems.intake.IntakeIoInterface;
+import frc.robot.sim.RollerSim.RollerIoInterface;
 
 /**
  * Subsystem responsible for the robot's game piece intake mechanism.
@@ -27,9 +27,9 @@ import frc.robot.subsystems.intake.IntakeIoInterface;
  */
 public class IntakeSubsystem extends SubsystemBase {
     private final BotConfigInterface m_configInterface;
-    private final IntakeIoInterface m_intakeIO;
-    private final IntakeIoInterface.DeviceOutputs m_intakeOutputs =
-        new IntakeIoInterface.DeviceOutputs();
+    private final RollerIoInterface m_intakeIO;
+    private final RollerIoInterface.DeviceOutputs m_intakeOutputs =
+        new RollerIoInterface.DeviceOutputs();
 
     // Enum state to track if the arm has homed
     private enum ArmHomedState {
@@ -58,7 +58,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * Constructs a new IntakeSubsystem.
      * Configures the motor with brake mode and a smart current limit for safety.
      */
-    public IntakeSubsystem(BotConfigInterface configInterface, IntakeIoInterface intakeIO) {
+    public IntakeSubsystem(BotConfigInterface configInterface, RollerIoInterface intakeIO) {
         m_configInterface = configInterface;
         m_intakeIO = intakeIO;
         // Left and right arm motors; intake motor:

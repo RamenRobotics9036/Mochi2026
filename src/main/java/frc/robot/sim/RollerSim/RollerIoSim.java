@@ -1,4 +1,4 @@
-package frc.robot.subsystems.intake;
+package frc.robot.sim.RollerSim;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -9,13 +9,13 @@ import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.hal.SimDouble;
 
 /**
- * Simulated implementation of {@link IntakeIoInterface} using a {@link FlywheelSim}.
+ * Simulated implementation of {@link RollerIoInterface} using a {@link FlywheelSim}.
  *
  * <p>Physics are modeled as a single-NEO flywheel. A {@link SimDevice}
  * exposes velocity and current in the WPILib sim GUI for debugging.
  */
-public class IntakeIoSim implements IntakeIoInterface {
-    /** Moment of inertia of the intake roller in kg·m². */
+public class RollerIoSim implements RollerIoInterface {
+    /** Moment of inertia of the roller in kg·m². */
     private static final double kMoiKgM2 = 0.001;
     private static final String deviceName = "IntakeSim";
 
@@ -29,12 +29,12 @@ public class IntakeIoSim implements IntakeIoInterface {
     private final SimDouble m_simCurrent;
 
     /** Constructs the simulated intake IO. */
-    public IntakeIoSim() {
+    public RollerIoSim() {
         m_flyWheelSim = new FlywheelSim(
             LinearSystemId.createFlywheelSystem(
                 kMotor,
                 kMoiKgM2,
-                Constants.IntakeConstants.kIntakeRotorGearRatio),
+                Constants.IntakeConstants.kIntakeRollerGearRatio),
             kMotor
         );
 

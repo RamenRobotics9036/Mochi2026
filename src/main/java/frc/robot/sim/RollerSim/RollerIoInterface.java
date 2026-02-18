@@ -1,14 +1,14 @@
-package frc.robot.subsystems.intake;
+package frc.robot.sim.RollerSim;
 
 /**
- * IO interface for the intake mechanism.
+ * IO interface for a single motor Roller mechanism.
  *
  * <p>Abstracts hardware access so the subsystem works identically
  * with real hardware and with a physics simulation.
  */
-public interface IntakeIoInterface {
+public interface RollerIoInterface {
 
-    /** Mutable container for intake sensor readings. */
+    /** Mutable container for roller sensor readings. */
     class DeviceOutputs {
         /** Motor velocity in RPM. */
         public double velocityRPM;

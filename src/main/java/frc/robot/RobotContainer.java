@@ -36,12 +36,12 @@ import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.ShooterTestCommand;
 import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.intake.IntakeIoInterface;
 import frc.robot.subsystems.intake.IntakeIoReal;
-import frc.robot.subsystems.intake.IntakeIoSim;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
+import frc.robot.sim.RollerSim.RollerIoInterface;
+import frc.robot.sim.RollerSim.RollerIoSim;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -130,8 +130,8 @@ public class RobotContainer {
     public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
 
     /** Intake IO: real hardware or FlywheelSim depending on mode. */
-    private final IntakeIoInterface m_intakeIO = Robot.isSimulation()
-        ? new IntakeIoSim()
+    private final RollerIoInterface m_intakeIO = Robot.isSimulation()
+        ? new RollerIoSim()
         : new IntakeIoReal();
 
     /** Intake subsystem driven through the IO abstraction. */
