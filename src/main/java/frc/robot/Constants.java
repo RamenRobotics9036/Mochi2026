@@ -98,7 +98,7 @@ public final class Constants {
      */ 
     public static final class ClimberConstants { 
         /** CAN ID for the single climb motor. */ 
-        public static final int kClimberMotorID = 24; 
+        public static final int kClimberMotorID = 50; 
          
         /** Maximum extension limit (motor rotations). */ 
         public static final double kMaxHeight = 4.6; 
@@ -106,9 +106,12 @@ public final class Constants {
         public static final double kMinHeight = 0.0; 
          
         /** Max power (0.5 = 50% power). */ 
-        public static final double kMaxOutputPercent = 0.5; 
+        public static final double kMaxOutputPercent = 0.40; 
         /** Amps limit (higher for single motor lifting full weight). */ 
-        public static final int kCurrentLimit = 60; 
+        public static final int kCurrentLimit = 40;
+        public static final double kClimbUpSpeed = 0.7;   // Positive usually extends
+        public static final double kClimbDownSpeed = -0.7; // Negative usually retracts
+        public static final double kClimbSlewRate = 2.0;
     } 
 
     /**

@@ -1,8 +1,8 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -18,19 +18,20 @@ import frc.robot.Constants.ClimberConstants;
  * Subsystem for the single-motor climber arm.
  */
 public class ClimberSubsystem extends SubsystemBase {
-    private final SparkMax m_motor = new SparkMax(ClimberConstants.kClimberMotorID, MotorType.kBrushless);
+    private final SparkFlex m_motor = new SparkFlex(ClimberConstants.kClimberMotorID, MotorType.kBrushless);
     private final RelativeEncoder m_encoder = m_motor.getEncoder();
 
     // Ramps power over 0.5s to prevent mechanical shock/snapping chains.
-    private final SlewRateLimiter m_rampFilter = new SlewRateLimiter(2.0);
+    private final SlewRateLimiter m_rampFilter = new SlewRateLimiter(ClimberConstants.kClimbSlewRate);
 
     public ClimberSubsystem() {
-        SparkMaxConfig config = new SparkMaxConfig();
+        SparkFlexConfig config = new SparkFlexConfig();
 
         config.smartCurrentLimit(ClimberConstants.kCurrentLimit);
         config.idleMode(IdleMode.kBrake); // Holds robot on the chain after match ends
         config.inverted(false); 
 
+        // Apply configuration
         m_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         m_encoder.setPosition(0);
     }
@@ -45,17 +46,15 @@ public class ClimberSubsystem extends SubsystemBase {
         double currentPos = getEncoderValue();
 
         // Directional safety: stop if moving toward a limit, allow moving away.
-        if (speed > 0 && currentPos >= ClimberConstants.kMaxHeight) {
-            speed = 0; 
-        } else if (speed < 0 && currentPos <= ClimberConstants.kMinHeight) {
-            speed = 0; 
-        }
+        //if (speed > 0 && currentPos >= ClimberConstants.kMaxHeight) {
+          //  speed = 0; 
+        //} else if (speed < 0 && currentPos <= ClimberConstants.kMinHeight) {
+          //  speed = 0; 
+        //}
 
         m_motor.set(speed);
     }
 
-    /** * Manual override that ignores software limits but keeps the safety ramp. 
-     */
     public void setClimbSpeedAdmin(double speed) {
         double filteredSpeed = m_rampFilter.calculate(speed);
         m_motor.set(MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxOutputPercent, ClimberConstants.kMaxOutputPercent));
