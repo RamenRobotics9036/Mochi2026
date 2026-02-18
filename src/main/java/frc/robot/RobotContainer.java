@@ -43,7 +43,6 @@ import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
@@ -137,15 +136,13 @@ public class RobotContainer {
 
     /** Intake subsystem driven through the IO abstraction. */
     public final IntakeSubsystem intakeSubsystem =
-        new IntakeSubsystem(m_configInterface);
+        new IntakeSubsystem(m_configInterface, m_intakeIO);
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
 
     /** Tracks whether the robot is motionless and for how long. */
     public final MotionlessTracker m_motionlessTracker;
-
-    public final IntakeSubsystem m_intake = new IntakeSubsystem(m_configInterface);
 
     /**
      * Constructs the RobotContainer.
@@ -304,12 +301,12 @@ public class RobotContainer {
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_limelightOdometry.getLastTarget())));
 
-        operateController.a().whileTrue(new IntakeCommand(m_intake, operateController));
+        operateController.a().whileTrue(new IntakeCommand(intakeSubsystem, operateController));
 
         // Run the intake arm manually any time the operator moves the right stick.
         // (Deadband prevents scheduling from tiny stick noise.)
         new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
-            .whileTrue(new IntakeArmCommand(m_intake, operateController));
+            .whileTrue(new IntakeArmCommand(intakeSubsystem, operateController));
     }
 
     /**
