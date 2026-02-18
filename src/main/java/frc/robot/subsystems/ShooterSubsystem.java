@@ -16,52 +16,16 @@ import frc.robot.botconfig.BotConfigInterface;
 public class ShooterSubsystem extends SubsystemBase {
     private BotConfigInterface m_configInterface;
 
-    private TalonFX m_lMotor;
-    private TalonFX m_rMotor;
+    private TalonFX m_lMotor; // $TODO - Should go away
+    private TalonFX m_rMotor; // $TODO - Should go away
 
-    private TalonFXConfiguration m_lConfig;
-    private TalonFXConfiguration m_rConfig;
+    private TalonFXConfiguration m_lConfig; // $TODO - Should go away
+    private TalonFXConfiguration m_rConfig; // $TODO - Should go away
 
     private Servo m_hood;
 
     /** Creates a new ShooterSubsystem using the ShooterConstants from Constants.java. */
     public ShooterSubsystem(BotConfigInterface configInterface){
-        m_configInterface = configInterface;
-
-        m_lMotor = new TalonFX(Constants.ShooterConstants.kLMotorID, m_configInterface.getCANBus());
-        m_rMotor = new TalonFX(Constants.ShooterConstants.kRMotorID, m_configInterface.getCANBus());
-
-        m_lConfig = new TalonFXConfiguration()
-            .withMotorOutput(
-                new MotorOutputConfigs()
-                    .withNeutralMode(NeutralModeValue.Brake)
-            )
-            .withCurrentLimits(
-                new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Constants.ShooterConstants.kCurrentStatorLimit)
-                    .withSupplyCurrentLimit(Constants.ShooterConstants.kCurrentSupplyLimit)
-            );
-        m_rConfig = new TalonFXConfiguration()
-            .withMotorOutput(
-                new MotorOutputConfigs()
-                    .withNeutralMode(NeutralModeValue.Brake)
-                    // Previously, we set this motor to be a follower and inverted it here
-                    // However, being a follower isn't part of the configuration for Kraken motors
-                    // This is instead done later, and inversion is done there too due to how following works
-            )
-            .withCurrentLimits(
-                new CurrentLimitsConfigs()
-                    .withStatorCurrentLimit(Constants.ShooterConstants.kCurrentStatorLimit)
-                    .withSupplyCurrentLimit(Constants.ShooterConstants.kCurrentSupplyLimit)
-            );
-
-        m_lMotor.getConfigurator().apply(m_lConfig);
-        m_rMotor.getConfigurator().apply(m_rConfig);
-
-        // Sets the right motor to follow the left one
-        // Also sets its direction to be opposed rather than inverting it earlier in the code
-        m_rMotor.setControl(new Follower(Constants.ShooterConstants.kLMotorID, MotorAlignmentValue.Opposed));
-
         m_hood = new Servo(Constants.ShooterConstants.kHoodPwmChannel);
     }
 
