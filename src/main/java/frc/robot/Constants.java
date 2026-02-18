@@ -54,12 +54,18 @@ public final class Constants {
         /** Encoder position to set when the hard stop is reached (your defined "home" reference). */
         public static final double kArmHomePosition = 0.0;
 
-        public static final double kGearRatio = 20.0; //TODO: filler value
+        public static final double kArmGearRatio = 20.0; //TODO: filler value
+        public static final double kIntakeRollerGearRatio = 20.0; //TODO: filler value
 
         // $TODO - Are these PID values used anywhere?
         public static final double kP = 0.1; //TODO: filler value
         public static final double kI = 0.0; //TODO: filler value
         public static final double kD = 0.001; //TODO: filler
+    }
+
+    public static final class SimIntakeConstants {
+        public static final String kDeviceName = "IntakeSim";
+        public static final double kMoiKgM2 = 0.001;
     }
 
     /**
@@ -79,7 +85,7 @@ public final class Constants {
         public static final int kHoodPwmChannel = 0; //TODO: filler value
 
         /** Shooting speed */
-        public static final double kShootSpeed = 0.20; //TODO: filler value
+        public static final double kShootSpeed = 0.40; //TODO: filler value
     }
 
     /**
@@ -88,7 +94,7 @@ public final class Constants {
     public static final class IndexerConstants {
         public static final int kMotorID = 30; //TODO: filler value
         /** Indexer flywheel speed */
-        public static final double kIndexSpeed = 0.15; //TODO: filler value
+        public static final double kIndexSpeed = 0.20; //TODO: filler value
 
         public static final int kIndexerCurrentLimit = 40; //TODO: filler value
     }

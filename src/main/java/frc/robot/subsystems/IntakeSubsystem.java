@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.botconfig.BotConfigInterface;
+import frc.robot.sim.RollerSim.RollerIoInterface;
 
 /**
  * Subsystem responsible for the robot's game piece intake mechanism.
@@ -26,6 +27,9 @@ import frc.robot.botconfig.BotConfigInterface;
  */
 public class IntakeSubsystem extends SubsystemBase {
     private final BotConfigInterface m_configInterface;
+    private final RollerIoInterface m_intakeIO;
+    private final RollerIoInterface.DeviceOutputs m_intakeOutputs =
+        new RollerIoInterface.DeviceOutputs();
 
     // Enum state to track if the arm has homed
     private enum ArmHomedState {
@@ -42,7 +46,6 @@ public class IntakeSubsystem extends SubsystemBase {
     /** The motor controller driving the intake rollers. */
     private final SparkFlex m_lArmMotor;
     private final SparkFlex m_rArmMotor;
-    private final SparkFlex m_intakeMotor;
 
     private RelativeEncoder m_encoder;
     private SparkClosedLoopController m_PIDController;
@@ -50,43 +53,36 @@ public class IntakeSubsystem extends SubsystemBase {
     /** The configuration objects applied to the intake motor controller. */
     private final SparkFlexConfig m_lArmConfig;
     private final SparkFlexConfig m_rArmConfig;
-    private final SparkFlexConfig m_intakeConfig;
 
     /**
      * Constructs a new IntakeSubsystem.
      * Configures the motor with brake mode and a smart current limit for safety.
      */
-    public IntakeSubsystem(BotConfigInterface configInterface) {
+    public IntakeSubsystem(BotConfigInterface configInterface, RollerIoInterface intakeIO) {
         m_configInterface = configInterface;
+        m_intakeIO = intakeIO;
         // Left and right arm motors; intake motor:
         m_lArmMotor = new SparkFlex(IntakeConstants.kLeftArmMotorID, MotorType.kBrushless);
         m_rArmMotor = new SparkFlex(IntakeConstants.kRightArmMotorID, MotorType.kBrushless);
-        m_intakeMotor = new SparkFlex(IntakeConstants.kIntakeMotorID, MotorType.kBrushless);
 
         // Configure the motors:
         m_lArmConfig = new SparkFlexConfig();
         m_rArmConfig = new SparkFlexConfig();
-        m_intakeConfig = new SparkFlexConfig();
 
         m_lArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kStallLimit);
         m_lArmConfig.encoder
-            .positionConversionFactor(1.0 / IntakeConstants.kGearRatio)
-            .velocityConversionFactor((1.0 / IntakeConstants.kGearRatio) / 60.0);
+            .positionConversionFactor(1.0 / IntakeConstants.kArmGearRatio)
+            .velocityConversionFactor((1.0 / IntakeConstants.kArmGearRatio) / 60.0);
 
         m_rArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kStallLimit)
             .follow(m_lArmMotor, true);
-        m_intakeConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit)
-            .inverted(true);
 
         // Apply configs to controllers (matches pattern used in ShooterSubsystem)
         m_lArmMotor.configure(m_lArmConfig, ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters);
         m_rArmMotor.configure(m_rArmConfig, ResetMode.kResetSafeParameters,
-            PersistMode.kPersistParameters);
-        m_intakeMotor.configure(m_intakeConfig, ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters);
 
         // Initialize the encoder and PID controller for the arm motors
@@ -140,7 +136,7 @@ public class IntakeSubsystem extends SubsystemBase {
      * @param speed Percent output in the range [-1.0, 1.0].
      */
     public void setIntakeSpeed(double speed) {
-        m_intakeMotor.set(speed);
+        m_intakeIO.setSpeed(speed);
         // TODO: check soft limits on arm position
     }
 
@@ -154,7 +150,7 @@ public class IntakeSubsystem extends SubsystemBase {
     // Immediately cuts power to the intake motor
     public void stopIntake() {
         // todo: reset mode to idle
-        m_intakeMotor.stopMotor();
+        m_intakeIO.stop();
     }
 
     // Stop all motors in the intake subsystem
@@ -172,15 +168,18 @@ public class IntakeSubsystem extends SubsystemBase {
      * @return true if the current draw meets or exceeds the threshold in {@link IntakeConstants}.
      */
     public boolean isStalled() {
+        // $TODO - Potential bug: The kStallLimit is set to 40 Amps, but the
+        // smartCurrentLimit on the motor is also set to 40 Amps.  This means that
+        // it is unlikely that isStalled will ever be true.
         // return true if the current draw is above the stall limit
-        return m_intakeMotor.getOutputCurrent() >= Constants.IntakeConstants.kStallLimit;
+        return m_intakeOutputs.currentAmps >= Constants.IntakeConstants.kStallLimit;
     }
 
     /**
      * @return The current draw of the intake motor in Amperes.
      */
     public double getCurrent() {
-        return m_intakeMotor.getOutputCurrent();
+        return m_intakeOutputs.currentAmps;
     }
 
     /**
@@ -188,6 +187,8 @@ public class IntakeSubsystem extends SubsystemBase {
      */
     @Override
     public void periodic() {
+        m_intakeIO.updateOutputs(m_intakeOutputs);
+
         // Publish intake telemetry
         SmartDashboard.putNumber("Intake/Current", getCurrent());
         SmartDashboard.putBoolean("Intake/Is Stalled", isStalled());
