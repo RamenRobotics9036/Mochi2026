@@ -63,6 +63,11 @@ public final class Constants {
         public static final double kD = 0.001; //TODO: filler
     }
 
+    public static final class SimIntakeConstants {
+        public static final String kDeviceName = "IntakeSim";
+        public static final double kMoiKgM2 = 0.001;
+    }
+
     /**
      * Constants for shooter.
      */

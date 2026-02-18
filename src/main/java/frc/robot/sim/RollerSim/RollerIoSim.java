@@ -15,10 +15,6 @@ import edu.wpi.first.hal.SimDouble;
  * exposes velocity and current in the WPILib sim GUI for debugging.
  */
 public class RollerIoSim implements RollerIoInterface {
-    /** Moment of inertia of the roller in kg·m². */
-    private static final double kMoiKgM2 = 0.001;
-    private static final String deviceName = "IntakeSim";
-
     /** NEO motor model (single motor). */
     private static final DCMotor kMotor = DCMotor.getNeoVortex(1);
     private final FlywheelSim m_flyWheelSim;
@@ -29,11 +25,11 @@ public class RollerIoSim implements RollerIoInterface {
     private final SimDouble m_simCurrent;
 
     /** Constructs the simulated intake IO. */
-    public RollerIoSim() {
+    public RollerIoSim(String deviceName, double momentOfInertia) {
         m_flyWheelSim = new FlywheelSim(
             LinearSystemId.createFlywheelSystem(
                 kMotor,
-                kMoiKgM2,
+                momentOfInertia,
                 Constants.IntakeConstants.kIntakeRollerGearRatio),
             kMotor
         );
