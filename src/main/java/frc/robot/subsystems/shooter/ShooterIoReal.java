@@ -70,13 +70,16 @@ public class ShooterIoReal implements TwoMotorRollerIoInterface {
 
     @Override
     public void setSpeed(double speed) {
+        // $TODO: Use PID to ensure the motors are spinning at exactly the right speed.
         m_lMotor.set(speed);
     }
 
     @Override
     public void stop() {
+        // $TODO - SAFETY: We should stop m_rMotor as well, since its possible for the follower relationship
+        // to get interrupted, in which case the right motor could keep spinning, and break the shooter.
+
         m_lMotor.stopMotor();
-        m_rMotor.stopMotor();
     }
 
     @Override

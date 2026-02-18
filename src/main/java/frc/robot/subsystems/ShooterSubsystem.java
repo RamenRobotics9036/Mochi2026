@@ -29,19 +29,12 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void setSpeed(double speed){
-        // $TODO: Use PID to ensure the motors are spinning at exactly the right speed.
-        m_lMotor.set(speed);
-    }
 
-    //Gets the speed of the uninverted left motor
-    public double getSpeed(){
-        return m_lMotor.get();
+        m_shooterIO.setSpeed(speed);
     }
 
     public void stop(){
-        m_lMotor.stopMotor();
+        m_shooterIO.stop();
 
-        // $TODO - SAFETY: We should stop m_rMotor as well, since its possible for the follower relationship
-        // to get interrupted, in which case the right motor could keep spinning, and break the shooter.
     }
 }

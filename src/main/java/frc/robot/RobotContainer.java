@@ -139,7 +139,9 @@ public class RobotContainer {
             Constants.ShooterConstants.kShooterGearRatio)
         : new ShooterIoReal(m_configInterface);
 
-    public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(m_configInterface);
+    public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(
+        m_configInterface,
+        m_shooterIO);
 
     public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
 
