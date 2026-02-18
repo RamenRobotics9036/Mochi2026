@@ -149,7 +149,8 @@ public class RobotContainer {
     private final RollerIoInterface m_intakeIO = Robot.isSimulation()
         ? new RollerIoSim(
             Constants.SimIntakeConstants.kDeviceName,
-            Constants.SimIntakeConstants.kMoiKgM2)
+            Constants.SimIntakeConstants.kMoiKgM2,
+            Constants.IntakeConstants.kIntakeRollerGearRatio)
         : new IntakeIoReal();
 
     /** Intake subsystem driven through the IO abstraction. */
