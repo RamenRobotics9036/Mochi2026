@@ -79,7 +79,7 @@ public final class Constants {
         public static final int kHoodPwmChannel = 0; //TODO: filler value
 
         /** Shooting speed */
-        public static final double kShootSpeed = 0.20; //TODO: filler value
+        public static final double kShootSpeed = 0.40; //TODO: filler value
     }
 
     /**
@@ -88,7 +88,7 @@ public final class Constants {
     public static final class IndexerConstants {
         public static final int kMotorID = 30; //TODO: filler value
         /** Indexer flywheel speed */
-        public static final double kIndexSpeed = 0.15; //TODO: filler value
+        public static final double kIndexSpeed = 0.20; //TODO: filler value
 
         public static final int kIndexerCurrentLimit = 40; //TODO: filler value
     }
