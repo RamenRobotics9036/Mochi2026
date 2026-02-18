@@ -287,10 +287,6 @@ public class RobotContainer {
                     .runOnce(() -> m_simWrapper.cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
         }
 
-        // Intake: run while X is held on the operator controller (TBD button)
-        operateController.x().whileTrue(
-            new IntakeCommand(intakeSubsystem, operateController));
-
         // Hook up the telemetry logger to the drivetrain periodic updates
         drivetrain.registerTelemetry(logger::telemeterize);
 

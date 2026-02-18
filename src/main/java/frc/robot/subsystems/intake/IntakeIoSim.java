@@ -17,7 +17,7 @@ public class IntakeIoSim implements IntakeIoInterface {
     /** NEO motor model (single motor). */
     private static final DCMotor kMotor = DCMotor.getNEO(1);
     /** Gear ratio (motor rotations per mechanism rotation). */
-    private static final double kGearing = 1.0;
+    private static final double kGearing = 5.0;
     /** Moment of inertia of the intake roller in kg·m². */
     private static final double kMoiKgM2 = 0.001;
 
