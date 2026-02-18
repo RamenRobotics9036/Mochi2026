@@ -102,7 +102,7 @@ public class IntakeSubsystem extends SubsystemBase {
         m_lArmMotor.set(speed);
     }
 
-    // Homes the intake arm by moving it to the zero position
+    /** Homes the intake arm by moving it to the zero position */
     public void beginHoming() {
         if(m_HomingState != ArmHomedState.HOMING) {
             m_HomingState = ArmHomedState.HOMING;
@@ -121,8 +121,35 @@ public class IntakeSubsystem extends SubsystemBase {
         setArmSpeed(speed);
     }
 
+    /** 
+     * Sets the desired arm position
+     * 
+     * @param position the angle to set the arm to— in degrees— multipled by the gear ratio and clamped.
+    */
     public void setArmPosition(double position) {
-        m_PIDController.setSetpoint(MathUtil.clamp(position, IntakeConstants.kMinArmAngle, IntakeConstants.kMaxArmAngle), ControlType.kPosition);
+        m_PIDController.setSetpoint(MathUtil.clamp(position, IntakeConstants.kMinArmAngle, IntakeConstants.kMaxArmAngle)*IntakeConstants.kArmGearRatio, ControlType.kPosition);
+    }
+
+    /**
+     * Sets the ecoder position manually. Does not multiply by gear ratio.
+     * 
+     * @param position the angle to set the encoder to, in degrees.
+    */
+    public void setArmEncoder(double position) {
+        m_encoder.setPosition(position);
+    }
+
+    /**
+     * Sets the ecoder position manually.
+     * 
+     * @param position the angle to set the encoder to, in degrees.
+     * @param useGearRatio whether to multiply the input position by the gear ratio before setting the encoder.
+    */
+    public void setArmEncoder(double position, boolean useGearRatio) {
+        if(useGearRatio) {
+            position *= IntakeConstants.kArmGearRatio;
+        }
+        m_encoder.setPosition(position);
     }
 
     //
@@ -140,20 +167,20 @@ public class IntakeSubsystem extends SubsystemBase {
         // TODO: check soft limits on arm position
     }
 
-    // Cut power to the arm motors
+    /** Cuts power to the arm motors */
     public void stopArm() {
         // todo: reset mode to idle
         m_lArmMotor.stopMotor();
         m_rArmMotor.stopMotor();
     }
 
-    // Immediately cuts power to the intake motor
+    /** Immediately cuts power to the intake motor */
     public void stopIntake() {
         // todo: reset mode to idle
         m_intakeIO.stop();
     }
 
-    // Stop all motors in the intake subsystem
+    /** Stop all motors in the intake subsystem */
     public void stop() {
         stopIntake();
         stopArm();
