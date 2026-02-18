@@ -13,7 +13,7 @@ import frc.robot.subsystems.IntakeSubsystem;
  * (suggesting the piece is secured), the command finishes and triggers a rumble on 
  * the driver's controller.
  */
-public class IntakeCommand extends Command {
+public class IntakeDefaultCommand extends Command {
     // Subsystem and controller references
     private final IntakeSubsystem m_intake;
     private final CommandXboxController m_controller;
@@ -24,7 +24,7 @@ public class IntakeCommand extends Command {
      * @param intake     The intake subsystem to control.
      * @param controller The Xbox controller used to provide haptic (rumble) feedback.
      */
-    public IntakeCommand(IntakeSubsystem intake, CommandXboxController controller) {
+    public IntakeDefaultCommand(IntakeSubsystem intake, CommandXboxController controller) {
         m_intake = intake;
         m_controller = controller;
         
@@ -45,13 +45,13 @@ public class IntakeCommand extends Command {
     @Override
     public void execute() {
         // Run the intake motor at the predefined speed
-        m_intake.setIntakeSpeed(IntakeConstants.kIntakeSpeed);
+        if (m_controller.a().getAsBoolean()) {
+            m_intake.setIntakeSpeed(IntakeConstants.kIntakeSpeed);
+        };
     }
 
     /**
-     * Detection logic for game piece acquisition.
-     * 
-     * @return true if the motor current exceeds the stall threshold, signaling the piece is inside.
+     * Since this is a default command, always returns false.
      */
     @Override
     public boolean isFinished() {

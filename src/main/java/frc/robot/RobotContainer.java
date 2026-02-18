@@ -30,7 +30,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
-import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.IntakeDefaultCommand;
 import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
@@ -236,6 +236,9 @@ public class RobotContainer {
         //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
         shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
 
+        // Sets the default command for the intake subsystem to spinning the rollers
+        m_intake.setDefaultCommand(new IntakeDefaultCommand(m_intake, operateController));
+
         // Keep the drivetrain in an Idle state while the robot is disabled
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
@@ -286,8 +289,6 @@ public class RobotContainer {
         new Trigger(this::isLeftPovDownward).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_limelightOdometry.getLastTarget())));
-
-        operateController.a().whileTrue(new IntakeCommand(m_intake, operateController));
 
         // Run the intake arm manually any time the operator moves the right stick.
         // (Deadband prevents scheduling from tiny stick noise.)
