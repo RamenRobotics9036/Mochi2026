@@ -252,6 +252,8 @@ public class RobotContainer {
         );
 
         //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
+
+        // $TODO - Tarun, was commenting this out intentional?
         //shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
 
         // POV Up: Extend Climber
