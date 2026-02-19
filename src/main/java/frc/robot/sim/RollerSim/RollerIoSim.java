@@ -25,12 +25,12 @@ public class RollerIoSim implements RollerIoInterface {
     private final SimDouble m_simCurrent;
 
     /** Constructs the simulated intake IO. */
-    public RollerIoSim(String deviceName, double momentOfInertia) {
+    public RollerIoSim(String deviceName, double momentOfInertia, double gearRatio) {
         m_flyWheelSim = new FlywheelSim(
             LinearSystemId.createFlywheelSystem(
                 kMotor,
                 momentOfInertia,
-                Constants.IntakeConstants.kIntakeRollerGearRatio),
+                gearRatio),
             kMotor
         );
 

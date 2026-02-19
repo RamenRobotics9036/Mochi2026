@@ -190,6 +190,7 @@ public class IntakeSubsystem extends SubsystemBase {
         m_intakeIO.updateOutputs(m_intakeOutputs);
 
         // Publish intake telemetry
+        SmartDashboard.putNumber("Intake/VelocityRPM", m_intakeOutputs.velocityRPM);
         SmartDashboard.putNumber("Intake/Current", getCurrent());
         SmartDashboard.putBoolean("Intake/Is Stalled", isStalled());
         SmartDashboard.putString("Intake/ArmHomingState", m_HomingState.name());

@@ -40,11 +40,14 @@ import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.ShooterTestCommand;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.intake.IntakeIoReal;
+import frc.robot.subsystems.shooter.ShooterIoReal;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
 import frc.robot.sim.RollerSim.RollerIoInterface;
 import frc.robot.sim.RollerSim.RollerIoSim;
+import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
+import frc.robot.sim.RollerSim.TwoMotorRollerIoSim;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -129,7 +132,16 @@ public class RobotContainer {
 
     public final LimelightOdometry m_limelightOdometry;
 
-    public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(m_configInterface);
+    private final TwoMotorRollerIoInterface m_shooterIO = Robot.isSimulation()
+        ? new TwoMotorRollerIoSim(
+            Constants.SimShooterConstants.kDeviceName,
+            Constants.SimShooterConstants.kMoiKgM2,
+            Constants.ShooterConstants.kShooterGearRatio)
+        : new ShooterIoReal(m_configInterface);
+
+    public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(
+        m_configInterface,
+        m_shooterIO);
 
     public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
 
@@ -139,7 +151,8 @@ public class RobotContainer {
     private final RollerIoInterface m_intakeIO = Robot.isSimulation()
         ? new RollerIoSim(
             Constants.SimIntakeConstants.kDeviceName,
-            Constants.SimIntakeConstants.kMoiKgM2)
+            Constants.SimIntakeConstants.kMoiKgM2,
+            Constants.IntakeConstants.kIntakeRollerGearRatio)
         : new IntakeIoReal();
 
     /** Intake subsystem driven through the IO abstraction. */
