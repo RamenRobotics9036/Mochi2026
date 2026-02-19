@@ -70,7 +70,7 @@ public class ShooterIoReal implements TwoMotorRollerIoInterface {
 
     @Override
     public void setSpeed(double speed) {
-        // $TODO: Use PID to ensure the motors are spinning at exactly the right speed.
+        // NOTE: The right motor will automatically follow the left motor speed.
         m_lMotor.set(speed);
     }
 
