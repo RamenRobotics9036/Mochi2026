@@ -1,14 +1,7 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.botconfig.BotConfigInterface;
@@ -17,6 +10,8 @@ import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
 public class ShooterSubsystem extends SubsystemBase {
     private final BotConfigInterface m_configInterface;
     private final TwoMotorRollerIoInterface m_shooterIO;
+    private final TwoMotorRollerIoInterface.DeviceOutputs m_shooterOutputs =
+        new TwoMotorRollerIoInterface.DeviceOutputs();
 
     private Servo m_hood;
 
@@ -36,5 +31,15 @@ public class ShooterSubsystem extends SubsystemBase {
     public void stop(){
         m_shooterIO.stop();
 
+    }
+
+    /**
+     * Regularly publishes telemetry to the SmartDashboard for driver and pit feedback.
+     */
+    @Override
+    public void periodic() {
+        m_shooterIO.updateOutputs(m_shooterOutputs);
+
+        SmartDashboard.putNumber("Shooter/VelocityRPM", m_shooterOutputs.velocityRPM);
     }
 }
