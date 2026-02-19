@@ -29,10 +29,13 @@ public class ClimberSubsystem extends SubsystemBase {
 
         config.smartCurrentLimit(ClimberConstants.kCurrentLimit);
         config.idleMode(IdleMode.kBrake); // Holds robot on the chain after match ends
-        config.inverted(false); 
+        config.inverted(false);
 
         // Apply configuration
         m_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        // $TODO - Bug: What happens if the robot is powered on while the climber is extended?
+        // Will the encoder here think it's at 0 and therefore allow movement further up, risking damage?
         m_encoder.setPosition(0);
     }
 
@@ -42,14 +45,14 @@ public class ClimberSubsystem extends SubsystemBase {
     public void setClimbSpeed(double request) {
         double filteredSpeed = m_rampFilter.calculate(request);
         double speed = MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxOutputPercent, ClimberConstants.kMaxOutputPercent);
-        
+
         double currentPos = getEncoderValue();
 
         // Directional safety: stop if moving toward a limit, allow moving away.
         //if (speed > 0 && currentPos >= ClimberConstants.kMaxHeight) {
-          //  speed = 0; 
+          //  speed = 0;
         //} else if (speed < 0 && currentPos <= ClimberConstants.kMinHeight) {
-          //  speed = 0; 
+          //  speed = 0;
         //}
 
         m_motor.set(speed);
@@ -60,20 +63,20 @@ public class ClimberSubsystem extends SubsystemBase {
         m_motor.set(MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxOutputPercent, ClimberConstants.kMaxOutputPercent));
     }
 
-    public double getEncoderValue() { 
-        return m_encoder.getPosition(); 
+    public double getEncoderValue() {
+        return m_encoder.getPosition();
     }
 
     public void stop() {
         m_motor.stopMotor();
-        m_rampFilter.reset(0); 
+        m_rampFilter.reset(0);
     }
 
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Climber/Position", getEncoderValue());
         SmartDashboard.putNumber("Climber/Amps", m_motor.getOutputCurrent());
-        
+
         // Dashboard status indicators
         SmartDashboard.putBoolean("Climber/At Top", getEncoderValue() >= ClimberConstants.kMaxHeight);
         SmartDashboard.putBoolean("Climber/At Bottom", getEncoderValue() <= ClimberConstants.kMinHeight);
