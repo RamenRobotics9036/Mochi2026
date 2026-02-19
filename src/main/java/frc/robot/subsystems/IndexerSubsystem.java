@@ -1,42 +1,35 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.IndexerConstants;
+import frc.robot.sim.RollerSim.RollerIoInterface;
 
 
-public class IndexerSubsystem extends SubsystemBase{
-    private SparkFlex m_motor;
-    private SparkFlexConfig m_config;
+/** Indexer subsystem. */
+public class IndexerSubsystem extends SubsystemBase {
+    private final RollerIoInterface m_indexerIO;
+    private final RollerIoInterface.DeviceOutputs m_indexerOutputs =
+        new RollerIoInterface.DeviceOutputs();
 
-    public IndexerSubsystem(){
-        m_motor = new SparkFlex(IndexerConstants.kMotorID, MotorType.kBrushless);
-
-        m_config = new SparkFlexConfig();
-
-        m_config.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IndexerConstants.kIndexerCurrentLimit)
-            .inverted(true);
-
-        m_motor.configure(m_config, ResetMode.kResetSafeParameters,
-            PersistMode.kPersistParameters);
+    /** Constructor. */
+    public IndexerSubsystem(RollerIoInterface indexerIO) {
+        m_indexerIO = indexerIO;
     }
 
-    public void setSpeed(double speed){
-        m_motor.set(speed);
+    /** Set the motor speed. */
+    public void setSpeed(double speed) {
+        m_indexerIO.setSpeed(speed);
     }
 
-    public double getSpeed(){
-        return m_motor.get();
+    /** Stop motor. */
+    public void stop() {
+        m_indexerIO.stop();
     }
 
-    public void stop(){
-        m_motor.stopMotor();
+    @Override
+    public void periodic() {
+        m_indexerIO.updateOutputs(m_indexerOutputs);
+
+        SmartDashboard.putNumber("Indexer/VelocityRPM", m_indexerOutputs.velocityRPM);
     }
 }

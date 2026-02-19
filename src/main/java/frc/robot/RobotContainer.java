@@ -39,6 +39,7 @@ import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.ShooterTestCommand;
 import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.indexer.IndexerIoReal;
 import frc.robot.subsystems.intake.IntakeIoReal;
 import frc.robot.subsystems.shooter.ShooterIoReal;
 import frc.robot.sim.JoystickInputsRecord;
@@ -143,7 +144,14 @@ public class RobotContainer {
         m_configInterface,
         m_shooterIO);
 
-    public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
+    private final RollerIoInterface m_indexerIO = Robot.isSimulation()
+        ? new RollerIoSim(
+            Constants.SimIndexerConstants.kDeviceName,
+            Constants.SimIndexerConstants.kMoiKgM2,
+            Constants.IndexerConstants.kIndexerGearRatio)
+        : new IndexerIoReal();
+
+    public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem(m_indexerIO);
 
     public final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
