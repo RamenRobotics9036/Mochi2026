@@ -31,7 +31,8 @@ public final class Constants {
         /** Default speed for raising and lowering the intake arm. */
         public static final double kArmSpeed = 0.05;
         /** Current threshold in Amps used to detect if a game piece is fully secured. */
-        public static final int kStallLimit = 40; // Amps
+        public static final int kIntakeRollerStallLimit = 40;
+        public static final int kArmStallLimit = 40;
 
         public static final int kLeftArmMotorID = 20;
         public static final int kRightArmMotorID = 21;
