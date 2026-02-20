@@ -21,8 +21,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.IndexerConstants;
+import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.IntakeArmCommand;
@@ -49,6 +53,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.SpinnyWheels;
+import frc.robot.subsystems.TestSequence;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.subsystems.indexer.IndexerIoReal;
 import frc.robot.subsystems.intake.ArmIoReal;
@@ -224,6 +229,12 @@ public class RobotContainer {
         // Add a button on dashboard to launch Accuracy Drive Test
         SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
 
+        SmartDashboard.putData("Test Subsystems", TestSequence.testSubsystems(
+            intakeSubsystem,
+            m_indexerSubsystem,
+            shooterSubsystem,
+            armSubsystem));
+
         configureBindings();
 
         m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
@@ -323,9 +334,6 @@ public class RobotContainer {
         RobotModeTriggers.disabled().whileTrue(
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
-
-        // Map Button A to the brake command for defensive positioning
-        driveController.a().whileTrue(drivetrain.applyRequest(() -> brake));
 
         // Map Button B to orient wheels based on the left joystick angle (useful for testing)
         driveController.b().whileTrue(drivetrain.applyRequest(() ->
