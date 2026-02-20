@@ -1,48 +1,46 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.RelativeEncoder;
-
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ClimberConstants;
+import frc.robot.sim.elevatorSim.ElevatorIoInterface;
 
 /**
  * Subsystem for the single-motor climber arm.
  */
 public class ClimberSubsystem extends SubsystemBase {
-    public ClimberSubsystem() {
+    private final ElevatorIoInterface m_io;
+    private final ElevatorIoInterface.DeviceOutputs m_outputs = new ElevatorIoInterface.DeviceOutputs();
+
+    /** Constructor. */
+    public ClimberSubsystem(ElevatorIoInterface io) {
+        m_io = io;
     }
 
     /**
      * Sets climber speed with software limit checks.
      */
     public void setClimbSpeed(double request) {
-
+        m_io.setSpeed(request);
     }
 
-    public void setClimbSpeedAdmin(double speed) {
-        double filteredSpeed = m_rampFilter.calculate(speed);
-        m_motor.set(MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxOutputPercent, ClimberConstants.kMaxOutputPercent));
+    public double getEncoderValue() {
+        return m_outputs.positionMeters;
     }
 
     public void stop() {
+        m_io.stop();
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Climber/Position", getEncoderValue());
-        SmartDashboard.putNumber("Climber/Amps", m_motor.getOutputCurrent());
+        m_io.updateOutputs(m_outputs);
+
+        SmartDashboard.putNumber("Climber/Position", m_outputs.positionMeters);
+        SmartDashboard.putNumber("Climber/Amps", m_outputs.currentAmps);
 
         // Dashboard status indicators
-        SmartDashboard.putBoolean("Climber/At Top", getEncoderValue() >= ClimberConstants.kMaxHeight);
-        SmartDashboard.putBoolean("Climber/At Bottom", getEncoderValue() <= ClimberConstants.kMinHeight);
+        SmartDashboard.putBoolean("Climber/At Top", m_outputs.positionMeters >= ClimberConstants.kMaxHeight);
+        SmartDashboard.putBoolean("Climber/At Bottom", m_outputs.positionMeters <= ClimberConstants.kMinHeight);
     }
 }

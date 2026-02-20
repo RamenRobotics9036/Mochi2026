@@ -33,6 +33,7 @@ import frc.robot.sim.RollerSim.RollerIoInterface;
 import frc.robot.sim.RollerSim.RollerIoSim;
 import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
 import frc.robot.sim.RollerSim.TwoMotorRollerIoSim;
+import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.elevatorSim.ElevatorIoInterface;
 import frc.robot.sim.elevatorSim.ElevatorIoSim;
 import frc.robot.subsystems.climber.ClimberIoReal;
