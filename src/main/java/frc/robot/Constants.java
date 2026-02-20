@@ -31,7 +31,8 @@ public final class Constants {
         /** Default speed for raising and lowering the intake arm. */
         public static final double kArmSpeed = 0.05;
         /** Current threshold in Amps used to detect if a game piece is fully secured. */
-        public static final int kStallLimit = 40; // Amps
+        public static final int kIntakeRollerStallLimit = 40;
+        public static final int kArmStallLimit = 40;
 
         public static final int kLeftArmMotorID = 20;
         public static final int kRightArmMotorID = 21;
@@ -51,8 +52,6 @@ public final class Constants {
         public static final double kArmHomingStallSeconds = 0.15;
         /** Overall timeout for the homing routine (seconds). */
         public static final double kArmHomingTimeoutSeconds = 2.0;
-        /** Encoder position to set when the hard stop is reached (your defined "home" reference). */
-        public static final double kArmHomePosition = 0.0;
 
         public static final double kArmGearRatio = 20.0; //TODO: filler value
         public static final double kIntakeRollerGearRatio = 20.0; //TODO: filler value
@@ -66,6 +65,12 @@ public final class Constants {
     public static final class SimIntakeConstants {
         public static final String kDeviceName = "IntakeSim";
         public static final double kMoiKgM2 = 0.001;
+    }
+
+    public static final class SimIntakeArmConstants {
+        public static final String kDeviceName = "IntakeArmSim";
+        public static final double kMoiKgM2 = 0.25;
+        public static final double kArmLengthMeters = 0.45;
     }
 
     public static final class SimShooterConstants {

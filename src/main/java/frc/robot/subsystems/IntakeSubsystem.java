@@ -1,35 +1,27 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.PersistMode;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.ResetMode;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.sim.RollerSim.RollerIoInterface;
+import frc.robot.sim.armsim.ArmIoInterface;
 
 /**
  * Subsystem responsible for the robot's game piece intake mechanism.
  *
- * <p>This subsystem manages 3 SPARK FLEX motor controllers and provides methods
- * for running the intake motor and raising/lowering the intake arm, stopping the system
+ * <p>This subsystem manages intake roller and arm behavior through IO abstractions,
+ * allowing the same control logic to run on real hardware and in simulation.
  */
 public class IntakeSubsystem extends SubsystemBase {
-    private final BotConfigInterface m_configInterface;
     private final RollerIoInterface m_intakeIO;
     private final RollerIoInterface.DeviceOutputs m_intakeOutputs =
         new RollerIoInterface.DeviceOutputs();
+    private final ArmIoInterface m_armIO;
+    private final ArmIoInterface.DeviceOutputs m_armOutputs =
+        new ArmIoInterface.DeviceOutputs();
 
     // Enum state to track if the arm has homed
     private enum ArmHomedState {
@@ -43,63 +35,26 @@ public class IntakeSubsystem extends SubsystemBase {
     private final Timer m_homingTimer = new Timer();
     private double m_stallStartSec = -1.0;
 
-    /** The motor controller driving the intake rollers. */
-    private final SparkFlex m_lArmMotor;
-    private final SparkFlex m_rArmMotor;
-
-    private RelativeEncoder m_encoder;
-    private SparkClosedLoopController m_PIDController;
-
-    /** The configuration objects applied to the intake motor controller. */
-    private final SparkFlexConfig m_lArmConfig;
-    private final SparkFlexConfig m_rArmConfig;
-
     /**
      * Constructs a new IntakeSubsystem.
-     * Configures the motor with brake mode and a smart current limit for safety.
      */
-    public IntakeSubsystem(BotConfigInterface configInterface, RollerIoInterface intakeIO) {
-        m_configInterface = configInterface;
+    public IntakeSubsystem(
+            RollerIoInterface intakeIO,
+            ArmIoInterface armIO) {
         m_intakeIO = intakeIO;
-        // Left and right arm motors; intake motor:
-        m_lArmMotor = new SparkFlex(IntakeConstants.kLeftArmMotorID, MotorType.kBrushless);
-        m_rArmMotor = new SparkFlex(IntakeConstants.kRightArmMotorID, MotorType.kBrushless);
-
-        // Configure the motors:
-        m_lArmConfig = new SparkFlexConfig();
-        m_rArmConfig = new SparkFlexConfig();
-
-        m_lArmConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit);
-        m_lArmConfig.encoder
-            .positionConversionFactor(1.0 / IntakeConstants.kArmGearRatio)
-            .velocityConversionFactor((1.0 / IntakeConstants.kArmGearRatio) / 60.0);
-
-        m_rArmConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kStallLimit)
-            .follow(m_lArmMotor, true);
-
-        // Apply configs to controllers (matches pattern used in ShooterSubsystem)
-        m_lArmMotor.configure(m_lArmConfig, ResetMode.kResetSafeParameters,
-            PersistMode.kPersistParameters);
-        m_rArmMotor.configure(m_rArmConfig, ResetMode.kResetSafeParameters,
-            PersistMode.kPersistParameters);
-
-        // Initialize the encoder and PID controller for the arm motors
-        m_encoder = m_lArmMotor.getEncoder();
-        m_PIDController = m_lArmMotor.getClosedLoopController();
+        m_armIO = armIO;
      }
 
     /**
-     * Sets the open-loop percent output for the intake arm motors.
+     * Immediately starts moving arm.
      *
      * <p>Positive values should correspond to "deploy" and negative values to "raise",
      * but the sign convention ultimately depends on motor inversion/mechanics.
      *
      * @param speed Percent output in the range [-1.0, 1.0].
      */
-    public void setArmSpeed(double speed) {
-        m_lArmMotor.set(speed);
+    public void moveArmWithSpeed(double speed) {
+        m_armIO.moveArmWithSpeed(speed);
     }
 
     // Homes the intake arm by moving it to the zero position
@@ -111,23 +66,14 @@ public class IntakeSubsystem extends SubsystemBase {
         }
     }
 
-    /** Convenience wrapper for setting an explicit deploy (down) speed. */
-    public void setDeployArmSpeed(double speed) {
-        setArmSpeed(speed);
-    }
-
-    /** Convenience wrapper for setting an explicit raise (up) speed. */
-    public void setRaiseArmSpeed(double speed) {
-        setArmSpeed(speed);
-    }
-
     public void setArmPosition(double position) {
-        m_PIDController.setSetpoint(MathUtil.clamp(position, IntakeConstants.kMinArmAngle, IntakeConstants.kMaxArmAngle), ControlType.kPosition);
+        m_armIO.setPosition(
+            MathUtil.clamp(position, IntakeConstants.kMinArmAngle, IntakeConstants.kMaxArmAngle));
     }
 
     //
     public boolean isArmDeployed() {
-        return m_encoder.getPosition() >= (IntakeConstants.kMaxArmAngle - 1.0);
+        return m_armOutputs.position >= (IntakeConstants.kMaxArmAngle - 1.0);
     }
 
     /**
@@ -142,9 +88,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     // Cut power to the arm motors
     public void stopArm() {
-        // todo: reset mode to idle
-        m_lArmMotor.stopMotor();
-        m_rArmMotor.stopMotor();
+        m_armIO.stop();
     }
 
     // Immediately cuts power to the intake motor
@@ -168,11 +112,11 @@ public class IntakeSubsystem extends SubsystemBase {
      * @return true if the current draw meets or exceeds the threshold in {@link IntakeConstants}.
      */
     public boolean isStalled() {
-        // $TODO - Potential bug: The kStallLimit is set to 40 Amps, but the
+        // $TODO - Potential bug: The kRollerStallLimit is set to 40 Amps, but the
         // smartCurrentLimit on the motor is also set to 40 Amps.  This means that
         // it is unlikely that isStalled will ever be true.
         // return true if the current draw is above the stall limit
-        return m_intakeOutputs.currentAmps >= Constants.IntakeConstants.kStallLimit;
+        return m_intakeOutputs.currentAmps >= Constants.IntakeConstants.kIntakeRollerStallLimit;
     }
 
     /**
@@ -188,14 +132,15 @@ public class IntakeSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         m_intakeIO.updateOutputs(m_intakeOutputs);
+        m_armIO.updateOutputs(m_armOutputs);
 
         // Publish intake telemetry
         SmartDashboard.putNumber("Intake/VelocityRPM", m_intakeOutputs.velocityRPM);
         SmartDashboard.putNumber("Intake/Current", getCurrent());
         SmartDashboard.putBoolean("Intake/Is Stalled", isStalled());
         SmartDashboard.putString("Intake/ArmHomingState", m_HomingState.name());
-        SmartDashboard.putNumber("Intake/ArmPosition", m_encoder.getPosition());
-        SmartDashboard.putNumber("Intake/ArmVelocity", m_encoder.getVelocity());
+        SmartDashboard.putNumber("Intake/ArmPosition", m_armOutputs.position);
+        SmartDashboard.putNumber("Intake/ArmVelocity", m_armOutputs.velocity);
         if(m_HomingState == ArmHomedState.HOMING) {
             homingHelper();
         }
@@ -207,15 +152,10 @@ public class IntakeSubsystem extends SubsystemBase {
         }
 
         // Creep toward the hard stop. You may need to flip this sign once the mechanism is on the robot.
-        m_lArmMotor.set(IntakeConstants.kArmHomingSpeed);
+        m_armIO.moveArmWithSpeed(IntakeConstants.kArmHomingSpeed);
 
-        // $TODO - Is this right to set the right-arm speed when its a follower of left arm?  This may
-        // break the follower relationship, and cause the two motors to move independently?  We should
-        // verify and potentially fix.
-        m_rArmMotor.set(IntakeConstants.kArmHomingSpeed);
-
-        final double current = m_lArmMotor.getOutputCurrent();
-        final double velocity = Math.abs(m_encoder.getVelocity());
+        final double current = m_armOutputs.currentAmps;
+        final double velocity = Math.abs(m_armOutputs.velocity);
         final boolean looksStalled = current >= IntakeConstants.kArmHomingStallCurrent
                 && velocity <= IntakeConstants.kArmHomingStallVelocity;
 
@@ -233,7 +173,7 @@ public class IntakeSubsystem extends SubsystemBase {
         if (stallLongEnough) {
             stopArm();
             // This stop is the mechanical reference (0). Adjust if your "zero" should be some other angle.
-            m_encoder.setPosition(IntakeConstants.kArmHomePosition);
+            m_armIO.resetEncoderValue();
             m_HomingState = ArmHomedState.HOMED;
             m_homingTimer.stop();
             return;
