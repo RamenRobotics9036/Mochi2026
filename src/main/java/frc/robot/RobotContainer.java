@@ -49,6 +49,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.SpinnyWheels;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
@@ -135,6 +136,8 @@ public class RobotContainer {
 
     public final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
+    public final SpinnyWheels m_spinnyWheels = new SpinnyWheels();
+
     /** Intake IO: real hardware or FlywheelSim depending on mode. */
     private final RollerIoInterface m_intakeIO = Robot.isSimulation()
         ? new RollerIoSim(
@@ -180,6 +183,8 @@ public class RobotContainer {
         SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
 
         configureBindings();
+
+        m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
 
         // $VISIONSIM - Wrapper for sim features
         if (Robot.isSimulation()) {
