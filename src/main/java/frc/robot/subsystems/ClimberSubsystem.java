@@ -18,44 +18,14 @@ import frc.robot.Constants.ClimberConstants;
  * Subsystem for the single-motor climber arm.
  */
 public class ClimberSubsystem extends SubsystemBase {
-    private final SparkFlex m_motor = new SparkFlex(ClimberConstants.kClimberMotorID, MotorType.kBrushless);
-    private final RelativeEncoder m_encoder = m_motor.getEncoder();
-
-    // Ramps power over 0.5s to prevent mechanical shock/snapping chains.
-    private final SlewRateLimiter m_rampFilter = new SlewRateLimiter(ClimberConstants.kClimbSlewRate);
-
     public ClimberSubsystem() {
-        SparkFlexConfig config = new SparkFlexConfig();
-
-        config.smartCurrentLimit(ClimberConstants.kCurrentLimit);
-        config.idleMode(IdleMode.kBrake); // Holds robot on the chain after match ends
-        config.inverted(false);
-
-        // Apply configuration
-        m_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-        // $TODO - Bug: What happens if the robot is powered on while the climber is extended?
-        // Will the encoder here think it's at 0 and therefore allow movement further up, risking damage?
-        m_encoder.setPosition(0);
     }
 
     /**
      * Sets climber speed with software limit checks.
      */
     public void setClimbSpeed(double request) {
-        double filteredSpeed = m_rampFilter.calculate(request);
-        double speed = MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxOutputPercent, ClimberConstants.kMaxOutputPercent);
 
-        double currentPos = getEncoderValue();
-
-        // Directional safety: stop if moving toward a limit, allow moving away.
-        //if (speed > 0 && currentPos >= ClimberConstants.kMaxHeight) {
-          //  speed = 0;
-        //} else if (speed < 0 && currentPos <= ClimberConstants.kMinHeight) {
-          //  speed = 0;
-        //}
-
-        m_motor.set(speed);
     }
 
     public void setClimbSpeedAdmin(double speed) {
@@ -63,13 +33,7 @@ public class ClimberSubsystem extends SubsystemBase {
         m_motor.set(MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxOutputPercent, ClimberConstants.kMaxOutputPercent));
     }
 
-    public double getEncoderValue() {
-        return m_encoder.getPosition();
-    }
-
     public void stop() {
-        m_motor.stopMotor();
-        m_rampFilter.reset(0);
     }
 
     @Override
