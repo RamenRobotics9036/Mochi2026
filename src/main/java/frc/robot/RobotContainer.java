@@ -40,8 +40,11 @@ import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.ShooterTestCommand;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.indexer.IndexerIoReal;
+import frc.robot.subsystems.intake.ArmIoReal;
 import frc.robot.subsystems.intake.IntakeIoReal;
 import frc.robot.subsystems.shooter.ShooterIoReal;
+import frc.robot.sim.armsim.ArmIoInterface;
+import frc.robot.sim.armsim.ArmIoSim;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.SimWrapper;
@@ -163,9 +166,17 @@ public class RobotContainer {
             Constants.IntakeConstants.kIntakeRollerGearRatio)
         : new IntakeIoReal();
 
+    private final ArmIoInterface m_intakeArmIO = Robot.isSimulation()
+        ? new ArmIoSim(
+            Constants.SimIntakeArmConstants.kDeviceName,
+            Constants.SimIntakeArmConstants.kMoiKgM2,
+            Constants.SimIntakeArmConstants.kArmLengthMeters,
+            Constants.IntakeConstants.kArmGearRatio)
+        : new ArmIoReal();
+
     /** Intake subsystem driven through the IO abstraction. */
     public final IntakeSubsystem intakeSubsystem =
-        new IntakeSubsystem(m_configInterface, m_intakeIO);
+        new IntakeSubsystem(m_intakeIO, m_intakeArmIO);
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
