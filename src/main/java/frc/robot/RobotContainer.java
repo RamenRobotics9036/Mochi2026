@@ -6,18 +6,10 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import java.util.Optional;
-import java.util.OptionalDouble;
-
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -29,35 +21,44 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.ClimberConstants;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
-import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.IntakeArmCommand;
+import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateToTargetCommand;
-import frc.robot.commands.ShooterDefaultCommand;
-import frc.robot.commands.ShooterTestCommand;
-import frc.robot.subsystems.IntakeSubsystem;
-import frc.robot.subsystems.intake.IntakeIoReal;
 import frc.robot.sim.JoystickInputsRecord;
-import frc.robot.sim.ShowVisionOnField;
-import frc.robot.sim.SimWrapper;
 import frc.robot.sim.RollerSim.RollerIoInterface;
 import frc.robot.sim.RollerSim.RollerIoSim;
+import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
+import frc.robot.sim.RollerSim.TwoMotorRollerIoSim;
+import frc.robot.sim.ShowVisionOnField;
+import frc.robot.sim.elevatorSim.ElevatorIoInterface;
+import frc.robot.sim.elevatorSim.ElevatorIoSim;
+import frc.robot.subsystems.climber.ClimberIoReal;
+import frc.robot.sim.SimWrapper;
+import frc.robot.sim.armsim.ArmIoInterface;
+import frc.robot.sim.armsim.ArmIoSim;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.auto.AutoLogic;
+import frc.robot.subsystems.indexer.IndexerIoReal;
+import frc.robot.subsystems.intake.ArmIoReal;
+import frc.robot.subsystems.intake.IntakeIoReal;
+import frc.robot.subsystems.shooter.ShooterIoReal;
+import frc.robot.visutils.AimController;
+import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
-import frc.robot.visutils.AllianceCalc;
-import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.MotionlessTracker;
-import frc.robot.visutils.AimController;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
+import java.util.OptionalDouble;
+
 
 /**
  * The RobotContainer class is where the bulk of the robot structure is declared.
@@ -129,22 +130,57 @@ public class RobotContainer {
 
     public final LimelightOdometry m_limelightOdometry;
 
-    public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(m_configInterface);
+    private final TwoMotorRollerIoInterface m_shooterIO = Robot.isSimulation()
+        ? new TwoMotorRollerIoSim(
+            Constants.SimShooterConstants.kDeviceName,
+            Constants.SimShooterConstants.kMoiKgM2,
+            Constants.ShooterConstants.kShooterGearRatio)
+        : new ShooterIoReal(m_configInterface);
 
-    public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem();
+    public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(
+        m_configInterface,
+        m_shooterIO);
 
-    public final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+    private final RollerIoInterface m_indexerIO = Robot.isSimulation()
+        ? new RollerIoSim(
+            Constants.SimIndexerConstants.kDeviceName,
+            Constants.SimIndexerConstants.kMoiKgM2,
+            Constants.IndexerConstants.kIndexerGearRatio)
+        : new IndexerIoReal();
+
+    public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem(m_indexerIO);
+
+    private final ElevatorIoInterface m_climberIO = Robot.isSimulation()
+        ? new ElevatorIoSim(
+            Constants.SimClimberConstants.kDeviceName,
+            Constants.SimClimberConstants.kGearRatio,
+            Constants.SimClimberConstants.kCarriageMassKg,
+            Constants.SimClimberConstants.kDrumRadiusMeters,
+            Constants.SimClimberConstants.kMinHeightMeters,
+            Constants.SimClimberConstants.kMaxHeightMeters)
+        : new ClimberIoReal();
+
+    public final ClimberSubsystem climberSubsystem = new ClimberSubsystem(m_climberIO);
 
     /** Intake IO: real hardware or FlywheelSim depending on mode. */
     private final RollerIoInterface m_intakeIO = Robot.isSimulation()
         ? new RollerIoSim(
             Constants.SimIntakeConstants.kDeviceName,
-            Constants.SimIntakeConstants.kMoiKgM2)
+            Constants.SimIntakeConstants.kMoiKgM2,
+            Constants.IntakeConstants.kIntakeRollerGearRatio)
         : new IntakeIoReal();
+
+    private final ArmIoInterface m_intakeArmIO = Robot.isSimulation()
+        ? new ArmIoSim(
+            Constants.SimIntakeArmConstants.kDeviceName,
+            Constants.SimIntakeArmConstants.kMoiKgM2,
+            Constants.SimIntakeArmConstants.kArmLengthMeters,
+            Constants.IntakeConstants.kArmGearRatio)
+        : new ArmIoReal();
 
     /** Intake subsystem driven through the IO abstraction. */
     public final IntakeSubsystem intakeSubsystem =
-        new IntakeSubsystem(m_configInterface, m_intakeIO);
+        new IntakeSubsystem(m_intakeIO, m_intakeArmIO);
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();

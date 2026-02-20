@@ -1,81 +1,47 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.RelativeEncoder;
-
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ClimberConstants;
+import frc.robot.sim.elevatorSim.ElevatorIoInterface;
 
 /**
  * Subsystem for the single-motor climber arm.
  */
 public class ClimberSubsystem extends SubsystemBase {
-    private final SparkFlex m_motor = new SparkFlex(ClimberConstants.kClimberMotorID, MotorType.kBrushless);
-    private final RelativeEncoder m_encoder = m_motor.getEncoder();
+    private final ElevatorIoInterface m_io;
+    private final ElevatorIoInterface.DeviceOutputs m_outputs = new ElevatorIoInterface.DeviceOutputs();
 
-    // Ramps power over 0.5s to prevent mechanical shock/snapping chains.
-    private final SlewRateLimiter m_rampFilter = new SlewRateLimiter(ClimberConstants.kClimbSlewRate);
-
-    public ClimberSubsystem() {
-        SparkFlexConfig config = new SparkFlexConfig();
-
-        config.smartCurrentLimit(ClimberConstants.kCurrentLimit);
-        config.idleMode(IdleMode.kBrake); // Holds robot on the chain after match ends
-        config.inverted(false); 
-
-        // Apply configuration
-        m_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        m_encoder.setPosition(0);
+    /** Constructor. */
+    public ClimberSubsystem(ElevatorIoInterface io) {
+        m_io = io;
     }
 
     /**
      * Sets climber speed with software limit checks.
      */
     public void setClimbSpeed(double request) {
-        double filteredSpeed = m_rampFilter.calculate(request);
-        double speed = MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxOutputPercent, ClimberConstants.kMaxOutputPercent);
-        
-        double currentPos = getEncoderValue();
-
-        // Directional safety: stop if moving toward a limit, allow moving away.
-        //if (speed > 0 && currentPos >= ClimberConstants.kMaxHeight) {
-          //  speed = 0; 
-        //} else if (speed < 0 && currentPos <= ClimberConstants.kMinHeight) {
-          //  speed = 0; 
-        //}
-
-        m_motor.set(speed);
+        m_io.setSpeed(request);
     }
 
-    public void setClimbSpeedAdmin(double speed) {
-        double filteredSpeed = m_rampFilter.calculate(speed);
-        m_motor.set(MathUtil.clamp(filteredSpeed, -ClimberConstants.kMaxOutputPercent, ClimberConstants.kMaxOutputPercent));
-    }
-
-    public double getEncoderValue() { 
-        return m_encoder.getPosition(); 
+    public double getEncoderValue() {
+        return m_outputs.positionMeters;
     }
 
     public void stop() {
-        m_motor.stopMotor();
-        m_rampFilter.reset(0); 
+        m_io.stop();
     }
 
     @Override
     public void periodic() {
-        SmartDashboard.putNumber("Climber/Position", getEncoderValue());
-        SmartDashboard.putNumber("Climber/Amps", m_motor.getOutputCurrent());
-        
+        m_io.updateOutputs(m_outputs);
+
+        SmartDashboard.putNumber("Climber/Position", m_outputs.positionMeters);
+        SmartDashboard.putNumber("Climber/Amps", m_outputs.currentAmps);
+
         // Dashboard status indicators
-        SmartDashboard.putBoolean("Climber/At Top", getEncoderValue() >= ClimberConstants.kMaxHeight);
-        SmartDashboard.putBoolean("Climber/At Bottom", getEncoderValue() <= ClimberConstants.kMinHeight);
+        // $TODO: Bug: This is comparing meters to climber motor rotations
+        SmartDashboard.putBoolean("Climber/At Top", m_outputs.positionMeters >= ClimberConstants.kMaxHeight);
+        SmartDashboard.putBoolean("Climber/At Bottom", m_outputs.positionMeters <= ClimberConstants.kMinHeight);
     }
 }

@@ -17,14 +17,14 @@ public class IntakeArmCommand extends Command {
 
     /**
      * Creates a new IntakeArmCommand.
-     * 
+     *
      * @param intake     The intake subsystem to control.
      * @param controller The Xbox controller used to provide haptic (rumble) feedback.
      */
     public IntakeArmCommand(IntakeSubsystem intake, CommandXboxController controller) {
         m_intake = intake;
         m_controller = controller;
-        
+
         // Ensure no other intake commands run simultaneously
         addRequirements(m_intake);
     }
@@ -49,12 +49,12 @@ public class IntakeArmCommand extends Command {
         // Re-use intake speed constant as a safe max output scaler.
         armSpeed *= IntakeConstants.kArmSpeed;
 
-        m_intake.setArmSpeed(armSpeed);
+        m_intake.moveArmWithSpeed(armSpeed);
     }
 
     /**
      * Detection logic for game piece acquisition.
-     * 
+     *
      * @return true if the motor current exceeds the stall threshold, signaling the piece is inside.
      */
     @Override
@@ -63,9 +63,9 @@ public class IntakeArmCommand extends Command {
     }
 
     /**
-     * Handles cleanup when the command ends. 
+     * Handles cleanup when the command ends.
      * Stops the motor and triggers the rumble if the piece was successfully acquired.
-     * 
+     *
      * @param interrupted true if the command was canceled by the driver or another command.
      */
     @Override
