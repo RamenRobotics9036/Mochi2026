@@ -57,6 +57,10 @@ public class ArmIoReal implements ArmIoInterface {
 
     @Override
     public void moveArmWithSpeed(double speed) {
+        // $TODO - Previously, IntakeSubsystem.setArmSpeed just set speed on m_lArmMotor.
+        // But IntakeSubsystem.homingHelper set kArmHomingSpeed on BOTH m_lArmMotor AND
+        // m_rArmMotor.  Now, homingHelper calls this same method, which only sets speed on m_lArmMotor.
+        // Is that safe, or will it break the arm?
         m_lArmMotor.set(speed);
     }
 
