@@ -40,6 +40,8 @@ public class ArmIoReal implements ArmIoInterface {
             .positionConversionFactor(1.0 / IntakeConstants.kArmGearRatio)
             .velocityConversionFactor((1.0 / IntakeConstants.kArmGearRatio) / 60.0);
 
+        // $TODO - Thomas style feedback is to move rArmConfig.idleMode and .SmartCurrentLimit up next to the equivalent
+        // calls for lArmConfig.  And then have .follow on rArmConfig call after all that on a separate line.
         rArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kArmStallLimit)
             .follow(m_lArmMotor, true);
