@@ -40,6 +40,7 @@ public class ClimberSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Climber/Amps", m_outputs.currentAmps);
 
         // Dashboard status indicators
+        // $TODO: Bug: This is comparing meters to climber motor rotations
         SmartDashboard.putBoolean("Climber/At Top", m_outputs.positionMeters >= ClimberConstants.kMaxHeight);
         SmartDashboard.putBoolean("Climber/At Bottom", m_outputs.positionMeters <= ClimberConstants.kMinHeight);
     }
