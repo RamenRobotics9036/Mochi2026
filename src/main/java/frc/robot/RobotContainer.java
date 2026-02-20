@@ -34,6 +34,9 @@ import frc.robot.sim.RollerSim.RollerIoSim;
 import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
 import frc.robot.sim.RollerSim.TwoMotorRollerIoSim;
 import frc.robot.sim.ShowVisionOnField;
+import frc.robot.sim.elevatorSim.ElevatorIoInterface;
+import frc.robot.sim.elevatorSim.ElevatorIoSim;
+import frc.robot.subsystems.climber.ClimberIoReal;
 import frc.robot.sim.SimWrapper;
 import frc.robot.sim.armsim.ArmIoInterface;
 import frc.robot.sim.armsim.ArmIoSim;
@@ -147,7 +150,17 @@ public class RobotContainer {
 
     public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem(m_indexerIO);
 
-    public final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+    private final ElevatorIoInterface m_climberIO = Robot.isSimulation()
+        ? new ElevatorIoSim(
+            Constants.SimClimberConstants.kDeviceName,
+            Constants.SimClimberConstants.kGearRatio,
+            Constants.SimClimberConstants.kCarriageMassKg,
+            Constants.SimClimberConstants.kDrumRadiusMeters,
+            Constants.SimClimberConstants.kMinHeightMeters,
+            Constants.SimClimberConstants.kMaxHeightMeters)
+        : new ClimberIoReal();
+
+    public final ClimberSubsystem climberSubsystem = new ClimberSubsystem(m_climberIO);
 
     /** Intake IO: real hardware or FlywheelSim depending on mode. */
     private final RollerIoInterface m_intakeIO = Robot.isSimulation()

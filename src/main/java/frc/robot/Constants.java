@@ -83,6 +83,20 @@ public final class Constants {
         public static final double kMoiKgM2 = 0.001;
     }
 
+    public static final class SimClimberConstants {
+        public static final String kDeviceName = "ClimberSim";
+        /** Motor-to-mechanism gear ratio. */
+        public static final double kGearRatio = 25.0; // TODO: filler
+        /** Mass of carriage + robot being lifted (kg). */
+        public static final double kCarriageMassKg = 60.0; // TODO: filler (~130 lb robot)
+        /** Radius of the winch drum (m). */
+        public static final double kDrumRadiusMeters = 0.02; // TODO: filler
+        /** Minimum carriage height (m). */
+        public static final double kMinHeightMeters = 0.0;
+        /** Maximum carriage height (m). */
+        public static final double kMaxHeightMeters = 0.5; // TODO: filler
+    }
+
     /**
      * Constants for shooter.
      */
