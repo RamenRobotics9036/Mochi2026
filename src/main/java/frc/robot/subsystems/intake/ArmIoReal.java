@@ -32,9 +32,13 @@ public class ArmIoReal implements ArmIoInterface {
         // Configure the motors:
         lArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kArmStallLimit);
+
+        // $TODO - Bug?  The units for encoder (after conversion here) seem to be rotations/second
+        // I think?  But setPosition below takes as input DEGREES I think?  We should check all the units
+        // in the arm code, and change variable. names to make clear what the units are: e.g. positionDegrees, etc.
         lArmConfig.encoder
-            .positionConversionFactor(1.0 / IntakeConstants.kArmGearRatio) // $TODO - 360.0 / IntakeConstants.kArmGearRatio?
-            .velocityConversionFactor((1.0 / IntakeConstants.kArmGearRatio) / 60.0); // $TODO - (360.0 / IntakeConstants.kArmGearRatio) / 60.0?
+            .positionConversionFactor(1.0 / IntakeConstants.kArmGearRatio)
+            .velocityConversionFactor((1.0 / IntakeConstants.kArmGearRatio) / 60.0);
 
         rArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(IntakeConstants.kArmStallLimit)
