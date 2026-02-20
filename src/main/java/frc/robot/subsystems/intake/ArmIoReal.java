@@ -58,11 +58,6 @@ public class ArmIoReal implements ArmIoInterface {
     @Override
     public void moveArmWithSpeed(double speed) {
         m_lArmMotor.set(speed);
-
-        // $TODO - Is this right to set the right-arm speed when its a follower of left arm?  This may
-        // break the follower relationship, and cause the two motors to move independently?  We should
-        // verify and potentially fix.
-        m_rArmMotor.set(speed);
     }
 
     @Override
