@@ -144,8 +144,6 @@ public final class Constants {
         /** Minimum retraction limit. */
         public static final double kMinHeight = 0.0;
 
-        /** Max power (0.5 = 50% power). */
-        public static final double kMaxOutputPercent = 0.40;
         /** Amps limit (higher for single motor lifting full weight). */
         public static final int kCurrentLimit = 60;
         public static final double kClimbUpSpeed = 0.9;   // Positive usually extends

@@ -50,10 +50,6 @@ public class ClimberIoReal implements ElevatorIoInterface {
     @Override
     public void setSpeed(double speed) {
         double filteredSpeed = m_rampFilter.calculate(speed);
-        double clampedSpeed = MathUtil.clamp(
-            filteredSpeed,
-            -ClimberConstants.kMaxOutputPercent,
-            ClimberConstants.kMaxOutputPercent);
 
         double currentPos = getEncoderValue();
 
@@ -64,7 +60,7 @@ public class ClimberIoReal implements ElevatorIoInterface {
           //  clampedSpeed = 0;
         //}
 
-        m_motor.set(clampedSpeed);
+        m_motor.set(filteredSpeed);
     }
 
     @Override
