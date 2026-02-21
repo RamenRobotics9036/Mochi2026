@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -51,7 +52,6 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.SpinnyWheels;
 import frc.robot.subsystems.TestSubsystems;
 import frc.robot.subsystems.auto.AutoLogic;
@@ -245,6 +245,49 @@ public class RobotContainer {
             climberSubsystem));
 
         configureBindings();
+
+        // Register Named Commands for PathPlanner
+        NamedCommands.registerCommand("shoot",
+            new RunCommand(() -> {
+                shooterSubsystem.setSpeed(Constants.ShooterConstants.kShootSpeed);
+                m_indexerSubsystem.setSpeed(Constants.IndexerConstants.kIndexSpeed);
+            }, shooterSubsystem, m_indexerSubsystem)
+            .withTimeout(5.0)
+            .andThen(() -> { // Ensure motors stop after the 5 seconds
+                shooterSubsystem.stop();
+                m_indexerSubsystem.stop();
+            }));
+
+        NamedCommands.registerCommand("Full Auto Climb",
+            Commands.sequence(
+                new RunCommand(
+                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbUpSpeed),
+                    climberSubsystem).withTimeout(4.0),
+                new RunCommand(
+                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbDownSpeed),
+                    climberSubsystem).withTimeout(4.0),
+                new InstantCommand(climberSubsystem::stop, climberSubsystem)));
+
+        // $TODO - This command uses both armSubsystem AND intakeSubsystem, but the RunCommand
+        // I think only takes dependency on intakeSubsystem.
+        NamedCommands.registerCommand("get fuel",
+                new RunCommand(() -> {
+                    armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle);
+                    intakeSubsystem.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
+                }, intakeSubsystem)
+                        .withTimeout(3.0)
+                        .andThen(intakeSubsystem::stop));
+
+        NamedCommands.registerCommand("set intake bottom",
+                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle),
+                        intakeSubsystem)
+                                .until(armSubsystem::isArmDeployed));
+
+        NamedCommands.registerCommand("set intake top",
+                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMinArmAngle),
+                        intakeSubsystem)
+                                .withTimeout(2.0)
+                                .andThen(armSubsystem::stop));
 
         m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
 

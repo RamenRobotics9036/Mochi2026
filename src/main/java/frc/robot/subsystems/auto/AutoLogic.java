@@ -90,7 +90,8 @@ public final class  AutoLogic {
         autoPicker.addOption("Center Auto", "Center Auto");
         autoPicker.addOption("Scale test", "Scale test");
         autoPicker.addOption("Diagonal path", "Diagonal path");
-        autoPicker.setDefaultOption("Cross", "Cross");
+        autoPicker.addOption("Cross", "Cross");
+        autoPicker.setDefaultOption("testing shoot", "testing shoot");
     }
 
     /**
