@@ -371,7 +371,7 @@ public class RobotContainer {
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_limelightOdometry.getLastTarget())));
 
-        operateController.a().whileTrue(new IntakeCommand(intakeSubsystem));
+        operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
         // Run the intake arm manually any time the operator moves the right stick.
         // (Deadband prevents scheduling from tiny stick noise.)
