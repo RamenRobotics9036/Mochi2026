@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -31,6 +32,7 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.ArmToPoseCommand;
 import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
@@ -305,6 +307,10 @@ public class RobotContainer {
         // (Deadband prevents scheduling from tiny stick noise.)
         new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
             .whileTrue(new IntakeArmCommand(intakeSubsystem, operateController));
+
+        operateController.b().onTrue(new ArmToPoseCommand(intakeSubsystem, 45));
+
+        operateController.x().onTrue(new RunCommand(() -> intakeSubsystem.setArmEncoder(0), intakeSubsystem));
     }
 
     /**
