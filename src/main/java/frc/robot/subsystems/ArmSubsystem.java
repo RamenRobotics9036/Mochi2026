@@ -4,7 +4,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.sim.armsim.ArmIoInterface;
 
 public class ArmSubsystem extends SubsystemBase{
@@ -67,11 +67,11 @@ public class ArmSubsystem extends SubsystemBase{
 
     public void setArmPosition(double position) {
         m_armIO.setPosition(
-            MathUtil.clamp(position, IntakeConstants.kMinArmAngle, IntakeConstants.kMaxArmAngle));
+            MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
     }
 
     public boolean isArmDeployed() {
-        return m_armOutputs.position >= (IntakeConstants.kMaxArmAngle - 1.0);
+        return m_armOutputs.position >= (ArmConstants.kMaxArmAngle - 1.0);
     }
 
     public void stop(){
@@ -86,12 +86,12 @@ public class ArmSubsystem extends SubsystemBase{
         }
 
         // Creep toward the hard stop. You may need to flip this sign once the mechanism is on the robot.
-        m_armIO.moveArmWithSpeed(IntakeConstants.kArmHomingSpeed);
+        m_armIO.moveArmWithSpeed(ArmConstants.kArmHomingSpeed);
 
         final double current = m_armOutputs.currentAmps;
         final double velocity = Math.abs(m_armOutputs.velocity);
-        final boolean looksStalled = current >= IntakeConstants.kArmHomingStallCurrent
-                && velocity <= IntakeConstants.kArmHomingStallVelocity;
+        final boolean looksStalled = current >= ArmConstants.kArmHomingStallCurrent
+                && velocity <= ArmConstants.kArmHomingStallVelocity;
 
         if (looksStalled) {
             if (m_stallStartSec < 0.0) {
@@ -102,7 +102,7 @@ public class ArmSubsystem extends SubsystemBase{
         }
 
         final boolean stallLongEnough = m_stallStartSec >= 0.0
-                && (m_homingTimer.get() - m_stallStartSec) >= IntakeConstants.kArmHomingStallSeconds;
+                && (m_homingTimer.get() - m_stallStartSec) >= ArmConstants.kArmHomingStallSeconds;
 
         if (stallLongEnough) {
             stop();
@@ -113,7 +113,7 @@ public class ArmSubsystem extends SubsystemBase{
             return;
         }
 
-        if (m_homingTimer.get() >= IntakeConstants.kArmHomingTimeoutSeconds) {
+        if (m_homingTimer.get() >= ArmConstants.kArmHomingTimeoutSeconds) {
             // Timeout: stop and mark as NOT_HOMED so higher-level code can decide what to do.
             stop();
             m_HomingState = ArmHomedState.NOT_HOMED;
