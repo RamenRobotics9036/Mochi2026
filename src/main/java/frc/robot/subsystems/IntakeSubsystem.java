@@ -38,7 +38,7 @@ public class IntakeSubsystem extends SubsystemBase {
         // TODO: check soft limits on arm position
     }
 
-    // Stop all motors in the intake subsystem
+    /** Stops the intake. */
     public void stop() {
         m_intakeIO.stop();
     }

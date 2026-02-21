@@ -28,7 +28,7 @@ public class ArmSubsystem extends SubsystemBase{
         m_armIO = armIO;
     }
 
-        /**
+    /**
      * Regularly publishes telemetry to the SmartDashboard for driver and pit feedback.
      */
     @Override
@@ -56,7 +56,7 @@ public class ArmSubsystem extends SubsystemBase{
         m_armIO.moveArmWithSpeed(speed);
     }
 
-    // Homes the intake arm by moving it to the zero position
+    /** Homes the arm by moving it to the zero position. */
     public void beginHoming() {
         if(m_HomingState != ArmHomedState.HOMING) {
             m_HomingState = ArmHomedState.HOMING;
@@ -65,21 +65,24 @@ public class ArmSubsystem extends SubsystemBase{
         }
     }
 
+    /** Sets the desired position for the arm. */
     public void setArmPosition(double position) {
         m_armIO.setPosition(
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
     }
 
+    /** Checks if the arm is deployed. */
     public boolean isArmDeployed() {
         return m_armOutputs.position >= (ArmConstants.kMaxArmAngle - 1.0);
     }
 
+    /** Stops the arm. */
     public void stop(){
         m_armIO.stop();
     }
 
 
-
+    //TODO: get whoever wrote this to add doc comment.
     public void homingHelper() {
         if (m_HomingState != ArmHomedState.HOMING) {
             return;
