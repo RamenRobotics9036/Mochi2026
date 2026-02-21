@@ -5,7 +5,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.Constants.IntakeConstants;
 import frc.robot.sim.armsim.ArmIoInterface;
 
 public class ArmSubsystem extends SubsystemBase{
@@ -55,6 +54,7 @@ public class ArmSubsystem extends SubsystemBase{
      */
     public void moveArmWithSpeed(double speed) {
         m_armIO.moveArmWithSpeed(speed);
+        System.out.println("Moving!"); //TODO: remove after testing
     }
 
     /** Homes the arm by moving it to the zero position. */
@@ -70,10 +70,12 @@ public class ArmSubsystem extends SubsystemBase{
     public void setArmPosition(double position) {
         m_armIO.setPosition(
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
+        System.out.println("Set Position!"); //TODO: remove after testing
     }
     
     /**Gets the position, multiplied by gear ratio */
     public double getPosition() {
+        System.out.println(m_armIO.getPosition()); //TODO: remove after testing
         return m_armIO.getPosition();
     }
 

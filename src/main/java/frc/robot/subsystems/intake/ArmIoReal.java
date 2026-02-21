@@ -68,12 +68,12 @@ public class ArmIoReal implements ArmIoInterface {
 
     @Override
     public void setPosition(double position) {
-        m_pidController.setSetpoint(position, ControlType.kPosition);
+        m_pidController.setSetpoint(position/360, ControlType.kPosition);
     }
 
     @Override
     public double getPosition() {
-        return m_encoder.getPosition() * ArmConstants.kArmGearRatio;
+        return m_encoder.getPosition() * ArmConstants.kArmGearRatio * 360; //Convert from rotations to degrees
     }
 
     @Override
