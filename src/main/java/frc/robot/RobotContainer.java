@@ -335,6 +335,9 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
+        // Map Button A to the brake command for defensive positioning
+        driveController.a().whileTrue(drivetrain.applyRequest(() -> brake));
+
         // Map Button B to orient wheels based on the left joystick angle (useful for testing)
         driveController.b().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-driveController.getLeftY(), -driveController.getLeftX()))
