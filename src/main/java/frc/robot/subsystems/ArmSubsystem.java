@@ -43,7 +43,7 @@ public class ArmSubsystem extends SubsystemBase{
             homingHelper();
         }
     }
-    
+
     /**
      * Immediately starts moving arm.
      *
@@ -74,6 +74,11 @@ public class ArmSubsystem extends SubsystemBase{
     /** Checks if the arm is deployed. */
     public boolean isArmDeployed() {
         return m_armOutputs.position >= (ArmConstants.kMaxArmAngle - 1.0);
+    }
+
+    /** Checks if arm is homed. */
+    public boolean isArmHomed() {
+        return m_armOutputs.position <= (ArmConstants.kMinArmAngle + 1.0);
     }
 
     /** Stops the arm. */
