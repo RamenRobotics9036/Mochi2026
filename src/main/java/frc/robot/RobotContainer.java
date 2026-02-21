@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -23,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.IntakeArmCommand;
@@ -221,6 +223,14 @@ public class RobotContainer {
         SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
 
         configureBindings();
+
+        // Register Named Commands for PathPlanner
+        NamedCommands.registerCommand("Set Arm Position To Bottom", 
+            new InstantCommand(() -> intakeSubsystem.setArmPosition(IntakeConstants.kMaxArmAngle), intakeSubsystem));
+        NamedCommands.registerCommand("Set Arm Position To Top", 
+            new InstantCommand(() -> intakeSubsystem.setArmPosition(IntakeConstants.kMinArmAngle), intakeSubsystem));
+        NamedCommands.registerCommand("Intake Piece", 
+            new IntakeCommand(intakeSubsystem, operateController));
 
         m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
 
