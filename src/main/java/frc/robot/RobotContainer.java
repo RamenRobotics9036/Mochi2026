@@ -225,12 +225,17 @@ public class RobotContainer {
         configureBindings();
 
         // Register Named Commands for PathPlanner
-        NamedCommands.registerCommand("Set Arm Position To Bottom", 
-            new InstantCommand(() -> intakeSubsystem.setArmPosition(IntakeConstants.kMaxArmAngle), intakeSubsystem));
-        NamedCommands.registerCommand("Set Arm Position To Top", 
-            new InstantCommand(() -> intakeSubsystem.setArmPosition(IntakeConstants.kMinArmAngle), intakeSubsystem));
-        NamedCommands.registerCommand("Intake Piece", 
-            new IntakeCommand(intakeSubsystem, operateController));
+        NamedCommands.registerCommand("shoot", 
+            new InstantCommand(() -> {
+                shooterSubsystem.setSpeed(Constants.ShooterConstants.kShootSpeed);
+                m_indexerSubsystem.setSpeed(Constants.IndexerConstants.kIndexSpeed);
+            }, shooterSubsystem, m_indexerSubsystem));
+
+        NamedCommands.registerCommand("stop shoot", 
+            new InstantCommand(() -> {
+                shooterSubsystem.stop();
+                m_indexerSubsystem.stop();
+            }, shooterSubsystem, m_indexerSubsystem));
 
         m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
 
