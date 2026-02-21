@@ -30,6 +30,7 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
+import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
@@ -267,24 +268,26 @@ public class RobotContainer {
                     climberSubsystem).withTimeout(4.0),
                 new InstantCommand(climberSubsystem::stop, climberSubsystem)));
 
+        // $TODO - This command uses both armSubsystem AND intakeSubsystem, but the RunCommand
+        // I think only takes dependency on intakeSubsystem.
         NamedCommands.registerCommand("get fuel",
                 new RunCommand(() -> {
-                    intakeSubsystem.setArmPosition(Constants.IntakeConstants.kMaxArmAngle);
+                    armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle);
                     intakeSubsystem.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
                 }, intakeSubsystem)
                         .withTimeout(3.0)
                         .andThen(intakeSubsystem::stop));
 
         NamedCommands.registerCommand("set intake bottom",
-                new RunCommand(() -> intakeSubsystem.setArmPosition(Constants.IntakeConstants.kMaxArmAngle),
+                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle),
                         intakeSubsystem)
-                                .until(intakeSubsystem::isArmDeployed));
+                                .until(armSubsystem::isArmDeployed));
 
         NamedCommands.registerCommand("set intake top",
-                new RunCommand(() -> intakeSubsystem.setArmPosition(Constants.IntakeConstants.kMinArmAngle),
+                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMinArmAngle),
                         intakeSubsystem)
                                 .withTimeout(2.0)
-                                .andThen(intakeSubsystem::stopArm));
+                                .andThen(armSubsystem::stop));
 
         m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
 
