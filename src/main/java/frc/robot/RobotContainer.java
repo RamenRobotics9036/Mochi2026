@@ -30,7 +30,6 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
-import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
@@ -258,10 +257,10 @@ public class RobotContainer {
                 m_indexerSubsystem.stop();
             }));
 
-        NamedCommands.registerCommand("Full Auto Climb", 
+        NamedCommands.registerCommand("Full Auto Climb",
             Commands.sequence(
                 new RunCommand(
-                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbUpSpeed), 
+                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbUpSpeed),
                     climberSubsystem).withTimeout(4.0),
                 new RunCommand(
                     () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbDownSpeed),
