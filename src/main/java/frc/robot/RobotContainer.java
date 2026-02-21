@@ -41,6 +41,7 @@ import frc.robot.subsystems.climber.ClimberIoReal;
 import frc.robot.sim.SimWrapper;
 import frc.robot.sim.armsim.ArmIoInterface;
 import frc.robot.sim.armsim.ArmIoSim;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
@@ -61,6 +62,8 @@ import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.OptionalDouble;
+
+import javax.crypto.interfaces.PBEKey;
 
 
 /**
@@ -180,12 +183,15 @@ public class RobotContainer {
             Constants.SimIntakeArmConstants.kDeviceName,
             Constants.SimIntakeArmConstants.kMoiKgM2,
             Constants.SimIntakeArmConstants.kArmLengthMeters,
-            Constants.IntakeConstants.kArmGearRatio)
+            Constants.ArmConstants.kArmGearRatio)
         : new ArmIoReal();
 
     /** Intake subsystem driven through the IO abstraction. */
     public final IntakeSubsystem intakeSubsystem =
-        new IntakeSubsystem(m_intakeIO, m_intakeArmIO);
+        new IntakeSubsystem(m_intakeIO);
+
+    /** Arm subsystem driven through the IO abstraction. */
+    public final ArmSubsystem armSubsystem = new ArmSubsystem(m_intakeArmIO);
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
@@ -365,12 +371,12 @@ public class RobotContainer {
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_limelightOdometry.getLastTarget())));
 
-        operateController.a().whileTrue(new IntakeCommand(intakeSubsystem, operateController));
+        operateController.a().whileTrue(new IntakeCommand(intakeSubsystem));
 
         // Run the intake arm manually any time the operator moves the right stick.
         // (Deadband prevents scheduling from tiny stick noise.)
         new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
-            .whileTrue(new IntakeArmCommand(intakeSubsystem, operateController));
+            .whileTrue(new IntakeArmCommand(armSubsystem, operateController));
     }
 
     /**
