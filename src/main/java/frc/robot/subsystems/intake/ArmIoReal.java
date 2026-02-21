@@ -30,7 +30,7 @@ public class ArmIoReal implements ArmIoInterface {
         m_rArmMotor = new SparkFlex(ArmConstants.kRightArmMotorID, MotorType.kBrushless);
 
         // Configure the motors:
-        lArmConfig.idleMode(IdleMode.kBrake)
+        lArmConfig.idleMode(IdleMode.kCoast)
             .smartCurrentLimit(ArmConstants.kArmStallLimit);
 
         // $TODO - Bug?  The units for encoder (after conversion here) seem to be rotations/second
@@ -42,7 +42,7 @@ public class ArmIoReal implements ArmIoInterface {
 
         // $TODO - Thomas style feedback is to move rArmConfig.idleMode and .SmartCurrentLimit up next to the equivalent
         // calls for lArmConfig.  And then have .follow on rArmConfig call after all that on a separate line.
-        rArmConfig.idleMode(IdleMode.kBrake)
+        rArmConfig.idleMode(IdleMode.kCoast)
             .smartCurrentLimit(ArmConstants.kArmStallLimit)
             .follow(m_lArmMotor, true);
 

@@ -86,6 +86,7 @@ public class ArmSubsystem extends SubsystemBase{
 
     public void resetEncoderValue(){
         m_armIO.resetEncoderValue();
+        System.out.println("Reset Encoder to" + getPosition()); //TODO: remove after testing
     }
 
     /** Checks if the arm is deployed. */

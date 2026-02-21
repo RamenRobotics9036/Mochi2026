@@ -440,7 +440,9 @@ public class RobotContainer {
         new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
             .whileTrue(new IntakeArmCommand(armSubsystem, operateController));
 
-        operateController.b().onTrue(new ArmToPoseCommand(armSubsystem, 45));
+        operateController.b().onTrue(new ArmToPoseCommand(armSubsystem, -45));
+
+        operateController.x().onTrue(new RunCommand(() -> armSubsystem.resetEncoderValue(), intakeSubsystem).withTimeout(1));
     }
 
     /**
