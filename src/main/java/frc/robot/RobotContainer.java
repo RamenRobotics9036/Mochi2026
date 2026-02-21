@@ -230,6 +230,10 @@ public class RobotContainer {
                 m_indexerSubsystem.setSpeed(Constants.IndexerConstants.kIndexSpeed);
             }, shooterSubsystem, m_indexerSubsystem)
             .withTimeout(5.0)
+            .andThen(() -> { // Ensure motors stop after the 5 seconds
+                shooterSubsystem.stop();
+                m_indexerSubsystem.stop();
+            })
         );
 
         NamedCommands.registerCommand("Full Auto Climb", 
