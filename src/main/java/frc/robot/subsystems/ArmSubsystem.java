@@ -73,7 +73,7 @@ public class ArmSubsystem extends SubsystemBase{
         System.out.println("Set Position!"); //TODO: remove after testing
     }
     
-    /**Gets the position, multiplied by gear ratio */
+    /**Gets the position, converted to degreed */
     public double getPosition() {
         System.out.println(m_armIO.getPosition()); //TODO: remove after testing
         return m_armIO.getPosition();
@@ -82,6 +82,10 @@ public class ArmSubsystem extends SubsystemBase{
     /**Gets the raw encoder value */
     public double getEncoderPosition() {
         return m_armIO.getEncoderPosition();
+    }
+
+    public void resetEncoderValue(){
+        m_armIO.resetEncoderValue();
     }
 
     /** Checks if the arm is deployed. */

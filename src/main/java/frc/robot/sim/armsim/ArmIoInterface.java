@@ -21,7 +21,7 @@ public interface ArmIoInterface {
     void setPosition(double position);
 
     
-    /**Gets the position, multiplied by gear ratio */
+    /**Gets the position, converted to degrees */
     double getPosition();
 
     /**Gets the raw encoder value */

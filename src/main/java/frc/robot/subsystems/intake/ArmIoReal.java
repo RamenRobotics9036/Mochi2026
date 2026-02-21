@@ -73,7 +73,7 @@ public class ArmIoReal implements ArmIoInterface {
 
     @Override
     public double getPosition() {
-        return m_encoder.getPosition() * ArmConstants.kArmGearRatio * 360; //Convert from rotations to degrees
+        return m_encoder.getPosition() * 360; //Convert from rotations to degrees
     }
 
     @Override

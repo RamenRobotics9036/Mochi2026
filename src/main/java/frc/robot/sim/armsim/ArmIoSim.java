@@ -69,7 +69,7 @@ public class ArmIoSim implements ArmIoInterface {
 
     @Override
     public double getPosition() {
-        return m_simPosition.get() * ArmConstants.kArmGearRatio;
+        return m_simPosition.get() * 360;
     }
 
     @Override
