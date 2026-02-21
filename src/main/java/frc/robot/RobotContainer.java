@@ -53,7 +53,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.SpinnyWheels;
-import frc.robot.subsystems.TestSequence;
+import frc.robot.subsystems.TestSubsystems;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.subsystems.indexer.IndexerIoReal;
 import frc.robot.subsystems.intake.ArmIoReal;
@@ -229,11 +229,12 @@ public class RobotContainer {
         // Add a button on dashboard to launch Accuracy Drive Test
         SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
 
-        SmartDashboard.putData("Test Subsystems", TestSequence.testSubsystems(
+        SmartDashboard.putData("Test Subsystems", TestSubsystems.test(
             intakeSubsystem,
             m_indexerSubsystem,
             shooterSubsystem,
-            armSubsystem));
+            armSubsystem,
+            climberSubsystem));
 
         configureBindings();
 

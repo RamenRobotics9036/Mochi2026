@@ -3,18 +3,20 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.IndexerConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Robot;
 
-public class TestSequence {
+public class TestSubsystems {
     /** Temporary sequence command for wiring/testing. */
-    public static Command testSubsystems(
+    public static Command test(
             IntakeSubsystem intakeSubsystem,
             IndexerSubsystem indexerSubsystem,
             ShooterSubsystem shooterSubsystem,
-            ArmSubsystem armSubsystem) {
+            ArmSubsystem armSubsystem,
+            ClimberSubsystem climberSubsystem) {
         // For now, we ONLY allow running this in simulation, since it hasn't been tested
         // on the real robot yet.
         if (Robot.isSimulation()) {
@@ -45,6 +47,16 @@ public class TestSequence {
                 Commands.runOnce(
                     () -> armSubsystem.setArmPosition(ArmConstants.kMaxArmAngle),
                     armSubsystem),
+                Commands.waitSeconds(1.0),
+                Commands.runOnce(
+                    () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbUpSpeed),
+                    climberSubsystem),
+                Commands.waitSeconds(0.5),
+                Commands.runOnce(
+                    () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbDownSpeed),
+                    climberSubsystem),
+                Commands.waitSeconds(0.5),
+                Commands.runOnce(climberSubsystem::stop, climberSubsystem),
                 Commands.print("End")
             );
         }
