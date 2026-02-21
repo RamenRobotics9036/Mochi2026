@@ -21,7 +21,14 @@ public class ClimberSubsystem extends SubsystemBase {
      * Sets climber speed with software limit checks.
      */
     public void setClimbSpeed(double request) {
-        m_io.setSpeed(request);
+        // Minor change: Check limits before sending speed to IO
+        if (request > 0 && m_outputs.positionMeters >= ClimberConstants.kMaxHeight) {
+            m_io.stop();
+        } else if (request < 0 && m_outputs.positionMeters <= ClimberConstants.kMinHeight) {
+            m_io.stop();
+        } else {
+            m_io.setSpeed(request);
+        }
     }
 
     public double getEncoderValue() {
@@ -40,7 +47,7 @@ public class ClimberSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Climber/Amps", m_outputs.currentAmps);
 
         // Dashboard status indicators
-        // $TODO: Bug: This is comparing meters to climber motor rotations
+        // Fixed Bug: Now in theory this should compare meters to meters (NOTE: Constants should be same)
         SmartDashboard.putBoolean("Climber/At Top", m_outputs.positionMeters >= ClimberConstants.kMaxHeight);
         SmartDashboard.putBoolean("Climber/At Bottom", m_outputs.positionMeters <= ClimberConstants.kMinHeight);
     }

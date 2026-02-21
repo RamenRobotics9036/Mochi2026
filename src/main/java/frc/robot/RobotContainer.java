@@ -48,7 +48,6 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.SpinnyWheels;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.subsystems.indexer.IndexerIoReal;
@@ -226,17 +225,27 @@ public class RobotContainer {
 
         // Register Named Commands for PathPlanner
         NamedCommands.registerCommand("shoot", 
-            new InstantCommand(() -> {
+            new RunCommand(() -> {
                 shooterSubsystem.setSpeed(Constants.ShooterConstants.kShootSpeed);
                 m_indexerSubsystem.setSpeed(Constants.IndexerConstants.kIndexSpeed);
-            }, shooterSubsystem, m_indexerSubsystem));
+            }, shooterSubsystem, m_indexerSubsystem)
+            .withTimeout(5.0)
+        );
 
-        NamedCommands.registerCommand("stop shoot", 
-            new InstantCommand(() -> {
-                shooterSubsystem.stop();
-                m_indexerSubsystem.stop();
-            }, shooterSubsystem, m_indexerSubsystem));
-
+        NamedCommands.registerCommand("Full Auto Climb", 
+            Commands.sequence(
+                new RunCommand(
+                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbUpSpeed), 
+                    climberSubsystem
+                ).withTimeout(4.0),
+                new RunCommand(
+                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbDownSpeed), 
+                    climberSubsystem
+                ).withTimeout(4.0),
+                new InstantCommand(climberSubsystem::stop, climberSubsystem)
+            )
+        );
+        
         m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
 
         // $VISIONSIM - Wrapper for sim features
