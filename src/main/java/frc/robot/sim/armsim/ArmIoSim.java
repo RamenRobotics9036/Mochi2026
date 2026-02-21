@@ -68,6 +68,16 @@ public class ArmIoSim implements ArmIoInterface {
     }
 
     @Override
+    public double getPosition() {
+        return m_simPosition.get() * ArmConstants.kArmGearRatio;
+    }
+
+    @Override
+    public double getEncoderPosition() {
+        return m_simPosition.get();
+    }
+
+    @Override
     public void resetEncoderValue() {
         m_armSim.setState(Units.degreesToRadians(0.0), 0.0);
     }

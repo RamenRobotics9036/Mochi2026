@@ -72,6 +72,16 @@ public class ArmIoReal implements ArmIoInterface {
     }
 
     @Override
+    public double getPosition() {
+        return m_encoder.getPosition() * ArmConstants.kArmGearRatio;
+    }
+
+    @Override
+    public double getEncoderPosition() {
+        return m_encoder.getPosition();
+    }
+
+    @Override
     public void resetEncoderValue() {
         m_encoder.setPosition(0.0);
     }

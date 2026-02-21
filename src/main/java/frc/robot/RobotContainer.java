@@ -30,6 +30,7 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
+import frc.robot.commands.ArmToPoseCommand;
 import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateToTargetCommand;
@@ -438,6 +439,8 @@ public class RobotContainer {
         // (Deadband prevents scheduling from tiny stick noise.)
         new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
             .whileTrue(new IntakeArmCommand(armSubsystem, operateController));
+
+        operateController.b().onTrue(new ArmToPoseCommand(armSubsystem, 45));
     }
 
     /**

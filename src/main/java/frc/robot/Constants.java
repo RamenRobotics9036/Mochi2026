@@ -66,6 +66,11 @@ public final class Constants {
         public static final double kArmHomingTimeoutSeconds = 2.0;
 
         public static final double kArmGearRatio = 20.0;
+
+        /** Max time for the arm to reach a given position before the command is aborted. */
+        public static final double kMaxTime = 3.0; //TODO: filler value
+        /**margin of error for seting the arm position. */
+        public static final double kTolerance = 2.0; //TODO: filler value
     }
 
     public static final class SimIntakeConstants {

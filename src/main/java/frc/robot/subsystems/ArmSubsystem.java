@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ArmConstants;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.sim.armsim.ArmIoInterface;
 
 public class ArmSubsystem extends SubsystemBase{
@@ -69,6 +70,16 @@ public class ArmSubsystem extends SubsystemBase{
     public void setArmPosition(double position) {
         m_armIO.setPosition(
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
+    }
+    
+    /**Gets the position, multiplied by gear ratio */
+    public double getPosition() {
+        return m_armIO.getPosition();
+    }
+
+    /**Gets the raw encoder value */
+    public double getEncoderPosition() {
+        return m_armIO.getEncoderPosition();
     }
 
     /** Checks if the arm is deployed. */
