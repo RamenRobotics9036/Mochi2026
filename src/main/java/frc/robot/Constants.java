@@ -28,15 +28,27 @@ public final class Constants {
         public static final double kIntakeSpeed = 0.8;
         /** Default speed for ejecting game pieces from the robot. */
         public static final double kOuttakeSpeed = -0.8;
-        /** Default speed for raising and lowering the intake arm. */
-        public static final double kArmSpeed = 0.05;
         /** Current threshold in Amps used to detect if a game piece is fully secured. */
         public static final int kIntakeRollerStallLimit = 40;
+
+        public static final int kIntakeMotorID = 22;
+
+        public static final double kIntakeRollerGearRatio = 20.0; //TODO: filler value
+
+        // $TODO - Are these PID values used anywhere?
+        public static final double kP = 0.1; //TODO: filler value
+        public static final double kI = 0.0; //TODO: filler value
+        public static final double kD = 0.001; //TODO: filler
+    }
+
+    public static final class ArmConstants {
+        /** Default speed for raising and lowering the intake arm. */
+        public static final double kArmSpeed = 0.05;
         public static final int kArmStallLimit = 40;
 
+        
         public static final int kLeftArmMotorID = 20;
         public static final int kRightArmMotorID = 21;
-        public static final int kIntakeMotorID = 22;
 
         public static final double kMaxArmAngle = 90; //TODO: filler value
         public static final double kMinArmAngle = 0; //TODO: filler value
@@ -54,12 +66,6 @@ public final class Constants {
         public static final double kArmHomingTimeoutSeconds = 2.0;
 
         public static final double kArmGearRatio = 20.0; //TODO: filler value
-        public static final double kIntakeRollerGearRatio = 20.0; //TODO: filler value
-
-        // $TODO - Are these PID values used anywhere?
-        public static final double kP = 0.1; //TODO: filler value
-        public static final double kI = 0.0; //TODO: filler value
-        public static final double kD = 0.001; //TODO: filler
     }
 
     public static final class SimIntakeConstants {
