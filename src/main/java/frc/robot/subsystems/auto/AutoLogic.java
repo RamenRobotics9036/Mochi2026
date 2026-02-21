@@ -87,9 +87,10 @@ public final class  AutoLogic {
         autoPicker.addOption("Manual: Drive 2m Forward", K_MANUAL_DRIVE_NAME);
 
         // Pathplanner Autos
-        autoPicker.setDefaultOption("Center Auto", "Center Auto");
+        autoPicker.addOption("Center Auto", "Center Auto");
         autoPicker.addOption("Scale test", "Scale test");
         autoPicker.addOption("Diagonal path", "Diagonal path");
+        autoPicker.setDefaultOption("testing shoot", "testing shoot");
     }
 
     /**
