@@ -28,6 +28,7 @@ import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateToTargetCommand;
+import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.RollerSim.RollerIoInterface;
 import frc.robot.sim.RollerSim.RollerIoSim;
@@ -295,7 +296,7 @@ public class RobotContainer {
 
         //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
         shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
-        
+
         // POV Up: Extend Climber
         operateController.povUp().whileTrue(
             new RunCommand(
