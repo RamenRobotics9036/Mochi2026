@@ -21,5 +21,6 @@
 | Kraken          | TalonFX   | 40     | Left        | Shooter                 |                  |          |
 | Kraken          | TalonFX   | 41     | Right       | Shooter                 |                  |          |
 | Votex           | SparkFlex | 50     | -----       | Climber                 |                  |          |
+| ???             | ???       | 51     | -----       | Spinner                 |                  |          |
 | Linear actuator |           |        | Right       | Hood                    |                  |          |
 | NA              | PDH       | 1      | -----       | Power distribution      | Last             |          |

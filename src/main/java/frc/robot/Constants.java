@@ -114,7 +114,7 @@ public final class Constants {
         public static final int kHoodPwmChannel = 0; //TODO: filler value
 
         /** Shooting speed */
-        public static final double kShootSpeed = 0.40; //TODO: filler value
+        public static final double kShootSpeed = 0.60; //TODO: filler value
 
         public static final double kShooterGearRatio = 20.0; //TODO: filler value
     }
@@ -133,6 +133,19 @@ public final class Constants {
     }
 
     /**
+     * Constants for the Spinny Wheels (Always-on mechanism).
+     */
+    public static final class SpinnyWheelsConstants {
+        /** CAN ID for the SparkFlex motor. */
+        public static final int kMotorID = 51;
+         
+        public static final double kSpinSpeed = 0.10; 
+        /** Speed for the spinny wheel */
+
+        public static final int kCurrentLimit = 40;
+    }
+
+    /**
      * Constants for the Climber subsystem (Hook).
      */
     public static final class ClimberConstants {
@@ -147,7 +160,7 @@ public final class Constants {
         /** Max power (0.5 = 50% power). */
         public static final double kMaxOutputPercent = 0.40;
         /** Amps limit (higher for single motor lifting full weight). */
-        public static final int kCurrentLimit = 60;
+        public static final int kCurrentLimit = 80;
         public static final double kClimbUpSpeed = 0.9;   // Positive usually extends
         public static final double kClimbDownSpeed = -0.9; // Negative usually retracts
         public static final double kClimbSlewRate = 2.0;
