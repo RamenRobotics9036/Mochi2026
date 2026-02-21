@@ -133,6 +133,19 @@ public final class Constants {
     }
 
     /**
+     * Constants for the Spinny Wheels (Always-on mechanism).
+     */
+    public static final class SpinnyWheelsConstants {
+        /** CAN ID for the SparkFlex motor. */
+        public static final int kMotorID = 51;
+         
+        public static final double kSpinSpeed = 0.10; 
+        /** Speed for the spinny wheel */
+
+        public static final int kCurrentLimit = 40;
+    }
+
+    /**
      * Constants for the Climber subsystem (Hook).
      */
     public static final class ClimberConstants {

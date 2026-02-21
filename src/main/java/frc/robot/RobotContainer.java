@@ -45,6 +45,8 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.SpinnyWheels;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.subsystems.indexer.IndexerIoReal;
 import frc.robot.subsystems.intake.ArmIoReal;
@@ -148,6 +150,8 @@ public class RobotContainer {
             Constants.IndexerConstants.kIndexerGearRatio)
         : new IndexerIoReal();
 
+    public final SpinnyWheels m_spinnyWheels = new SpinnyWheels();
+
     public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem(m_indexerIO);
 
     private final ElevatorIoInterface m_climberIO = Robot.isSimulation()
@@ -216,6 +220,8 @@ public class RobotContainer {
         SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
 
         configureBindings();
+
+        m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
 
         // $VISIONSIM - Wrapper for sim features
         if (Robot.isSimulation()) {
