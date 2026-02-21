@@ -1,5 +1,12 @@
 # Pipelines
 
+## Camera location on COMP bot
+4 inches to left of center
+From pigeon, 1/2 inch back
+Height: 12.5 to deck + 4 inches to ground
+Angle up: 23 degrees
+
+
 ## Input
 
 | Setting Name         | Value            |
