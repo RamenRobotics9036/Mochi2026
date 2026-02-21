@@ -15,18 +15,6 @@
           "data": {
             "pathName": "Center"
           }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Set Arm Position To Top"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Set Arm Position To Bottom"
-          }
         }
       ]
     }
