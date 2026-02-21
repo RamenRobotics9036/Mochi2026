@@ -24,6 +24,9 @@ public interface BotConfigInterface {
      *
      ************************************************************************************/
 
+    /** Config name (e.g. Competition Bot, Pancake Bot). */
+    String getConfigName();
+
     /**
      * The CAN bus used by this robot's devices.
      * @see GeneratedCompConstants.kCANBus

@@ -26,6 +26,11 @@ public class PancakeConfig implements BotConfigInterface {
      ************************************************************************************/
 
     @Override
+    public String getConfigName() {
+        return "Pancake Bot Config";
+    }
+
+    @Override
     public CANBus getCANBus() {
         return GeneratedPancakeConstants.kCANBus;
     }

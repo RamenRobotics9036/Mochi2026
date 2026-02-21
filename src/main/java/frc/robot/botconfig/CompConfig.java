@@ -27,6 +27,11 @@ public class CompConfig implements BotConfigInterface {
      ************************************************************************************/
 
     @Override
+    public String getConfigName() {
+        return "Competition Bot Config";
+    }
+
+    @Override
     public CANBus getCANBus() {
         return GeneratedCompConstants.kCANBus;
     }

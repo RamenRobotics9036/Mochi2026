@@ -9,6 +9,20 @@ import frc.robot.util.MACAddress;
  */
 public class RobotIdentity {
 
+    /** Holds the detected robot's config and name together. */
+    public static class IdentityResult {
+        private final BotConfigInterface config;
+        private final String name;
+
+        public IdentityResult(BotConfigInterface config, String name) {
+            this.config = config;
+            this.name = name;
+        }
+
+        public BotConfigInterface getConfig() { return config; }
+        public String getName() { return name; }
+    }
+
     // To find a new MAC: Connect to robot, run 'arp -a' in terminal.
     // Look for 10.90.36.2 and copy the last 3 hex pairs.
 
@@ -18,39 +32,41 @@ public class RobotIdentity {
     // Pancake RIO: 00-80-2F-38-D9-80
     private static final int[] PANCAKE_MAC  = {0x38, 0xD9, 0x80};
 
-    private static BotConfigInterface m_config = null;
+    private static IdentityResult m_identityResult = null;
 
-    /** * Returns the config for the current robot.
-     * Defaults to Competition if the hardware is unknown.
-     */
-    public static BotConfigInterface getMode() {
-        if (m_config != null) return m_config; // Return cached config if already found
+    /** Returns the config for the current robot. */
+    public static BotConfigInterface getBotConfig() {
+        return getIdentityResult().getConfig();
+    }
 
+    public static String getBotName() {
+        return getIdentityResult().getName();
+    }
+
+    /** Returns the identity (config + name) for the current robot. */
+    private static IdentityResult getIdentityResult() {
+        if (m_identityResult == null) {
+            detectRobot();
+        }
+        return m_identityResult;
+    }
+
+    private static void detectRobot() {
         if (MACAddress.isRobot(COMP_BOT_MAC)) {
             System.out.println(">>> Detected: COMPETITION ROBOT");
-            m_config = new CompConfig();
+            m_identityResult = new IdentityResult(new CompConfig(), "Competition");
         }
         else if (MACAddress.isRobot(PANCAKE_MAC)) {
             System.out.println(">>> Detected: PANCAKE (PRACTICE)");
-            m_config = new PancakeConfig();
+            m_identityResult = new IdentityResult(new PancakeConfig(), "Pancake");
         }
         else if (Robot.isSimulation()) {
             System.out.println(">>> Detected: SIMULATION");
-
-            // For simulation, we pick competition robot.
-            m_config = new CompConfig();
+            m_identityResult = new IdentityResult(new CompConfig(), "Simulation");
         }
         else {
-            // Default to Comp so the robot is match-ready even on a spare RIO
             DriverStation.reportError("UNKNOWN RIO MAC! Defaulting to COMPETITION.", false);
-            m_config = new CompConfig();
+            m_identityResult = new IdentityResult(new CompConfig(), "Unknown");
         }
-
-        return m_config;
-    }
-
-    /** Helper to check if we are on the Comp bot */
-    public static boolean isCompetition() {
-        return getMode() instanceof CompConfig;
     }
 }

@@ -77,7 +77,7 @@ import java.util.OptionalDouble;
  */
 public class RobotContainer {
 
-    private BotConfigInterface m_configInterface = RobotIdentity.getMode();
+    private BotConfigInterface m_configInterface = RobotIdentity.getBotConfig();
 
     /** Maximum linear velocity of the robot in meters per second. */
     private double MaxSpeed = m_configInterface.getSpeedAt12Volts().in(MetersPerSecond);
@@ -217,6 +217,14 @@ public class RobotContainer {
             MaxAngularRate,
             Robot.isSimulation(),
             () -> drivetrain.getOperatorForwardDirection().getDegrees());
+
+        // Put some debug info on the dashboard
+        SmartDashboard.putString(
+            "MAC Address Name",
+            RobotIdentity.getBotName());
+        SmartDashboard.putString(
+            "Robot Config",
+            m_configInterface.getConfigName());
 
         Field2d debugField = null;
 
