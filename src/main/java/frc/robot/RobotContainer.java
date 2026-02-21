@@ -224,7 +224,7 @@ public class RobotContainer {
         configureBindings();
 
         // Register Named Commands for PathPlanner
-        NamedCommands.registerCommand("shoot", 
+        NamedCommands.registerCommand("shoot",
             new RunCommand(() -> {
                 shooterSubsystem.setSpeed(Constants.ShooterConstants.kShootSpeed);
                 m_indexerSubsystem.setSpeed(Constants.IndexerConstants.kIndexSpeed);
@@ -233,23 +233,37 @@ public class RobotContainer {
             .andThen(() -> { // Ensure motors stop after the 5 seconds
                 shooterSubsystem.stop();
                 m_indexerSubsystem.stop();
-            })
-        );
+            }));
 
         NamedCommands.registerCommand("Full Auto Climb", 
             Commands.sequence(
                 new RunCommand(
                     () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbUpSpeed), 
-                    climberSubsystem
-                ).withTimeout(4.0),
+                    climberSubsystem).withTimeout(4.0),
                 new RunCommand(
-                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbDownSpeed), 
-                    climberSubsystem
-                ).withTimeout(4.0),
-                new InstantCommand(climberSubsystem::stop, climberSubsystem)
-            )
-        );
-        
+                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbDownSpeed),
+                    climberSubsystem).withTimeout(4.0),
+                new InstantCommand(climberSubsystem::stop, climberSubsystem)));
+
+        NamedCommands.registerCommand("get fuel",
+                new RunCommand(() -> {
+                    intakeSubsystem.setArmPosition(Constants.IntakeConstants.kMaxArmAngle);
+                    intakeSubsystem.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
+                }, intakeSubsystem)
+                        .withTimeout(3.0)
+                        .andThen(intakeSubsystem::stop));
+
+        NamedCommands.registerCommand("set intake bottom",
+                new RunCommand(() -> intakeSubsystem.setArmPosition(Constants.IntakeConstants.kMaxArmAngle),
+                        intakeSubsystem)
+                                .until(intakeSubsystem::isArmDeployed));
+
+        NamedCommands.registerCommand("set intake top",
+                new RunCommand(() -> intakeSubsystem.setArmPosition(Constants.IntakeConstants.kMinArmAngle),
+                        intakeSubsystem)
+                                .withTimeout(2.0)
+                                .andThen(intakeSubsystem::stopArm));
+
         m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
 
         // $VISIONSIM - Wrapper for sim features
