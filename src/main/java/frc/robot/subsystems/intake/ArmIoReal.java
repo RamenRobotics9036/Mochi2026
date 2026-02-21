@@ -9,7 +9,7 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.sim.armsim.ArmIoInterface;
 
 /**
@@ -26,24 +26,24 @@ public class ArmIoReal implements ArmIoInterface {
         SparkFlexConfig lArmConfig = new SparkFlexConfig();
         SparkFlexConfig rArmConfig = new SparkFlexConfig();
 
-        m_lArmMotor = new SparkFlex(IntakeConstants.kLeftArmMotorID, MotorType.kBrushless);
-        m_rArmMotor = new SparkFlex(IntakeConstants.kRightArmMotorID, MotorType.kBrushless);
+        m_lArmMotor = new SparkFlex(ArmConstants.kLeftArmMotorID, MotorType.kBrushless);
+        m_rArmMotor = new SparkFlex(ArmConstants.kRightArmMotorID, MotorType.kBrushless);
 
         // Configure the motors:
         lArmConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kArmStallLimit);
+            .smartCurrentLimit(ArmConstants.kArmStallLimit);
 
         // $TODO - Bug?  The units for encoder (after conversion here) seem to be rotations/second
         // I think?  But setPosition below takes as input DEGREES I think?  We should check all the units
         // in the arm code, and change variable. names to make clear what the units are: e.g. positionDegrees, etc.
         lArmConfig.encoder
-            .positionConversionFactor(1.0 / IntakeConstants.kArmGearRatio)
-            .velocityConversionFactor((1.0 / IntakeConstants.kArmGearRatio) / 60.0);
+            .positionConversionFactor(1.0 / ArmConstants.kArmGearRatio)
+            .velocityConversionFactor((1.0 / ArmConstants.kArmGearRatio) / 60.0);
 
         // $TODO - Thomas style feedback is to move rArmConfig.idleMode and .SmartCurrentLimit up next to the equivalent
         // calls for lArmConfig.  And then have .follow on rArmConfig call after all that on a separate line.
         rArmConfig.idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(IntakeConstants.kArmStallLimit)
+            .smartCurrentLimit(ArmConstants.kArmStallLimit)
             .follow(m_lArmMotor, true);
 
         // Apply configs to controllers (matches pattern used in ShooterSubsystem)

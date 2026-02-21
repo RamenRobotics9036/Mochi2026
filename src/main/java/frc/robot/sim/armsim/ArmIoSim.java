@@ -7,7 +7,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.ArmConstants;
 
 /**
  * Simulated implementation of {@link ArmIoInterface} for a simple up/down arm.
@@ -38,10 +38,10 @@ public class ArmIoSim implements ArmIoInterface {
             gearRatio,
             momentOfInertia,
             armLengthMeters,
-            Units.degreesToRadians(IntakeConstants.kMinArmAngle),
-            Units.degreesToRadians(IntakeConstants.kMaxArmAngle),
+            Units.degreesToRadians(ArmConstants.kMinArmAngle),
+            Units.degreesToRadians(ArmConstants.kMaxArmAngle),
             true,
-            Units.degreesToRadians(IntakeConstants.kMinArmAngle));
+            Units.degreesToRadians(ArmConstants.kMinArmAngle));
 
         m_simDevice = SimDevice.create(deviceName);
         if (m_simDevice != null) {

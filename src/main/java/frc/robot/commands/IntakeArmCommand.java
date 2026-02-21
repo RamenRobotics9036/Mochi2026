@@ -3,41 +3,41 @@ package frc.robot.commands;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.subsystems.IntakeSubsystem;
+import frc.robot.subsystems.ArmSubsystem;
 
 /**
- * Runs the intake arm motor to raise/lower the intake arm
+ * Runs the arm arm motor to raise/lower the arm arm
  */
 public class IntakeArmCommand extends Command {
     // Subsystem and controller references
-    private final IntakeSubsystem m_intake;
+    private final ArmSubsystem m_arm;
     private final CommandXboxController m_controller;
 
     /**
-     * Creates a new IntakeArmCommand.
+     * Creates a new armArmCommand.
      *
-     * @param intake     The intake subsystem to control.
+     * @param arm     The arm subsystem to control.
      * @param controller The Xbox controller used to provide haptic (rumble) feedback.
      */
-    public IntakeArmCommand(IntakeSubsystem intake, CommandXboxController controller) {
-        m_intake = intake;
+    public IntakeArmCommand(ArmSubsystem arm, CommandXboxController controller) {
+        m_arm = arm;
         m_controller = controller;
 
-        // Ensure no other intake commands run simultaneously
-        addRequirements(m_intake);
+        // Ensure no other arm commands run simultaneously
+        addRequirements(m_arm);
     }
 
     /**
-     * Resets the internal state before starting the intake motor.
+     * Resets the internal state before starting the arm motor.
      */
     @Override
     public void initialize() {
     }
 
     /**
-     * Periodically sets the intake motor to the constant intake speed defined in constants.
+     * Periodically sets the arm motor to the constant arm speed defined in constants.
      */
     @Override
     public void execute() {
@@ -46,10 +46,10 @@ public class IntakeArmCommand extends Command {
         double raw = -m_controller.getRightY();
         double armSpeed = MathUtil.applyDeadband(raw, DriveConstants.kJoystickDeadband);
 
-        // Re-use intake speed constant as a safe max output scaler.
-        armSpeed *= IntakeConstants.kArmSpeed;
+        // Re-use arm speed constant as a safe max output scaler.
+        armSpeed *= ArmConstants.kArmSpeed;
 
-        m_intake.moveArmWithSpeed(armSpeed);
+        m_arm.moveArmWithSpeed(armSpeed);
     }
 
     /**
@@ -71,6 +71,6 @@ public class IntakeArmCommand extends Command {
     @Override
     public void end(boolean interrupted) {
         // Stop the arm motor
-        m_intake.stop();
+        m_arm.stop();
     }
 }

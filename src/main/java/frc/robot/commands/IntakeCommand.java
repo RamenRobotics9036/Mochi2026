@@ -16,7 +16,6 @@ import frc.robot.subsystems.IntakeSubsystem;
 public class IntakeCommand extends Command {
     // Subsystem and controller references
     private final IntakeSubsystem m_intake;
-    private final CommandXboxController m_controller;
 
     /**
      * Creates a new IntakeCommand.
@@ -24,9 +23,8 @@ public class IntakeCommand extends Command {
      * @param intake     The intake subsystem to control.
      * @param controller The Xbox controller used to provide haptic (rumble) feedback.
      */
-    public IntakeCommand(IntakeSubsystem intake, CommandXboxController controller) {
+    public IntakeCommand(IntakeSubsystem intake) {
         m_intake = intake;
-        m_controller = controller;
         
         // Ensure no other intake commands run simultaneously
         addRequirements(m_intake);

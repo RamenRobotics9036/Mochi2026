@@ -28,15 +28,27 @@ public final class Constants {
         public static final double kIntakeSpeed = 0.8;
         /** Default speed for ejecting game pieces from the robot. */
         public static final double kOuttakeSpeed = -0.8;
-        /** Default speed for raising and lowering the intake arm. */
-        public static final double kArmSpeed = 0.05;
         /** Current threshold in Amps used to detect if a game piece is fully secured. */
         public static final int kIntakeRollerStallLimit = 40;
+
+        public static final int kIntakeMotorID = 22;
+
+        public static final double kIntakeRollerGearRatio = 3.0;
+
+        // $TODO - Are these PID values used anywhere?
+        public static final double kP = 0.1; //TODO: filler value
+        public static final double kI = 0.0; //TODO: filler value
+        public static final double kD = 0.001; //TODO: filler
+    }
+
+    public static final class ArmConstants {
+        /** Default speed for raising and lowering the intake arm. */
+        public static final double kArmSpeed = 0.05;
         public static final int kArmStallLimit = 40;
+
 
         public static final int kLeftArmMotorID = 20;
         public static final int kRightArmMotorID = 21;
-        public static final int kIntakeMotorID = 22;
 
         public static final double kMaxArmAngle = 90; //TODO: filler value
         public static final double kMinArmAngle = 0; //TODO: filler value
@@ -53,13 +65,7 @@ public final class Constants {
         /** Overall timeout for the homing routine (seconds). */
         public static final double kArmHomingTimeoutSeconds = 2.0;
 
-        public static final double kArmGearRatio = 20.0; //TODO: filler value
-        public static final double kIntakeRollerGearRatio = 20.0; //TODO: filler value
-
-        // $TODO - Are these PID values used anywhere?
-        public static final double kP = 0.1; //TODO: filler value
-        public static final double kI = 0.0; //TODO: filler value
-        public static final double kD = 0.001; //TODO: filler
+        public static final double kArmGearRatio = 20.0;
     }
 
     public static final class SimIntakeConstants {
@@ -86,7 +92,7 @@ public final class Constants {
     public static final class SimClimberConstants {
         public static final String kDeviceName = "ClimberSim";
         /** Motor-to-mechanism gear ratio. */
-        public static final double kGearRatio = 25.0; // TODO: filler
+        public static final double kGearRatio = 20.0;
         /** Mass of carriage + robot being lifted (kg). */
         public static final double kCarriageMassKg = 60.0; // TODO: filler (~130 lb robot)
         /** Radius of the winch drum (m). */
@@ -116,7 +122,7 @@ public final class Constants {
         /** Shooting speed */
         public static final double kShootSpeed = 0.60; //TODO: filler value
 
-        public static final double kShooterGearRatio = 20.0; //TODO: filler value
+        public static final double kShooterGearRatio = 1.0;
     }
 
     /**
@@ -129,7 +135,7 @@ public final class Constants {
 
         public static final int kIndexerCurrentLimit = 40; //TODO: filler value
 
-        public static final double kIndexerGearRatio = 20.0; //TODO: filler value
+        public static final double kIndexerGearRatio = 1.0;
     }
 
     /**
@@ -138,9 +144,11 @@ public final class Constants {
     public static final class SpinnyWheelsConstants {
         /** CAN ID for the SparkFlex motor. */
         public static final int kMotorID = 51;
-         
-        public static final double kSpinSpeed = 0.10; 
+
+        public static final double kSpinSpeed = 0.10;
         /** Speed for the spinny wheel */
+
+        public static final double kSpinGearRatio = 1.0;
 
         public static final int kCurrentLimit = 40;
     }

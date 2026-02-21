@@ -8,6 +8,7 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -24,6 +25,11 @@ public class CompConfig implements BotConfigInterface {
      * SWERVEDRIVE GENERATED CONSTANTS
      *
      ************************************************************************************/
+
+    @Override
+    public String getConfigName() {
+        return "Competition Bot Config";
+    }
 
     @Override
     public CANBus getCANBus() {
@@ -97,11 +103,22 @@ public class CompConfig implements BotConfigInterface {
         return "limelight-fixed";
     }
 
+    /**
+    * Camera position n competition bot, from center on floor.
+    * 4 inches to left of center
+    * From pigeon, 1/2 inch back
+    * Height: 12.5 to deck + 4 inches to ground == 16.5 inches
+    * Angle up: 23 degrees
+    */
     @Override
     public Transform3d getRobotToCam() {
         return new Transform3d(
-            new Translation3d(0.5, 0.0, 0.5),
-            new Rotation3d(0, 0, 0)
+            new Translation3d(
+                Units.inchesToMeters(-0.5),  // 1/2 inch back
+                Units.inchesToMeters(4.0),   // 4 inches left of center
+                Units.inchesToMeters(16.5)   // 12.5" deck + 4" mount
+            ),
+            new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
         );
     }
 

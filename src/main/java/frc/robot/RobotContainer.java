@@ -22,9 +22,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.IndexerConstants;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.IntakeArmCommand;
@@ -43,12 +46,14 @@ import frc.robot.subsystems.climber.ClimberIoReal;
 import frc.robot.sim.SimWrapper;
 import frc.robot.sim.armsim.ArmIoInterface;
 import frc.robot.sim.armsim.ArmIoSim;
+import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SpinnyWheels;
+import frc.robot.subsystems.TestSubsystems;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.subsystems.indexer.IndexerIoReal;
 import frc.robot.subsystems.intake.ArmIoReal;
@@ -72,7 +77,7 @@ import java.util.OptionalDouble;
  */
 public class RobotContainer {
 
-    private BotConfigInterface m_configInterface = RobotIdentity.getMode();
+    private BotConfigInterface m_configInterface = RobotIdentity.getBotConfig();
 
     /** Maximum linear velocity of the robot in meters per second. */
     private double MaxSpeed = m_configInterface.getSpeedAt12Volts().in(MetersPerSecond);
@@ -181,12 +186,15 @@ public class RobotContainer {
             Constants.SimIntakeArmConstants.kDeviceName,
             Constants.SimIntakeArmConstants.kMoiKgM2,
             Constants.SimIntakeArmConstants.kArmLengthMeters,
-            Constants.IntakeConstants.kArmGearRatio)
+            Constants.ArmConstants.kArmGearRatio)
         : new ArmIoReal();
 
     /** Intake subsystem driven through the IO abstraction. */
     public final IntakeSubsystem intakeSubsystem =
-        new IntakeSubsystem(m_intakeIO, m_intakeArmIO);
+        new IntakeSubsystem(m_intakeIO);
+
+    /** Arm subsystem driven through the IO abstraction. */
+    public final ArmSubsystem armSubsystem = new ArmSubsystem(m_intakeArmIO);
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
@@ -210,6 +218,14 @@ public class RobotContainer {
             Robot.isSimulation(),
             () -> drivetrain.getOperatorForwardDirection().getDegrees());
 
+        // Put some debug info on the dashboard
+        SmartDashboard.putString(
+            "MAC Address Name",
+            RobotIdentity.getBotName());
+        SmartDashboard.putString(
+            "Robot Config",
+            m_configInterface.getConfigName());
+
         Field2d debugField = null;
 
         SmartDashboard.putData("GlassField", m_glassField);
@@ -220,6 +236,13 @@ public class RobotContainer {
 
         // Add a button on dashboard to launch Accuracy Drive Test
         SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
+
+        SmartDashboard.putData("Test Subsystems", TestSubsystems.test(
+            intakeSubsystem,
+            m_indexerSubsystem,
+            shooterSubsystem,
+            armSubsystem,
+            climberSubsystem));
 
         configureBindings();
 
@@ -407,12 +430,12 @@ public class RobotContainer {
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_limelightOdometry.getLastTarget())));
 
-        operateController.a().whileTrue(new IntakeCommand(intakeSubsystem, operateController));
+        operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
         // Run the intake arm manually any time the operator moves the right stick.
         // (Deadband prevents scheduling from tiny stick noise.)
         new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
-            .whileTrue(new IntakeArmCommand(intakeSubsystem, operateController));
+            .whileTrue(new IntakeArmCommand(armSubsystem, operateController));
     }
 
     /**
