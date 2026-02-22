@@ -124,7 +124,7 @@
             }
           },
           {
-            "title": "Position",
+            "title": "Climber",
             "x": 1024.0,
             "y": 512.0,
             "width": 256.0,
@@ -134,7 +134,7 @@
               "topic": "/SmartDashboard/Climber/Position",
               "period": 0.06,
               "data_type": "double",
-              "min_value": -1.0,
+              "min_value": 0.0,
               "max_value": 1.0,
               "divisions": 5,
               "inverted": false,
@@ -143,8 +143,8 @@
           },
           {
             "title": "Test Subsystems",
-            "x": 1024.0,
-            "y": 640.0,
+            "x": 0.0,
+            "y": 768.0,
             "width": 256.0,
             "height": 128.0,
             "type": "Command",
@@ -153,6 +153,24 @@
               "period": 0.06,
               "show_type": true,
               "maximize_button_space": false
+            }
+          },
+          {
+            "title": "SpinnyRPM",
+            "x": 1024.0,
+            "y": 640.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Number Bar",
+            "properties": {
+              "topic": "/SmartDashboard/Spinny/VelocityRPM",
+              "period": 0.06,
+              "data_type": "double",
+              "min_value": 0.0,
+              "max_value": 1000.0,
+              "divisions": 5,
+              "inverted": false,
+              "orientation": "horizontal"
             }
           }
         ]
