@@ -89,6 +89,11 @@ public final class Constants {
         public static final double kMoiKgM2 = 0.001;
     }
 
+    public static final class SimSpinnyWheelsConstants {
+        public static final String kDeviceName = "SpinnyWheelsSim";
+        public static final double kMoiKgM2 = 0.001;
+    }
+
     public static final class SimClimberConstants {
         public static final String kDeviceName = "ClimberSim";
         /** Motor-to-mechanism gear ratio. */

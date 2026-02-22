@@ -16,7 +16,7 @@ public class SpinnyWheels extends SubsystemBase {
     private final SparkFlex m_motor = new SparkFlex(SpinnyWheelsConstants.kMotorID, MotorType.kBrushless);
     private final RelativeEncoder m_encoder = m_motor.getEncoder();
 
-    public SpinnyWheels() {
+    public SpinnyWheels(frc.robot.sim.RollerSim.RollerIoInterface io) {
         SparkFlexConfig config = new SparkFlexConfig();
 
         config.smartCurrentLimit(SpinnyWheelsConstants.kCurrentLimit);
