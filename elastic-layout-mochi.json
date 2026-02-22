@@ -235,7 +235,7 @@
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
-              "false_color": 4294198070,
+              "false_color": 4278190080,
               "true_icon": "None",
               "false_icon": "None"
             }
@@ -252,7 +252,7 @@
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
-              "false_color": 4294198070,
+              "false_color": 4278190080,
               "true_icon": "None",
               "false_icon": "None"
             }
@@ -301,7 +301,7 @@
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
-              "false_color": 4294198070,
+              "false_color": 4278190080,
               "true_icon": "None",
               "false_icon": "None"
             }
@@ -318,7 +318,7 @@
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
-              "false_color": 4294198070,
+              "false_color": 4278190080,
               "true_icon": "None",
               "false_icon": "None"
             }
@@ -349,7 +349,7 @@
               "period": 0.06,
               "data_type": "boolean",
               "true_color": 4283215696,
-              "false_color": 4294198070,
+              "false_color": 4278190080,
               "true_icon": "None",
               "false_icon": "None"
             }
