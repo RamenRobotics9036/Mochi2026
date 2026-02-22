@@ -14,7 +14,7 @@ import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.visutils.SingleCamOdometry;
-import frc.robot.Constants.VisionConstants;
+import frc.robot.Constants.SimVisionConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -62,7 +62,7 @@ public class AlignToTagCommand extends Command {
 
         /** The limelight's name is different in simulation. */
         if (Robot.isSimulation()) {
-            m_limelightName = VisionConstants.kLimelightNameSim;
+            m_limelightName = SimVisionConstants.kLimelightNameSim;
         }
         else {
             m_limelightName = m_configInterface.getVisionLimelightNameReal();

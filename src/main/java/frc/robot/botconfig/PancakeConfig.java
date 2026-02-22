@@ -103,6 +103,11 @@ public class PancakeConfig implements BotConfigInterface {
     }
 
     @Override
+    public String getVisionLimelightNameReal2() {
+        return "liimelight-fixed2";
+    }
+
+    @Override
     public Transform3d getRobotToCam() {
         return new Transform3d(
             new Translation3d(0.5, 0.0, 0.5),

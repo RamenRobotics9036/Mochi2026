@@ -2,7 +2,7 @@ package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import frc.robot.Constants.VisionConstants;
+import frc.robot.Constants.SimVisionConstants;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.sim.visionproducers.VisionSimInterface;
@@ -24,11 +24,11 @@ public class MultiCamOdometry {
 
         // Get camera specific information
         String limelightName = Robot.isSimulation()
-            ? VisionConstants.kLimelightNameSim
-            : m_configInterface.getVisionLimelightNameReal();
+            ? SimVisionConstants.kLimelightNameSim
+            : m_configInterface.getVisionLimelightNameReal(); // $TODO - Fix for second camera
 
         Transform3d robotToCam = Robot.isSimulation()
-            ? VisionConstants.kRobotToCam
+            ? SimVisionConstants.kRobotToCamSim
             : m_configInterface.getRobotToCam();
 
         m_singleCamlimelight = new SingleCamOdometry(
