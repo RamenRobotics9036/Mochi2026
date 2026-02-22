@@ -142,7 +142,7 @@ public class VisionSim implements VisionSimInterface {
                 visionEst = estimator.estimateLowestAmbiguityPose(result);
             }
 
-            // Publish to Limelight NetworkTables for LimelightOdometry to consume
+            // Publish to Limelight NetworkTables for MultiCamOdometry to consume
             LimelightData data = PhotonToLimelightConverter.convertPipelineResult(
                 result,
                 robotToCam);

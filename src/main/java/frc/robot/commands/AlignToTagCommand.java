@@ -13,7 +13,7 @@ import frc.robot.LimelightHelpers;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.visutils.LimelightOdometry;
+import frc.robot.visutils.SingleCamOdometry;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
