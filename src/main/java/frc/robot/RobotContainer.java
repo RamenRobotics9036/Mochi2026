@@ -64,6 +64,7 @@ import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.LimelightOdometry;
 import frc.robot.visutils.MotionlessTracker;
+import frc.robot.visutils.MultiCamOdometry;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.OptionalDouble;
@@ -137,7 +138,7 @@ public class RobotContainer {
     /** Manages the tape-drop accuracy test workflow. */
     public final DriveAccuracyTester m_driveAccuracyTester;
 
-    public final LimelightOdometry m_limelightOdometry;
+    public final MultiCamOdometry m_multiCamlimelight;
 
     private final TwoMotorRollerIoInterface m_shooterIO = Robot.isSimulation()
         ? new TwoMotorRollerIoSim(
@@ -319,17 +320,19 @@ public class RobotContainer {
         m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
         m_motionlessTracker.setOnStartedMoving(m_visionKalmanFilter::reset);
 
-        m_limelightOdometry = new LimelightOdometry(m_configInterface, drivetrain::addVisionMeasurement);
-        m_limelightOdometry.setVisionDependencies(
+        m_multiCamlimelight = new MultiCamOdometry(
+            m_configInterface,
+            drivetrain::addVisionMeasurement);
+        m_multiCamlimelight.setVisionDependencies(
             basicInfoDashboard::isVisionEnabled,
             m_visionKalmanFilter,
             m_motionlessTracker::isMotionless);
 
         basicInfoDashboard.setVisionDependencies(
-            m_limelightOdometry::getCurrentConfidenceScore,
-            m_limelightOdometry::getNumLockedTags,
-            m_limelightOdometry::getTx,
-            m_limelightOdometry::getTargetList,
+            m_multiCamlimelight::getCurrentConfidenceScore,
+            m_multiCamlimelight::getNumLockedTags,
+            m_multiCamlimelight::getTx,
+            m_multiCamlimelight::getTargetList,
             m_motionlessTracker::isMotionless,
             m_motionlessTracker::getSecondsStill);
 
@@ -351,7 +354,7 @@ public class RobotContainer {
                 var driveState = drivetrain.getState();
                 OptionalDouble aimRate = m_aimController.update(
                     isLeftPovUpward(),
-                    m_limelightOdometry.getLastTarget(),
+                    m_multiCamlimelight.getLastTarget(),
                     driveState.Pose,
                     driveState.Speeds);
 
@@ -437,7 +440,7 @@ public class RobotContainer {
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(this::isLeftPovDownward).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
-                TurnToAngleHelper.getTag2dPose(m_limelightOdometry.getLastTarget())));
+                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
