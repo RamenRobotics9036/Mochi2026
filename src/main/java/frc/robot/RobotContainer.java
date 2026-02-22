@@ -157,7 +157,14 @@ public class RobotContainer {
             Constants.IndexerConstants.kIndexerGearRatio)
         : new IndexerIoReal();
 
-    public final SpinnyWheels m_spinnyWheels = new SpinnyWheels();
+    private final RollerIoInterface m_spinnyIO = Robot.isSimulation()
+        ? new RollerIoSim(
+            Constants.SimSpinnyWheelsConstants.kDeviceName,
+            Constants.SimSpinnyWheelsConstants.kMoiKgM2,
+            Constants.SpinnyWheelsConstants.kSpinGearRatio)
+        : new frc.robot.subsystems.spinny.SpinnyIoReal();
+
+    public final SpinnyWheels m_spinnyWheels = new SpinnyWheels(m_spinnyIO);
 
     public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem(m_indexerIO);
 

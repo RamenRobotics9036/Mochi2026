@@ -19,7 +19,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private final RollerIoInterface m_intakeIO;
     private final RollerIoInterface.DeviceOutputs m_intakeOutputs =
         new RollerIoInterface.DeviceOutputs();
-    
+
 
     /**
      * Constructs a new IntakeSubsystem.
@@ -78,5 +78,4 @@ public class IntakeSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Intake/Current", getCurrent());
         SmartDashboard.putBoolean("Intake/Is Stalled", isStalled());
     }
-
 }

@@ -1,45 +1,38 @@
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkFlexConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.RelativeEncoder;
-
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.SpinnyWheelsConstants; 
+import frc.robot.Constants.SpinnyWheelsConstants;
+import frc.robot.sim.RollerSim.RollerIoInterface;
 
+/** Subsystem for the agitator, which we call spinny. */
 public class SpinnyWheels extends SubsystemBase {
-    private final SparkFlex m_motor = new SparkFlex(SpinnyWheelsConstants.kMotorID, MotorType.kBrushless);
-    private final RelativeEncoder m_encoder = m_motor.getEncoder();
+    private final RollerIoInterface m_spinnyIO;
+    private final RollerIoInterface.DeviceOutputs m_spinnyOutputs =
+        new RollerIoInterface.DeviceOutputs();
 
-    public SpinnyWheels() {
-        SparkFlexConfig config = new SparkFlexConfig();
-
-        config.smartCurrentLimit(SpinnyWheelsConstants.kCurrentLimit);
-        config.idleMode(IdleMode.kCoast); 
-        config.openLoopRampRate(0.25); 
-
-        m_motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    /** Constructor. */
+    public SpinnyWheels(frc.robot.sim.RollerSim.RollerIoInterface io) {
+        m_spinnyIO = io;
     }
 
     /**
      * Spins the wheels at the constant speed defined in Constants.
      */
     public void spin() {
-        m_motor.set(SpinnyWheelsConstants.kSpinSpeed);
+        m_spinnyIO.setSpeed(SpinnyWheelsConstants.kSpinSpeed);
     }
 
+    /** Stop. */
     public void stop() {
-        m_motor.stopMotor();
+        m_spinnyIO.stop();
     }
 
     @Override
     public void periodic() {
+        m_spinnyIO.updateOutputs(m_spinnyOutputs);
+
         // Monitors to ensure the motor is actually spinning
-        SmartDashboard.putNumber("Spinny/Current RPM", m_encoder.getVelocity());
+        SmartDashboard.putNumber("Spinny/VelocityRPM", m_spinnyOutputs.velocityRPM);
     }
 }

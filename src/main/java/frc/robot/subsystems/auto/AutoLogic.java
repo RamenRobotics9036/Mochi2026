@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -79,6 +80,16 @@ public final class  AutoLogic {
         tab.addString("Active Auto", AutoLogic::getSelectedName)
             .withPosition(0, 1)
             .withSize(2, 1);
+
+        // Publish initial value so the key exists in NetworkTables before any selection change
+        String kRelativeKey = "Auto is Relative";
+        SmartDashboard.putBoolean(
+            kRelativeKey,
+            getSelectedAutoStartingPose().equals(Pose2d.kZero));
+
+        autoPicker.onChange(name -> SmartDashboard.putBoolean(
+            kRelativeKey,
+            getSelectedAutoStartingPose().equals(Pose2d.kZero)));
     }
 
     /** Adds both PathPlanner routines and hard-coded manual routines to the chooser. */
