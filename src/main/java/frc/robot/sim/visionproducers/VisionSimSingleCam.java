@@ -2,15 +2,17 @@ package frc.robot.sim.visionproducers;
 
 import static frc.robot.sim.visionproducers.VisionSimConstants.Vision.*;
 
+import java.util.Optional;
+
+import edu.wpi.first.math.geometry.Transform3d;
+import frc.robot.Robot;
+import frc.robot.sim.visionproducers.VisionSimConstants.Vision;
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-
-import edu.wpi.first.math.geometry.Transform3d;
-import frc.robot.Robot;
-import frc.robot.sim.visionproducers.VisionSimConstants.Vision;
 
 
 /** Handles a single PhotonVision camera. */
@@ -59,5 +61,32 @@ public class VisionSimSingleCam {
 
         // $TODO - Double check that both wireframes should be drawn
         cameraSim.enableDrawWireframe(true);
+    }
+
+    /**
+     * Gets the latest PhotonVision pose, and publishes it to Network Tables
+     * for limelighthelper to read.
+     */
+    public void processCamera() {
+        Optional<EstimatedRobotPose> visionEst = Optional.empty();
+        for (var result : m_camera.getAllUnreadResults()) {
+            visionEst = m_photonEstimator.estimateCoprocMultiTagPose(result);
+            if (visionEst.isEmpty()) {
+                visionEst = m_photonEstimator.estimateLowestAmbiguityPose(result);
+            }
+
+            // Publish to Limelight NetworkTables for MultiCamOdometry to consume
+            LimelightData data = PhotonToLimelightConverter.convertPipelineResult(
+                result,
+                m_robotToCam);
+            double totalLatencyMs = data.pipelineLatencyMs + data.captureLatencyMs;
+            PhotonToLimelightConverter.convertBotpose(
+                visionEst.map(est -> est.estimatedPose).orElse(null),
+                result.getTargets(),
+                m_robotToCam,
+                totalLatencyMs,
+                data);
+            m_limelightPublisher.publish(data);
+        }
     }
 }
