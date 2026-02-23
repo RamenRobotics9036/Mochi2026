@@ -31,6 +31,7 @@ import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.FullAutoClimbCommand;
+import frc.robot.commands.GetFuelCommand;
 import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.IntakeCommand;
@@ -307,15 +308,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
 
-        // $TODO - This command uses both armSubsystem AND intakeSubsystem, but the RunCommand
-        // I think only takes dependency on intakeSubsystem.
-        NamedCommands.registerCommand("get fuel",
-                new RunCommand(() -> {
-                    armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle);
-                    intakeSubsystem.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
-                }, intakeSubsystem)
-                        .withTimeout(3.0)
-                        .andThen(intakeSubsystem::stop));
+        NamedCommands.registerCommand("get fuel", GetFuelCommand.create(armSubsystem, intakeSubsystem));
 
         NamedCommands.registerCommand("set intake bottom",
                 new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle),
