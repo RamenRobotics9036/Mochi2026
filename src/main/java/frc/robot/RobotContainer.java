@@ -30,6 +30,7 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
+import frc.robot.commands.FullAutoClimbCommand;
 import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.IntakeCommand;
@@ -258,15 +259,7 @@ public class RobotContainer {
         // Register Named Commands for PathPlanner
         NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
-        NamedCommands.registerCommand("Full Auto Climb",
-            Commands.sequence(
-                new RunCommand(
-                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbUpSpeed),
-                    climberSubsystem).withTimeout(4.0),
-                new RunCommand(
-                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbDownSpeed),
-                    climberSubsystem).withTimeout(4.0),
-                new InstantCommand(climberSubsystem::stop, climberSubsystem)));
+        NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
 
         // $TODO - This command uses both armSubsystem AND intakeSubsystem, but the RunCommand
         // I think only takes dependency on intakeSubsystem.
