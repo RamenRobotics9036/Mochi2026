@@ -256,31 +256,7 @@ public class RobotContainer {
 
         configureBindings();
 
-        // Register Named Commands for PathPlanner
-        NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
-
-        NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
-
-        // $TODO - This command uses both armSubsystem AND intakeSubsystem, but the RunCommand
-        // I think only takes dependency on intakeSubsystem.
-        NamedCommands.registerCommand("get fuel",
-                new RunCommand(() -> {
-                    armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle);
-                    intakeSubsystem.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
-                }, intakeSubsystem)
-                        .withTimeout(3.0)
-                        .andThen(intakeSubsystem::stop));
-
-        NamedCommands.registerCommand("set intake bottom",
-                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle),
-                        intakeSubsystem)
-                                .until(armSubsystem::isArmDeployed));
-
-        NamedCommands.registerCommand("set intake top",
-                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMinArmAngle),
-                        intakeSubsystem)
-                                .withTimeout(2.0)
-                                .andThen(armSubsystem::stop));
+        registerNamedCommands();
 
         m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
 
@@ -325,7 +301,33 @@ public class RobotContainer {
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
     }
 
+    private void registerNamedCommands() {
+        // Register Named Commands for PathPlanner
+        NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
+        NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
+
+        // $TODO - This command uses both armSubsystem AND intakeSubsystem, but the RunCommand
+        // I think only takes dependency on intakeSubsystem.
+        NamedCommands.registerCommand("get fuel",
+                new RunCommand(() -> {
+                    armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle);
+                    intakeSubsystem.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
+                }, intakeSubsystem)
+                        .withTimeout(3.0)
+                        .andThen(intakeSubsystem::stop));
+
+        NamedCommands.registerCommand("set intake bottom",
+                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle),
+                        intakeSubsystem)
+                                .until(armSubsystem::isArmDeployed));
+
+        NamedCommands.registerCommand("set intake top",
+                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMinArmAngle),
+                        intakeSubsystem)
+                                .withTimeout(2.0)
+                                .andThen(armSubsystem::stop));
+    }
 
     /**
      * Defines trigger-to-command mappings.
