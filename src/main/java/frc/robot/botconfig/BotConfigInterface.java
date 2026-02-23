@@ -10,6 +10,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.generated.GeneratedPancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import java.util.List;
 
 /**
  * Interface for robot-specific tuner configuration.
@@ -17,6 +18,16 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
  * for a specific robot.
  */
 public interface BotConfigInterface {
+    /** Camera name and robot-to-camera transform pair. */
+    final class CameraInfo {
+        public final String cameraName;
+        public final Transform3d robotToCam;
+
+        public CameraInfo(String cameraName, Transform3d robotToCam) {
+            this.cameraName = cameraName;
+            this.robotToCam = robotToCam;
+        }
+    }
 
     /*************************************************************************************
      *
@@ -107,23 +118,6 @@ public interface BotConfigInterface {
      *
      ************************************************************************************/
 
-    /**
-     * Limelight name for odometry on real robot.
-     */
-    String getVisionLimelightNameReal();
-
-    /**
-     * Limelight name for second camera.
-     */
-    String getVisionLimelightNameReal2();
-
-    /**
-     * Primary camera transform from robot origin.
-     */
-    Transform3d getRobotToCam();
-
-    /**
-     * Secondary camera transform from robot origin.
-     */
-    Transform3d getRobotToCam2();
+    /** Camera configurations for the real robot. */
+    List<CameraInfo> getCameras();
 }
