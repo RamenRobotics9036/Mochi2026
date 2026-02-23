@@ -36,7 +36,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
-
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
@@ -46,6 +45,7 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
+
 
 /** Vision simulation using PhotonVision. */
 @SuppressWarnings("PMD.TooManyStaticImports")
@@ -105,43 +105,7 @@ public class VisionSim implements VisionSimInterface {
     }
 
     private void generatePoseEstimate() {
-        processCamera(
-            m_camera,
-            m_photonEstimator,
-            m_configInterface.getRobotToCam(0),
-            m_limelightPublisher);
-        processCamera(
-            m_camera2,
-            m_photonEstimator2,
-            m_configInterface.getRobotToCam(1),
-            m_limelightPublisher2);
-    }
-
-    private void processCamera(
-            PhotonCamera camera,
-            PhotonPoseEstimator estimator,
-            edu.wpi.first.math.geometry.Transform3d robotToCam,
-            LimelightTablePublisher publisher) {
-        Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        for (var result : camera.getAllUnreadResults()) {
-            visionEst = estimator.estimateCoprocMultiTagPose(result);
-            if (visionEst.isEmpty()) {
-                visionEst = estimator.estimateLowestAmbiguityPose(result);
-            }
-
-            // Publish to Limelight NetworkTables for MultiCamOdometry to consume
-            LimelightData data = PhotonToLimelightConverter.convertPipelineResult(
-                result,
-                robotToCam);
-            double totalLatencyMs = data.pipelineLatencyMs + data.captureLatencyMs;
-            PhotonToLimelightConverter.convertBotpose(
-                visionEst.map(est -> est.estimatedPose).orElse(null),
-                result.getTargets(),
-                robotToCam,
-                totalLatencyMs,
-                data);
-            publisher.publish(data);
-        }
+        m_singleCamHelper1.processCamera();
     }
 
     // ----- Simulation
