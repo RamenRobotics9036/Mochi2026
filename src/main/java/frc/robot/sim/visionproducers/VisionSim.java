@@ -70,11 +70,11 @@ public class VisionSim implements VisionSimInterface {
         }
 
         m_singleCamHelper1 = new VisionSimSingleCam(
-            kPhotonCameraName,
+            kPhotonCameraNamePrefix + m_configInterface.getCameraName(0),
             m_configInterface.getCameraName(0),
             m_configInterface.getRobotToCam(0));
         m_singleCamHelper2 = new VisionSimSingleCam(
-            kPhotonCameraName2,
+            kPhotonCameraNamePrefix + m_configInterface.getCameraName(1),
             m_configInterface.getCameraName(1),
             m_configInterface.getRobotToCam(1));
 

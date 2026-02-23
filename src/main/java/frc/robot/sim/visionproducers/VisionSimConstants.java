@@ -13,9 +13,7 @@ import edu.wpi.first.math.numbers.N3;
 public class VisionSimConstants {
     public static class Vision {
         // Camera name (must match PhotonVision camera name)
-        // $TODO - This needs to be dynamic so we can have more cameras
-        public static final String kPhotonCameraName = "photonvision";
-        public static final String kPhotonCameraName2 = "photonvision2";
+        public static final String kPhotonCameraNamePrefix = "photon-";
 
         // The layout of the AprilTags on the field
         public static final AprilTagFieldLayout kTagLayout =
