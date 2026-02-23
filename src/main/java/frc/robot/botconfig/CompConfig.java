@@ -126,4 +126,12 @@ public class CompConfig implements BotConfigInterface {
         }
         return m_cameras.get(cameraNum).cameraName;
     }
+
+    @Override
+    public Transform3d getRobotToCam(int cameraNum) {
+        if (cameraNum < 0 || cameraNum >= m_cameras.size()) {
+            throw new IllegalArgumentException("Invalid camera number: " + cameraNum);
+        }
+        return m_cameras.get(cameraNum).robotToCam;
+    }
 }

@@ -123,4 +123,7 @@ public interface BotConfigInterface {
 
     /** Helper to just get the name of a camera. */
     String getCameraName(int cameraNum);
+
+    /** Helper to just get the RobotToCam translation for camera. */
+    Transform3d getRobotToCam(int cameraNum);
 }
