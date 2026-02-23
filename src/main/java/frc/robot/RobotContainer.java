@@ -33,6 +33,8 @@ import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.FullAutoClimbCommand;
 import frc.robot.commands.GetFuelCommand;
 import frc.robot.commands.IntakeArmCommand;
+import frc.robot.commands.SetIntakeBottomCommand;
+import frc.robot.commands.SetIntakeTopCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateToTargetCommand;
@@ -310,16 +312,9 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("get fuel", GetFuelCommand.create(armSubsystem, intakeSubsystem));
 
-        NamedCommands.registerCommand("set intake bottom",
-                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle),
-                        intakeSubsystem)
-                                .until(armSubsystem::isArmDeployed));
+        NamedCommands.registerCommand("set intake bottom", SetIntakeBottomCommand.create(armSubsystem, intakeSubsystem));
 
-        NamedCommands.registerCommand("set intake top",
-                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMinArmAngle),
-                        intakeSubsystem)
-                                .withTimeout(2.0)
-                                .andThen(armSubsystem::stop));
+        NamedCommands.registerCommand("set intake top", SetIntakeTopCommand.create(armSubsystem, intakeSubsystem));
     }
 
     /**
