@@ -52,19 +52,11 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class VisionSim implements VisionSimInterface {
     private final BotConfigInterface m_configInterface;
 
-    private final PhotonCamera m_camera;
-    private final PhotonCamera m_camera2;
-    private final PhotonPoseEstimator m_photonEstimator;
-    private final PhotonPoseEstimator m_photonEstimator2;
-
     // Simulation
-    private PhotonCameraSim m_cameraSim;
-    private PhotonCameraSim m_cameraSim2;
-    private VisionSystemSim m_visionSystemSim;
+    private VisionSimSingleCam m_singleCamHelper1;
+    private VisionSimSingleCam m_singleCamHelper2;
 
-    // Limelight NetworkTables publisher
-    private final LimelightTablePublisher m_limelightPublisher;
-    private final LimelightTablePublisher m_limelightPublisher2;
+    private VisionSystemSim m_visionSystemSim;
 
     /** Constructor. */
     public VisionSim(BotConfigInterface configInterface) {
@@ -77,18 +69,12 @@ public class VisionSim implements VisionSimInterface {
                 "VisionSim should only be instantiated in simulation");
         }
 
-        m_camera = new PhotonCamera(kPhotonCameraName);
-        m_camera2 = new PhotonCamera(kPhotonCameraName2);
-        m_photonEstimator = new PhotonPoseEstimator(
-            kTagLayout,
+        m_singleCamHelper1 = new VisionSimSingleCam(
+            kPhotonCameraName,
             m_configInterface.getRobotToCam(0));
-        m_photonEstimator2 = new PhotonPoseEstimator(
-            kTagLayout,
+        m_singleCamHelper2 = new VisionSimSingleCam(
+            kPhotonCameraName2,
             m_configInterface.getRobotToCam(1));
-        m_limelightPublisher = new LimelightTablePublisher(
-            m_configInterface.getCameraName(0));
-        m_limelightPublisher2 = new LimelightTablePublisher(
-            m_configInterface.getCameraName(1));
 
         // ----- Simulation
         if (Robot.isSimulation()) {
@@ -106,23 +92,9 @@ public class VisionSim implements VisionSimInterface {
             cameraProp.setFPS(kCameraFPS);
             cameraProp.setAvgLatencyMs(kAvgLatencyMs);
             cameraProp.setLatencyStdDevMs(kLatencyStdDevMs);
-            // Create a PhotonCameraSim which will update the linked PhotonCamera's values
-            // with visible targets.
-            m_cameraSim = new PhotonCameraSim(m_camera, cameraProp);
-            // Set realistic detection range limits
-            m_cameraSim.setMinTargetAreaPixels(kMinTargetAreaPixels);
-            m_cameraSim.setMaxSightRange(kMaxSightRangeMeters);
+
             // Add the simulated camera to view the targets on this simulated field.
-            m_visionSystemSim.addCamera(m_cameraSim, m_configInterface.getRobotToCam(0));
-
-            m_cameraSim2 = new PhotonCameraSim(m_camera2, cameraProp);
-            m_cameraSim2.setMinTargetAreaPixels(kMinTargetAreaPixels);
-            m_cameraSim2.setMaxSightRange(kMaxSightRangeMeters);
-            m_visionSystemSim.addCamera(m_cameraSim2, m_configInterface.getRobotToCam(1));
-
-            // $TODO - Double check that both wireframes should be drawn
-            m_cameraSim.enableDrawWireframe(true);
-            m_cameraSim2.enableDrawWireframe(true);
+            m_singleCamHelper1.addToVisionSystem(m_visionSystemSim, cameraProp);
         }
     }
 
