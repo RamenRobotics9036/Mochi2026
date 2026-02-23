@@ -34,11 +34,6 @@ public final class Constants {
         public static final int kIntakeMotorID = 22;
 
         public static final double kIntakeRollerGearRatio = 3.0;
-
-        // $TODO - Are these PID values used anywhere?
-        public static final double kP = 0.1; //TODO: filler value
-        public static final double kI = 0.0; //TODO: filler value
-        public static final double kD = 0.001; //TODO: filler
     }
 
     public static final class ArmConstants {

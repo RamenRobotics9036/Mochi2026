@@ -30,7 +30,12 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
+import frc.robot.commands.FullAutoClimbCommand;
+import frc.robot.commands.GetFuelCommand;
 import frc.robot.commands.IntakeArmCommand;
+import frc.robot.commands.SetIntakeBottomCommand;
+import frc.robot.commands.SetIntakeTopCommand;
+import frc.robot.commands.ShootCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
@@ -254,48 +259,7 @@ public class RobotContainer {
 
         configureBindings();
 
-        // Register Named Commands for PathPlanner
-        NamedCommands.registerCommand("shoot",
-            new RunCommand(() -> {
-                shooterSubsystem.setSpeed(Constants.ShooterConstants.kShootSpeed);
-                m_indexerSubsystem.setSpeed(Constants.IndexerConstants.kIndexSpeed);
-            }, shooterSubsystem, m_indexerSubsystem)
-            .withTimeout(5.0)
-            .andThen(() -> { // Ensure motors stop after the 5 seconds
-                shooterSubsystem.stop();
-                m_indexerSubsystem.stop();
-            }));
-
-        NamedCommands.registerCommand("Full Auto Climb",
-            Commands.sequence(
-                new RunCommand(
-                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbUpSpeed),
-                    climberSubsystem).withTimeout(4.0),
-                new RunCommand(
-                    () -> climberSubsystem.setClimbSpeed(Constants.ClimberConstants.kClimbDownSpeed),
-                    climberSubsystem).withTimeout(4.0),
-                new InstantCommand(climberSubsystem::stop, climberSubsystem)));
-
-        // $TODO - This command uses both armSubsystem AND intakeSubsystem, but the RunCommand
-        // I think only takes dependency on intakeSubsystem.
-        NamedCommands.registerCommand("get fuel",
-                new RunCommand(() -> {
-                    armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle);
-                    intakeSubsystem.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
-                }, intakeSubsystem)
-                        .withTimeout(3.0)
-                        .andThen(intakeSubsystem::stop));
-
-        NamedCommands.registerCommand("set intake bottom",
-                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMaxArmAngle),
-                        intakeSubsystem)
-                                .until(armSubsystem::isArmDeployed));
-
-        NamedCommands.registerCommand("set intake top",
-                new RunCommand(() -> armSubsystem.setArmPosition(Constants.ArmConstants.kMinArmAngle),
-                        intakeSubsystem)
-                                .withTimeout(2.0)
-                                .andThen(armSubsystem::stop));
+        registerNamedCommands();
 
         m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
 
@@ -340,7 +304,18 @@ public class RobotContainer {
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
     }
 
+    private void registerNamedCommands() {
+        // Register Named Commands for PathPlanner
+        NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
+        NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
+
+        NamedCommands.registerCommand("get fuel", GetFuelCommand.create(armSubsystem, intakeSubsystem));
+
+        NamedCommands.registerCommand("set intake bottom", SetIntakeBottomCommand.create(armSubsystem, intakeSubsystem));
+
+        NamedCommands.registerCommand("set intake top", SetIntakeTopCommand.create(armSubsystem, intakeSubsystem));
+    }
 
     /**
      * Defines trigger-to-command mappings.
