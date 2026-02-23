@@ -17,7 +17,8 @@ import org.photonvision.simulation.VisionSystemSim;
 
 /** Handles a single PhotonVision camera. */
 public class VisionSimSingleCam {
-    private final String m_camName;
+    private final String m_photonCamName;
+    private final String m_limelightCamName;
     private final Transform3d m_robotToCam;
 
     private final PhotonCamera m_camera;
@@ -27,18 +28,23 @@ public class VisionSimSingleCam {
     private final LimelightTablePublisher m_limelightPublisher;
 
     /** Constructor. */
-    public VisionSimSingleCam(String camName, Transform3d robotToCam) {
-        m_camName = camName;
+    public VisionSimSingleCam(
+        String photonCamName,
+        String limelightCamName,
+        Transform3d robotToCam) {
+
+        m_photonCamName = photonCamName;
+        m_limelightCamName = limelightCamName;
         m_robotToCam = robotToCam;
 
-        m_camera = new PhotonCamera(m_camName);
+        m_camera = new PhotonCamera(m_photonCamName);
 
         m_photonEstimator = new PhotonPoseEstimator(
             kTagLayout,
             m_robotToCam);
 
         m_limelightPublisher = new LimelightTablePublisher(
-            m_camName);
+            m_limelightCamName);
     }
 
     /** Create a simulated camera and return it. */

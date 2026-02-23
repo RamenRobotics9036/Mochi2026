@@ -71,9 +71,11 @@ public class VisionSim implements VisionSimInterface {
 
         m_singleCamHelper1 = new VisionSimSingleCam(
             kPhotonCameraName,
+            m_configInterface.getCameraName(0),
             m_configInterface.getRobotToCam(0));
         m_singleCamHelper2 = new VisionSimSingleCam(
             kPhotonCameraName2,
+            m_configInterface.getCameraName(1),
             m_configInterface.getRobotToCam(1));
 
         // ----- Simulation
@@ -95,6 +97,7 @@ public class VisionSim implements VisionSimInterface {
 
             // Add the simulated camera to view the targets on this simulated field.
             m_singleCamHelper1.addToVisionSystem(m_visionSystemSim, cameraProp);
+            m_singleCamHelper2.addToVisionSystem(m_visionSystemSim, cameraProp);
         }
     }
 
@@ -106,6 +109,7 @@ public class VisionSim implements VisionSimInterface {
 
     private void generatePoseEstimate() {
         m_singleCamHelper1.processCamera();
+        m_singleCamHelper2.processCamera();
     }
 
     // ----- Simulation
