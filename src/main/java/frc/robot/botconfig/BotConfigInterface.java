@@ -122,8 +122,20 @@ public interface BotConfigInterface {
     List<CameraInfo> getCameras();
 
     /** Helper to just get the name of a camera. */
-    String getCameraName(int cameraNum);
+    default String getCameraName(int cameraNum) {
+        List<CameraInfo> cameras = getCameras();
+        if (cameraNum < 0 || cameraNum >= cameras.size()) {
+            throw new IllegalArgumentException("Invalid camera number: " + cameraNum);
+        }
+        return cameras.get(cameraNum).cameraName;
+    }
 
     /** Helper to just get the RobotToCam translation for camera. */
-    Transform3d getRobotToCam(int cameraNum);
+    default Transform3d getRobotToCam(int cameraNum) {
+        List<CameraInfo> cameras = getCameras();
+        if (cameraNum < 0 || cameraNum >= cameras.size()) {
+            throw new IllegalArgumentException("Invalid camera number: " + cameraNum);
+        }
+        return cameras.get(cameraNum).robotToCam;
+    }
 }

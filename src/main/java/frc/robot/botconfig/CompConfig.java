@@ -108,7 +108,7 @@ public class CompConfig implements BotConfigInterface {
             ),
             new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
         )),
-        new CameraInfo("liimelight-fixed2", new Transform3d(
+        new CameraInfo("limelight-fixed2", new Transform3d(
             new Translation3d(-0.5, 0.0, 0.5),
             new Rotation3d(0, 0, Math.PI)
         ))
@@ -119,19 +119,4 @@ public class CompConfig implements BotConfigInterface {
         return m_cameras;
     }
 
-    @Override
-    public String getCameraName(int cameraNum) {
-        if (cameraNum < 0 || cameraNum >= m_cameras.size()) {
-            throw new IllegalArgumentException("Invalid camera number: " + cameraNum);
-        }
-        return m_cameras.get(cameraNum).cameraName;
-    }
-
-    @Override
-    public Transform3d getRobotToCam(int cameraNum) {
-        if (cameraNum < 0 || cameraNum >= m_cameras.size()) {
-            throw new IllegalArgumentException("Invalid camera number: " + cameraNum);
-        }
-        return m_cameras.get(cameraNum).robotToCam;
-    }
 }
