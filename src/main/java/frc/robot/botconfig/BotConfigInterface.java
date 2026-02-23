@@ -113,6 +113,11 @@ public interface BotConfigInterface {
     String getVisionLimelightNameReal();
 
     /**
+     * Limelight name for second camera.
+     */
+    String getVisionLimelightNameReal2();
+
+    /**
      * Primary camera transform from robot origin.
      */
     Transform3d getRobotToCam();

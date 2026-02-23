@@ -103,6 +103,11 @@ public class CompConfig implements BotConfigInterface {
         return "limelight-fixed";
     }
 
+    @Override
+    public String getVisionLimelightNameReal2() {
+        return "liimelight-fixed2";
+    }
+
     /**
     * Camera position n competition bot, from center on floor.
     * 4 inches to left of center

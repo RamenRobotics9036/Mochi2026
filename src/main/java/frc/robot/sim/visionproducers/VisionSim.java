@@ -25,8 +25,8 @@
 package frc.robot.sim.visionproducers;
 
 import static frc.robot.sim.visionproducers.VisionSimConstants.Vision.*;
-import static frc.robot.Constants.VisionConstants.kRobotToCam;
-import static frc.robot.Constants.VisionConstants.kRobotToCam2;
+import static frc.robot.Constants.SimVisionConstants.kRobotToCamSim;
+import static frc.robot.Constants.SimVisionConstants.kRobotToCamSim2;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -76,12 +76,12 @@ public class VisionSim implements VisionSimInterface {
 
         m_camera = new PhotonCamera(kCameraName);
         m_camera2 = new PhotonCamera(kCameraName2);
-        m_photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCam);
-        m_photonEstimator2 = new PhotonPoseEstimator(kTagLayout, kRobotToCam2);
+        m_photonEstimator = new PhotonPoseEstimator(kTagLayout, kRobotToCamSim);
+        m_photonEstimator2 = new PhotonPoseEstimator(kTagLayout, kRobotToCamSim2);
         m_limelightPublisher = new LimelightTablePublisher(
-            Constants.VisionConstants.kLimelightNameSim);
+            Constants.SimVisionConstants.kLimelightNameSim);
         m_limelightPublisher2 = new LimelightTablePublisher(
-            Constants.VisionConstants.kLimelightNameSim2);
+            Constants.SimVisionConstants.kLimelightNameSim2);
 
         // ----- Simulation
         if (Robot.isSimulation()) {
@@ -106,12 +106,12 @@ public class VisionSim implements VisionSimInterface {
             m_cameraSim.setMinTargetAreaPixels(kMinTargetAreaPixels);
             m_cameraSim.setMaxSightRange(kMaxSightRangeMeters);
             // Add the simulated camera to view the targets on this simulated field.
-            m_visionSystemSim.addCamera(m_cameraSim, kRobotToCam);
+            m_visionSystemSim.addCamera(m_cameraSim, kRobotToCamSim);
 
             m_cameraSim2 = new PhotonCameraSim(m_camera2, cameraProp);
             m_cameraSim2.setMinTargetAreaPixels(kMinTargetAreaPixels);
             m_cameraSim2.setMaxSightRange(kMaxSightRangeMeters);
-            m_visionSystemSim.addCamera(m_cameraSim2, kRobotToCam2);
+            m_visionSystemSim.addCamera(m_cameraSim2, kRobotToCamSim2);
 
             // $TODO - Double check that both wireframes should be drawn
             m_cameraSim.enableDrawWireframe(true);
@@ -126,8 +126,8 @@ public class VisionSim implements VisionSimInterface {
     }
 
     private void generatePoseEstimate() {
-        processCamera(m_camera, m_photonEstimator, kRobotToCam, m_limelightPublisher);
-        processCamera(m_camera2, m_photonEstimator2, kRobotToCam2, m_limelightPublisher2);
+        processCamera(m_camera, m_photonEstimator, kRobotToCamSim, m_limelightPublisher);
+        processCamera(m_camera2, m_photonEstimator2, kRobotToCamSim2, m_limelightPublisher2);
     }
 
     private void processCamera(
@@ -142,7 +142,7 @@ public class VisionSim implements VisionSimInterface {
                 visionEst = estimator.estimateLowestAmbiguityPose(result);
             }
 
-            // Publish to Limelight NetworkTables for LimelightOdometry to consume
+            // Publish to Limelight NetworkTables for MultiCamOdometry to consume
             LimelightData data = PhotonToLimelightConverter.convertPipelineResult(
                 result,
                 robotToCam);

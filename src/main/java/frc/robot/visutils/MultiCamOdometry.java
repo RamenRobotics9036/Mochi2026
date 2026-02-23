@@ -1,0 +1,87 @@
+package frc.robot.visutils;
+
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import frc.robot.Constants.SimVisionConstants;
+import frc.robot.Robot;
+import frc.robot.botconfig.BotConfigInterface;
+import frc.robot.sim.visionproducers.VisionSimInterface;
+import java.util.Optional;
+import java.util.function.BooleanSupplier;
+
+
+/** Reads from multiple limelight cameras. */
+public class MultiCamOdometry {
+    BotConfigInterface m_configInterface;
+    private final SingleCamOdometry m_singleCamlimelight;
+
+    /** Constructor. */
+    public MultiCamOdometry(
+        BotConfigInterface configInterface,
+        VisionSimInterface.EstimateConsumer poseConsumer) {
+
+        m_configInterface = configInterface;
+
+        // Get camera specific information
+        String limelightName = Robot.isSimulation()
+            ? SimVisionConstants.kLimelightNameSim
+            : m_configInterface.getVisionLimelightNameReal(); // $TODO - Fix for second camera
+
+        Transform3d robotToCam = Robot.isSimulation()
+            ? SimVisionConstants.kRobotToCamSim
+            : m_configInterface.getRobotToCam();
+
+        m_singleCamlimelight = new SingleCamOdometry(
+            limelightName,
+            robotToCam,
+            poseConsumer);
+    }
+
+    /**
+     * Sets the dependencies needed for vision processing.
+     *
+     * @param visionEnabledSupplier A BooleanSupplier returning true when vision is enabled
+     * @param filter The VisionKalmanFilter instance to inject measurements into
+     * @param isMotionlessSupplier Supplier that returns true when robot is motionless
+     */
+    public void setVisionDependencies(
+            BooleanSupplier visionEnabledSupplier,
+            VisionKalmanFilter filter,
+            BooleanSupplier isMotionlessSupplier) {
+
+        m_singleCamlimelight.setVisionDependencies(
+            visionEnabledSupplier,
+            filter,
+            isMotionlessSupplier);
+    }
+
+    /** Periodic update; should be called from robot periodic. */
+    public void periodic() {
+        m_singleCamlimelight.periodic();
+    }
+
+    public Optional<Pose2d> getLatestVisPose() {
+        return m_singleCamlimelight.getLatestVisPose();
+    }
+
+    public double getCurrentConfidenceScore() {
+        return m_singleCamlimelight.getCurrentConfidenceScore();
+    }
+
+    public int getNumLockedTags() {
+        return m_singleCamlimelight.getNumLockedTags();
+    }
+
+    public double getTx() {
+        return m_singleCamlimelight.getTx();
+    }
+
+    public String getTargetList() {
+        return m_singleCamlimelight.getTargetList();
+    }
+
+    /** Returns the ID of the last seen fiducial, or -1 if none. */
+    public int getLastTarget() {
+        return m_singleCamlimelight.getLastTarget();
+    }
+}
