@@ -66,6 +66,7 @@ import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometry;
 import frc.robot.visutils.MultiCamOdometryFactory;
+import frc.robot.visutils.PerCycleState.CameraSelectionMode;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.OptionalDouble;
@@ -241,6 +242,32 @@ public class RobotContainer {
             basicInfoDashboard,
             m_visionKalmanFilter,
             m_motionlessTracker);
+            m_motionlessTracker::isMotionless);
+
+        basicInfoDashboard.setVisionDependencies(
+            this::getBestCurrentConfidenceScoreForSingleCam,
+            this::getBestNumLockedTagsForSingleCam,
+            this::getBestTxForSingleCam,
+            m_multiCamlimelight::getTargetListForAllCams,
+            m_motionlessTracker::isMotionless,
+            m_motionlessTracker::getSecondsStill);
+
+        basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
+    }
+
+    private double getBestCurrentConfidenceScoreForSingleCam() {
+        return m_multiCamlimelight.getCurrentConfidenceScoreForSingleCam(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    private int getBestNumLockedTagsForSingleCam() {
+        return m_multiCamlimelight.getNumLockedTagsForSingleCam(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    private double getBestTxForSingleCam() {
+        return m_multiCamlimelight.getTxForSingleCam(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 
     /** Registers named commands for PathPlanner */
@@ -305,8 +332,7 @@ public class RobotContainer {
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(() -> JoystickInput.isPovDownward(driveController)).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
-                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
-    }
+                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK))));
 
     /**
      * Defines trigger-to-command mappings for the operator controller.
