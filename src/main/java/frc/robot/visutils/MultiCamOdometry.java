@@ -7,6 +7,7 @@ import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -15,7 +16,7 @@ import java.util.function.BooleanSupplier;
 /** Reads from multiple limelight cameras. */
 public class MultiCamOdometry {
     private final BotConfigInterface m_configInterface;
-    private final SingleCamOdometry m_singleCamlimelight;
+    private List<SingleCamOdometry> m_singleCamLimelightList;
 
     /** Constructor. */
     public MultiCamOdometry(
@@ -24,12 +25,15 @@ public class MultiCamOdometry {
 
         m_configInterface = configInterface;
 
-        List<CameraInfo> cameraList = m_configInterface.getCameras();
+        List<CameraInfo> cameraInfoList = m_configInterface.getCameras();
 
-        m_singleCamlimelight = new SingleCamOdometry(
-            cameraList.get(0).cameraName,
-            cameraList.get(0).robotToCam,
-            poseConsumer);
+        m_singleCamLimelightList = new ArrayList<>();
+        for (CameraInfo camInfo : cameraInfoList) {
+            m_singleCamLimelightList.add(new SingleCamOdometry(
+                camInfo.cameraName,
+                camInfo.robotToCam,
+                poseConsumer));
+        }
     }
 
     /**
@@ -44,39 +48,51 @@ public class MultiCamOdometry {
             VisionKalmanFilter filter,
             BooleanSupplier isMotionlessSupplier) {
 
-        m_singleCamlimelight.setVisionDependencies(
-            visionEnabledSupplier,
-            filter,
-            isMotionlessSupplier);
+        for (SingleCamOdometry cam : m_singleCamLimelightList) {
+            cam.setVisionDependencies(
+                visionEnabledSupplier,
+                filter,
+                isMotionlessSupplier);
+        }
     }
 
     /** Periodic update; should be called from robot periodic. */
     public void periodic() {
-        m_singleCamlimelight.periodic();
+        for (SingleCamOdometry cam : m_singleCamLimelightList) {
+            cam.periodic();
+        }
     }
 
     public Optional<Pose2d> getLatestVisPose() {
-        return m_singleCamlimelight.getLatestVisPose();
+        // $TODO - For all these methods, we should either return the single
+        // pose for this cycle with the highest confidence score, or
+        // return a weighted average of the poses from each camera based on confidence scores.
+        return m_singleCamLimelightList.get(0).getLatestVisPose();
     }
 
     public double getCurrentConfidenceScore() {
-        return m_singleCamlimelight.getCurrentConfidenceScore();
+        return m_singleCamLimelightList.get(0).getCurrentConfidenceScore();
     }
 
     public int getNumLockedTags() {
-        return m_singleCamlimelight.getNumLockedTags();
+        return m_singleCamLimelightList.get(0).getNumLockedTags();
     }
 
     public double getTx() {
-        return m_singleCamlimelight.getTx();
+        return m_singleCamLimelightList.get(0).getTx();
     }
 
     public String getTargetList() {
-        return m_singleCamlimelight.getTargetList();
+        // $TODO - This should probably be an aggregated list of targets from all cameras,
+        // perhaps sorted by confidence score.
+        return m_singleCamLimelightList.get(0).getTargetList();
     }
 
     /** Returns the ID of the last seen fiducial, or -1 if none. */
     public int getLastTarget() {
-        return m_singleCamlimelight.getLastTarget();
+        // $TODO - Make sure the kalman filter locks onto the target from the camera
+        // with the HIGHEST confidence score.  I don't think thats happening here,
+        // so it may end up locking onto a random camera.
+        return m_singleCamLimelightList.get(0).getLastTarget();
     }
 }
