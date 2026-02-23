@@ -118,4 +118,12 @@ public class PancakeConfig implements BotConfigInterface {
     public List<CameraInfo> getCameras() {
         return m_cameras;
     }
+
+    @Override
+    public String getCameraName(int cameraNum) {
+        if (cameraNum < 0 || cameraNum >= m_cameras.size()) {
+            throw new IllegalArgumentException("Invalid camera number: " + cameraNum);
+        }
+        return m_cameras.get(cameraNum).cameraName;
+    }
 }

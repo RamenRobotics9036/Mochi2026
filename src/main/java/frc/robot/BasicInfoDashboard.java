@@ -50,7 +50,7 @@ public class BasicInfoDashboard {
 
     /** Bidirectional toggle for enabling/disabling vision measurement injection. */
     private final BooleanEntry m_visionEnabled =
-        m_basicInfoTable.getBooleanTopic("VisionEnabled").getEntry(Constants.SimVisionConstants.kVisionEnabledDefault);
+        m_basicInfoTable.getBooleanTopic("VisionEnabled").getEntry(Constants.VisionConstants.kVisionEnabledDefault);
 
     /* Vision Kalman filter outputs */
     private final DoubleArrayPublisher m_visionKalmanPose =
@@ -95,7 +95,7 @@ public class BasicInfoDashboard {
         m_pigeon = drivetrain.getPigeon2();
 
         // Publish the default value so the toggle appears in Elastic immediately.
-        m_visionEnabled.set(Constants.SimVisionConstants.kVisionEnabledDefault);
+        m_visionEnabled.set(Constants.VisionConstants.kVisionEnabledDefault);
     }
 
     /**
@@ -108,7 +108,7 @@ public class BasicInfoDashboard {
         if (m_forceDisableVision) {
             return false;
         }
-        return m_visionEnabled.get(Constants.SimVisionConstants.kVisionEnabledDefault);
+        return m_visionEnabled.get(Constants.VisionConstants.kVisionEnabledDefault);
     }
 
     /**

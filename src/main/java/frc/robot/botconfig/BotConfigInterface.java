@@ -120,4 +120,7 @@ public interface BotConfigInterface {
 
     /** Camera configurations for the real robot. */
     List<CameraInfo> getCameras();
+
+    /** Helper to just get the name of a camera. */
+    String getCameraName(int cameraNum);
 }
