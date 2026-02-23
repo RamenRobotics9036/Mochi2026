@@ -66,6 +66,7 @@ import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometry;
 import frc.robot.visutils.MultiCamOdometryFactory;
+import frc.robot.visutils.PerCycleState.CameraSelectionMode;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.OptionalDouble;
@@ -305,7 +306,7 @@ public class RobotContainer {
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(() -> JoystickInput.isPovDownward(driveController)).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
-                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
+                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK))));
     }
 
     /**
@@ -354,7 +355,8 @@ public class RobotContainer {
                 var driveState = drivetrain.getState();
                 OptionalDouble aimRate = m_aimController.update(
                     JoystickInput.isPovUpward(driveController),
-                    m_multiCamlimelight.getLastTarget(),
+                    // $TODO - Not sure that CAMERA_BEST is the right param
+                    m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK),
                     driveState.Pose,
                     driveState.Speeds);
 
