@@ -26,25 +26,15 @@ package frc.robot.sim.visionproducers;
 
 import static frc.robot.sim.visionproducers.VisionSimConstants.Vision.*;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 
 /** Vision simulation using PhotonVision. */
@@ -53,8 +43,7 @@ public class VisionSim implements VisionSimInterface {
     private final BotConfigInterface m_configInterface;
 
     // Simulation
-    private VisionSimSingleCam m_singleCamHelper1;
-    private VisionSimSingleCam m_singleCamHelper2;
+    private List<VisionSimSingleCam> m_camHelperList;
 
     private VisionSystemSim m_visionSystemSim;
 
@@ -69,14 +58,16 @@ public class VisionSim implements VisionSimInterface {
                 "VisionSim should only be instantiated in simulation");
         }
 
-        m_singleCamHelper1 = new VisionSimSingleCam(
-            kPhotonCameraNamePrefix + m_configInterface.getCameraName(0),
-            m_configInterface.getCameraName(0),
-            m_configInterface.getRobotToCam(0));
-        m_singleCamHelper2 = new VisionSimSingleCam(
-            kPhotonCameraNamePrefix + m_configInterface.getCameraName(1),
-            m_configInterface.getCameraName(1),
-            m_configInterface.getRobotToCam(1));
+        int numCams = m_configInterface.getCameras().size();
+
+        m_camHelperList = new ArrayList<>();
+        for (int i = 0; i < numCams; i++) {
+            String cameraName = m_configInterface.getCameraName(i);
+            m_camHelperList.add(new VisionSimSingleCam(
+                kPhotonCameraNamePrefix + cameraName,
+                cameraName,
+                m_configInterface.getRobotToCam(i)));
+        }
 
         // ----- Simulation
         if (Robot.isSimulation()) {
@@ -96,8 +87,9 @@ public class VisionSim implements VisionSimInterface {
             cameraProp.setLatencyStdDevMs(kLatencyStdDevMs);
 
             // Add the simulated camera to view the targets on this simulated field.
-            m_singleCamHelper1.addToVisionSystem(m_visionSystemSim, cameraProp);
-            m_singleCamHelper2.addToVisionSystem(m_visionSystemSim, cameraProp);
+            for (VisionSimSingleCam cam : m_camHelperList) {
+                cam.addToVisionSystem(m_visionSystemSim, cameraProp);
+            }
         }
     }
 
@@ -108,8 +100,9 @@ public class VisionSim implements VisionSimInterface {
     }
 
     private void generatePoseEstimate() {
-        m_singleCamHelper1.processCamera();
-        m_singleCamHelper2.processCamera();
+        for (VisionSimSingleCam cam : m_camHelperList) {
+            cam.processCamera();
+        }
     }
 
     // ----- Simulation
