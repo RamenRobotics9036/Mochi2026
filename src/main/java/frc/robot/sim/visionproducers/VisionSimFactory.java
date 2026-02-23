@@ -1,6 +1,7 @@
 package frc.robot.sim.visionproducers;
 
 import frc.robot.Robot;
+import frc.robot.botconfig.BotConfigInterface;
 
 /**
  * Factory for creating VisionSimInterface instances.
@@ -13,9 +14,9 @@ public class VisionSimFactory {
      *
      * @return A VisionSimInterface instance, or null if not in simulation
      */
-    public static VisionSimInterface create() {
+    public static VisionSimInterface create(BotConfigInterface configInterface) {
         if (Robot.isSimulation()) {
-            return new VisionSim();
+            return new VisionSim(configInterface);
         }
         return null;
     }

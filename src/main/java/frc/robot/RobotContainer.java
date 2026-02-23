@@ -302,6 +302,7 @@ public class RobotContainer {
         // $VISIONSIM - Wrapper for sim features
         if (Robot.isSimulation()) {
             m_simWrapper = new SimWrapper(
+                m_configInterface,
                 drivetrain,
                 this::resetRobotPose);
 

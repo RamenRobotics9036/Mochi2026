@@ -6,6 +6,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
+import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.sim.visionproducers.VisionSimFactory;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.function.Consumer;
@@ -22,6 +23,8 @@ import java.util.function.Consumer;
  * that the simulation code is only running under simulation conditions.
  */
 public class SimWrapper {
+    private final BotConfigInterface m_configInterface;
+
     private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_drivetrain;
     private final GroundTruthSimInterface m_groundTruthSim;
     private final VisionSimInterface m_visionSim;
@@ -34,6 +37,7 @@ public class SimWrapper {
      *     (typically drivetrain::resetPose)
      */
     public SimWrapper(
+            BotConfigInterface configInterface,
             SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
             Consumer<Pose2d> poseResetConsumer) {
 
@@ -47,13 +51,15 @@ public class SimWrapper {
             throw new IllegalArgumentException("Pose reset consumer cannot be null");
         }
 
+        m_configInterface = configInterface;
+
         m_drivetrain = drivetrain;
 
         // Create ground truth simulation
         m_groundTruthSim = GroundTruthSimFactory.create(drivetrain, poseResetConsumer);
 
         // Create vision simulation
-        m_visionSim = VisionSimFactory.create();
+        m_visionSim = VisionSimFactory.create(m_configInterface);
         if (m_visionSim == null) {
             throw new IllegalStateException("VisionSimInterface creation failed");
         }
