@@ -2,17 +2,19 @@ package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import frc.robot.Constants.SimVisionConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
+import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 
 
 /** Reads from multiple limelight cameras. */
 public class MultiCamOdometry {
-    BotConfigInterface m_configInterface;
+    private final BotConfigInterface m_configInterface;
     private final SingleCamOdometry m_singleCamlimelight;
 
     /** Constructor. */
@@ -22,18 +24,11 @@ public class MultiCamOdometry {
 
         m_configInterface = configInterface;
 
-        // Get camera specific information
-        String limelightName = Robot.isSimulation()
-            ? SimVisionConstants.kLimelightNameSim
-            : m_configInterface.getVisionLimelightNameReal(); // $TODO - Fix for second camera
-
-        Transform3d robotToCam = Robot.isSimulation()
-            ? SimVisionConstants.kRobotToCamSim
-            : m_configInterface.getRobotToCam();
+        List<CameraInfo> cameraList = m_configInterface.getCameras();
 
         m_singleCamlimelight = new SingleCamOdometry(
-            limelightName,
-            robotToCam,
+            cameraList.get(0).cameraName,
+            cameraList.get(0).robotToCam,
             poseConsumer);
     }
 

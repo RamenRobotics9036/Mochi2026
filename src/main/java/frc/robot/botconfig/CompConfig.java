@@ -12,6 +12,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import java.util.List;
 
 /**
  * Adapter that bridges BotConfigInterface to the current constants.
@@ -98,40 +99,24 @@ public class CompConfig implements BotConfigInterface {
      *
      ************************************************************************************/
 
-    @Override
-    public String getVisionLimelightNameReal() {
-        return "limelight-fixed";
-    }
-
-    @Override
-    public String getVisionLimelightNameReal2() {
-        return "liimelight-fixed2";
-    }
-
-    /**
-    * Camera position n competition bot, from center on floor.
-    * 4 inches to left of center
-    * From pigeon, 1/2 inch back
-    * Height: 12.5 to deck + 4 inches to ground == 16.5 inches
-    * Angle up: 23 degrees
-    */
-    @Override
-    public Transform3d getRobotToCam() {
-        return new Transform3d(
+    private final List<CameraInfo> m_cameras = List.of(
+        new CameraInfo("limelight-fixed", new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(-0.5),  // 1/2 inch back
                 Units.inchesToMeters(4.0),   // 4 inches left of center
                 Units.inchesToMeters(16.5)   // 12.5" deck + 4" mount
             ),
             new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
-        );
-    }
-
-    @Override
-    public Transform3d getRobotToCam2() {
-        return new Transform3d(
+        )),
+        new CameraInfo("limelight-fixed2", new Transform3d(
             new Translation3d(-0.5, 0.0, 0.5),
             new Rotation3d(0, 0, Math.PI)
-        );
+        ))
+    );
+
+    @Override
+    public List<CameraInfo> getCameras() {
+        return m_cameras;
     }
+
 }

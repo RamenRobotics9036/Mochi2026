@@ -9,8 +9,10 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.math.util.Units;
 import frc.robot.generated.GeneratedPancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import java.util.List;
 
 /**
  * Adapter that bridges BotConfigInterface to the current constants.
@@ -97,29 +99,24 @@ public class PancakeConfig implements BotConfigInterface {
      *
      ************************************************************************************/
 
-    @Override
-    public String getVisionLimelightNameReal() {
-        return "limelight-fixed";
-    }
-
-    @Override
-    public String getVisionLimelightNameReal2() {
-        return "liimelight-fixed2";
-    }
-
-    @Override
-    public Transform3d getRobotToCam() {
-        return new Transform3d(
-            new Translation3d(0.5, 0.0, 0.5),
-            new Rotation3d(0, 0, 0)
-        );
-    }
-
-    @Override
-    public Transform3d getRobotToCam2() {
-        return new Transform3d(
+    private final List<CameraInfo> m_cameras = List.of(
+        new CameraInfo("limelight-fixed", new Transform3d(
+            new Translation3d(
+                Units.inchesToMeters(-0.5),  // 1/2 inch back
+                Units.inchesToMeters(4.0),   // 4 inches left of center
+                Units.inchesToMeters(16.5)   // 12.5" deck + 4" mount
+            ),
+            new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
+        )),
+        new CameraInfo("limelight-fixed2", new Transform3d(
             new Translation3d(-0.5, 0.0, 0.5),
             new Rotation3d(0, 0, Math.PI)
-        );
+        ))
+    );
+
+    @Override
+    public List<CameraInfo> getCameras() {
+        return m_cameras;
     }
+
 }
