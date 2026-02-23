@@ -14,7 +14,7 @@ import java.util.function.BooleanSupplier;
 
 /** Reads from multiple limelight cameras. */
 public class MultiCamOdometry {
-    BotConfigInterface m_configInterface;
+    private final BotConfigInterface m_configInterface;
     private final SingleCamOdometry m_singleCamlimelight;
 
     /** Constructor. */
