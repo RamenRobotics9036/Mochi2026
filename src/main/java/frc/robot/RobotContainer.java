@@ -31,6 +31,7 @@ import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.IntakeArmCommand;
+import frc.robot.commands.ShootCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
@@ -255,16 +256,7 @@ public class RobotContainer {
         configureBindings();
 
         // Register Named Commands for PathPlanner
-        NamedCommands.registerCommand("shoot",
-            new RunCommand(() -> {
-                shooterSubsystem.setSpeed(Constants.ShooterConstants.kShootSpeed);
-                m_indexerSubsystem.setSpeed(Constants.IndexerConstants.kIndexSpeed);
-            }, shooterSubsystem, m_indexerSubsystem)
-            .withTimeout(5.0)
-            .andThen(() -> { // Ensure motors stop after the 5 seconds
-                shooterSubsystem.stop();
-                m_indexerSubsystem.stop();
-            }));
+        NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
         NamedCommands.registerCommand("Full Auto Climb",
             Commands.sequence(
