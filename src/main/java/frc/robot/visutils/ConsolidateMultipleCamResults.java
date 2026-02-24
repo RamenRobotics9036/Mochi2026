@@ -1,6 +1,7 @@
 package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.units.measure.Per;
 import frc.robot.visutils.PerCycleState.CameraSelectionMode;
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +37,7 @@ public class ConsolidateMultipleCamResults {
      * For the current cycle, gets the pose from one particular camera.
      * Returns empty if no pose.
      */
-    public Optional<Pose2d> getLatestVisPose(
+    public Optional<Pose2d> getLatestVisPoseForSingleCam(
         PerCycleState cyclestate,
         CameraSelectionMode selectionMode) {
 
@@ -55,7 +56,7 @@ public class ConsolidateMultipleCamResults {
      * For the current cycle, get the confidence score from one particular camera.
      * Returns 0.0 if no camera has a lock.
      */
-    public double getCurrentConfidenceScore(
+    public double getCurrentConfidenceScoreForSingleCam(
         PerCycleState cyclestate,
         CameraSelectionMode selectionMode) {
 
@@ -68,5 +69,24 @@ public class ConsolidateMultipleCamResults {
         }
 
         return 0.0;
+    }
+
+    /**
+     * Returns the total number of AprilTags locked-on for a SINGLE camera
+     * (e.g. best camera, or cam0).
+     */
+    public int getNumLockedTagsForSingleCam(
+        PerCycleState cyclestate,
+        CameraSelectionMode selectionMode) {
+
+        Optional<SingleCamOdometry> cam = getAppropriateCamera(
+            cyclestate,
+            selectionMode);
+
+        if (cam.isPresent()) {
+            return cam.get().getNumLockedTags();
+        }
+
+        return 0;
     }
 }
