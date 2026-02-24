@@ -19,7 +19,7 @@ public class SpinnyWheelsDefaultCommand extends Command{
 
     @Override
     public void execute() {
-        if(m_timer.get()%4 == 0){ //TODO: replace 4 with a constant
+        if((int)m_timer.get()%4 == 0){ //TODO: replace 4 with a constant
             m_spinnyWheels.spinBack();
         } else {
             m_spinnyWheels.spin();
