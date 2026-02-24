@@ -346,7 +346,7 @@ public class RobotContainer {
                 var driveState = drivetrain.getState();
                 OptionalDouble aimRate = m_aimController.update(
                     isLeftPovUpward(),
-                    m_multiCamlimelight.getLastTargetForSingleCam(),
+                    m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK),
                     driveState.Pose,
                     driveState.Speeds);
 
@@ -432,7 +432,7 @@ public class RobotContainer {
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(this::isLeftPovDownward).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
-                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTargetForSingleCam())));
+                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK))));
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 

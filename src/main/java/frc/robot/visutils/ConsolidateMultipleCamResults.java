@@ -122,4 +122,22 @@ public class ConsolidateMultipleCamResults {
         }
         return new ArrayList<>(seen);
     }
+
+    /**
+     * Returns the ID of the last seen fiducial, or -1 if none.
+     */
+    public int getLastTargetForSingleCam(
+        PerCycleState cyclestate,
+        CameraSelectionMode selectionMode) {
+
+        Optional<SingleCamOdometry> cam = getAppropriateCamera(
+            cyclestate,
+            selectionMode);
+
+        if (cam.isPresent()) {
+            return cam.get().getLastTarget();
+        }
+
+        return -1;
+    }
 }

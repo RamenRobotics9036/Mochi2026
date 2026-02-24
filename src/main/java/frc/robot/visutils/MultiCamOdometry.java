@@ -126,11 +126,10 @@ public class MultiCamOdometry {
         return m_consolidateResults.getTargetListForAllCams();
     }
 
-    /** Returns the ID of the last seen fiducial, or -1 if none. */
-    public int getLastTargetForSingleCam() {
-        // $TODO - Make sure the kalman filter locks onto the target from the camera
-        // with the HIGHEST confidence score.  I don't think thats happening here,
-        // so it may end up locking onto a random camera.
-        return m_singleCamLimelightList.get(0).getLastTarget();
+    /** Proxy calls to helper. */
+    public int getLastTargetForSingleCam(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getLastTargetForSingleCam(
+            m_perCycleState,
+            selectionMode);
     }
 }
