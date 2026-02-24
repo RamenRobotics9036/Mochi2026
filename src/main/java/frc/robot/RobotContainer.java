@@ -70,6 +70,7 @@ import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.SingleCamOdometry;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometry;
+import frc.robot.visutils.PerCycleState.CameraSelectionMode;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.OptionalDouble;
@@ -294,7 +295,7 @@ public class RobotContainer {
             m_motionlessTracker::isMotionless);
 
         basicInfoDashboard.setVisionDependencies(
-            m_multiCamlimelight::getCurrentConfidenceScore,
+            this::getBestCurrentConfidenceScore,
             m_multiCamlimelight::getNumLockedTags,
             m_multiCamlimelight::getTx,
             m_multiCamlimelight::getTargetList,
@@ -302,6 +303,11 @@ public class RobotContainer {
             m_motionlessTracker::getSecondsStill);
 
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
+    }
+
+    private double getBestCurrentConfidenceScore() {
+        return m_multiCamlimelight.getCurrentConfidenceScore(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 
     private void registerNamedCommands() {

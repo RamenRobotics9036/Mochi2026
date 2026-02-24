@@ -50,4 +50,23 @@ public class ConsolidateMultipleCamResults {
 
         return Optional.empty();
     }
+
+    /**
+     * For the current cycle, get the confidence score from one particular camera.
+     * Returns 0.0 if no camera has a lock.
+     */
+    public double getCurrentConfidenceScore(
+        PerCycleState cyclestate,
+        CameraSelectionMode selectionMode) {
+
+        Optional<SingleCamOdometry> cam = getAppropriateCamera(
+            cyclestate,
+            selectionMode);
+
+        if (cam.isPresent()) {
+            return cam.get().getCurrentConfidenceScore();
+        }
+
+        return 0.0;
+    }
 }
