@@ -18,11 +18,14 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.visutils.VisionKalmanFilter;
 
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /** Basic logging to dashboard. */
 @SuppressWarnings("LineLength")
@@ -69,7 +72,7 @@ public class BasicInfoDashboard {
     private DoubleSupplier m_visionConfidenceSupplier = null;
     private IntSupplier m_numLockedTagsSupplier = null;
     private DoubleSupplier m_txSupplier = null;
-    private Supplier<String> m_targetListSupplier = null;
+    private Supplier<List<Integer>> m_targetListSupplier = null;
     private Supplier<VisionKalmanFilter> m_visionKalmanSupplier = null;
     private BooleanSupplier m_isRobotMotionlessSupplier = null;
     private DoubleSupplier m_secondsStillSupplier = null;
@@ -138,7 +141,7 @@ public class BasicInfoDashboard {
             DoubleSupplier confidenceSupplier,
             IntSupplier numLockedTagsSupplier,
             DoubleSupplier txSupplier,
-            Supplier<String> targetListSupplier,
+            Supplier<List<Integer>> targetListSupplier,
             BooleanSupplier isMotionlessSupplier,
             DoubleSupplier secondsStillSupplier) {
         m_visionConfidenceSupplier = confidenceSupplier;
@@ -156,6 +159,12 @@ public class BasicInfoDashboard {
      */
     public void setVisionKalmanSupplier(Supplier<VisionKalmanFilter> supplier) {
         m_visionKalmanSupplier = supplier;
+    }
+
+    private static String targetListToString(List<Integer> targets) {
+        return targets.stream()
+            .map(String::valueOf)
+            .collect(Collectors.joining(", "));
     }
 
     private boolean isRedAlliance() {
@@ -210,10 +219,10 @@ public class BasicInfoDashboard {
             m_visionTx.set(m_txSupplier.getAsDouble());
         }
         if (m_targetListSupplier != null) {
-            String currentTargetList = m_targetListSupplier.get();
-            boolean hasTargets = !currentTargetList.isEmpty();
+            List<Integer> targets = m_targetListSupplier.get();
+            boolean hasTargets = !targets.isEmpty();
             if (hasTargets) {
-                m_lastNonEmptyTargetList = currentTargetList;
+                m_lastNonEmptyTargetList = targetListToString(targets);
             }
             // Debounce the "has targets" state - when it goes false, delay before showing empty
             boolean showTargets = m_targetListDebouncer.calculate(hasTargets);

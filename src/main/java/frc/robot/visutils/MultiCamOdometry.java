@@ -121,10 +121,9 @@ public class MultiCamOdometry {
             selectionMode);
     }
 
-    public String getTargetListForAllCams() {
-        // $TODO - This should probably be an aggregated list of targets from all cameras,
-        // perhaps sorted by confidence score.
-        return m_singleCamLimelightList.get(0).getTargetList();
+    /** Proxy calls to helper. */
+    public List<Integer> getTargetListForAllCams() {
+        return m_consolidateResults.getTargetListForAllCams();
     }
 
     /** Returns the ID of the last seen fiducial, or -1 if none. */
