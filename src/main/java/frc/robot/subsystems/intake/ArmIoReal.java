@@ -33,12 +33,14 @@ public class ArmIoReal implements ArmIoInterface {
         lArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(ArmConstants.kArmStallLimit);
 
-        // $TODO - Bug?  The units for encoder (after conversion here) seem to be rotations/second
-        // I think?  But setPosition below takes as input DEGREES I think?  We should check all the units
-        // in the arm code, and change variable. names to make clear what the units are: e.g. positionDegrees, etc.
+        // Convert motor rotations → arm degrees.
+        // Motor shaft rotates kArmGearRatio times per one output rotation (360°),
+        // so dividing by kArmGearRatio gives output rotations; multiplying by 360 gives degrees.
+        // Velocity: raw units are motor RPM; dividing by 60 converts to motor RPS,
+        // then dividing by kArmGearRatio gives output RPS; multiplying by 360 gives deg/s.
         lArmConfig.encoder
-            .positionConversionFactor(1.0 / ArmConstants.kArmGearRatio)
-            .velocityConversionFactor((1.0 / ArmConstants.kArmGearRatio) / 60.0);
+            .positionConversionFactor(360.0 / ArmConstants.kArmGearRatio)
+            .velocityConversionFactor(360.0 / ArmConstants.kArmGearRatio / 60.0);
 
         // $TODO - Thomas style feedback is to move rArmConfig.idleMode and .SmartCurrentLimit up next to the equivalent
         // calls for lArmConfig.  And then have .follow on rArmConfig call after all that on a separate line.
@@ -59,10 +61,9 @@ public class ArmIoReal implements ArmIoInterface {
 
     @Override
     public void moveArmWithSpeed(double speed) {
-        // $TODO - Previously, IntakeSubsystem.setArmSpeed just set speed on m_lArmMotor.
-        // But IntakeSubsystem.homingHelper set kArmHomingSpeed on BOTH m_lArmMotor AND
-        // m_rArmMotor.  Now, homingHelper calls this same method, which only sets speed on m_lArmMotor.
-        // Is that safe, or will it break the arm?
+        // Only the left motor needs to be commanded. The right motor is configured with
+        // .follow(m_lArmMotor, true) above, so the SparkFlex hardware automatically mirrors
+        // the left motor's output (inverted). No separate call to m_rArmMotor is needed.
         m_lArmMotor.set(speed);
     }
 
