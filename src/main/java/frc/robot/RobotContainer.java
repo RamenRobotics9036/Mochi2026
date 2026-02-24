@@ -258,11 +258,10 @@ public class RobotContainer {
             armSubsystem,
             climberSubsystem));
 
-        configureBindings();
-
+        configureDriveBindings();
+        configureOperateBindings();
+        configureDefaultCommands();
         registerNamedCommands();
-
-        m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
 
         // $VISIONSIM - Wrapper for sim features
         if (Robot.isSimulation()) {
@@ -319,55 +318,10 @@ public class RobotContainer {
     }
 
     /**
-     * Defines trigger-to-command mappings.
+     * Defines trigger-to-command mappings for the driver controller.
      */
-    private void configureBindings() {
-        drivetrain.setDefaultCommand(
-            drivetrain.applyRequest(() -> {
-                JoystickInputsRecord inputs = m_joystickInput.getJoystickInputs();
-
-                // POV-UP held: auto-aim rotation at the tag
-                // while keeping X/Y translation.
-                var driveState = drivetrain.getState();
-                OptionalDouble aimRate = m_aimController.update(
-                    isLeftPovUpward(),
-                    m_multiCamlimelight.getLastTarget(),
-                    driveState.Pose,
-                    driveState.Speeds);
-
-                if (aimRate.isPresent()) {
-                    return drive
-                        .withVelocityX(inputs.driveX())
-                        .withVelocityY(inputs.driveY())
-                        .withRotationalRate(aimRate.getAsDouble());
-                }
-
-                return drive.withVelocityX(inputs.driveX())
-                     .withVelocityY(inputs.driveY())
-                     .withRotationalRate(inputs.rotatetX());
-            })
-        );
-
-        //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
-        shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
-
-        // POV Up: Extend Climber
-        operateController.povUp().whileTrue(
-            new RunCommand(
-                () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbUpSpeed),
-                climberSubsystem
-            )
-        ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
-
-        // POV Down: Retract Climber
-        operateController.povDown().whileTrue(
-            new RunCommand(
-                () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbDownSpeed),
-                climberSubsystem
-            )
-        ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
-
-
+    private void configureDriveBindings() {
+        
         // Keep the drivetrain in an Idle state while the robot is disabled
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
@@ -418,6 +372,29 @@ public class RobotContainer {
         new Trigger(this::isLeftPovDownward).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
+    }
+
+    /**
+     * Defines trigger-to-command mappings for the operator controller.
+     */
+    private void configureOperateBindings(){
+
+        // POV Up: Extend Climber
+        operateController.povUp().whileTrue(
+            new RunCommand(
+                () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbUpSpeed),
+                climberSubsystem
+            )
+        ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
+
+        // POV Down: Retract Climber
+        operateController.povDown().whileTrue(
+            new RunCommand(
+                () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbDownSpeed),
+                climberSubsystem
+            )
+        ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
+
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
@@ -433,6 +410,42 @@ public class RobotContainer {
         // (Deadband prevents scheduling from tiny stick noise.)
         new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
             .whileTrue(new IntakeArmCommand(armSubsystem, operateController));
+    }
+
+    /**
+     * Defines default commands.
+     */
+    private void configureDefaultCommands(){
+        drivetrain.setDefaultCommand(
+            drivetrain.applyRequest(() -> {
+                JoystickInputsRecord inputs = m_joystickInput.getJoystickInputs();
+
+                // POV-UP held: auto-aim rotation at the tag
+                // while keeping X/Y translation.
+                var driveState = drivetrain.getState();
+                OptionalDouble aimRate = m_aimController.update(
+                    isLeftPovUpward(),
+                    m_multiCamlimelight.getLastTarget(),
+                    driveState.Pose,
+                    driveState.Speeds);
+
+                if (aimRate.isPresent()) {
+                    return drive
+                        .withVelocityX(inputs.driveX())
+                        .withVelocityY(inputs.driveY())
+                        .withRotationalRate(aimRate.getAsDouble());
+                }
+
+                return drive.withVelocityX(inputs.driveX())
+                     .withVelocityY(inputs.driveY())
+                     .withRotationalRate(inputs.rotatetX());
+            })
+        );
+
+        //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
+        shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
+
+        m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
     }
 
     /**
