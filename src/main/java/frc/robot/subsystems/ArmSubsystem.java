@@ -47,12 +47,28 @@ public class ArmSubsystem extends SubsystemBase{
     /**
      * Immediately starts moving arm.
      *
-     * <p>Positive values should correspond to "deploy" and negative values to "raise",
-     * but the sign convention ultimately depends on motor inversion/mechanics.
+     * <p>Positive values correspond to "deploy" and negative values to "raise".
+     * If homing is in progress, calling this method aborts homing and marks the arm NOT_HOMED.
+     * Once homed, soft limits prevent commanding past {@code kMinArmAngle} or {@code kMaxArmAngle}.
      *
      * @param speed Percent output in the range [-1.0, 1.0].
      */
     public void moveArmWithSpeed(double speed) {
+        // Abort homing if operator manually commands the arm
+        if (m_HomingState == ArmHomedState.HOMING) {
+            m_armIO.stop();
+            m_HomingState = ArmHomedState.NOT_HOMED;
+            m_homingTimer.stop();
+        }
+
+        // Soft limits: only enforce when position is known (homed)
+        if (m_HomingState == ArmHomedState.HOMED) {
+            boolean atMax = m_armOutputs.position >= ArmConstants.kMaxArmAngle;
+            boolean atMin = m_armOutputs.position <= ArmConstants.kMinArmAngle;
+            if (speed > 0 && atMax) speed = 0;
+            if (speed < 0 && atMin) speed = 0;
+        }
+
         m_armIO.moveArmWithSpeed(speed);
     }
 
@@ -65,8 +81,20 @@ public class ArmSubsystem extends SubsystemBase{
         }
     }
 
-    /** Sets the desired position for the arm. */
+    /**
+     * Sets the desired position for the arm in degrees.
+     *
+     * <p>Ignored (with a dashboard warning) until the arm has been homed, because the relative
+     * encoder has no valid zero reference until homing completes. The position is clamped to
+     * [{@code kMinArmAngle}, {@code kMaxArmAngle}] before being sent to the controller.
+     *
+     * @param position Target arm angle in degrees.
+     */
     public void setArmPosition(double position) {
+        if (m_HomingState != ArmHomedState.HOMED) {
+            SmartDashboard.putString("Intake/ArmWarning", "setArmPosition before homing — ignored");
+            return;
+        }
         m_armIO.setPosition(
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
     }
@@ -87,13 +115,18 @@ public class ArmSubsystem extends SubsystemBase{
     }
 
 
-    //TODO: get whoever wrote this to add doc comment.
-    public void homingHelper() {
+    /**
+     * Runs one periodic tick of the homing state machine.
+     * Creeps toward the hard stop at {@code kArmHomingSpeed}, watches for a sustained current
+     * stall, then resets the encoder to 0 and transitions to HOMED.
+     * Also enforces an overall timeout that transitions back to NOT_HOMED on failure.
+     */
+    private void homingHelper() {
         if (m_HomingState != ArmHomedState.HOMING) {
             return;
         }
 
-        // Creep toward the hard stop. You may need to flip this sign once the mechanism is on the robot.
+        // Creep toward the hard stop (raised position). You may need to flip this sign once the mechanism is on the robot.
         m_armIO.moveArmWithSpeed(ArmConstants.kArmHomingSpeed);
 
         final double current = m_armOutputs.currentAmps;

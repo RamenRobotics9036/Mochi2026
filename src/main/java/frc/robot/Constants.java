@@ -39,26 +39,34 @@ public final class Constants {
     public static final class ArmConstants {
         /** Default speed for raising and lowering the intake arm. */
         public static final double kArmSpeed = 0.05;
-        public static final int kArmStallLimit = 40;
+        public static final int kArmStallLimit = 20; // TODO: needs testing/tuning
 
 
         public static final int kLeftArmMotorID = 20;
         public static final int kRightArmMotorID = 21;
 
-        public static final double kMaxArmAngle = 90; //TODO: filler value
-        public static final double kMinArmAngle = 0; //TODO: filler value
+        /** Max angle (degrees) — lowered/deployed position.
+         *  !! FILLER VALUE — must be measured on hardware before running SetIntakeBottom !! */
+        public static final double kMaxArmAngle = 90;
+
+        /** Min angle (degrees) — raised/stowed position.
+         *  !! FILLER VALUE — must be measured on hardware before running SetIntakeTop !! */
+        public static final double kMinArmAngle = 0;
+
+        /** Position loop proportional gain. TODO: tune on hardware — 0.05 is a conservative starting value. */
+        public static final double kArmPositionP = 0.05;
 
         // Arm homing (hard-stop) behavior
         /** Open-loop speed used while homing toward the hard stop. Sign depends on mechanism. */
         public static final double kArmHomingSpeed = -0.10;
         /** Current (Amps) above which we consider the arm "stalled" against a stop while homing. */
-        public static final double kArmHomingStallCurrent = 25.0;
-        /** Encoder velocity (RPM for NEO internal encoder) below which we consider motion stopped. */
+        public static final double kArmHomingStallCurrent = 20.0;
+        /** Arm output velocity (degrees per second) below which we consider motion stopped. */
         public static final double kArmHomingStallVelocity = 5.0;
         /** How long the stall condition must be continuously true to count as homed (seconds). */
         public static final double kArmHomingStallSeconds = 0.15;
         /** Overall timeout for the homing routine (seconds). */
-        public static final double kArmHomingTimeoutSeconds = 2.0;
+        public static final double kArmHomingTimeoutSeconds = 3.5;
 
         public static final double kArmGearRatio = 20.0;
     }
