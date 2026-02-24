@@ -33,6 +33,7 @@ import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.FullAutoClimbCommand;
 import frc.robot.commands.GetFuelCommand;
 import frc.robot.commands.IntakeArmCommand;
+import frc.robot.commands.IntakeArmHomeCommand;
 import frc.robot.commands.SetIntakeBottomCommand;
 import frc.robot.commands.SetIntakeTopCommand;
 import frc.robot.commands.ShootCommand;
@@ -422,7 +423,11 @@ public class RobotContainer {
 
         // Right stick click: home the arm (must be done before any arm position commands)
         operateController.rightStick().onTrue(
-            Commands.runOnce(armSubsystem::beginHoming, armSubsystem));
+            IntakeArmHomeCommand.create(armSubsystem, intakeSubsystem));
+
+        // Left stick click: set current arm position as the new "zero" reference point
+        operateController.leftStick().onTrue(
+            Commands.runOnce(armSubsystem::setArmZero, armSubsystem));
 
         // Run the intake arm manually any time the operator moves the right stick.
         // (Deadband prevents scheduling from tiny stick noise.)

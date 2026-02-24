@@ -99,6 +99,11 @@ public class ArmSubsystem extends SubsystemBase{
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
     }
 
+    /** Manually resets the arm encoder to zero. */
+    public void setArmZero() {
+        m_armIO.resetEncoderValue();
+    }
+
     /** Checks if the arm is deployed. */
     public boolean isArmDeployed() {
         return m_armOutputs.position >= (ArmConstants.kMaxArmAngle - 1.0);
