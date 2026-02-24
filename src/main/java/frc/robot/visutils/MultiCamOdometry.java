@@ -16,7 +16,8 @@ import java.util.function.BooleanSupplier;
 /** Reads from multiple limelight cameras. */
 public class MultiCamOdometry {
     private final BotConfigInterface m_configInterface;
-    private List<SingleCamOdometry> m_singleCamLimelightList;
+    private final List<SingleCamOdometry> m_singleCamLimelightList;
+    private final PerCycleState m_perCycleState = new PerCycleState();
 
     /** Constructor. */
     public MultiCamOdometry(
@@ -56,10 +57,33 @@ public class MultiCamOdometry {
         }
     }
 
-    /** Periodic update; should be called from robot periodic. */
+    /**
+     * Periodic update; should be called from robot periodic.
+     * NOTE: For each cycle, track the camera with thehighest confidence
+     *   score that has a target lock.  We also track the FIRST camera
+     *   (in order) that has a target lock.
+     */
     public void periodic() {
+        // Reset best locked cam
+        m_perCycleState.reset();
+
         for (SingleCamOdometry cam : m_singleCamLimelightList) {
             cam.periodic();
+
+            double singleCamScore = cam.getCurrentConfidenceScore();
+            boolean camHasTargets = cam.getNumLockedTags() > 0;
+            if (camHasTargets) {
+                // If it's first cam in list with a lock, remember that
+                if (m_perCycleState.firstInOrderLockedCam.isEmpty()) {
+                    m_perCycleState.firstInOrderLockedCam = Optional.of(cam);
+                }
+
+                // Is this the strongest lock we have seen so far?
+                if (singleCamScore > m_perCycleState.bestLockedCamScore) {
+                    m_perCycleState.bestLockedCam = Optional.of(cam);
+                    m_perCycleState.bestLockedCamScore = singleCamScore;
+                }
+            }
         }
     }
 
