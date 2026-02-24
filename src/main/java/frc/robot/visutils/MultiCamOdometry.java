@@ -93,14 +93,18 @@ public class MultiCamOdometry {
         }
     }
 
+    /** Proxy calls. */
     public Optional<Pose2d> getLatestVisPose(CameraSelectionMode selectionMode) {
         return m_consolidateResults.getLatestVisPose(
             m_perCycleState,
             selectionMode);
     }
 
-    public double getCurrentConfidenceScore() {
-        return m_singleCamLimelightList.get(0).getCurrentConfidenceScore();
+    /** Proxy calls. */
+    public double getCurrentConfidenceScore(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getCurrentConfidenceScore(
+            m_perCycleState,
+            selectionMode);
     }
 
     public int getNumLockedTags() {

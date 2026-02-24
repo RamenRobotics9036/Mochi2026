@@ -66,6 +66,7 @@ import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometry;
 import frc.robot.visutils.MultiCamOdometryFactory;
+import frc.robot.visutils.PerCycleState.CameraSelectionMode;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.OptionalDouble;
@@ -241,9 +242,23 @@ public class RobotContainer {
             basicInfoDashboard,
             m_visionKalmanFilter,
             m_motionlessTracker);
+
+        basicInfoDashboard.setVisionDependencies(
+            this::getBestCurrentConfidenceScore,
+            m_multiCamlimelight::getNumLockedTags,
+            m_multiCamlimelight::getTx,
+            m_multiCamlimelight::getTargetList,
+            m_motionlessTracker::isMotionless,
+            m_motionlessTracker::getSecondsStill);
+
+        basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
     }
 
-    /** Registers named commands for PathPlanner */
+    private double getBestCurrentConfidenceScore() {
+        return m_multiCamlimelight.getCurrentConfidenceScore(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
     private void registerNamedCommands() {
         NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
