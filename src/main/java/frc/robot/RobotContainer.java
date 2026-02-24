@@ -216,6 +216,9 @@ public class RobotContainer {
     /** Tracks whether the robot is motionless and for how long. */
     public final MotionlessTracker m_motionlessTracker;
 
+    //TODO: add variable description
+    public Field2d debugField = null;
+
     /**
      * Constructs the RobotContainer.
      * Initializes autonomous selection dashboards and binds controller inputs to commands.
@@ -232,49 +235,14 @@ public class RobotContainer {
             Robot.isSimulation(),
             () -> drivetrain.getOperatorForwardDirection().getDegrees());
 
-        // Put some debug info on the dashboard
-        SmartDashboard.putString(
-            "MAC Address Name",
-            RobotIdentity.getBotName());
-        SmartDashboard.putString(
-            "Robot Config",
-            m_configInterface.getConfigName());
-
-        Field2d debugField = null;
-
-        SmartDashboard.putData("GlassField", m_glassField);
-
-        AutoLogic.initShuffleboard(drivetrain);
-        m_driveAccuracyTester = new DriveAccuracyTester(
-            drivetrain, m_visionKalmanFilter, basicInfoDashboard::forceDisableVision);
-
-        // Add a button on dashboard to launch Accuracy Drive Test
-        SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
-
-        SmartDashboard.putData("Test Subsystems", TestSubsystems.test(
-            intakeSubsystem,
-            m_indexerSubsystem,
-            shooterSubsystem,
-            armSubsystem,
-            climberSubsystem));
+        m_driveAccuracyTester = initDebugDashboard();
 
         configureDriveBindings();
         configureOperateBindings();
         configureDefaultCommands();
         registerNamedCommands();
 
-        // $VISIONSIM - Wrapper for sim features
-        if (Robot.isSimulation()) {
-            m_simWrapper = new SimWrapper(
-                m_configInterface,
-                drivetrain,
-                this::resetRobotPose);
-
-            debugField = m_simWrapper.getSimDebugField();
-        }
-        else {
-            m_simWrapper = null;
-        }
+        m_simWrapper = visionSimWrapper();
 
         m_showVisionOnField = new ShowVisionOnField(
             m_configInterface,
@@ -304,8 +272,53 @@ public class RobotContainer {
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
     }
 
+    /** Adds debug into to the dashboard */
+    private DriveAccuracyTester initDebugDashboard(){
+        SmartDashboard.putString(
+            "MAC Address Name",
+            RobotIdentity.getBotName());
+        SmartDashboard.putString(
+            "Robot Config",
+            m_configInterface.getConfigName());
+
+        SmartDashboard.putData("GlassField", m_glassField);
+
+        AutoLogic.initShuffleboard(drivetrain);
+        DriveAccuracyTester accuracyTester = new DriveAccuracyTester(
+            drivetrain, m_visionKalmanFilter, basicInfoDashboard::forceDisableVision);
+
+        // Add a button on dashboard to launch Accuracy Drive Test
+        SmartDashboard.putData("Accuracy Drive Test", accuracyTester.createTapeDropAutoCommand());
+
+        SmartDashboard.putData("Test Subsystems", TestSubsystems.test(
+            intakeSubsystem,
+            m_indexerSubsystem,
+            shooterSubsystem,
+            armSubsystem,
+            climberSubsystem));
+
+        return accuracyTester;
+    }
+
+    private SimWrapper visionSimWrapper(){
+        // $VISIONSIM - Wrapper for sim features
+        if (Robot.isSimulation()) {
+            SimWrapper wrapper = new SimWrapper(
+                m_configInterface,
+                drivetrain,
+                this::resetRobotPose);
+
+            debugField = wrapper.getSimDebugField();
+            
+            return wrapper; 
+        }
+        else {
+            return null;
+        }
+    }
+
+    /** Registers named commands for PathPlanner */
     private void registerNamedCommands() {
-        // Register Named Commands for PathPlanner
         NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
         NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
