@@ -330,7 +330,7 @@ public class RobotContainer {
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(() -> JoystickInput.isPovDownward(driveController)).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
-                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTargetForSingleCam())));
+                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK))));
     }
 
     /**
@@ -384,7 +384,7 @@ public class RobotContainer {
                 var driveState = drivetrain.getState();
                 OptionalDouble aimRate = m_aimController.update(
                     JoystickInput.isPovUpward(driveController),
-                    m_multiCamlimelight.getLastTargetForSingleCam(),
+                    m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK),
                     driveState.Pose,
                     driveState.Speeds);
 
