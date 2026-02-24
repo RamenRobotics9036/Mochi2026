@@ -94,35 +94,37 @@ public class MultiCamOdometry {
     }
 
     /** Proxy calls. */
-    public Optional<Pose2d> getLatestVisPose(CameraSelectionMode selectionMode) {
-        return m_consolidateResults.getLatestVisPose(
+    public Optional<Pose2d> getLatestVisPoseForSingleCam(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getLatestVisPoseForSingleCam(
             m_perCycleState,
             selectionMode);
     }
 
     /** Proxy calls. */
-    public double getCurrentConfidenceScore(CameraSelectionMode selectionMode) {
-        return m_consolidateResults.getCurrentConfidenceScore(
+    public double getCurrentConfidenceScoreForSingleCam(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getCurrentConfidenceScoreForSingleCam(
             m_perCycleState,
             selectionMode);
     }
 
-    public int getNumLockedTags() {
-        return m_singleCamLimelightList.get(0).getNumLockedTags();
+    public int getNumLockedTagsForSingleCam(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getNumLockedTagsForSingleCam(
+            m_perCycleState,
+            selectionMode);
     }
 
-    public double getTx() {
+    public double getTxForSingleCam() {
         return m_singleCamLimelightList.get(0).getTx();
     }
 
-    public String getTargetList() {
+    public String getTargetListForAllCams() {
         // $TODO - This should probably be an aggregated list of targets from all cameras,
         // perhaps sorted by confidence score.
         return m_singleCamLimelightList.get(0).getTargetList();
     }
 
     /** Returns the ID of the last seen fiducial, or -1 if none. */
-    public int getLastTarget() {
+    public int getLastTargetForSingleCam() {
         // $TODO - Make sure the kalman filter locks onto the target from the camera
         // with the HIGHEST confidence score.  I don't think thats happening here,
         // so it may end up locking onto a random camera.

@@ -295,18 +295,23 @@ public class RobotContainer {
             m_motionlessTracker::isMotionless);
 
         basicInfoDashboard.setVisionDependencies(
-            this::getBestCurrentConfidenceScore,
-            m_multiCamlimelight::getNumLockedTags,
-            m_multiCamlimelight::getTx,
-            m_multiCamlimelight::getTargetList,
+            this::getBestCurrentConfidenceScoreForSingleCam,
+            this::getBestNumLockedTagsForSingleCam,
+            m_multiCamlimelight::getTxForSingleCam,
+            m_multiCamlimelight::getTargetListForAllCams,
             m_motionlessTracker::isMotionless,
             m_motionlessTracker::getSecondsStill);
 
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
     }
 
-    private double getBestCurrentConfidenceScore() {
-        return m_multiCamlimelight.getCurrentConfidenceScore(
+    private double getBestCurrentConfidenceScoreForSingleCam() {
+        return m_multiCamlimelight.getCurrentConfidenceScoreForSingleCam(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    private int getBestNumLockedTagsForSingleCam() {
+        return m_multiCamlimelight.getNumLockedTagsForSingleCam(
             CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 
@@ -336,7 +341,7 @@ public class RobotContainer {
                 var driveState = drivetrain.getState();
                 OptionalDouble aimRate = m_aimController.update(
                     isLeftPovUpward(),
-                    m_multiCamlimelight.getLastTarget(),
+                    m_multiCamlimelight.getLastTargetForSingleCam(),
                     driveState.Pose,
                     driveState.Speeds);
 
@@ -422,7 +427,7 @@ public class RobotContainer {
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(this::isLeftPovDownward).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
-                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
+                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTargetForSingleCam())));
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
