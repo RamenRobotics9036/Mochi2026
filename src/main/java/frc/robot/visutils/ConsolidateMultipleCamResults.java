@@ -89,4 +89,23 @@ public class ConsolidateMultipleCamResults {
 
         return 0;
     }
+
+    /**
+     * Returns Tx for a SINGLE camera (e.g. best camera, or cam0).
+     * Returns 0.0 if no camera has a lock.
+     */
+    public double getTxForSingleCam(
+        PerCycleState cyclestate,
+        CameraSelectionMode selectionMode) {
+
+        Optional<SingleCamOdometry> cam = getAppropriateCamera(
+            cyclestate,
+            selectionMode);
+
+        if (cam.isPresent()) {
+            return cam.get().getTx();
+        }
+
+        return 0.0;
+    }
 }

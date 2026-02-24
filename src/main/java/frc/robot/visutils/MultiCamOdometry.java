@@ -93,28 +93,32 @@ public class MultiCamOdometry {
         }
     }
 
-    /** Proxy calls. */
+    /** Proxy calls to helper. */
     public Optional<Pose2d> getLatestVisPoseForSingleCam(CameraSelectionMode selectionMode) {
         return m_consolidateResults.getLatestVisPoseForSingleCam(
             m_perCycleState,
             selectionMode);
     }
 
-    /** Proxy calls. */
+    /** Proxy calls to helper. */
     public double getCurrentConfidenceScoreForSingleCam(CameraSelectionMode selectionMode) {
         return m_consolidateResults.getCurrentConfidenceScoreForSingleCam(
             m_perCycleState,
             selectionMode);
     }
 
+    /** Proxy calls to helper. */
     public int getNumLockedTagsForSingleCam(CameraSelectionMode selectionMode) {
         return m_consolidateResults.getNumLockedTagsForSingleCam(
             m_perCycleState,
             selectionMode);
     }
 
-    public double getTxForSingleCam() {
-        return m_singleCamLimelightList.get(0).getTx();
+    /** Proxy calls to helper. */
+    public double getTxForSingleCam(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getTxForSingleCam(
+            m_perCycleState,
+            selectionMode);
     }
 
     public String getTargetListForAllCams() {
