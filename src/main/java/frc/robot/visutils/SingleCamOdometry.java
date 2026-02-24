@@ -12,6 +12,8 @@ import edu.wpi.first.math.numbers.N3;
 import frc.robot.LimelightHelpers;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
@@ -30,7 +32,7 @@ public class SingleCamOdometry {
     private double m_curConfidenceScore = 0.0;
     private int m_numLockedTags = 0;
     private double m_tx = 0.0;
-    private String m_targetList = "";
+    private List<Integer> m_targetList = Collections.emptyList();
     private int m_lastTarget = -1;
 
     private VisionKalmanFilter m_visionKalmanFilter = null;
@@ -86,7 +88,7 @@ public class SingleCamOdometry {
         m_curConfidenceScore = 0.0;
         m_numLockedTags = 0;
         m_tx = 0.0;
-        m_targetList = "";
+        m_targetList = Collections.emptyList();
     }
 
     private void setResults(double confidenceScore, int numLockedTags,
@@ -97,15 +99,15 @@ public class SingleCamOdometry {
         // Horizontal offset to primary target (degrees)
         m_tx = LimelightHelpers.getTX(m_limelightName);
 
-        // Build comma-separated list of visible tag IDs
+        // Build list of visible tag IDs
         if (rawFiducials != null && rawFiducials.length > 0) {
             m_targetList = Arrays.stream(rawFiducials)
-                .map(f -> String.valueOf(f.id))
-                .collect(Collectors.joining(", "));
+                .map(f -> f.id)
+                .collect(Collectors.toList());
             m_lastTarget = rawFiducials[0].id;
         }
         else {
-            m_targetList = "";
+            m_targetList = Collections.emptyList();
         }
     }
 
@@ -279,7 +281,7 @@ public class SingleCamOdometry {
         return m_tx;
     }
 
-    public String getTargetList() {
+    public List<Integer> getTargetList() {
         return m_targetList;
     }
 

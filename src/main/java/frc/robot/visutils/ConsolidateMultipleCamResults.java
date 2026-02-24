@@ -3,6 +3,8 @@ package frc.robot.visutils;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Per;
 import frc.robot.visutils.PerCycleState.CameraSelectionMode;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -107,5 +109,20 @@ public class ConsolidateMultipleCamResults {
         }
 
         return 0.0;
+    }
+
+    /**
+     * Returns a list of UNIQUE integers representing the AprilTags that are
+     * currently locked for ALL cameras.
+     */
+    public List<Integer> getTargetListForAllCams() {
+        LinkedHashSet<Integer> seen = new LinkedHashSet<>();
+        for (SingleCamOdometry cam : m_singleCamOdomList) {
+            List<Integer> targets = cam.getTargetList();
+            if (!targets.isEmpty()) {
+                seen.addAll(targets);
+            }
+        }
+        return new ArrayList<>(seen);
     }
 }
