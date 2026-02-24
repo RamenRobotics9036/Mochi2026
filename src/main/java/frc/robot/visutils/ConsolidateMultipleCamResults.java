@@ -4,8 +4,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.Per;
 import frc.robot.visutils.PerCycleState.CameraSelectionMode;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.Optional;
 
 /** Given Vision results from multiple cameras, consolidates results. */
@@ -116,12 +116,9 @@ public class ConsolidateMultipleCamResults {
      * currently locked for ALL cameras.
      */
     public List<Integer> getTargetListForAllCams() {
-        LinkedHashSet<Integer> seen = new LinkedHashSet<>();
+        TreeSet<Integer> seen = new TreeSet<>();
         for (SingleCamOdometry cam : m_singleCamOdomList) {
-            List<Integer> targets = cam.getTargetList();
-            if (!targets.isEmpty()) {
-                seen.addAll(targets);
-            }
+            seen.addAll(cam.getTargetList());
         }
         return new ArrayList<>(seen);
     }
