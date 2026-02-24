@@ -22,12 +22,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.IndexerConstants;
-import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.FullAutoClimbCommand;
@@ -68,7 +64,6 @@ import frc.robot.subsystems.shooter.ShooterIoReal;
 import frc.robot.visutils.AimController;
 import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.DriveSmooth;
-import frc.robot.visutils.SingleCamOdometry;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometry;
 import frc.robot.visutils.TurnToAngleHelper;
@@ -459,19 +454,6 @@ public class RobotContainer {
         shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
 
         m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
-    }
-
-    /**
-     * Wrapper for team-specific commands to handle simulation behavior.
-     *
-     * @param command The command to wrap.
-     * @return The original command or an empty command if in simulation.
-     */
-    private Command CmdWrapperTeamCommand(Command command) {
-        if (RobotBase.isSimulation()) {
-            return Commands.none();
-        }
-        return command;
     }
 
     /**
