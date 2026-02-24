@@ -7,6 +7,8 @@ import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import frc.robot.visutils.PerCycleState.CameraSelectionMode;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +20,7 @@ public class MultiCamOdometry {
     private final BotConfigInterface m_configInterface;
     private final List<SingleCamOdometry> m_singleCamLimelightList;
     private final PerCycleState m_perCycleState = new PerCycleState();
+    private final ConsolidateMultipleCamResults m_consolidateResults;
 
     /** Constructor. */
     public MultiCamOdometry(
@@ -35,6 +38,9 @@ public class MultiCamOdometry {
                 camInfo.robotToCam,
                 poseConsumer));
         }
+
+        m_consolidateResults = new ConsolidateMultipleCamResults(
+            m_singleCamLimelightList);
     }
 
     /**
@@ -87,11 +93,10 @@ public class MultiCamOdometry {
         }
     }
 
-    public Optional<Pose2d> getLatestVisPose() {
-        // $TODO - For all these methods, we should either return the single
-        // pose for this cycle with the highest confidence score, or
-        // return a weighted average of the poses from each camera based on confidence scores.
-        return m_singleCamLimelightList.get(0).getLatestVisPose();
+    public Optional<Pose2d> getLatestVisPose(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getLatestVisPose(
+            m_perCycleState,
+            selectionMode);
     }
 
     public double getCurrentConfidenceScore() {
