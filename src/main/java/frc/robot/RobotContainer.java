@@ -297,7 +297,7 @@ public class RobotContainer {
         basicInfoDashboard.setVisionDependencies(
             this::getBestCurrentConfidenceScoreForSingleCam,
             this::getBestNumLockedTagsForSingleCam,
-            m_multiCamlimelight::getTxForSingleCam,
+            this::getBestTxForSingleCam,
             m_multiCamlimelight::getTargetListForAllCams,
             m_motionlessTracker::isMotionless,
             m_motionlessTracker::getSecondsStill);
@@ -312,6 +312,11 @@ public class RobotContainer {
 
     private int getBestNumLockedTagsForSingleCam() {
         return m_multiCamlimelight.getNumLockedTagsForSingleCam(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    private double getBestTxForSingleCam() {
+        return m_multiCamlimelight.getTxForSingleCam(
             CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 
