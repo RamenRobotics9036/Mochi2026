@@ -420,6 +420,10 @@ public class RobotContainer {
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
+        // Right stick click: home the arm (must be done before any arm position commands)
+        operateController.rightStick().onTrue(
+            Commands.runOnce(armSubsystem::beginHoming, armSubsystem));
+
         // Run the intake arm manually any time the operator moves the right stick.
         // (Deadband prevents scheduling from tiny stick noise.)
         new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)

@@ -42,6 +42,9 @@ public class ArmIoReal implements ArmIoInterface {
             .positionConversionFactor(360.0 / ArmConstants.kArmGearRatio)
             .velocityConversionFactor(360.0 / ArmConstants.kArmGearRatio / 60.0);
 
+        lArmConfig.closedLoop
+            .p(ArmConstants.kArmPositionP);
+
         // $TODO - Thomas style feedback is to move rArmConfig.idleMode and .SmartCurrentLimit up next to the equivalent
         // calls for lArmConfig.  And then have .follow on rArmConfig call after all that on a separate line.
         rArmConfig.idleMode(IdleMode.kBrake)

@@ -45,10 +45,16 @@ public final class Constants {
         public static final int kLeftArmMotorID = 20;
         public static final int kRightArmMotorID = 21;
 
-        /** Max angle represents lowered position */
-        public static final double kMaxArmAngle = 90; //TODO: filler value
-        //* Min angle represents raised position */
-        public static final double kMinArmAngle = 0; //TODO: filler value
+        /** Max angle (degrees) — lowered/deployed position.
+         *  !! FILLER VALUE — must be measured on hardware before running SetIntakeBottom !! */
+        public static final double kMaxArmAngle = 90;
+
+        /** Min angle (degrees) — raised/stowed position.
+         *  !! FILLER VALUE — must be measured on hardware before running SetIntakeTop !! */
+        public static final double kMinArmAngle = 0;
+
+        /** Position loop proportional gain. TODO: tune on hardware — 0.05 is a conservative starting value. */
+        public static final double kArmPositionP = 0.05;
 
         // Arm homing (hard-stop) behavior
         /** Open-loop speed used while homing toward the hard stop. Sign depends on mechanism. */

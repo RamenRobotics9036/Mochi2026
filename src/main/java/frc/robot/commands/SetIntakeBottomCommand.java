@@ -14,6 +14,8 @@ public class SetIntakeBottomCommand {
                 () -> arm.setArmPosition(Constants.ArmConstants.kMaxArmAngle),
                 // Dependencies:
                 arm, intake)
-            .until(arm::isArmDeployed);
+            .until(arm::isArmDeployed)
+            .withTimeout(3.5)
+            .finallyDo(arm::stop);
     }
 }

@@ -91,7 +91,7 @@ public class ArmSubsystem extends SubsystemBase{
      * @param position Target arm angle in degrees.
      */
     public void setArmPosition(double position) {
-        if (m_HomingState == ArmHomedState.NOT_HOMED) {
+        if (m_HomingState != ArmHomedState.HOMED) {
             SmartDashboard.putString("Intake/ArmWarning", "setArmPosition before homing — ignored");
             return;
         }
