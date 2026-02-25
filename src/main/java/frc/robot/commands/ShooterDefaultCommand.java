@@ -29,6 +29,7 @@ public class ShooterDefaultCommand extends Command{
             m_shooter.setSpeed(ShooterConstants.kShootSpeed);
             m_indexer.setSpeed(IndexerConstants.kIndexSpeed);
         } else if (m_controller.getLeftTriggerAxis() > 0){
+            m_shooter.setSpeed(ShooterConstants.kShootSpeed);
             m_indexer.setSpeed(-IndexerConstants.kIndexSpeed);
         } else {
             m_shooter.stop();
