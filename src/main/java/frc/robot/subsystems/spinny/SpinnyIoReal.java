@@ -31,7 +31,7 @@ public class SpinnyIoReal implements RollerIoInterface {
 
     @Override
     public void setSpeed(double speed) {
-        m_motor.set(SpinnyWheelsConstants.kSpinSpeed);
+        m_motor.set(speed);
     }
 
     @Override
