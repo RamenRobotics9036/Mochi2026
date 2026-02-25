@@ -59,6 +59,7 @@ import frc.robot.subsystems.intake.ArmIoReal;
 import frc.robot.subsystems.intake.IntakeIoReal;
 import frc.robot.subsystems.shooter.ShooterIoReal;
 import frc.robot.visutils.AimController;
+import frc.robot.visutils.BasicInfoDashboard;
 import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.MotionlessTracker;
