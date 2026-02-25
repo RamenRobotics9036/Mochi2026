@@ -41,6 +41,23 @@ public class MotionlessTracker {
     }
 
     /**
+     * Creates a new MotionlessTracker and registers a callback to invoke when
+     * the robot transitions from still to moving.
+     *
+     * @param speedsSupplier  Supplier for the current chassis speeds.
+     * @param onStartedMoving Runnable to invoke on the still→moving edge.
+     * @return A configured {@link MotionlessTracker}.
+     */
+    public static MotionlessTracker create(
+        Supplier<ChassisSpeeds> speedsSupplier,
+        Runnable onStartedMoving) {
+
+        MotionlessTracker tracker = new MotionlessTracker(speedsSupplier);
+        tracker.setOnStartedMoving(onStartedMoving);
+        return tracker;
+    }
+
+    /**
      * Sets an optional callback that fires when the robot transitions from
      * still to moving (e.g. to reset a Kalman filter).
      *
