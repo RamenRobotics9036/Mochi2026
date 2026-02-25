@@ -230,16 +230,16 @@ public class RobotContainer {
 
         m_driveAccuracyTester = initDebugDashboard();
 
-        configureDriveBindings();
-        configureOperateBindings();
-        configureDefaultCommands();
-        registerNamedCommands();
-
         m_simWrapper = SimWrapper.create(m_configInterface, drivetrain, this::resetRobotPose);
         m_showVisionOnField = new ShowVisionOnField(
             m_configInterface,
             m_glassField,
             (m_simWrapper == null) ? null : m_simWrapper.getSimDebugField());
+
+        configureDriveBindings();
+        configureOperateBindings();
+        configureDefaultCommands();
+        registerNamedCommands();
 
         // Setup vision system
         m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
@@ -339,16 +339,12 @@ public class RobotContainer {
             driveController,
             MaxAngularRate));
 
-        // $VISIONSIM - POV buttons for sim
-        if (Robot.isSimulation()) {
-            // In simulation, inject drift with POV right to test vision correction
-            driveController.povRight()
-                .onTrue(drivetrain.runOnce(() -> m_simWrapper.injectDrift(0.5, 15.0)));
-
-            // POV left resets robot to the starting pose of the selected auto
-            driveController.povLeft().onTrue(
-                drivetrain
-                    .runOnce(() -> m_simWrapper.cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
+        // POV buttons for sim
+        if (m_simWrapper != null) {
+            m_simWrapper.configureSimBindings(
+                driveController.povRight(),
+                driveController.povLeft(),
+                drivetrain);
         }
 
         // Hook up the telemetry logger to the drivetrain periodic updates

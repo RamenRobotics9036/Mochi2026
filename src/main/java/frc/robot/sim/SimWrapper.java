@@ -5,10 +5,13 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.sim.visionproducers.VisionSimFactory;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.auto.AutoLogic;
 import java.util.function.Consumer;
 
 
@@ -114,6 +117,23 @@ public class SimWrapper {
      */
     public void cycleResetPosition(Pose2d blueAlliancePose) {
         m_groundTruthSim.cycleResetPosition(blueAlliancePose);
+    }
+
+    /**
+     * Binds simulation-only POV button actions to the drivetrain.
+     *
+     * @param driftTrigger    Trigger that injects odometry drift (e.g. povRight)
+     * @param resetTrigger    Trigger that cycles the robot reset position (e.g. povLeft)
+     * @param drivetrain      The swerve drivetrain
+     */
+    public void configureSimBindings(
+            Trigger driftTrigger,
+            Trigger resetTrigger,
+            CommandSwerveDrivetrain drivetrain) {
+
+        driftTrigger.onTrue(drivetrain.runOnce(() -> injectDrift(0.5, 15.0)));
+        resetTrigger.onTrue(drivetrain.runOnce(() ->
+            cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
     }
 
     /**
