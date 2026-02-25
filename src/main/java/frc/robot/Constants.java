@@ -38,8 +38,8 @@ public final class Constants {
 
     public static final class ArmConstants {
         /** Default speed for raising and lowering the intake arm. */
-        public static final double kArmSpeed = 0.05;
-        public static final int kArmStallLimit = 20;
+        public static final double kArmSpeed = 0.15;
+        public static final int kArmStallLimit = 40;
 
 
         public static final int kLeftArmMotorID = 20;
