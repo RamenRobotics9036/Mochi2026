@@ -60,6 +60,7 @@ import frc.robot.subsystems.intake.IntakeIoReal;
 import frc.robot.subsystems.shooter.ShooterIoReal;
 import frc.robot.visutils.AimController;
 import frc.robot.visutils.BasicInfoDashboard;
+import frc.robot.visutils.DashboardFactory;
 import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.MotionlessTracker;
@@ -212,7 +213,16 @@ public class RobotContainer {
             m_glassField,
             (m_simWrapper == null) ? null : m_simWrapper.getSimDebugField());
 
-        initDebugDashboard();
+        AutoLogic.initShuffleboard(drivetrain);
+        DashboardFactory.initDebugDashboard(
+            m_configInterface,
+            m_glassField,
+            m_driveAccuracyTester,
+            intakeSubsystem,
+            m_indexerSubsystem,
+            shooterSubsystem,
+            armSubsystem,
+            climberSubsystem);
 
         configureDriveBindings();
         configureOperateBindings();
@@ -243,30 +253,7 @@ public class RobotContainer {
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
     }
 
-    // $TODO - Ido cleanup
-    /** Adds debug into to the dashboard */
-    private void initDebugDashboard(){
-        SmartDashboard.putString(
-            "MAC Address Name",
-            RobotIdentity.getBotName());
-        SmartDashboard.putString(
-            "Robot Config",
-            m_configInterface.getConfigName());
 
-        SmartDashboard.putData("GlassField", m_glassField);
-
-        AutoLogic.initShuffleboard(drivetrain);
-
-        // Add a button on dashboard to launch Accuracy Drive Test
-        SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
-
-        SmartDashboard.putData("Test Subsystems", TestSubsystems.test(
-            intakeSubsystem,
-            m_indexerSubsystem,
-            shooterSubsystem,
-            armSubsystem,
-            climberSubsystem));
-    }
 
     /** Registers named commands for PathPlanner */
     private void registerNamedCommands() {
