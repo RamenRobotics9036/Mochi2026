@@ -202,7 +202,8 @@ public class RobotContainer {
             Robot.isSimulation(),
             () -> drivetrain.getOperatorForwardDirection().getDegrees());
 
-        m_driveAccuracyTester = initDebugDashboard();
+        m_driveAccuracyTester = new DriveAccuracyTester(
+            drivetrain, m_visionKalmanFilter, basicInfoDashboard::forceDisableVision);
 
         m_simWrapper = SimWrapper.create(m_configInterface, drivetrain, this::resetRobotPose);
         m_showVisionOnField = new ShowVisionOnField(
@@ -210,12 +211,15 @@ public class RobotContainer {
             m_glassField,
             (m_simWrapper == null) ? null : m_simWrapper.getSimDebugField());
 
+        initDebugDashboard();
+
         configureDriveBindings();
         configureOperateBindings();
         configureDefaultCommands();
         registerNamedCommands();
 
         // Setup vision system
+        // $TODO - Cleanup for Ido
         m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
         m_motionlessTracker.setOnStartedMoving(m_visionKalmanFilter::reset);
 
@@ -238,8 +242,9 @@ public class RobotContainer {
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
     }
 
+    // $TODO - Ido cleanup
     /** Adds debug into to the dashboard */
-    private DriveAccuracyTester initDebugDashboard(){
+    private void initDebugDashboard(){
         SmartDashboard.putString(
             "MAC Address Name",
             RobotIdentity.getBotName());
@@ -250,11 +255,9 @@ public class RobotContainer {
         SmartDashboard.putData("GlassField", m_glassField);
 
         AutoLogic.initShuffleboard(drivetrain);
-        DriveAccuracyTester accuracyTester = new DriveAccuracyTester(
-            drivetrain, m_visionKalmanFilter, basicInfoDashboard::forceDisableVision);
 
         // Add a button on dashboard to launch Accuracy Drive Test
-        SmartDashboard.putData("Accuracy Drive Test", accuracyTester.createTapeDropAutoCommand());
+        SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
 
         SmartDashboard.putData("Test Subsystems", TestSubsystems.test(
             intakeSubsystem,
@@ -262,8 +265,6 @@ public class RobotContainer {
             shooterSubsystem,
             armSubsystem,
             climberSubsystem));
-
-        return accuracyTester;
     }
 
     /** Registers named commands for PathPlanner */
