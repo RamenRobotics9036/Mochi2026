@@ -11,7 +11,7 @@ import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.sim.visionproducers.VisionSimFactory;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.auto.AutoLogic;
+import frc.robot.auto.AutoLogic;
 import java.util.function.Consumer;
 
 

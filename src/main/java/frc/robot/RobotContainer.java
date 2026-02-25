@@ -53,7 +53,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SpinnyWheels;
 import frc.robot.subsystems.TestSubsystems;
-import frc.robot.subsystems.auto.AutoLogic;
+import frc.robot.auto.AutoLogic;
 import frc.robot.subsystems.indexer.IndexerIoReal;
 import frc.robot.subsystems.intake.ArmIoReal;
 import frc.robot.subsystems.intake.IntakeIoReal;

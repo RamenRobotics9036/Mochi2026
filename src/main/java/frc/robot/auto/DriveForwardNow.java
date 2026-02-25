@@ -1,4 +1,4 @@
-package frc.robot.subsystems.auto;
+package frc.robot.auto;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import edu.wpi.first.math.geometry.Pose2d;

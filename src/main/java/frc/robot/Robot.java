@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.sim.ShowVisionOnField;
-import frc.robot.subsystems.auto.AutoLogic;
+import frc.robot.auto.AutoLogic;
 
 /**
  * The main robot class that controls the flow of the 2026 FRC robot code.

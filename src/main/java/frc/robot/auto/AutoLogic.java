@@ -1,4 +1,4 @@
-package frc.robot.subsystems.auto;
+package frc.robot.auto;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.commands.FollowPathCommand;
@@ -22,7 +22,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import frc.robot.subsystems.auto.DriveForwardNow;
+import frc.robot.auto.DriveForwardNow;
 
 import java.util.ArrayList;
 import java.util.List;
