@@ -235,7 +235,7 @@ public class RobotContainer {
         configureDefaultCommands();
         registerNamedCommands();
 
-        m_simWrapper = visionSimWrapper();
+        m_simWrapper = SimWrapper.create(m_configInterface, drivetrain, this::resetRobotPose);
         m_showVisionOnField = new ShowVisionOnField(
             m_configInterface,
             m_glassField,
@@ -290,20 +290,6 @@ public class RobotContainer {
             climberSubsystem));
 
         return accuracyTester;
-    }
-
-    private SimWrapper visionSimWrapper() {
-        // $VISIONSIM - Wrapper for sim features
-        if (Robot.isSimulation()) {
-            SimWrapper wrapper = new SimWrapper(
-                m_configInterface,
-                drivetrain,
-                this::resetRobotPose);
-
-            return wrapper;
-        }
-
-        return null;
     }
 
     /** Registers named commands for PathPlanner */

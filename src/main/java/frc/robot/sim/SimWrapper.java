@@ -116,6 +116,25 @@ public class SimWrapper {
         m_groundTruthSim.cycleResetPosition(blueAlliancePose);
     }
 
+    /**
+     * Creates a SimWrapper if in simulation, or returns null for real robot.
+     *
+     * @param configInterface The bot configuration
+     * @param drivetrain The swerve drivetrain
+     * @param poseResetConsumer Consumer called when ground truth resets the pose
+     * @return A new SimWrapper, or null if not in simulation
+     */
+    public static SimWrapper create(
+            BotConfigInterface configInterface,
+            SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
+            Consumer<Pose2d> poseResetConsumer) {
+
+        if (!Robot.isSimulation()) {
+            return null;
+        }
+        return new SimWrapper(configInterface, drivetrain, poseResetConsumer);
+    }
+
     /**  Gets the ground truth pose from the simulation. */
     public Pose2d getGroundTruthPose() {
         return m_groundTruthSim.getGroundTruthPose();
