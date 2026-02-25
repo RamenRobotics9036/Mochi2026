@@ -230,7 +230,7 @@ public class RobotContainer {
         registerNamedCommands();
 
         // Setup vision system
-        // $TODO - Cleanup for Ido
+        // $TODO - Cleanup for Ido - Move class variable basicInfoDashboard to be created in a factory that can also do the initialization below
         m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
         m_motionlessTracker.setOnStartedMoving(m_visionKalmanFilter::reset);
 
