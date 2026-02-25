@@ -65,6 +65,7 @@ import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometry;
+import frc.robot.visutils.MultiCamOdometryFactory;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.OptionalDouble;
@@ -234,26 +235,13 @@ public class RobotContainer {
             () -> drivetrain.getState().Speeds,
             m_visionKalmanFilter::reset);
 
-        m_multiCamlimelight = new MultiCamOdometry(
+        m_multiCamlimelight = MultiCamOdometryFactory.create(
             m_configInterface,
-            drivetrain::addVisionMeasurement);
-        m_multiCamlimelight.setVisionDependencies(
-            basicInfoDashboard::isVisionEnabled,
+            drivetrain::addVisionMeasurement,
+            basicInfoDashboard,
             m_visionKalmanFilter,
-            m_motionlessTracker::isMotionless);
-
-        basicInfoDashboard.setVisionDependencies(
-            m_multiCamlimelight::getCurrentConfidenceScore,
-            m_multiCamlimelight::getNumLockedTags,
-            m_multiCamlimelight::getTx,
-            m_multiCamlimelight::getTargetList,
-            m_motionlessTracker::isMotionless,
-            m_motionlessTracker::getSecondsStill);
-
-        basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
+            m_motionlessTracker);
     }
-
-
 
     /** Registers named commands for PathPlanner */
     private void registerNamedCommands() {
