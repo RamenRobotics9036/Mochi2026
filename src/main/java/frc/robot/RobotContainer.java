@@ -212,9 +212,6 @@ public class RobotContainer {
     /** Tracks whether the robot is motionless and for how long. */
     public final MotionlessTracker m_motionlessTracker;
 
-    /** 2D game field for debugging. */
-    public Field2d debugField = null;
-
     /**
      * Constructs the RobotContainer.
      * Initializes autonomous selection dashboards and binds controller inputs to commands.
@@ -233,17 +230,16 @@ public class RobotContainer {
 
         m_driveAccuracyTester = initDebugDashboard();
 
+        m_simWrapper = SimWrapper.create(m_configInterface, drivetrain, this::resetRobotPose);
+        m_showVisionOnField = new ShowVisionOnField(
+            m_configInterface,
+            m_glassField,
+            (m_simWrapper == null) ? null : m_simWrapper.getSimDebugField());
+
         configureDriveBindings();
         configureOperateBindings();
         configureDefaultCommands();
         registerNamedCommands();
-
-        m_simWrapper = visionSimWrapper();
-
-        m_showVisionOnField = new ShowVisionOnField(
-            m_configInterface,
-            m_glassField,
-            debugField);
 
         // Setup vision system
         m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
@@ -296,22 +292,6 @@ public class RobotContainer {
         return accuracyTester;
     }
 
-    private SimWrapper visionSimWrapper() {
-        // $VISIONSIM - Wrapper for sim features
-        if (Robot.isSimulation()) {
-            SimWrapper wrapper = new SimWrapper(
-                m_configInterface,
-                drivetrain,
-                this::resetRobotPose);
-
-            debugField = wrapper.getSimDebugField();
-
-            return wrapper;
-        }
-
-        return null;
-    }
-
     /** Registers named commands for PathPlanner */
     private void registerNamedCommands() {
         NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
@@ -329,7 +309,7 @@ public class RobotContainer {
      * Defines trigger-to-command mappings for the driver controller.
      */
     private void configureDriveBindings() {
-        
+
         // Keep the drivetrain in an Idle state while the robot is disabled
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
@@ -359,17 +339,12 @@ public class RobotContainer {
             driveController,
             MaxAngularRate));
 
-        // $VISIONSIM - POV buttons for sim
-        if (Robot.isSimulation()) {
-            // In simulation, inject drift with POV right to test vision correction
-            driveController.povRight()
-                .onTrue(drivetrain.runOnce(() -> m_simWrapper.injectDrift(0.5, 15.0)));
-
-            // POV left resets robot to the starting pose of the selected auto
-            driveController.povLeft().onTrue(
-                drivetrain
-                    .runOnce(() -> m_simWrapper.cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
-        }
+        // POV buttons for sim
+        SimWrapper.configureSimBindings(
+            m_simWrapper,
+            driveController.povRight(),
+            driveController.povLeft(),
+            drivetrain);
 
         // Hook up the telemetry logger to the drivetrain periodic updates
         drivetrain.registerTelemetry(logger::telemeterize);

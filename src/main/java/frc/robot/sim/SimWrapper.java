@@ -5,10 +5,13 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.sim.visionproducers.VisionSimFactory;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.auto.AutoLogic;
 import java.util.function.Consumer;
 
 
@@ -114,6 +117,68 @@ public class SimWrapper {
      */
     public void cycleResetPosition(Pose2d blueAlliancePose) {
         m_groundTruthSim.cycleResetPosition(blueAlliancePose);
+    }
+
+    /**
+     * Binds simulation-only POV button actions to the drivetrain.
+     *
+     * @param driftTrigger    Trigger that injects odometry drift (e.g. povRight)
+     * @param resetTrigger    Trigger that cycles the robot reset position (e.g. povLeft)
+     * @param drivetrain      The swerve drivetrain
+     */
+    public void configureSimBindings(
+            Trigger driftTrigger,
+            Trigger resetTrigger,
+            CommandSwerveDrivetrain drivetrain) {
+
+        driftTrigger.onTrue(drivetrain.runOnce(() -> injectDrift(0.5, 15.0)));
+        resetTrigger.onTrue(drivetrain.runOnce(() ->
+            cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
+    }
+
+    /**
+     * Configures simulation bindings if the provided SimWrapper is non-null.
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper      The SimWrapper instance, or null when not in simulation
+     * @param driftTrigger    Trigger that injects odometry drift (e.g. povRight)
+     * @param resetTrigger    Trigger that cycles the robot reset position (e.g. povLeft)
+     * @param drivetrain      The swerve drivetrain
+     */
+    public static void configureSimBindings(
+            SimWrapper simWrapper,
+            Trigger driftTrigger,
+            Trigger resetTrigger,
+            CommandSwerveDrivetrain drivetrain) {
+
+        if (simWrapper == null) {
+            // Sanity check that simWrapper is only null if !Robot.isSimulation()
+            if (Robot.isSimulation()) {
+                throw new IllegalStateException("SimWrapper is null in simulation mode");
+            }
+
+            return;
+        }
+        simWrapper.configureSimBindings(driftTrigger, resetTrigger, drivetrain);
+    }
+
+    /**
+     * Creates a SimWrapper if in simulation, or returns null for real robot.
+     *
+     * @param configInterface The bot configuration
+     * @param drivetrain The swerve drivetrain
+     * @param poseResetConsumer Consumer called when ground truth resets the pose
+     * @return A new SimWrapper, or null if not in simulation
+     */
+    public static SimWrapper create(
+            BotConfigInterface configInterface,
+            SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
+            Consumer<Pose2d> poseResetConsumer) {
+
+        if (!Robot.isSimulation()) {
+            return null;
+        }
+        return new SimWrapper(configInterface, drivetrain, poseResetConsumer);
     }
 
     /**  Gets the ground truth pose from the simulation. */
