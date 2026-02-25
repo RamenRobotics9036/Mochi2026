@@ -22,12 +22,8 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.IndexerConstants;
-import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.FullAutoClimbCommand;
@@ -68,7 +64,6 @@ import frc.robot.subsystems.shooter.ShooterIoReal;
 import frc.robot.visutils.AimController;
 import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.DriveSmooth;
-import frc.robot.visutils.SingleCamOdometry;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometry;
 import frc.robot.visutils.TurnToAngleHelper;
@@ -216,6 +211,9 @@ public class RobotContainer {
     /** Tracks whether the robot is motionless and for how long. */
     public final MotionlessTracker m_motionlessTracker;
 
+    /** 2D game field for debugging. */
+    public Field2d debugField = null;
+
     /**
      * Constructs the RobotContainer.
      * Initializes autonomous selection dashboards and binds controller inputs to commands.
@@ -232,50 +230,14 @@ public class RobotContainer {
             Robot.isSimulation(),
             () -> drivetrain.getOperatorForwardDirection().getDegrees());
 
-        // Put some debug info on the dashboard
-        SmartDashboard.putString(
-            "MAC Address Name",
-            RobotIdentity.getBotName());
-        SmartDashboard.putString(
-            "Robot Config",
-            m_configInterface.getConfigName());
+        m_driveAccuracyTester = initDebugDashboard();
 
-        Field2d debugField = null;
-
-        SmartDashboard.putData("GlassField", m_glassField);
-
-        AutoLogic.initShuffleboard(drivetrain);
-        m_driveAccuracyTester = new DriveAccuracyTester(
-            drivetrain, m_visionKalmanFilter, basicInfoDashboard::forceDisableVision);
-
-        // Add a button on dashboard to launch Accuracy Drive Test
-        SmartDashboard.putData("Accuracy Drive Test", m_driveAccuracyTester.createTapeDropAutoCommand());
-
-        SmartDashboard.putData("Test Subsystems", TestSubsystems.test(
-            intakeSubsystem,
-            m_indexerSubsystem,
-            shooterSubsystem,
-            armSubsystem,
-            climberSubsystem));
-
-        configureBindings();
-
+        configureDriveBindings();
+        configureOperateBindings();
+        configureDefaultCommands();
         registerNamedCommands();
 
-        m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
-
-        // $VISIONSIM - Wrapper for sim features
-        if (Robot.isSimulation()) {
-            m_simWrapper = new SimWrapper(
-                m_configInterface,
-                drivetrain,
-                this::resetRobotPose);
-
-            debugField = m_simWrapper.getSimDebugField();
-        }
-        else {
-            m_simWrapper = null;
-        }
+        m_simWrapper = visionSimWrapper();
 
         m_showVisionOnField = new ShowVisionOnField(
             m_configInterface,
@@ -305,8 +267,52 @@ public class RobotContainer {
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
     }
 
+    /** Adds debug into to the dashboard */
+    private DriveAccuracyTester initDebugDashboard(){
+        SmartDashboard.putString(
+            "MAC Address Name",
+            RobotIdentity.getBotName());
+        SmartDashboard.putString(
+            "Robot Config",
+            m_configInterface.getConfigName());
+
+        SmartDashboard.putData("GlassField", m_glassField);
+
+        AutoLogic.initShuffleboard(drivetrain);
+        DriveAccuracyTester accuracyTester = new DriveAccuracyTester(
+            drivetrain, m_visionKalmanFilter, basicInfoDashboard::forceDisableVision);
+
+        // Add a button on dashboard to launch Accuracy Drive Test
+        SmartDashboard.putData("Accuracy Drive Test", accuracyTester.createTapeDropAutoCommand());
+
+        SmartDashboard.putData("Test Subsystems", TestSubsystems.test(
+            intakeSubsystem,
+            m_indexerSubsystem,
+            shooterSubsystem,
+            armSubsystem,
+            climberSubsystem));
+
+        return accuracyTester;
+    }
+
+    private SimWrapper visionSimWrapper() {
+        // $VISIONSIM - Wrapper for sim features
+        if (Robot.isSimulation()) {
+            SimWrapper wrapper = new SimWrapper(
+                m_configInterface,
+                drivetrain,
+                this::resetRobotPose);
+
+            debugField = wrapper.getSimDebugField();
+
+            return wrapper;
+        }
+
+        return null;
+    }
+
+    /** Registers named commands for PathPlanner */
     private void registerNamedCommands() {
-        // Register Named Commands for PathPlanner
         NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
         NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
@@ -319,55 +325,10 @@ public class RobotContainer {
     }
 
     /**
-     * Defines trigger-to-command mappings.
+     * Defines trigger-to-command mappings for the driver controller.
      */
-    private void configureBindings() {
-        drivetrain.setDefaultCommand(
-            drivetrain.applyRequest(() -> {
-                JoystickInputsRecord inputs = m_joystickInput.getJoystickInputs();
-
-                // POV-UP held: auto-aim rotation at the tag
-                // while keeping X/Y translation.
-                var driveState = drivetrain.getState();
-                OptionalDouble aimRate = m_aimController.update(
-                    isLeftPovUpward(),
-                    m_multiCamlimelight.getLastTarget(),
-                    driveState.Pose,
-                    driveState.Speeds);
-
-                if (aimRate.isPresent()) {
-                    return drive
-                        .withVelocityX(inputs.driveX())
-                        .withVelocityY(inputs.driveY())
-                        .withRotationalRate(aimRate.getAsDouble());
-                }
-
-                return drive.withVelocityX(inputs.driveX())
-                     .withVelocityY(inputs.driveY())
-                     .withRotationalRate(inputs.rotatetX());
-            })
-        );
-
-        //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
-        shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
-
-        // POV Up: Extend Climber
-        operateController.povUp().whileTrue(
-            new RunCommand(
-                () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbUpSpeed),
-                climberSubsystem
-            )
-        ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
-
-        // POV Down: Retract Climber
-        operateController.povDown().whileTrue(
-            new RunCommand(
-                () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbDownSpeed),
-                climberSubsystem
-            )
-        ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
-
-
+    private void configureDriveBindings() {
+        
         // Keep the drivetrain in an Idle state while the robot is disabled
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
@@ -418,6 +379,29 @@ public class RobotContainer {
         new Trigger(this::isLeftPovDownward).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
+    }
+
+    /**
+     * Defines trigger-to-command mappings for the operator controller.
+     */
+    private void configureOperateBindings(){
+
+        // POV Up: Extend Climber
+        operateController.povUp().whileTrue(
+            new RunCommand(
+                () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbUpSpeed),
+                climberSubsystem
+            )
+        ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
+
+        // POV Down: Retract Climber
+        operateController.povDown().whileTrue(
+            new RunCommand(
+                () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbDownSpeed),
+                climberSubsystem
+            )
+        ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
+
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
@@ -436,16 +420,39 @@ public class RobotContainer {
     }
 
     /**
-     * Wrapper for team-specific commands to handle simulation behavior.
-     *
-     * @param command The command to wrap.
-     * @return The original command or an empty command if in simulation.
+     * Defines default commands.
      */
-    private Command CmdWrapperTeamCommand(Command command) {
-        if (RobotBase.isSimulation()) {
-            return Commands.none();
-        }
-        return command;
+    private void configureDefaultCommands(){
+        drivetrain.setDefaultCommand(
+            drivetrain.applyRequest(() -> {
+                JoystickInputsRecord inputs = m_joystickInput.getJoystickInputs();
+
+                // POV-UP held: auto-aim rotation at the tag
+                // while keeping X/Y translation.
+                var driveState = drivetrain.getState();
+                OptionalDouble aimRate = m_aimController.update(
+                    isLeftPovUpward(),
+                    m_multiCamlimelight.getLastTarget(),
+                    driveState.Pose,
+                    driveState.Speeds);
+
+                if (aimRate.isPresent()) {
+                    return drive
+                        .withVelocityX(inputs.driveX())
+                        .withVelocityY(inputs.driveY())
+                        .withRotationalRate(aimRate.getAsDouble());
+                }
+
+                return drive.withVelocityX(inputs.driveX())
+                     .withVelocityY(inputs.driveY())
+                     .withRotationalRate(inputs.rotatetX());
+            })
+        );
+
+        //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
+        shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
+
+        m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
     }
 
     /**
