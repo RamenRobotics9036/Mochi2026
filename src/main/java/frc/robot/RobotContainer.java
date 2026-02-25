@@ -326,7 +326,7 @@ public class RobotContainer {
         // POV Down: rotate in place to face the configured AprilTag.
         // Use a tolerant trigger (135°–225°) instead of exact povDown() (180° only)
         // to avoid command cancellation from D-pad diagonal flicker.
-        new Trigger(this::isLeftPovDownward).whileTrue(
+        new Trigger(() -> JoystickInput.isPovDownward(driveController)).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
     }
@@ -381,7 +381,7 @@ public class RobotContainer {
                 // while keeping X/Y translation.
                 var driveState = drivetrain.getState();
                 OptionalDouble aimRate = m_aimController.update(
-                    isLeftPovUpward(),
+                    JoystickInput.isPovUpward(driveController),
                     m_multiCamlimelight.getLastTarget(),
                     driveState.Pose,
                     driveState.Speeds);
@@ -443,15 +443,4 @@ public class RobotContainer {
         m_driveAccuracyTester.clearTape();
     }
 
-    /** Returns {@code true} when the left D-pad is in the downward region (135°–225°). */
-    private boolean isLeftPovDownward() {
-        int pov = driveController.getHID().getPOV();
-        return pov != -1 && (pov >= 135 && pov <= 225);
-    }
-
-    /** Returns {@code true} when the left D-pad is in the upward region (315°–360° or 0°–45°). */
-    private boolean isLeftPovUpward() {
-        int pov = driveController.getHID().getPOV();
-        return pov != -1 && (pov <= 45 || pov >= 315);
-    }
 }
