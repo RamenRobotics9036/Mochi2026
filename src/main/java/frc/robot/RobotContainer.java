@@ -295,7 +295,7 @@ public class RobotContainer {
         return accuracyTester;
     }
 
-    private SimWrapper visionSimWrapper(){
+    private SimWrapper visionSimWrapper() {
         // $VISIONSIM - Wrapper for sim features
         if (Robot.isSimulation()) {
             SimWrapper wrapper = new SimWrapper(
@@ -304,12 +304,11 @@ public class RobotContainer {
                 this::resetRobotPose);
 
             debugField = wrapper.getSimDebugField();
-            
-            return wrapper; 
+
+            return wrapper;
         }
-        else {
-            return null;
-        }
+
+        return null;
     }
 
     /** Registers named commands for PathPlanner */
