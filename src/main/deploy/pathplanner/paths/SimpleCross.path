@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 4.005249782986112,
+        "x": 4.64226244212963,
         "y": 0.6309287471064817
       },
       "prevControl": null,
       "nextControl": {
-        "x": 5.205249782986112,
+        "x": 5.8422624421296305,
         "y": 0.6309287471064817
       },
       "isLocked": false,
@@ -32,12 +32,44 @@
     },
     {
       "anchor": {
-        "x": 7.97593359375,
-        "y": 2.913059895833334
+        "x": 8.247500855381615,
+        "y": 2.8321146973824796
       },
       "prevControl": {
-        "x": 7.97593359375,
-        "y": 2.126059895833334
+        "x": 8.862822289384047,
+        "y": 2.807072545998659
+      },
+      "nextControl": {
+        "x": 7.802780732181177,
+        "y": 2.8502137721638934
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 6.50205859375,
+        "y": 0.6309287471064817
+      },
+      "prevControl": {
+        "x": 7.167859397865867,
+        "y": 0.6744098092493196
+      },
+      "nextControl": {
+        "x": 5.781646327553148,
+        "y": 0.5838812062784645
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.64226244212963,
+        "y": 0.6309287471064817
+      },
+      "prevControl": {
+        "x": 5.381833941604243,
+        "y": 0.5975875817346696
       },
       "nextControl": null,
       "isLocked": false,
@@ -58,6 +90,19 @@
       "constraints": {
         "maxVelocity": 1.5,
         "maxAcceleration": 2.0,
+        "maxAngularVelocity": 540.0,
+        "maxAngularAcceleration": 720.0,
+        "nominalVoltage": 12.0,
+        "unlimited": false
+      }
+    },
+    {
+      "name": "Constraints Zone",
+      "minWaypointRelativePos": 3.263346354166667,
+      "maxWaypointRelativePos": 4.0,
+      "constraints": {
+        "maxVelocity": 0.5,
+        "maxAcceleration": 3.0,
         "maxAngularVelocity": 540.0,
         "maxAngularAcceleration": 720.0,
         "nominalVoltage": 12.0,
