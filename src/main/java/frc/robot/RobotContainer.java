@@ -59,6 +59,8 @@ import frc.robot.subsystems.intake.ArmIoReal;
 import frc.robot.subsystems.intake.IntakeIoReal;
 import frc.robot.subsystems.shooter.ShooterIoReal;
 import frc.robot.visutils.AimController;
+import frc.robot.visutils.BasicInfoDashboard;
+import frc.robot.visutils.DashboardFactory;
 import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.MotionlessTracker;
@@ -202,7 +204,8 @@ public class RobotContainer {
             Robot.isSimulation(),
             () -> drivetrain.getOperatorForwardDirection().getDegrees());
 
-        m_driveAccuracyTester = initDebugDashboard();
+        m_driveAccuracyTester = new DriveAccuracyTester(
+            drivetrain, m_visionKalmanFilter, basicInfoDashboard::forceDisableVision);
 
         m_simWrapper = SimWrapper.create(m_configInterface, drivetrain, this::resetRobotPose);
         m_showVisionOnField = new ShowVisionOnField(
@@ -210,12 +213,24 @@ public class RobotContainer {
             m_glassField,
             (m_simWrapper == null) ? null : m_simWrapper.getSimDebugField());
 
+        AutoLogic.initShuffleboard(drivetrain);
+        DashboardFactory.initDebugDashboard(
+            m_configInterface,
+            m_glassField,
+            m_driveAccuracyTester,
+            intakeSubsystem,
+            m_indexerSubsystem,
+            shooterSubsystem,
+            armSubsystem,
+            climberSubsystem);
+
         configureDriveBindings();
         configureOperateBindings();
         configureDefaultCommands();
         registerNamedCommands();
 
         // Setup vision system
+        // $TODO - Cleanup for Ido - Move class variable basicInfoDashboard to be created in a factory that can also do the initialization below
         m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
         m_motionlessTracker.setOnStartedMoving(m_visionKalmanFilter::reset);
 
@@ -238,33 +253,7 @@ public class RobotContainer {
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
     }
 
-    /** Adds debug into to the dashboard */
-    private DriveAccuracyTester initDebugDashboard(){
-        SmartDashboard.putString(
-            "MAC Address Name",
-            RobotIdentity.getBotName());
-        SmartDashboard.putString(
-            "Robot Config",
-            m_configInterface.getConfigName());
 
-        SmartDashboard.putData("GlassField", m_glassField);
-
-        AutoLogic.initShuffleboard(drivetrain);
-        DriveAccuracyTester accuracyTester = new DriveAccuracyTester(
-            drivetrain, m_visionKalmanFilter, basicInfoDashboard::forceDisableVision);
-
-        // Add a button on dashboard to launch Accuracy Drive Test
-        SmartDashboard.putData("Accuracy Drive Test", accuracyTester.createTapeDropAutoCommand());
-
-        SmartDashboard.putData("Test Subsystems", TestSubsystems.test(
-            intakeSubsystem,
-            m_indexerSubsystem,
-            shooterSubsystem,
-            armSubsystem,
-            climberSubsystem));
-
-        return accuracyTester;
-    }
 
     /** Registers named commands for PathPlanner */
     private void registerNamedCommands() {
@@ -326,7 +315,7 @@ public class RobotContainer {
         // POV Down: rotate in place to face the configured AprilTag.
         // Use a tolerant trigger (135°–225°) instead of exact povDown() (180° only)
         // to avoid command cancellation from D-pad diagonal flicker.
-        new Trigger(this::isLeftPovDownward).whileTrue(
+        new Trigger(() -> JoystickInput.isPovDownward(driveController)).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
     }
@@ -381,7 +370,7 @@ public class RobotContainer {
                 // while keeping X/Y translation.
                 var driveState = drivetrain.getState();
                 OptionalDouble aimRate = m_aimController.update(
-                    isLeftPovUpward(),
+                    JoystickInput.isPovUpward(driveController),
                     m_multiCamlimelight.getLastTarget(),
                     driveState.Pose,
                     driveState.Speeds);
@@ -443,15 +432,4 @@ public class RobotContainer {
         m_driveAccuracyTester.clearTape();
     }
 
-    /** Returns {@code true} when the left D-pad is in the downward region (135°–225°). */
-    private boolean isLeftPovDownward() {
-        int pov = driveController.getHID().getPOV();
-        return pov != -1 && (pov >= 135 && pov <= 225);
-    }
-
-    /** Returns {@code true} when the left D-pad is in the upward region (315°–360° or 0°–45°). */
-    private boolean isLeftPovUpward() {
-        int pov = driveController.getHID().getPOV();
-        return pov != -1 && (pov <= 45 || pov >= 315);
-    }
 }
