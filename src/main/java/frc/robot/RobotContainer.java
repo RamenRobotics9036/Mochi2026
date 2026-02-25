@@ -36,6 +36,7 @@ import frc.robot.commands.ShootCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
+import frc.robot.commands.SpinnyDefaultCommand;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.RollerSim.RollerIoInterface;
 import frc.robot.sim.RollerSim.RollerIoSim;
@@ -452,7 +453,7 @@ public class RobotContainer {
         //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
         shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
 
-        m_spinnyWheels.setDefaultCommand(new RunCommand(m_spinnyWheels::spin, m_spinnyWheels));
+        m_spinnyWheels.setDefaultCommand(new SpinnyDefaultCommand(m_spinnyWheels));
     }
 
     /**
