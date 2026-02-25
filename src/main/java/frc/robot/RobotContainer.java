@@ -11,7 +11,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -39,16 +38,13 @@ import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.SpinnyDefaultCommand;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.RollerSim.RollerIoInterface;
-import frc.robot.sim.RollerSim.RollerIoSim;
 import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
-import frc.robot.sim.RollerSim.TwoMotorRollerIoSim;
+import frc.robot.sim.SimIoFactory;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.elevatorSim.ElevatorIoInterface;
-import frc.robot.sim.elevatorSim.ElevatorIoSim;
 import frc.robot.subsystems.climber.ClimberIoReal;
 import frc.robot.sim.SimWrapper;
 import frc.robot.sim.armsim.ArmIoInterface;
-import frc.robot.sim.armsim.ArmIoSim;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -143,10 +139,7 @@ public class RobotContainer {
     public final MultiCamOdometry m_multiCamlimelight;
 
     private final TwoMotorRollerIoInterface m_shooterIO = Robot.isSimulation()
-        ? new TwoMotorRollerIoSim(
-            Constants.SimShooterConstants.kDeviceName,
-            Constants.SimShooterConstants.kMoiKgM2,
-            Constants.ShooterConstants.kShooterGearRatio)
+        ? SimIoFactory.createShooterIoSim()
         : new ShooterIoReal(m_configInterface);
 
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(
@@ -154,17 +147,11 @@ public class RobotContainer {
         m_shooterIO);
 
     private final RollerIoInterface m_indexerIO = Robot.isSimulation()
-        ? new RollerIoSim(
-            Constants.SimIndexerConstants.kDeviceName,
-            Constants.SimIndexerConstants.kMoiKgM2,
-            Constants.IndexerConstants.kIndexerGearRatio)
+        ? SimIoFactory.createIndexerIoSim()
         : new IndexerIoReal();
 
     private final RollerIoInterface m_spinnyIO = Robot.isSimulation()
-        ? new RollerIoSim(
-            Constants.SimSpinnyWheelsConstants.kDeviceName,
-            Constants.SimSpinnyWheelsConstants.kMoiKgM2,
-            Constants.SpinnyWheelsConstants.kSpinGearRatio)
+        ? SimIoFactory.createSpinnyIoSim()
         : new frc.robot.subsystems.spinny.SpinnyIoReal();
 
     public final SpinnyWheels m_spinnyWheels = new SpinnyWheels(m_spinnyIO);
@@ -172,31 +159,18 @@ public class RobotContainer {
     public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem(m_indexerIO);
 
     private final ElevatorIoInterface m_climberIO = Robot.isSimulation()
-        ? new ElevatorIoSim(
-            Constants.SimClimberConstants.kDeviceName,
-            Constants.SimClimberConstants.kGearRatio,
-            Constants.SimClimberConstants.kCarriageMassKg,
-            Constants.SimClimberConstants.kDrumRadiusMeters,
-            Constants.SimClimberConstants.kMinHeightMeters,
-            Constants.SimClimberConstants.kMaxHeightMeters)
+        ? SimIoFactory.createClimberIoSim()
         : new ClimberIoReal();
 
     public final ClimberSubsystem climberSubsystem = new ClimberSubsystem(m_climberIO);
 
     /** Intake IO: real hardware or FlywheelSim depending on mode. */
     private final RollerIoInterface m_intakeIO = Robot.isSimulation()
-        ? new RollerIoSim(
-            Constants.SimIntakeConstants.kDeviceName,
-            Constants.SimIntakeConstants.kMoiKgM2,
-            Constants.IntakeConstants.kIntakeRollerGearRatio)
+        ? SimIoFactory.createIntakeIoSim()
         : new IntakeIoReal();
 
     private final ArmIoInterface m_intakeArmIO = Robot.isSimulation()
-        ? new ArmIoSim(
-            Constants.SimIntakeArmConstants.kDeviceName,
-            Constants.SimIntakeArmConstants.kMoiKgM2,
-            Constants.SimIntakeArmConstants.kArmLengthMeters,
-            Constants.ArmConstants.kArmGearRatio)
+        ? SimIoFactory.createIntakeArmIoSim()
         : new ArmIoReal();
 
     /** Intake subsystem driven through the IO abstraction. */
