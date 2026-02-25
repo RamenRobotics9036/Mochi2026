@@ -212,9 +212,6 @@ public class RobotContainer {
     /** Tracks whether the robot is motionless and for how long. */
     public final MotionlessTracker m_motionlessTracker;
 
-    /** 2D game field for debugging. */
-    public Field2d debugField = null;
-
     /**
      * Constructs the RobotContainer.
      * Initializes autonomous selection dashboards and binds controller inputs to commands.
@@ -239,11 +236,10 @@ public class RobotContainer {
         registerNamedCommands();
 
         m_simWrapper = visionSimWrapper();
-
         m_showVisionOnField = new ShowVisionOnField(
             m_configInterface,
             m_glassField,
-            debugField);
+            (m_simWrapper == null) ? null : m_simWrapper.getSimDebugField());
 
         // Setup vision system
         m_motionlessTracker = new MotionlessTracker(() -> drivetrain.getState().Speeds);
@@ -304,8 +300,6 @@ public class RobotContainer {
                 drivetrain,
                 this::resetRobotPose);
 
-            debugField = wrapper.getSimDebugField();
-
             return wrapper;
         }
 
@@ -329,7 +323,7 @@ public class RobotContainer {
      * Defines trigger-to-command mappings for the driver controller.
      */
     private void configureDriveBindings() {
-        
+
         // Keep the drivetrain in an Idle state while the robot is disabled
         final var idle = new SwerveRequest.Idle();
         RobotModeTriggers.disabled().whileTrue(
