@@ -137,6 +137,32 @@ public class SimWrapper {
     }
 
     /**
+     * Configures simulation bindings if the provided SimWrapper is non-null.
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper      The SimWrapper instance, or null when not in simulation
+     * @param driftTrigger    Trigger that injects odometry drift (e.g. povRight)
+     * @param resetTrigger    Trigger that cycles the robot reset position (e.g. povLeft)
+     * @param drivetrain      The swerve drivetrain
+     */
+    public static void configureSimBindings(
+            SimWrapper simWrapper,
+            Trigger driftTrigger,
+            Trigger resetTrigger,
+            CommandSwerveDrivetrain drivetrain) {
+
+        if (simWrapper == null) {
+            // Sanity check that simWrapper is only null if !Robot.isSimulation()
+            if (Robot.isSimulation()) {
+                throw new IllegalStateException("SimWrapper is null in simulation mode");
+            }
+
+            return;
+        }
+        simWrapper.configureSimBindings(driftTrigger, resetTrigger, drivetrain);
+    }
+
+    /**
      * Creates a SimWrapper if in simulation, or returns null for real robot.
      *
      * @param configInterface The bot configuration

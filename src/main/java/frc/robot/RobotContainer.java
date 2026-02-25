@@ -340,12 +340,11 @@ public class RobotContainer {
             MaxAngularRate));
 
         // POV buttons for sim
-        if (m_simWrapper != null) {
-            m_simWrapper.configureSimBindings(
-                driveController.povRight(),
-                driveController.povLeft(),
-                drivetrain);
-        }
+        SimWrapper.configureSimBindings(
+            m_simWrapper,
+            driveController.povRight(),
+            driveController.povLeft(),
+            drivetrain);
 
         // Hook up the telemetry logger to the drivetrain periodic updates
         drivetrain.registerTelemetry(logger::telemeterize);
