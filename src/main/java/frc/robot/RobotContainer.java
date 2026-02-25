@@ -211,7 +211,7 @@ public class RobotContainer {
     /** Tracks whether the robot is motionless and for how long. */
     public final MotionlessTracker m_motionlessTracker;
 
-    //TODO: add variable description
+    /** 2D game field for debugging. */
     public Field2d debugField = null;
 
     /**
