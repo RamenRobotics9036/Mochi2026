@@ -99,10 +99,9 @@ public final class  AutoLogic {
 
         // Pathplanner Autos
         autoPicker.addOption("Center Auto", "Center Auto");
-        autoPicker.addOption("Scale test", "Scale test");
-        autoPicker.addOption("Diagonal path", "Diagonal path");
         autoPicker.addOption("Cross", "Cross");
         autoPicker.setDefaultOption("testing shoot", "testing shoot");
+        autoPicker.addOption("testing intake fuel", "testing intake fuel");
     }
 
     /**
