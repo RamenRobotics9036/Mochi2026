@@ -244,6 +244,7 @@ public class RobotContainer {
             m_motionlessTracker);
             m_motionlessTracker::isMotionless);
 
+        // $TODO - I dont think this should be here, its a dup
         basicInfoDashboard.setVisionDependencies(
             this::getBestCurrentConfidenceScoreForSingleCam,
             this::getBestNumLockedTagsForSingleCam,
