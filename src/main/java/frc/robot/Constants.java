@@ -135,6 +135,9 @@ public final class Constants {
         /** Max no-load speed of WCP-0408 Actuator (32mm/s @ 6V) */
         public static final int kHoodMaxSpeed = 32;
 
+        /** Hood adjustment step per 20ms scheduler tick while D-pad is held. */
+        public static final double kHoodJogMmPerTick = kHoodMaxSpeed * 0.02;
+
         /** Shooting speed */
         public static final double kShootSpeed = 0.60; //TODO: filler value
 

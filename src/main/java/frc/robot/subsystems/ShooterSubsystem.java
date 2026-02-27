@@ -46,6 +46,14 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     /**
+     * Moves hood target by a delta amount.
+     * @param deltaMm Positive extends/down, negative retracts/up.
+     */
+    public void nudgeHoodPosition(double deltaMm) {
+        m_hood.setPosition(m_hood.getSetpoint() + deltaMm);
+    }
+
+    /**
      * Regularly publishes telemetry to the SmartDashboard for driver and pit feedback.
      */
     @Override
@@ -55,6 +63,7 @@ public class ShooterSubsystem extends SubsystemBase {
         m_hood.updateCurPos();
 
         SmartDashboard.putNumber("Shooter/VelocityRPM", m_shooterOutputs.velocityRPM);
+        SmartDashboard.putNumber("Shooter/HoodSetpoint_mm", m_hood.getSetpoint());
         SmartDashboard.putNumber("Shooter/HoodPosition_mm", m_hood.getPosition());
         SmartDashboard.putBoolean("Shooter/HoodFinished", m_hood.isFinished());
     }

@@ -65,6 +65,15 @@ public class LinearServo extends Servo {
     }
 
     /**
+     * Gets the currently commanded target position.
+     *
+     * @return Servo target position [mm]
+     */
+    public double getSetpoint() {
+        return setPos;
+    }
+
+    /**
      * Checks if the servo is at its target position, must be calling {@link #updateCurPos() updateCurPos()} periodically
      *
      * @return true when servo is at its target
