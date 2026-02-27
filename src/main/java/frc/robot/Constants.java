@@ -136,7 +136,7 @@ public final class Constants {
         public static final int kHoodMaxSpeed = 32;
 
         /** Hood adjustment step per 20ms scheduler tick while D-pad is held. */
-        public static final double kHoodJogMmPerTick = kHoodMaxSpeed * 0.02;
+        public static final double kHoodJogMmPerTick = kHoodMaxSpeed * 0.05;
 
         /** Shooting speed */
         public static final double kShootSpeed = 0.60; //TODO: filler value

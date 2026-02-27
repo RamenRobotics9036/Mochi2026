@@ -20,7 +20,7 @@ public class LinearServo extends Servo {
      */
     public LinearServo(int channel, int length, int speed) {
         super(channel);
-        setBoundsMicroseconds(2000, 1800, 1500, 1200, 1000);
+        setBoundsMicroseconds(1000, 1200, 1500, 1800, 2000);
         m_length = length;
         m_speed = speed;
         // Need to initialize timing properly, else on very first update 'dt' will be since robot boot.
