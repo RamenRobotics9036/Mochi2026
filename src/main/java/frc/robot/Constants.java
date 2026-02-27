@@ -129,6 +129,12 @@ public final class Constants {
         /** PWM channer for the linear actuator servo. */
         public static final int kHoodPwmChannel = 0; //TODO: filler value
 
+        /** Max Length of WCP-0408 Actuator (100mm) */
+        public static final int kHoodMaxLength = 100;
+
+        /** Max no-load speed of WCP-0408 Actuator (32mm/s @ 6V) */
+        public static final int kHoodMaxSpeed = 32;
+
         /** Shooting speed */
         public static final double kShootSpeed = 0.60; //TODO: filler value
 
