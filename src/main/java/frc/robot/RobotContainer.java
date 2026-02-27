@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.events.EventTrigger;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -229,6 +230,13 @@ public class RobotContainer {
         configureOperateBindings();
         configureDefaultCommands();
         registerNamedCommands();
+
+        /** Registers event triggers for PathPlanner */
+        new EventTrigger("shoot").onTrue(ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
+        new EventTrigger("Full Auto Climb").onTrue(FullAutoClimbCommand.create(climberSubsystem));
+        new EventTrigger("get fuel").onTrue(GetFuelCommand.create(armSubsystem, intakeSubsystem));
+        new EventTrigger("set intake bottom").onTrue(SetIntakeBottomCommand.create(armSubsystem, intakeSubsystem));
+        new EventTrigger("set intake top").onTrue(SetIntakeTopCommand.create(armSubsystem, intakeSubsystem));
 
         // Setup vision system
         m_motionlessTracker = MotionlessTracker.create(
