@@ -161,6 +161,9 @@ public final class Constants {
         public static final double kSpinGearRatio = 1.0;
 
         public static final int kCurrentLimit = 40;
+
+        /* Spinny will change directions after this amount of seconds */
+        public static final double kOscillationFrequency = 0.5;
     }
 
     /**
