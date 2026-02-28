@@ -126,8 +126,8 @@ public final class Constants {
         public static final int kCurrentSupplyLimit = 50; //TODO: filler value
         public static final int kCurrentStatorLimit = 40; //TODO: filler value
 
-        /** PWM channer for the linear actuator servo. */
-        public static final int kHoodPwmChannel = 0; //TODO: filler value
+        /** PWM channel for the linear actuator servo. */
+        public static final int kHoodPwmChannel = 0;
 
         /** Shooting speed */
         public static final double kShootSpeed = 0.60; //TODO: filler value

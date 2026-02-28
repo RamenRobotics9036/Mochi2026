@@ -344,6 +344,11 @@ public class RobotContainer {
         // (Deadband prevents scheduling from tiny stick noise.)
         new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
             .whileTrue(new IntakeArmCommand(armSubsystem, operateController));
+
+        // Adjust the linear actuator for the hood by 10% backward using D-Pad Down.
+        operateController.povDown().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.adjustHood(-0.1)));
+        // Adjust the linear actuator for the hood by 10% forward using D-Pad Up.
+        operateController.povDown().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.adjustHood(0.1)));
     }
 
     /**
