@@ -33,6 +33,7 @@ import frc.robot.commands.SetIntakeBottomCommand;
 import frc.robot.commands.SetIntakeTopCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.JiggleCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.SpinnyDefaultCommand;
@@ -306,6 +307,8 @@ public class RobotContainer {
         new Trigger(() -> JoystickInput.isPovDownward(driveController)).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
+
+        driveController.y().whileTrue(new JiggleCommand(drivetrain));
     }
 
     /**

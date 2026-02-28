@@ -20,6 +20,8 @@ public class JiggleCommand extends Command {
     private final CommandSwerveDrivetrain m_swerve;
     private Direction m_direction = Direction.FORWARD;
     private final Timer m_timer = new Timer();
+
+    private final RobotCentric m_request = new RobotCentric();
     
     public JiggleCommand(CommandSwerveDrivetrain swerve) {
         m_swerve = swerve;
@@ -29,6 +31,7 @@ public class JiggleCommand extends Command {
     @Override
     public void initialize() {
         m_timer.restart();
+        System.out.println("    Jiggle initialized");
     }
 
     @Override
@@ -37,15 +40,19 @@ public class JiggleCommand extends Command {
             switch (m_direction) {
                 case FORWARD:
                     m_direction = Direction.BACKWARD;
+                    System.out.println("    Going backward");
                     break;
                 case BACKWARD:
                     m_direction = Direction.LEFT;
+                    System.out.println("    Going left");
                     break;
                 case LEFT:
                     m_direction = Direction.RIGHT;
+                    System.out.println("    Going right");
                     break;
                 case RIGHT:
                     m_direction = Direction.FORWARD;
+                    System.out.println("    Going forward");
                     break;
             }
 
@@ -55,16 +62,16 @@ public class JiggleCommand extends Command {
     
         switch (m_direction) {
             case FORWARD:
-                m_swerve.applyRequest(() -> new RobotCentric().withVelocityX(DriveConstants.kJiggleSpeed));
+                m_swerve.setControl(m_request.withVelocityX(DriveConstants.kJiggleSpeed));;
                 break;
             case BACKWARD:
-                m_swerve.applyRequest(() -> new RobotCentric().withVelocityX(DriveConstants.kJiggleSpeed.times(-1)));
+                m_swerve.setControl(m_request.withVelocityX(DriveConstants.kJiggleSpeed.times(-1)));
                 break;
             case LEFT:
-                m_swerve.applyRequest(() -> new RobotCentric().withVelocityY(DriveConstants.kJiggleSpeed));
+                m_swerve.setControl(m_request.withVelocityY(DriveConstants.kJiggleSpeed));
                 break;
             case RIGHT:
-                m_swerve.applyRequest(() -> new RobotCentric().withVelocityY(DriveConstants.kJiggleSpeed.times(-1)));
+                m_swerve.setControl(m_request.withVelocityY(DriveConstants.kJiggleSpeed.times(-1)));
                 break;
         }
     }
