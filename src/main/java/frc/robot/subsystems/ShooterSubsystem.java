@@ -63,6 +63,7 @@ public class ShooterSubsystem extends SubsystemBase {
         m_hood.updateCurPos();
 
         SmartDashboard.putNumber("Shooter/VelocityRPM", m_shooterOutputs.velocityRPM);
+        SmartDashboard.putNumber("Shooter/HoodCommand_pct", m_hood.getCommandedPercent());
         SmartDashboard.putNumber("Shooter/HoodSetpoint_mm", m_hood.getSetpoint());
         SmartDashboard.putNumber("Shooter/HoodPosition_mm", m_hood.getPosition());
         SmartDashboard.putBoolean("Shooter/HoodFinished", m_hood.isFinished());

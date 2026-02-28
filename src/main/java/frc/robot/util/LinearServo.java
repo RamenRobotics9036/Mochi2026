@@ -20,9 +20,13 @@ public class LinearServo extends Servo {
      */
     public LinearServo(int channel, int length, int speed) {
         super(channel);
-        setBoundsMicroseconds(1000, 1200, 1500, 1800, 2000);
+        // WPILib order: max, deadbandMax, center, deadbandMin, min
+        setBoundsMicroseconds(2000, 1800, 1500, 1200, 1000);
         m_length = length;
         m_speed = speed;
+        setPos = 0.0;
+        curPos = 0.0;
+        set(0.0);
         // Need to initialize timing properly, else on very first update 'dt' will be since robot boot.
         lastTime = Timer.getFPGATimestamp();
     }
@@ -34,7 +38,7 @@ public class LinearServo extends Servo {
      */
     public void setPosition(double setpoint) {
         setPos = MathUtil.clamp(setpoint, 0, m_length);
-        setSpeed((setPos / m_length * 2) - 1);
+        set(setPos / m_length);
     }
 
     /**
@@ -71,6 +75,15 @@ public class LinearServo extends Servo {
      */
     public double getSetpoint() {
         return setPos;
+    }
+
+    /**
+     * Returns commanded PWM position as a normalized value in [0, 1].
+     *
+     * @return normalized command
+     */
+    public double getCommandedPercent() {
+        return get();
     }
 
     /**

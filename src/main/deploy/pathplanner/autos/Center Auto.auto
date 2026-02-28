@@ -7,13 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Center Return"
+            "pathName": "Center"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Center"
+            "pathName": "Center to Right"
           }
         }
       ]
