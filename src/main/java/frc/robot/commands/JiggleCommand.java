@@ -3,6 +3,7 @@ package frc.robot.commands;
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -32,7 +33,7 @@ public class JiggleCommand extends Command {
 
     @Override
     public void execute() {
-        if (m_timer.get() <= 0.5) { //TODO: filler value
+        if (m_timer.get() <= DriveConstants.kSecondsToAlternate.in(Seconds)) {
             switch (m_direction) {
                 case FORWARD:
                     m_direction = Direction.BACKWARD;
