@@ -16,17 +16,17 @@ public class SpinnyWheels extends SubsystemBase {
         m_spinnyIO = io;
     }
 
-        /**
-     * Spins the wheels at the constant speed defined in Constants.
+    /**
+     * Spins the wheels at the speed defined in Constants.
      */
-    public void spin() {
+    public void spinCounterclockwise() {
         m_spinnyIO.setSpeed(SpinnyWheelsConstants.kSpinSpeed);
     }
 
     /**
-     * Spins the wheels backwards at the constant speed defined in Constants.
+     * Spins the wheels backwards at the speed defined in Constants.
      */
-    public void spinBack() {
+    public void spinClockwise() {
         m_spinnyIO.setSpeed(-SpinnyWheelsConstants.kSpinSpeed);
     }
 

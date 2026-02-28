@@ -25,10 +25,11 @@ public class SpinnyDefaultCommand extends Command{
 
     @Override
     public void execute() {
-        if(m_timer.get() % SpinnyWheelsConstants.kResetTime.in(Seconds) < SpinnyWheelsConstants.kClockwiseTime.in(Seconds)){
-            m_spinny.spinBack();
+        //Uses mod to cut into sections of kResetTime seconds. For the first kClockwiseTime seconds of each, runs ckockwise.
+        if(m_timer.get() % SpinnyWheelsConstants.kTotalTime.in(Seconds) < SpinnyWheelsConstants.kClockwiseTime.in(Seconds)){
+            m_spinny.spinClockwise();
         } else {
-            m_spinny.spin();
+            m_spinny.spinCounterclockwise();
         }
     }
 

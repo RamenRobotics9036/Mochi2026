@@ -165,8 +165,9 @@ public final class Constants {
 
         public static final int kCurrentLimit = 40;
 
-        /** Time it travels before a reset (clockwise and counter-clockwise) */
-        public static final Time kResetTime = Seconds.of(3);
+        /** Total time of 1 clockwise and 1 counter-clockwise segment */
+        public static final Time kTotalTime = Seconds.of(3);
+        /** Time it spins clockwise for at the start of each segment */
         public static final Time kClockwiseTime = Seconds.of(2);
     }
 
