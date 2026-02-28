@@ -8,6 +8,7 @@ import java.util.Optional;
  */
 @SuppressWarnings("MemberName")
 public class PerCycleState {
+    // $TODO - CameraSelectionMode is not a good solution, remove it
     public enum CameraSelectionMode {
         CAMERA_ALWAYS_CAM0,
         CAMERA_FIRST_IN_ORDER_WITH_LOCK,

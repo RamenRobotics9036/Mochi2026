@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Limelight-based odometry measurement source.
  */
-public class SingleCamOdometry {
+public class SingleCamOdometry implements CamOdometryInterface {
     private final String m_limelightName;
     private VisionSimInterface.EstimateConsumer m_estConsumer;
     private Matrix<N3, N1> m_curStdDevs = kSingleTagStdDevs;
@@ -265,27 +265,33 @@ public class SingleCamOdometry {
         return Math.max(0, Math.min(100, confidence));
     }
 
+    @Override
     public Optional<Pose2d> getLatestVisPose() {
         return m_latestVisPose;
     }
 
+    @Override
     public double getCurrentConfidenceScore() {
         return m_curConfidenceScore;
     }
 
+    @Override
     public int getNumLockedTags() {
         return m_numLockedTags;
     }
 
+    @Override
     public double getTx() {
         return m_tx;
     }
 
+    @Override
     public List<Integer> getTargetList() {
         return m_targetList;
     }
 
     /** Returns the ID of the last seen fiducial, or -1 if none. */
+    @Override
     public int getLastTarget() {
         return m_lastTarget;
     }
