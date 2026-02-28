@@ -308,7 +308,7 @@ public class RobotContainer {
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
 
-        driveController.y().whileTrue(new JiggleCommand(drivetrain));
+        driveController.y().whileTrue(new JiggleCommand(drivetrain, armSubsystem));
     }
 
     /**

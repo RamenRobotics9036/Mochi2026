@@ -46,6 +46,8 @@ public final class Constants {
         public static final double kArmSpeed = 0.15;
         public static final int kArmStallLimit = 40;
 
+        /** Arm speed during the wiggle command (0.0 to 1.0). */
+        public static final double kArmWigglePercent = 0.5;
 
         public static final int kLeftArmMotorID = 20;
         public static final int kRightArmMotorID = 21;
