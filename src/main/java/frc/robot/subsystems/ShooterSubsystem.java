@@ -40,7 +40,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @param hoodPosition The position of the hood, scaled from 0 to 1 (least to most extended)
      */
     public void setHood(double hoodPosition) {
-        m_hood.setPosition(hoodPosition);
+        m_hood.set(hoodPosition);
     }
 
     /**

@@ -352,9 +352,9 @@ public class RobotContainer {
             .whileTrue(new IntakeArmCommand(armSubsystem, operateController));
 
         // Adjust the linear actuator for the hood by 10% backward using D-Pad Left.
-        operateController.povLeft().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.adjustHood(-0.1)));
+        operateController.povLeft().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.setHood(0.0)));
         // Adjust the linear actuator for the hood by 10% forward using D-Pad Right.
-        operateController.povRight().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.adjustHood(0.1)));
+        operateController.povRight().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.setHood(1.0)));
     }
 
     /**
