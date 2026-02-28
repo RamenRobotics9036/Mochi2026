@@ -16,16 +16,16 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class JiggleCommand extends Command {
     private final CommandSwerveDrivetrain m_swerve;
-    private final ArmSubsystem m_arm;
+    // private final ArmSubsystem m_arm;
     private boolean m_isForward;
     private final Timer m_timer = new Timer();
 
     private final RobotCentric m_request = new RobotCentric();
     
-    public JiggleCommand(CommandSwerveDrivetrain swerve, ArmSubsystem arm) {
+    public JiggleCommand(CommandSwerveDrivetrain swerve/*, ArmSubsystem arm*/) {
         m_swerve = swerve;
-        m_arm = arm;
-        addRequirements(m_swerve, m_arm);
+        // m_arm = arm;
+        addRequirements(m_swerve/*, m_arm*/);
     }
 
     @Override
@@ -50,17 +50,17 @@ public class JiggleCommand extends Command {
             System.out.println("    Jiggle forward");
         }
 
-        double wigglePower = (m_timer.get() < (DriveConstants.kSecondsToAlternate.in(Seconds) / 2.0)) 
-            ? ArmConstants.kArmSpeed * 0.5 
-            : -ArmConstants.kArmSpeed * 0.5;
+        // double wigglePower = (m_timer.get() < (DriveConstants.kSecondsToAlternate.in(Seconds) / 2.0)) 
+        //     ? ArmConstants.kArmSpeed * 0.5 
+        //     : -ArmConstants.kArmSpeed * 0.5;
         
-        m_arm.moveArmWithSpeed(wigglePower);
+        // m_arm.moveArmWithSpeed(wigglePower);
     }
 
     @Override
     public void end(boolean interrupted) {
         m_swerve.setControl(m_request.withVelocityX(0).withVelocityY(0));
-        m_arm.stop();
+        // m_arm.stop();
     }
 
     @Override

@@ -306,9 +306,10 @@ public class RobotContainer {
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(() -> JoystickInput.isPovDownward(driveController)).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
-                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
+                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK))));
 
-        driveController.y().whileTrue(new JiggleCommand(drivetrain, armSubsystem));
+        //driveController.y().whileTrue(new JiggleCommand(drivetrain, armSubsystem));
+        driveController.y().whileTrue(new JiggleCommand(drivetrain));
     }
 
     /**
