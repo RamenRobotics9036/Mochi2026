@@ -41,7 +41,7 @@ public class IntakeArmCommand extends Command {
      */
     @Override
     public void execute() {
-        // Right stick Y controls arm speed.
+        /*// Right stick Y controls arm speed.
         // WPILib reports forward as negative on many controllers, so we invert it.
         double raw = -m_controller.getRightY();
         double armSpeed = MathUtil.applyDeadband(raw, DriveConstants.kJoystickDeadband);
@@ -49,7 +49,15 @@ public class IntakeArmCommand extends Command {
         // Re-use arm speed constant as a safe max output scaler.
         armSpeed *= ArmConstants.kArmSpeed;
 
-        m_arm.moveArmWithSpeed(armSpeed);
+        m_arm.moveArmWithSpeed(armSpeed);*/
+
+        if (m_controller.rightTrigger().getAsBoolean()) {
+            m_arm.moveArmWithSpeed(ArmConstants.kArmSpeed);
+        } else if (m_controller.leftTrigger().getAsBoolean()) {
+            m_arm.moveArmWithSpeed(-ArmConstants.kArmSpeed);
+        } else {
+            m_arm.stop();
+        }
     }
 
     /**
