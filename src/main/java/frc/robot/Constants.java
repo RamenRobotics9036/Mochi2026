@@ -4,8 +4,11 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.*;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 
@@ -156,14 +159,15 @@ public final class Constants {
         public static final int kMotorID = 51;
 
         /** Speed for the spinny wheel */
-        public static final double kSpinSpeed = 0.10;
+        public static final double kSpinSpeed = 0.05;
 
         public static final double kSpinGearRatio = 1.0;
 
         public static final int kCurrentLimit = 40;
 
-        /** Time that passes before it alternates directions */
-        public static final double kAlternateTime = 1;
+        /** Time it travels before a reset (clockwise and counter-clockwise) */
+        public static final Time kResetTime = Seconds.of(3);
+        public static final Time kClockwiseTime = Seconds.of(2);
     }
 
     /**
