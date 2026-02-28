@@ -22,18 +22,17 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ClimberConstants;
-import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.FullAutoClimbCommand;
 import frc.robot.commands.GetFuelCommand;
-import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.IntakeArmHomeCommand;
 import frc.robot.commands.SetIntakeBottomCommand;
 import frc.robot.commands.SetIntakeTopCommand;
 import frc.robot.commands.ShootCommand;
-import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.SpinnyDefaultCommand;
@@ -404,7 +403,19 @@ public class RobotContainer {
         ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
 
 
-        operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
+        // Right Trigger: raise intake arm to top/stowed position
+        operateController.rightTrigger().onTrue(
+            Commands.runOnce(() -> armSubsystem.setArmPosition(ArmConstants.kMinArmAngle), armSubsystem));
+
+        // Left Trigger: lower intake arm to bottom/deployed position
+        operateController.leftTrigger().onTrue(
+            Commands.runOnce(() -> armSubsystem.setArmPosition(ArmConstants.kMaxArmAngle), armSubsystem));
+
+        // A: reverse intake while held. Releasing A returns to default forward intake.
+        operateController.a().whileTrue(
+            new RunCommand(
+                () -> intakeSubsystem.setIntakeSpeed(IntakeConstants.kOuttakeSpeed),
+                intakeSubsystem));
 
         // Right stick click: home the arm (must be done before any arm position commands)
         operateController.rightStick().onTrue(
@@ -414,10 +425,6 @@ public class RobotContainer {
         operateController.leftStick().onTrue(
             Commands.runOnce(armSubsystem::setArmZero, armSubsystem));
 
-        // Run the intake arm manually any time the operator moves the right stick.
-        // (Deadband prevents scheduling from tiny stick noise.)
-        new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
-            .whileTrue(new IntakeArmCommand(armSubsystem, operateController));
     }
 
     /**
@@ -452,6 +459,12 @@ public class RobotContainer {
 
         //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
         shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
+
+        // Keep intake rollers running by default; A button temporarily overrides to reverse.
+        intakeSubsystem.setDefaultCommand(
+            new RunCommand(
+                () -> intakeSubsystem.setIntakeSpeed(IntakeConstants.kIntakeSpeed),
+                intakeSubsystem));
 
         m_spinnyWheels.setDefaultCommand(new SpinnyDefaultCommand(m_spinnyWheels));
     }

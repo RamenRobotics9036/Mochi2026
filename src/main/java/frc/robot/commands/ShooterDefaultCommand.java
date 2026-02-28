@@ -32,11 +32,11 @@ public class ShooterDefaultCommand extends Command{
             m_shooter.nudgeHoodPosition(-ShooterConstants.kHoodJogMmPerTick);
         }
 
-        if (m_controller.getRightTriggerAxis() > 0){
+        if (m_controller.getHID().getYButton()){
             m_shooter.setSpeed(ShooterConstants.kShootSpeed);
             m_indexer.setSpeed(IndexerConstants.kIndexSpeed);
-        } else if (m_controller.getLeftTriggerAxis() > 0){
-            m_shooter.setSpeed(ShooterConstants.kShootSpeed);
+        } else if (m_controller.getHID().getRightBumperButton()){
+            m_shooter.stop();
             m_indexer.setSpeed(-IndexerConstants.kIndexSpeed);
         } else {
             m_shooter.stop();
