@@ -274,7 +274,7 @@ public class RobotContainer {
             CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 
-   /** Registers named commands for PathPlanner */
+    /** Registers named commands for PathPlanner */
     private void registerNamedCommands() {
         NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
