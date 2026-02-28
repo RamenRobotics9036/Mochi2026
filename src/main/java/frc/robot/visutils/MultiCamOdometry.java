@@ -16,7 +16,7 @@ import java.util.function.BooleanSupplier;
 
 
 /** Reads from multiple limelight cameras. */
-public class MultiCamOdometry {
+public class MultiCamOdometry implements CamOdometryInterface {
     private final BotConfigInterface m_configInterface;
     private final List<SingleCamOdometry> m_singleCamLimelightList;
     private final PerCycleState m_perCycleState = new PerCycleState();
@@ -149,5 +149,35 @@ public class MultiCamOdometry {
     public double getBestTxForSingleCam() {
         return getTxForSingleCam(
             CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    @Override
+    public Optional<Pose2d> getLatestVisPose() {
+        return getLatestVisPoseForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    @Override
+    public double getCurrentConfidenceScore() {
+        return getCurrentConfidenceScoreForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    @Override
+    public int getNumLockedTags() {
+        return getNumLockedTagsForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    @Override
+    public double getTx() {
+        return getTxForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    @Override
+    public List<Integer> getTargetList() {
+        return getTargetListForAllCams();
+    }
+
+    @Override
+    public int getLastTarget() {
+        return getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 }
