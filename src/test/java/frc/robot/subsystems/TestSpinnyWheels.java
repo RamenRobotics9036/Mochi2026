@@ -51,7 +51,7 @@ class TestSpinnyWheels {
     @Test
     void spin_callsSetSpeedWithConstant() {
         // Calling spin() should forward the configured kSpinSpeed constant to the IO layer.
-        m_spinny.spin(1.0);
+        m_spinny.spinCounterclockwise();
         assertEquals(SpinnyWheelsConstants.kSpinSpeed, m_io.lastSpeed, 1e-9);
     }
 
@@ -60,7 +60,7 @@ class TestSpinnyWheels {
         // Repeated calls to spin() should each forward the same kSpinSpeed value,
         // confirming no internal state drift occurs.
         for (int i = 0; i < 5; i++) {
-            m_spinny.spin(1.0);
+            m_spinny.spinCounterclockwise();
             assertEquals(SpinnyWheelsConstants.kSpinSpeed, m_io.lastSpeed, 1e-9,
                 "Speed should equal kSpinSpeed on call " + (i + 1));
         }
@@ -74,7 +74,7 @@ class TestSpinnyWheels {
     void stop_afterSpin_succeeds() {
         // Calling spin() then stop() should leave the IO in the stopped state,
         // not the running state.
-        m_spinny.spin(1.0);
+        m_spinny.spinCounterclockwise();
         m_spinny.stop();
         assertEquals(0.0, m_io.lastSpeed, 1e-9);
     }
@@ -102,7 +102,7 @@ class TestSpinnyWheels {
 
         // periodic() should publish the velocity reading from the IO outputs to
         // SmartDashboard under the key "Spinny/VelocityRPM".
-        m_spinny.spin(1.0);
+        m_spinny.spinCounterclockwise();
 
         // Before periodic()
         assertEquals(0.0, SmartDashboard.getNumber(

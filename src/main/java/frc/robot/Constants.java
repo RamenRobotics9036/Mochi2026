@@ -11,6 +11,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Time;
 
 /**
  * The Constants class provides a convenient place for team-wide values.
@@ -206,6 +208,9 @@ public final class Constants {
         public static final double kTranslationSlewRate = 3.0;
         /** Slew rate limit for rotation input (units per second). */
         public static final double kRotationSlewRate = 3.0;
+
+        public static final LinearVelocity kJiggleSpeed = MetersPerSecond.of(0.5); //TODO: filler value
+        public static final Time kSecondsToAlternate = Seconds.of(0.25); //TODO: filler value
     }
 
     /**
