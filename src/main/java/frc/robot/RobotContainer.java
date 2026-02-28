@@ -243,6 +243,7 @@ public class RobotContainer {
             m_visionKalmanFilter,
             m_motionlessTracker);
 
+        // $TODO - I think this can move into MultiCamOdometryFactory.create
         basicInfoDashboard.setVisionDependencies(
             this::getBestCurrentConfidenceScoreForSingleCam,
             this::getBestNumLockedTagsForSingleCam,
@@ -251,19 +252,23 @@ public class RobotContainer {
             m_motionlessTracker::isMotionless,
             m_motionlessTracker::getSecondsStill);
 
+        // $TODO - I think this can move into MultiCamOdometryFactory.create
         basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
     }
 
+    // $TODO - I think this can move into MultiCamOdometryFactory.create
     private double getBestCurrentConfidenceScoreForSingleCam() {
         return m_multiCamlimelight.getCurrentConfidenceScoreForSingleCam(
             CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 
+    // $TODO - I think this can move into MultiCamOdometryFactory.create
     private int getBestNumLockedTagsForSingleCam() {
         return m_multiCamlimelight.getNumLockedTagsForSingleCam(
             CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 
+    // $TODO - I think this can move into MultiCamOdometryFactory.create
     private double getBestTxForSingleCam() {
         return m_multiCamlimelight.getTxForSingleCam(
             CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
