@@ -36,7 +36,7 @@ public class LinearServo extends Servo {
      *
      * @param setpoint the target position of the servo [mm]
      */
-    public void setPosition(double setpoint) {
+    public void setLinearPosition(double setpoint) {
         setPos = MathUtil.clamp(setpoint, 0, m_length);
         set(setPos / m_length);
     }
