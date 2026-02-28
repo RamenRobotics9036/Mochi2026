@@ -345,10 +345,10 @@ public class RobotContainer {
         new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
             .whileTrue(new IntakeArmCommand(armSubsystem, operateController));
 
-        // Adjust the linear actuator for the hood by 10% backward using D-Pad Down.
-        operateController.povDown().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.adjustHood(-0.1)));
-        // Adjust the linear actuator for the hood by 10% forward using D-Pad Up.
-        operateController.povDown().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.adjustHood(0.1)));
+        // Adjust the linear actuator for the hood by 10% backward using D-Pad Left.
+        operateController.povLeft().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.adjustHood(-0.1)));
+        // Adjust the linear actuator for the hood by 10% forward using D-Pad Right.
+        operateController.povRight().onTrue(shooterSubsystem.runOnce(() -> shooterSubsystem.adjustHood(0.1)));
     }
 
     /**
