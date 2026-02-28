@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
+import frc.robot.Robot;
+import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import java.util.List;
@@ -107,6 +109,18 @@ public class CompConfig implements BotConfigInterface {
                 Units.inchesToMeters(16.5)   // 12.5" deck + 4" mount
             ),
             new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
+        ))
+    );
+
+    // $TODO - Eventually get rid of this when we have second camera installed on bot
+    private final List<CameraInfo> m_cameras_sim = List.of(
+        new CameraInfo("limelight-fixed", new Transform3d(
+            new Translation3d(
+                Units.inchesToMeters(-0.5),  // 1/2 inch back
+                Units.inchesToMeters(4.0),   // 4 inches left of center
+                Units.inchesToMeters(16.5)   // 12.5" deck + 4" mount
+            ),
+            new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
         )),
         new CameraInfo("limelight-fixed2", new Transform3d(
             new Translation3d(-0.5, 0.0, 0.5),
@@ -116,7 +130,9 @@ public class CompConfig implements BotConfigInterface {
 
     @Override
     public List<CameraInfo> getCameras() {
+        if (Robot.isSimulation()) {
+            return m_cameras_sim;
+        }
         return m_cameras;
     }
-
 }

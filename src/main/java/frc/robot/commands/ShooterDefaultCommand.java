@@ -25,10 +25,10 @@ public class ShooterDefaultCommand extends Command{
 
     @Override
     public void execute() {
-        if (m_controller.getRightTriggerAxis() > 0){
+        if (m_controller.y().getAsBoolean()){
             m_shooter.setSpeed(ShooterConstants.kShootSpeed);
             m_indexer.setSpeed(IndexerConstants.kIndexSpeed);
-        } else if (m_controller.getLeftTriggerAxis() > 0){
+        } else if (m_controller.rightBumper().getAsBoolean()) {
             m_shooter.setSpeed(ShooterConstants.kShootSpeed);
             m_indexer.setSpeed(-IndexerConstants.kIndexSpeed);
         } else {
