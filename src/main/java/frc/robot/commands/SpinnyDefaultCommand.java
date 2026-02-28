@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.SpinnyWheelsConstants;
 import frc.robot.subsystems.SpinnyWheels;
 
 public class SpinnyDefaultCommand extends Command{
@@ -22,8 +23,8 @@ public class SpinnyDefaultCommand extends Command{
 
     @Override
     public void execute() {
-        // Swaps the direction of the agitator every 3 seconds
-        if (m_timer.get() >= 3.0) {
+        // Swaps the direction of the agitator every AlternateTime seconds
+        if (m_timer.get() >= SpinnyWheelsConstants.kAlternateTime) {
             m_spinnyDirection *= -1;
             m_timer.restart();
         }

@@ -155,12 +155,15 @@ public final class Constants {
         /** CAN ID for the SparkFlex motor. */
         public static final int kMotorID = 51;
 
-        public static final double kSpinSpeed = 0.10;
         /** Speed for the spinny wheel */
+        public static final double kSpinSpeed = 0.10;
 
         public static final double kSpinGearRatio = 1.0;
 
         public static final int kCurrentLimit = 40;
+
+        /** Time that passes before it alternates directions */
+        public static final double kAlternateTime = 1;
     }
 
     /**
