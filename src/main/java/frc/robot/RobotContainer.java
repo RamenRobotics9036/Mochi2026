@@ -339,11 +339,6 @@ public class RobotContainer {
         // Left stick click: set current arm position as the new "zero" reference point
         operateController.leftStick().onTrue(
             Commands.runOnce(armSubsystem::setArmZero, armSubsystem));
-
-        // Run the intake arm manually any time the operator moves the right stick.
-        // (Deadband prevents scheduling from tiny stick noise.)
-        new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
-            .whileTrue(new IntakeArmCommand(armSubsystem, operateController));
     }
 
     /**
@@ -380,6 +375,8 @@ public class RobotContainer {
         shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
 
         m_spinnyWheels.setDefaultCommand(new SpinnyDefaultCommand(m_spinnyWheels));
+
+        armSubsystem.setDefaultCommand(new IntakeArmCommand(armSubsystem, operateController));
     }
 
     /**
