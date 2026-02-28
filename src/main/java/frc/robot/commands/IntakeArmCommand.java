@@ -51,9 +51,9 @@ public class IntakeArmCommand extends Command {
 
         m_arm.moveArmWithSpeed(armSpeed);*/
 
-        if (m_controller.getRightTriggerAxis() > 0) {
+        if (m_controller.getLeftTriggerAxis() > 0) {
             m_arm.moveArmWithSpeed(ArmConstants.kArmSpeed);
-        } else if (m_controller.getLeftTriggerAxis() > 0) {
+        } else if (m_controller.getRightTriggerAxis() > 0) {
             m_arm.moveArmWithSpeed(-ArmConstants.kArmSpeed);
         } else {
             m_arm.stop();
