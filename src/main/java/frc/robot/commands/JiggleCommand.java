@@ -13,12 +13,8 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class JiggleCommand extends Command {
-    private enum Direction {
-        FORWARD, BACKWARD, LEFT, RIGHT
-    }
-
     private final CommandSwerveDrivetrain m_swerve;
-    private Direction m_direction = Direction.FORWARD;
+    private boolean m_isForward;
     private final Timer m_timer = new Timer();
 
     private final RobotCentric m_request = new RobotCentric();
@@ -36,43 +32,18 @@ public class JiggleCommand extends Command {
 
     @Override
     public void execute() {
-        if (m_timer.get() <= DriveConstants.kSecondsToAlternate.in(Seconds)) {
-            switch (m_direction) {
-                case FORWARD:
-                    m_direction = Direction.BACKWARD;
-                    System.out.println("    Going backward");
-                    break;
-                case BACKWARD:
-                    m_direction = Direction.LEFT;
-                    System.out.println("    Going left");
-                    break;
-                case LEFT:
-                    m_direction = Direction.RIGHT;
-                    System.out.println("    Going right");
-                    break;
-                case RIGHT:
-                    m_direction = Direction.FORWARD;
-                    System.out.println("    Going forward");
-                    break;
-            }
-
-            m_timer.reset();
+        if (m_timer.get() > DriveConstants.kSecondsToAlternate.in(Seconds)) {
+            m_isForward = !m_isForward;
+            m_timer.restart();
         }
 
     
-        switch (m_direction) {
-            case FORWARD:
-                m_swerve.setControl(m_request.withVelocityX(DriveConstants.kJiggleSpeed));;
-                break;
-            case BACKWARD:
-                m_swerve.setControl(m_request.withVelocityX(DriveConstants.kJiggleSpeed.times(-1)));
-                break;
-            case LEFT:
-                m_swerve.setControl(m_request.withVelocityY(DriveConstants.kJiggleSpeed));
-                break;
-            case RIGHT:
-                m_swerve.setControl(m_request.withVelocityY(DriveConstants.kJiggleSpeed.times(-1)));
-                break;
+        if (m_isForward) {
+            m_swerve.setControl(m_request.withVelocityX(DriveConstants.kJiggleSpeed));
+            System.out.println("    Jiggle forward");
+        } else {
+            m_swerve.setControl(m_request.withVelocityX(DriveConstants.kJiggleSpeed.times(-1)));
+            System.out.println("    Jiggle forward");
         }
     }
 
