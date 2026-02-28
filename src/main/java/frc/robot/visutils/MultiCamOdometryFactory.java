@@ -34,16 +34,6 @@ public class MultiCamOdometryFactory {
             visionKalmanFilter,
             motionlessTracker::isMotionless);
 
-        basicInfoDashboard.setVisionDependencies(
-            multiCam::getCurrentConfidenceScore,
-            multiCam::getNumLockedTags,
-            multiCam::getTx,
-            multiCam::getTargetList,
-            motionlessTracker::isMotionless,
-            motionlessTracker::getSecondsStill);
-
-        basicInfoDashboard.setVisionKalmanSupplier(() -> visionKalmanFilter);
-
         return multiCam;
     }
 }
