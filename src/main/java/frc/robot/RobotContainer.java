@@ -274,6 +274,7 @@ public class RobotContainer {
             CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 
+   /** Registers named commands for PathPlanner */
     private void registerNamedCommands() {
         NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
@@ -389,6 +390,7 @@ public class RobotContainer {
                 var driveState = drivetrain.getState();
                 OptionalDouble aimRate = m_aimController.update(
                     JoystickInput.isPovUpward(driveController),
+                    // $TODO - Not sure that CAMERA_BEST is the right param
                     m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK),
                     driveState.Pose,
                     driveState.Speeds);
