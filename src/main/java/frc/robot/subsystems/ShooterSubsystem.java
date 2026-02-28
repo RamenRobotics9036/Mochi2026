@@ -42,7 +42,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @param setpoint Extension length in millimeters (0 to MaxLength)
      */
     public void setHoodPosition(double setpoint) {
-        m_hood.setPosition(setpoint);
+        m_hood.setLinearPosition(setpoint);
     }
 
     /**
@@ -50,7 +50,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @param deltaMm Positive extends/down, negative retracts/up.
      */
     public void nudgeHoodPosition(double deltaMm) {
-        m_hood.setPosition(m_hood.getSetpoint() + deltaMm);
+        m_hood.setLinearPosition(m_hood.getSetpoint() + deltaMm);
     }
 
     /**
