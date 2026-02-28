@@ -132,4 +132,22 @@ public class MultiCamOdometry {
             m_perCycleState,
             selectionMode);
     }
+
+    // $TODO - I think this can move into MultiCamOdometryFactory.create
+    public double getBestCurrentConfidenceScoreForSingleCam() {
+        return getCurrentConfidenceScoreForSingleCam(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    // $TODO - I think this can move into MultiCamOdometryFactory.create
+    public int getBestNumLockedTagsForSingleCam() {
+        return getNumLockedTagsForSingleCam(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    // $TODO - I think this can move into MultiCamOdometryFactory.create
+    public double getBestTxForSingleCam() {
+        return getTxForSingleCam(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
 }

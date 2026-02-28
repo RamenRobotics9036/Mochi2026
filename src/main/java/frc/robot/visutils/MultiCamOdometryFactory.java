@@ -2,10 +2,12 @@ package frc.robot.visutils;
 
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import frc.robot.visutils.PerCycleState.CameraSelectionMode;
 
 /** Factory for creating and wiring up a {@link MultiCamOdometry} instance. */
 public class MultiCamOdometryFactory {
 
+    /** Constructor. */
     private MultiCamOdometryFactory() {}
 
     /**
@@ -33,6 +35,18 @@ public class MultiCamOdometryFactory {
             basicInfoDashboard::isVisionEnabled,
             visionKalmanFilter,
             motionlessTracker::isMotionless);
+
+        // $TODO - I think this can move into MultiCamOdometryFactory.create
+        basicInfoDashboard.setVisionDependencies(
+            multiCam::getBestCurrentConfidenceScoreForSingleCam,
+            multiCam::getBestNumLockedTagsForSingleCam,
+            multiCam::getBestTxForSingleCam,
+            multiCam::getTargetListForAllCams,
+            motionlessTracker::isMotionless,
+            motionlessTracker::getSecondsStill);
+
+        // $TODO - I think this can move into MultiCamOdometryFactory.create
+        basicInfoDashboard.setVisionKalmanSupplier(() -> visionKalmanFilter);
 
         return multiCam;
     }
