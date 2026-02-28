@@ -106,6 +106,8 @@ public final class  AutoLogic {
         autoPicker.addOption("L_Zone_Shoot_Home", "L_Zone_Shoot_Home");
         autoPicker.addOption("C_ClimbShoot", "C_ClimbShoot");
         autoPicker.addOption("C_Back_Spot_Shoot", "C_Back_Spot_Shoot");
+        autoPicker.addOption("R_Still_Shoot", "R_Still_Shoot");
+        autoPicker.addOption("L_Still_Shoot", "L_Still_Shoot");
     }
 
     /**
