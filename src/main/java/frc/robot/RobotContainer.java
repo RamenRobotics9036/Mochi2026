@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.HoodConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.FullAutoClimbCommand;
@@ -57,6 +58,7 @@ import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.subsystems.indexer.IndexerIoReal;
 import frc.robot.subsystems.intake.ArmIoReal;
 import frc.robot.subsystems.intake.IntakeIoReal;
+import frc.robot.subsystems.shooter.HoodActuator;
 import frc.robot.subsystems.shooter.ShooterIoReal;
 import frc.robot.visutils.AimController;
 import frc.robot.visutils.BasicInfoDashboard;
@@ -145,9 +147,13 @@ public class RobotContainer {
         ? SimIoFactory.createShooterIoSim()
         : new ShooterIoReal(m_configInterface);
 
+    /** The linear actuator servo for the shooter hood. */
+    public final HoodActuator m_hoodActuator = new HoodActuator(HoodConstants.kPwmChannel, HoodConstants.kMaxLength, HoodConstants.kMaxSpeed);
+    
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(
         m_configInterface,
-        m_shooterIO);
+        m_shooterIO,
+        m_hoodActuator);
 
     private final RollerIoInterface m_indexerIO = Robot.isSimulation()
         ? SimIoFactory.createIndexerIoSim()

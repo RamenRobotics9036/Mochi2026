@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
+import frc.robot.subsystems.shooter.HoodActuator;
 
 public class ShooterSubsystem extends SubsystemBase {
     private final BotConfigInterface m_configInterface;
@@ -14,14 +15,13 @@ public class ShooterSubsystem extends SubsystemBase {
     private final TwoMotorRollerIoInterface.DeviceOutputs m_shooterOutputs =
         new TwoMotorRollerIoInterface.DeviceOutputs();
 
-    private Servo m_hood;
+    private HoodActuator m_hood;
 
     /** Creates a new ShooterSubsystem using the ShooterConstants from Constants.java. */
-    public ShooterSubsystem(BotConfigInterface configInterface, TwoMotorRollerIoInterface shooterIO) {
+    public ShooterSubsystem(BotConfigInterface configInterface, TwoMotorRollerIoInterface shooterIO, HoodActuator hood) {
         m_configInterface = configInterface;
         m_shooterIO = shooterIO;
-
-        m_hood = new Servo(Constants.ShooterConstants.kHoodPwmChannel);
+        m_hood = hood;
     }
 
     public void setSpeed(double speed){
@@ -40,7 +40,7 @@ public class ShooterSubsystem extends SubsystemBase {
      * @param hoodPosition The position of the hood, scaled from 0 to 1 (least to most extended)
      */
     public void setHood(double hoodPosition) {
-        m_hood.set(hoodPosition);
+        m_hood.setPosition(hoodPosition);
     }
 
     /**
@@ -50,8 +50,10 @@ public class ShooterSubsystem extends SubsystemBase {
      */
     public void adjustHood(double relativePosition) {
         double currentPosition = m_hood.get();
+        double targetPosition = MathUtil.clamp(currentPosition + relativePosition, 0.0, 1.0);
 
-        m_hood.set(MathUtil.clamp(currentPosition + relativePosition, 0.0, 1.0));
+        m_hood.set(targetPosition);
+        System.out.println("Current position: "+Double.toString(currentPosition)+", setting to "+Double.toString(targetPosition));
     }
 
     /**
@@ -60,6 +62,7 @@ public class ShooterSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         m_shooterIO.updateOutputs(m_shooterOutputs);
+        m_hood.updateCurPos();
 
         SmartDashboard.putNumber("Shooter/VelocityRPM", m_shooterOutputs.velocityRPM);
     }
