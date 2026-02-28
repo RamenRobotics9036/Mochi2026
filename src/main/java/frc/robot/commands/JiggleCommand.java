@@ -1,7 +1,14 @@
 package frc.robot.commands;
 
+import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
+
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
+import com.ctre.phoenix6.swerve.SwerveRequest;
+
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class JiggleCommand extends Command {
@@ -47,16 +54,16 @@ public class JiggleCommand extends Command {
     
         switch (m_direction) {
             case FORWARD:
-                //TODO: move swerve forward
+                m_swerve.applyRequest(() -> new RobotCentric().withVelocityX(DriveConstants.kJiggleSpeed));
                 break;
             case BACKWARD:
-                //TODO: move swerve backward
+                m_swerve.applyRequest(() -> new RobotCentric().withVelocityX(DriveConstants.kJiggleSpeed.times(-1)));
                 break;
             case LEFT:
-                //TODO: move swerve left
+                m_swerve.applyRequest(() -> new RobotCentric().withVelocityY(DriveConstants.kJiggleSpeed));
                 break;
             case RIGHT:
-                //TODO: move swerve right
+                m_swerve.applyRequest(() -> new RobotCentric().withVelocityY(DriveConstants.kJiggleSpeed.times(-1)));
                 break;
         }
     }
