@@ -204,8 +204,8 @@ public final class Constants {
         /** Slew rate limit for rotation input (units per second). */
         public static final double kRotationSlewRate = 3.0;
 
-        public static final LinearVelocity kJiggleSpeed = MetersPerSecond.of(1); //TODO: filler value
-        public static final Time kSecondsToAlternate = Seconds.of(0.5); //TODO: filler value
+        public static final LinearVelocity kJiggleSpeed = MetersPerSecond.of(0.5); //TODO: filler value
+        public static final Time kSecondsToAlternate = Seconds.of(0.25); //TODO: filler value
     }
 
     /**
