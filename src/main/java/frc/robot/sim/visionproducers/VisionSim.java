@@ -26,45 +26,26 @@ package frc.robot.sim.visionproducers;
 
 import static frc.robot.sim.visionproducers.VisionSimConstants.Vision.*;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
-
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
-import org.photonvision.targeting.PhotonTrackedTarget;
+
 
 /** Vision simulation using PhotonVision. */
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class VisionSim implements VisionSimInterface {
     private final BotConfigInterface m_configInterface;
 
-    private final PhotonCamera m_camera;
-    private final PhotonCamera m_camera2;
-    private final PhotonPoseEstimator m_photonEstimator;
-    private final PhotonPoseEstimator m_photonEstimator2;
-
     // Simulation
-    private PhotonCameraSim m_cameraSim;
-    private PhotonCameraSim m_cameraSim2;
-    private VisionSystemSim m_visionSystemSim;
+    private List<VisionSimSingleCam> m_camHelperList;
 
-    // Limelight NetworkTables publisher
-    private final LimelightTablePublisher m_limelightPublisher;
-    private final LimelightTablePublisher m_limelightPublisher2;
+    private VisionSystemSim m_visionSystemSim;
 
     /** Constructor. */
     public VisionSim(BotConfigInterface configInterface) {
@@ -77,18 +58,16 @@ public class VisionSim implements VisionSimInterface {
                 "VisionSim should only be instantiated in simulation");
         }
 
-        m_camera = new PhotonCamera(kPhotonCameraName);
-        m_camera2 = new PhotonCamera(kPhotonCameraName2);
-        m_photonEstimator = new PhotonPoseEstimator(
-            kTagLayout,
-            m_configInterface.getRobotToCam(0));
-        m_photonEstimator2 = new PhotonPoseEstimator(
-            kTagLayout,
-            m_configInterface.getRobotToCam(1));
-        m_limelightPublisher = new LimelightTablePublisher(
-            m_configInterface.getCameraName(0));
-        m_limelightPublisher2 = new LimelightTablePublisher(
-            m_configInterface.getCameraName(1));
+        int numCams = m_configInterface.getCameras().size();
+
+        m_camHelperList = new ArrayList<>();
+        for (int i = 0; i < numCams; i++) {
+            String cameraName = m_configInterface.getCameraName(i);
+            m_camHelperList.add(new VisionSimSingleCam(
+                kPhotonCameraNamePrefix + cameraName,
+                cameraName,
+                m_configInterface.getRobotToCam(i)));
+        }
 
         // ----- Simulation
         if (Robot.isSimulation()) {
@@ -106,23 +85,11 @@ public class VisionSim implements VisionSimInterface {
             cameraProp.setFPS(kCameraFPS);
             cameraProp.setAvgLatencyMs(kAvgLatencyMs);
             cameraProp.setLatencyStdDevMs(kLatencyStdDevMs);
-            // Create a PhotonCameraSim which will update the linked PhotonCamera's values
-            // with visible targets.
-            m_cameraSim = new PhotonCameraSim(m_camera, cameraProp);
-            // Set realistic detection range limits
-            m_cameraSim.setMinTargetAreaPixels(kMinTargetAreaPixels);
-            m_cameraSim.setMaxSightRange(kMaxSightRangeMeters);
+
             // Add the simulated camera to view the targets on this simulated field.
-            m_visionSystemSim.addCamera(m_cameraSim, m_configInterface.getRobotToCam(0));
-
-            m_cameraSim2 = new PhotonCameraSim(m_camera2, cameraProp);
-            m_cameraSim2.setMinTargetAreaPixels(kMinTargetAreaPixels);
-            m_cameraSim2.setMaxSightRange(kMaxSightRangeMeters);
-            m_visionSystemSim.addCamera(m_cameraSim2, m_configInterface.getRobotToCam(1));
-
-            // $TODO - Double check that both wireframes should be drawn
-            m_cameraSim.enableDrawWireframe(true);
-            m_cameraSim2.enableDrawWireframe(true);
+            for (VisionSimSingleCam cam : m_camHelperList) {
+                cam.addToVisionSystem(m_visionSystemSim, cameraProp);
+            }
         }
     }
 
@@ -133,42 +100,8 @@ public class VisionSim implements VisionSimInterface {
     }
 
     private void generatePoseEstimate() {
-        processCamera(
-            m_camera,
-            m_photonEstimator,
-            m_configInterface.getRobotToCam(0),
-            m_limelightPublisher);
-        processCamera(
-            m_camera2,
-            m_photonEstimator2,
-            m_configInterface.getRobotToCam(1),
-            m_limelightPublisher2);
-    }
-
-    private void processCamera(
-            PhotonCamera camera,
-            PhotonPoseEstimator estimator,
-            edu.wpi.first.math.geometry.Transform3d robotToCam,
-            LimelightTablePublisher publisher) {
-        Optional<EstimatedRobotPose> visionEst = Optional.empty();
-        for (var result : camera.getAllUnreadResults()) {
-            visionEst = estimator.estimateCoprocMultiTagPose(result);
-            if (visionEst.isEmpty()) {
-                visionEst = estimator.estimateLowestAmbiguityPose(result);
-            }
-
-            // Publish to Limelight NetworkTables for MultiCamOdometry to consume
-            LimelightData data = PhotonToLimelightConverter.convertPipelineResult(
-                result,
-                robotToCam);
-            double totalLatencyMs = data.pipelineLatencyMs + data.captureLatencyMs;
-            PhotonToLimelightConverter.convertBotpose(
-                visionEst.map(est -> est.estimatedPose).orElse(null),
-                result.getTargets(),
-                robotToCam,
-                totalLatencyMs,
-                data);
-            publisher.publish(data);
+        for (VisionSimSingleCam cam : m_camHelperList) {
+            cam.processCamera();
         }
     }
 

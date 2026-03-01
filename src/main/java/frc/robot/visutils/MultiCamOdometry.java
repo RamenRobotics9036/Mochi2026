@@ -7,6 +7,9 @@ import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import frc.robot.visutils.PerCycleState.CameraSelectionMode;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -15,7 +18,9 @@ import java.util.function.BooleanSupplier;
 /** Reads from multiple limelight cameras. */
 public class MultiCamOdometry {
     private final BotConfigInterface m_configInterface;
-    private final SingleCamOdometry m_singleCamlimelight;
+    private final List<SingleCamOdometry> m_singleCamLimelightList;
+    private final PerCycleState m_perCycleState = new PerCycleState();
+    private final ConsolidateMultipleCamResults m_consolidateResults;
 
     /** Constructor. */
     public MultiCamOdometry(
@@ -24,12 +29,18 @@ public class MultiCamOdometry {
 
         m_configInterface = configInterface;
 
-        List<CameraInfo> cameraList = m_configInterface.getCameras();
+        List<CameraInfo> cameraInfoList = m_configInterface.getCameras();
 
-        m_singleCamlimelight = new SingleCamOdometry(
-            cameraList.get(0).cameraName,
-            cameraList.get(0).robotToCam,
-            poseConsumer);
+        m_singleCamLimelightList = new ArrayList<>();
+        for (CameraInfo camInfo : cameraInfoList) {
+            m_singleCamLimelightList.add(new SingleCamOdometry(
+                camInfo.cameraName,
+                camInfo.robotToCam,
+                poseConsumer));
+        }
+
+        m_consolidateResults = new ConsolidateMultipleCamResults(
+            m_singleCamLimelightList);
     }
 
     /**
@@ -44,39 +55,99 @@ public class MultiCamOdometry {
             VisionKalmanFilter filter,
             BooleanSupplier isMotionlessSupplier) {
 
-        m_singleCamlimelight.setVisionDependencies(
-            visionEnabledSupplier,
-            filter,
-            isMotionlessSupplier);
+        for (SingleCamOdometry cam : m_singleCamLimelightList) {
+            cam.setVisionDependencies(
+                visionEnabledSupplier,
+                filter,
+                isMotionlessSupplier);
+        }
     }
 
-    /** Periodic update; should be called from robot periodic. */
+    /**
+     * Periodic update; should be called from robot periodic.
+     * NOTE: For each cycle, track the camera with thehighest confidence
+     *   score that has a target lock.  We also track the FIRST camera
+     *   (in order) that has a target lock.
+     */
     public void periodic() {
-        m_singleCamlimelight.periodic();
+        // Reset best locked cam
+        m_perCycleState.reset();
+
+        for (SingleCamOdometry cam : m_singleCamLimelightList) {
+            cam.periodic();
+
+            double singleCamScore = cam.getCurrentConfidenceScore();
+            boolean camHasTargets = cam.getNumLockedTags() > 0;
+            if (camHasTargets) {
+                // If it's first cam in list with a lock, remember that
+                if (m_perCycleState.firstInOrderLockedCam.isEmpty()) {
+                    m_perCycleState.firstInOrderLockedCam = Optional.of(cam);
+                }
+
+                // Is this the strongest lock we have seen so far?
+                if (singleCamScore > m_perCycleState.bestLockedCamScore) {
+                    m_perCycleState.bestLockedCam = Optional.of(cam);
+                    m_perCycleState.bestLockedCamScore = singleCamScore;
+                }
+            }
+        }
     }
 
-    public Optional<Pose2d> getLatestVisPose() {
-        return m_singleCamlimelight.getLatestVisPose();
+    /** Proxy calls to helper. */
+    public Optional<Pose2d> getLatestVisPoseForSingleCam(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getLatestVisPoseForSingleCam(
+            m_perCycleState,
+            selectionMode);
     }
 
-    public double getCurrentConfidenceScore() {
-        return m_singleCamlimelight.getCurrentConfidenceScore();
+    /** Proxy calls to helper. */
+    public double getCurrentConfidenceScoreForSingleCam(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getCurrentConfidenceScoreForSingleCam(
+            m_perCycleState,
+            selectionMode);
     }
 
-    public int getNumLockedTags() {
-        return m_singleCamlimelight.getNumLockedTags();
+    /** Proxy calls to helper. */
+    public int getNumLockedTagsForSingleCam(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getNumLockedTagsForSingleCam(
+            m_perCycleState,
+            selectionMode);
     }
 
-    public double getTx() {
-        return m_singleCamlimelight.getTx();
+    /** Proxy calls to helper. */
+    public double getTxForSingleCam(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getTxForSingleCam(
+            m_perCycleState,
+            selectionMode);
     }
 
-    public String getTargetList() {
-        return m_singleCamlimelight.getTargetList();
+    /** Proxy calls to helper. */
+    public List<Integer> getTargetListForAllCams() {
+        return m_consolidateResults.getTargetListForAllCams();
     }
 
-    /** Returns the ID of the last seen fiducial, or -1 if none. */
-    public int getLastTarget() {
-        return m_singleCamlimelight.getLastTarget();
+    /** Proxy calls to helper. */
+    public int getLastTargetForSingleCam(CameraSelectionMode selectionMode) {
+        return m_consolidateResults.getLastTargetForSingleCam(
+            m_perCycleState,
+            selectionMode);
+    }
+
+    // $TODO - I think this can move into MultiCamOdometryFactory.create
+    public double getBestCurrentConfidenceScoreForSingleCam() {
+        return getCurrentConfidenceScoreForSingleCam(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    // $TODO - I think this can move into MultiCamOdometryFactory.create
+    public int getBestNumLockedTagsForSingleCam() {
+        return getNumLockedTagsForSingleCam(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    }
+
+    // $TODO - I think this can move into MultiCamOdometryFactory.create
+    public double getBestTxForSingleCam() {
+        return getTxForSingleCam(
+            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 }

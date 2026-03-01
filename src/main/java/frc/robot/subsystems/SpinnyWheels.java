@@ -17,13 +17,17 @@ public class SpinnyWheels extends SubsystemBase {
     }
 
     /**
-     * Spins the wheels at the speed defined in Constants with a direction provided by the command.
-     * 
-     * @param direction A double representing direction---shouldn't be greater than 1 or less than -1
+     * Spins the wheels at the speed defined in Constants.
      */
-    public void spin(double direction) {
-        // Gets the sign of direction just in case direction is too big
-        m_spinnyIO.setSpeed(Math.signum(direction) * SpinnyWheelsConstants.kSpinSpeed);
+    public void spinCounterclockwise() {
+        m_spinnyIO.setSpeed(SpinnyWheelsConstants.kSpinSpeed);
+    }
+
+    /**
+     * Spins the wheels backwards at the speed defined in Constants.
+     */
+    public void spinClockwise() {
+        m_spinnyIO.setSpeed(-SpinnyWheelsConstants.kSpinSpeed);
     }
 
     /** Stop. */

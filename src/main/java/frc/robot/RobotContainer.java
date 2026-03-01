@@ -34,6 +34,7 @@ import frc.robot.commands.SetIntakeBottomCommand;
 import frc.robot.commands.SetIntakeTopCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.JiggleCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.SpinnyDefaultCommand;
@@ -67,6 +68,7 @@ import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometry;
 import frc.robot.visutils.MultiCamOdometryFactory;
+import frc.robot.visutils.PerCycleState.CameraSelectionMode;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.OptionalDouble;
@@ -290,7 +292,7 @@ public class RobotContainer {
         driveController.start().and(driveController.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Recalibrate the gyro's forward heading using the Left Bumper
-        driveController.leftBumper().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
+        driveController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         // Try to align to an AprilTag with the Left Trigger
         driveController.leftTrigger().onTrue(drivetrain.AlignToTag(
@@ -313,7 +315,10 @@ public class RobotContainer {
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(() -> JoystickInput.isPovDownward(driveController)).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
-                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTarget())));
+                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK))));
+
+        //driveController.y().whileTrue(new JiggleCommand(drivetrain, armSubsystem));
+        driveController.y().whileTrue(new JiggleCommand(drivetrain));
     }
 
     /**
@@ -347,11 +352,6 @@ public class RobotContainer {
         // Left stick click: set current arm position as the new "zero" reference point
         operateController.leftStick().onTrue(
             Commands.runOnce(armSubsystem::setArmZero, armSubsystem));
-
-        // Run the intake arm manually any time the operator moves the right stick.
-        // (Deadband prevents scheduling from tiny stick noise.)
-        new Trigger(() -> Math.abs(operateController.getRightY()) > DriveConstants.kJoystickDeadband)
-            .whileTrue(new IntakeArmCommand(armSubsystem, operateController));
     }
 
     /**
@@ -367,7 +367,8 @@ public class RobotContainer {
                 var driveState = drivetrain.getState();
                 OptionalDouble aimRate = m_aimController.update(
                     JoystickInput.isPovUpward(driveController),
-                    m_multiCamlimelight.getLastTarget(),
+                    // $TODO - Not sure that CAMERA_BEST is the right param
+                    m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK),
                     driveState.Pose,
                     driveState.Speeds);
 
@@ -388,6 +389,8 @@ public class RobotContainer {
         shooterSubsystem.setDefaultCommand(new ShooterDefaultCommand(shooterSubsystem, m_indexerSubsystem, operateController));
 
         m_spinnyWheels.setDefaultCommand(new SpinnyDefaultCommand(m_spinnyWheels));
+
+        armSubsystem.setDefaultCommand(new IntakeArmCommand(armSubsystem, operateController));
     }
 
     /**
