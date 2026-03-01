@@ -1,17 +1,10 @@
 package frc.robot.commands;
 
 import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentric;
-
-import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
-
-import com.ctre.phoenix6.swerve.SwerveRequest;
-
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class JiggleCommand extends Command {
@@ -45,7 +38,7 @@ public class JiggleCommand extends Command {
             System.out.println("    Jiggle forward");
         } else {
             m_swerve.setControl(m_request.withVelocityX(DriveConstants.kJiggleSpeed.times(-1)));
-            System.out.println("    Jiggle forward");
+            System.out.println("    Jiggle backward");
         }
     }
 
