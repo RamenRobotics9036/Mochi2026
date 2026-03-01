@@ -281,7 +281,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public double getTx() {
+    public double getCurrentlyAlignedTx() {
         return m_tx;
     }
 

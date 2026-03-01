@@ -37,6 +37,5 @@ public interface CamOdometryInterface {
      * This method is generally used to tell how far off the robot is from
      * being aligned to the target, so that the robot can turn towards it.
      */
-    // $TODO - Rename to getCurrentlyAlignedTx
-    double getTx();
+    double getCurrentlyAlignedTx();
 }

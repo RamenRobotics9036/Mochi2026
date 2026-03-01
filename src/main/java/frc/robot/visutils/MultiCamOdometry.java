@@ -94,6 +94,7 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     /** Proxy calls to helper. */
+    // $TODO - No proxies please
     public Optional<Pose2d> getLatestVisPoseForSingleCam(CameraSelectionMode selectionMode) {
         return m_consolidateResults.getLatestVisPoseForSingleCam(
             m_perCycleState,
@@ -101,6 +102,7 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     /** Proxy calls to helper. */
+    // $TODO - No proxies please
     public double getCurrentConfidenceScoreForSingleCam(CameraSelectionMode selectionMode) {
         return m_consolidateResults.getCurrentConfidenceScoreForSingleCam(
             m_perCycleState,
@@ -108,6 +110,7 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     /** Proxy calls to helper. */
+    // $TODO - No proxies please
     public int getNumLockedTagsForSingleCam(CameraSelectionMode selectionMode) {
         return m_consolidateResults.getNumLockedTagsForSingleCam(
             m_perCycleState,
@@ -115,13 +118,7 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     /** Proxy calls to helper. */
-    public double getTxForSingleCam(CameraSelectionMode selectionMode) {
-        return m_consolidateResults.getTxForSingleCam(
-            m_perCycleState,
-            selectionMode);
-    }
-
-    /** Proxy calls to helper. */
+    // $TODO - No proxies please
     public List<Integer> getTargetListForAllCams() {
         return m_consolidateResults.getTargetListForAllCams();
     }
@@ -135,12 +132,6 @@ public class MultiCamOdometry implements CamOdometryInterface {
     // $TODO - I think this can move into MultiCamOdometryFactory.create
     public int getBestNumLockedTagsForSingleCam() {
         return getNumLockedTagsForSingleCam(
-            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
-    }
-
-    // $TODO - I think this can move into MultiCamOdometryFactory.create
-    public double getBestTxForSingleCam() {
-        return getTxForSingleCam(
             CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 
@@ -160,13 +151,17 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public double getTx() {
-        return getTxForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    public List<Integer> getTargetList() {
+        return getTargetListForAllCams();
     }
 
     @Override
-    public List<Integer> getTargetList() {
-        return getTargetListForAllCams();
+    public double getCurrentlyAlignedTx() {
+        // NOTE: Always returns Camera 0 forward-facing camera result, since
+        // we use this to align robot rotationally to a target.
+        return m_consolidateResults.getCurrentlyAlignedTx(
+            m_perCycleState,
+            CameraSelectionMode.CAMERA_ALWAYS_CAM0);
     }
 
     @Override

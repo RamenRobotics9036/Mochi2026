@@ -96,7 +96,7 @@ public class ConsolidateMultipleCamResults {
      * Returns Tx for a SINGLE camera (e.g. best camera, or cam0).
      * Returns 0.0 if no camera has a lock.
      */
-    public double getTxForSingleCam(
+    public double getCurrentlyAlignedTx(
         PerCycleState cyclestate,
         CameraSelectionMode selectionMode) {
 
@@ -105,7 +105,7 @@ public class ConsolidateMultipleCamResults {
             selectionMode);
 
         if (cam.isPresent()) {
-            return cam.get().getTx();
+            return cam.get().getCurrentlyAlignedTx();
         }
 
         return 0.0;

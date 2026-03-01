@@ -40,7 +40,7 @@ public class MultiCamOdometryFactory {
         basicInfoDashboard.setVisionDependencies(
             multiCam::getBestCurrentConfidenceScoreForSingleCam,
             multiCam::getBestNumLockedTagsForSingleCam,
-            multiCam::getBestTxForSingleCam,
+            multiCam::getCurrentlyAlignedTx,
             multiCam::getTargetListForAllCams,
             motionlessTracker::isMotionless,
             motionlessTracker::getSecondsStill);
