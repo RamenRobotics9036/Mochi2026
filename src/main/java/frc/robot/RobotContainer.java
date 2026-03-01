@@ -307,7 +307,7 @@ public class RobotContainer {
         // to avoid command cancellation from D-pad diagonal flicker.
         new Trigger(() -> JoystickInput.isPovDownward(driveController)).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
-                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK))));
+                TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getCurrentlyAlignedAprilTagId())));
 
         //driveController.y().whileTrue(new JiggleCommand(drivetrain, armSubsystem));
         driveController.y().whileTrue(new JiggleCommand(drivetrain));
@@ -359,8 +359,7 @@ public class RobotContainer {
                 var driveState = drivetrain.getState();
                 OptionalDouble aimRate = m_aimController.update(
                     JoystickInput.isPovUpward(driveController),
-                    // $TODO - Not sure that CAMERA_BEST is the right param
-                    m_multiCamlimelight.getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK),
+                    m_multiCamlimelight.getCurrentlyAlignedAprilTagId(),
                     driveState.Pose,
                     driveState.Speeds);
 

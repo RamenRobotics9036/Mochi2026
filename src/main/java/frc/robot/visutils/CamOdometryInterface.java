@@ -29,8 +29,7 @@ public interface CamOdometryInterface {
      * This method is generally used to tell what target the robot
      * is currently aligned to, so that the robot can turn towards it.
       */
-    // $TODO - Rename to getCurrentlyAlignedAprilTagId
-    int getLastTarget();
+    int getCurrentlyAlignedAprilTagId();
 
     /**
      * Get the horizontal offset from the currently locked onto

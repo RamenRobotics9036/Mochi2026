@@ -126,13 +126,6 @@ public class MultiCamOdometry implements CamOdometryInterface {
         return m_consolidateResults.getTargetListForAllCams();
     }
 
-    /** Proxy calls to helper. */
-    public int getLastTargetForSingleCam(CameraSelectionMode selectionMode) {
-        return m_consolidateResults.getLastTargetForSingleCam(
-            m_perCycleState,
-            selectionMode);
-    }
-
     // $TODO - I think this can move into MultiCamOdometryFactory.create
     public double getBestCurrentConfidenceScoreForSingleCam() {
         return getCurrentConfidenceScoreForSingleCam(
@@ -177,7 +170,11 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public int getLastTarget() {
-        return getLastTargetForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    public int getCurrentlyAlignedAprilTagId() {
+        // NOTE: Always returns Camera 0 forward-facing camera result, since
+        // we use this to align robot rotationally to a target.
+        return m_consolidateResults.getCurrentlyAlignedAprilTagId(
+            m_perCycleState,
+            CameraSelectionMode.CAMERA_ALWAYS_CAM0);
     }
 }

@@ -126,7 +126,7 @@ public class ConsolidateMultipleCamResults {
     /**
      * Returns the ID of the last seen fiducial, or -1 if none.
      */
-    public int getLastTargetForSingleCam(
+    public int getCurrentlyAlignedAprilTagId(
         PerCycleState cyclestate,
         CameraSelectionMode selectionMode) {
 
@@ -135,7 +135,7 @@ public class ConsolidateMultipleCamResults {
             selectionMode);
 
         if (cam.isPresent()) {
-            return cam.get().getLastTarget();
+            return cam.get().getCurrentlyAlignedAprilTagId();
         }
 
         return -1;

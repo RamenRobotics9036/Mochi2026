@@ -292,7 +292,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
     /** Returns the ID of the last seen fiducial, or -1 if none. */
     @Override
-    public int getLastTarget() {
+    public int getCurrentlyAlignedAprilTagId() {
         return m_lastTarget;
     }
 }
