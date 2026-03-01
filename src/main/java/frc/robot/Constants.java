@@ -4,10 +4,9 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import static edu.wpi.first.units.Units.*;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.LinearVelocity;
 
 /**
  * The Constants class provides a convenient place for team-wide values.
@@ -41,6 +40,8 @@ public final class Constants {
         public static final double kArmSpeed = 0.15;
         public static final int kArmStallLimit = 40;
 
+        /** Arm speed during the wiggle command (0.0 to 1.0). */
+        public static final double kArmWigglePercent = 0.5;
 
         public static final int kLeftArmMotorID = 20;
         public static final int kRightArmMotorID = 21;
@@ -155,12 +156,17 @@ public final class Constants {
         /** CAN ID for the SparkFlex motor. */
         public static final int kMotorID = 51;
 
-        public static final double kSpinSpeed = 0.10;
         /** Speed for the spinny wheel */
+        public static final double kSpinSpeed = 0.05;
 
         public static final double kSpinGearRatio = 1.0;
 
         public static final int kCurrentLimit = 40;
+
+        /** Total time of 1 clockwise and 1 counter-clockwise segment */
+        public static final Time kTotalTime = Seconds.of(3);
+        /** Time it spins clockwise for at the start of each segment */
+        public static final Time kClockwiseTime = Seconds.of(2);
     }
 
     /**
@@ -198,6 +204,9 @@ public final class Constants {
         public static final double kTranslationSlewRate = 3.0;
         /** Slew rate limit for rotation input (units per second). */
         public static final double kRotationSlewRate = 3.0;
+
+        public static final LinearVelocity kJiggleSpeed = MetersPerSecond.of(0.5); //TODO: filler value
+        public static final Time kSecondsToAlternate = Seconds.of(0.25); //TODO: filler value
     }
 
     /**
