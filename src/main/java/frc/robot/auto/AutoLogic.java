@@ -102,6 +102,7 @@ public final class  AutoLogic {
         autoPicker.addOption("Cross", "Cross");
         autoPicker.setDefaultOption("testing shoot", "testing shoot");
         autoPicker.addOption("testing intake fuel", "testing intake fuel");
+        autoPicker.addOption("testing jiggle", "testing jiggle");
         autoPicker.addOption("R_Zone_Shoot_Home", "R_Zone_Shoot_Home");
         autoPicker.addOption("L_Zone_Shoot_Home", "L_Zone_Shoot_Home");
         autoPicker.addOption("C_ClimbShoot", "C_ClimbShoot");

@@ -238,6 +238,7 @@ public class RobotContainer {
         new EventTrigger("get fuel").onTrue(GetFuelCommand.create(intakeSubsystem));
         new EventTrigger("set intake bottom").onTrue(SetIntakeBottomCommand.create(armSubsystem, intakeSubsystem));
         new EventTrigger("set intake top").onTrue(SetIntakeTopCommand.create(armSubsystem, intakeSubsystem));
+        new EventTrigger("Jiggle").onTrue(new JiggleCommand(drivetrain).withTimeout(20.0));
 
         // Setup vision system
         m_motionlessTracker = MotionlessTracker.create(
@@ -263,6 +264,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("set intake bottom", SetIntakeBottomCommand.create(armSubsystem, intakeSubsystem));
 
         NamedCommands.registerCommand("set intake top", SetIntakeTopCommand.create(armSubsystem, intakeSubsystem));
+        
+        NamedCommands.registerCommand("Jiggle", new JiggleCommand(drivetrain).withTimeout(20.0));
     }
 
     /**
