@@ -3,51 +3,49 @@ package frc.robot.util;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class LinearServo extends Servo {
-    private double m_speed;
-    private double m_length;
+    private final double m_speed;
+    private final double m_length;
+    private final int m_minPulseUs;
+    private final int m_maxPulseUs;
     private double setPos;
     private double curPos;
     private double lastTime;
+    private final String m_name;
 
-    /**
-     * Parameters for L16-R Actuonix Linear Actuators
-     *
-     * @param channel PWM channel used to control the servo
-     * @param length  max length of the servo [mm]
-     * @param speed   max speed of the servo [mm/second]
-     */
-    public LinearServo(int channel, int length, int speed) {
+    private static final double POSITION_TOLERANCE_MM = 0.5;
+
+    public LinearServo(int channel, int length, int speed, int minPulseUs, int maxPulseUs) {
         super(channel);
-        // WPILib order: max, deadbandMax, center, deadbandMin, min
-        setBoundsMicroseconds(2000, 1800, 1500, 1200, 1000);
         m_length = length;
         m_speed = speed;
+        m_minPulseUs = minPulseUs;
+        m_maxPulseUs = maxPulseUs;
+        m_name = "LinearServo[" + channel + "]";
+
+        setBoundsMicroseconds(maxPulseUs, maxPulseUs, (maxPulseUs + minPulseUs) / 2, minPulseUs, minPulseUs);
+
         setPos = 0.0;
         curPos = 0.0;
-        set(0.0);
-        // Need to initialize timing properly, else on very first update 'dt' will be since robot boot.
         lastTime = Timer.getFPGATimestamp();
     }
 
-    /**
-     * Run this method in any periodic function to update the position estimation of your servo
-     *
-     * @param setpoint the target position of the servo [mm]
-     */
-    public void setLinearPosition(double setpoint) {
-        setPos = MathUtil.clamp(setpoint, 0, m_length);
-        set(setPos / m_length);
+    public LinearServo(int channel, int length, int speed) {
+        this(channel, length, speed, 1000, 2000);
     }
 
-    /**
-     * Run this method in any periodic function to update the position estimation of your servo
-     */
+    public void setLinearPosition(double setpoint) {
+        setPos = MathUtil.clamp(setpoint, 0, m_length);
+        double fraction = setPos / m_length;
+        super.setPosition(fraction);
+    }
+
     public void updateCurPos() {
         double currentTime = Timer.getFPGATimestamp();
         double dt = currentTime - lastTime;
-        
+
         if (curPos > setPos + m_speed * dt) {
             curPos -= m_speed * dt;
         } else if (curPos < setPos - m_speed * dt) {
@@ -55,43 +53,36 @@ public class LinearServo extends Servo {
         } else {
             curPos = setPos;
         }
-        
+
         lastTime = currentTime;
     }
 
-    /**
-     * Current position of the servo, must be calling {@link #updateCurPos() updateCurPos()} periodically
-     *
-     * @return Servo Position [mm]
-     */
+    public void updateTelemetry() {
+        SmartDashboard.putNumber(m_name + "/SetpointMM", setPos);
+        SmartDashboard.putNumber(m_name + "/EstimatedPosMM", curPos);
+        SmartDashboard.putNumber(m_name + "/FractionCmd", setPos / m_length);
+        SmartDashboard.putNumber(m_name + "/PWM_us",
+                m_minPulseUs + (setPos / m_length) * (m_maxPulseUs - m_minPulseUs));
+        SmartDashboard.putBoolean(m_name + "/IsFinished", isFinished());
+    }
+
+    public double getLinearPosition() {
+        return curPos;
+    }
+
     public double getPosition() {
         return curPos;
     }
 
-    /**
-     * Gets the currently commanded target position.
-     *
-     * @return Servo target position [mm]
-     */
     public double getSetpoint() {
         return setPos;
     }
 
-    /**
-     * Returns commanded PWM position as a normalized value in [0, 1].
-     *
-     * @return normalized command
-     */
     public double getCommandedPercent() {
         return get();
     }
 
-    /**
-     * Checks if the servo is at its target position, must be calling {@link #updateCurPos() updateCurPos()} periodically
-     *
-     * @return true when servo is at its target
-     */
     public boolean isFinished() {
-        return curPos == setPos;
+        return Math.abs(curPos - setPos) < POSITION_TOLERANCE_MM;
     }
 }
