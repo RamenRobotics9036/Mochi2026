@@ -52,6 +52,7 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.subsystems.LinearActuatorSubsystem;
 import frc.robot.subsystems.SpinnyWheels;
 import frc.robot.subsystems.TestSubsystems;
 import frc.robot.subsystems.auto.AutoLogic;
@@ -168,6 +169,8 @@ public class RobotContainer {
         : new ClimberIoReal();
 
     public final ClimberSubsystem climberSubsystem = new ClimberSubsystem(m_climberIO);
+
+    public final LinearActuatorSubsystem linearActuatorSubsystem = new LinearActuatorSubsystem();
 
     /** Intake IO: real hardware or FlywheelSim depending on mode. */
     private final RollerIoInterface m_intakeIO = Robot.isSimulation()
@@ -334,6 +337,14 @@ public class RobotContainer {
             )
         ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
 
+
+        // POV Right: Extend linear actuator
+        operateController.povRight().onTrue(
+            Commands.runOnce(linearActuatorSubsystem::extend, linearActuatorSubsystem));
+
+        // POV Left: Retract linear actuator
+        operateController.povLeft().onTrue(
+            Commands.runOnce(linearActuatorSubsystem::retract, linearActuatorSubsystem));
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 

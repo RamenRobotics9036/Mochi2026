@@ -128,7 +128,7 @@ public final class Constants {
         public static final int kCurrentStatorLimit = 40; //TODO: filler value
 
         /** PWM channer for the linear actuator servo. */
-        public static final int kHoodPwmChannel = 0; //TODO: filler value
+        public static final int kHoodPwmChannel = 1; //TODO: filler value
 
         /** Shooting speed */
         public static final double kShootSpeed = 0.60; //TODO: filler value
@@ -167,6 +167,19 @@ public final class Constants {
         public static final Time kTotalTime = Seconds.of(3);
         /** Time it spins clockwise for at the start of each segment */
         public static final Time kClockwiseTime = Seconds.of(2);
+    }
+
+    /**
+     * Constants for the WCP-0408 100 mm stroke linear servo actuator.
+     */
+    public static final class LinearActuatorConstants {
+        /** PWM channel for the linear servo actuator.
+         * $TODO: verify this does not conflict with kHoodPwmChannel = 0 in ShooterConstants. */
+        public static final int kPwmChannel = 0;
+        /** Servo position for fully extended (2000 µs pulse width). */
+        public static final double kExtendedPosition = 1.0;
+        /** Servo position for fully retracted (1000 µs pulse width). */
+        public static final double kRetractedPosition = 0.0;
     }
 
     /**
