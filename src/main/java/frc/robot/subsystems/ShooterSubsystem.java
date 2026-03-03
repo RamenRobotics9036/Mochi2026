@@ -42,6 +42,16 @@ public class ShooterSubsystem extends SubsystemBase {
         m_hood.setLinearPosition(m_hood.getSetpoint() + deltaMm);
     }
 
+    /** Extend hood by one default step increment. */
+    public void stepHoodExtend() {
+        m_hood.stepExtend();
+    }
+
+    /** Retract hood by one default step increment. */
+    public void stepHoodRetract() {
+        m_hood.stepRetract();
+    }
+
     @Override
     public void periodic() {
         m_shooterIO.updateOutputs(m_shooterOutputs);
@@ -52,7 +62,7 @@ public class ShooterSubsystem extends SubsystemBase {
         SmartDashboard.putNumber("Shooter/VelocityRPM", m_shooterOutputs.velocityRPM);
         SmartDashboard.putNumber("Shooter/HoodCommand_pct", m_hood.getCommandedPercent());
         SmartDashboard.putNumber("Shooter/HoodSetpoint_mm", m_hood.getSetpoint());
-        SmartDashboard.putNumber("Shooter/HoodPosition_mm", m_hood.getPosition());
+        SmartDashboard.putNumber("Shooter/HoodPosition_mm", m_hood.getLinearPosition());
         SmartDashboard.putBoolean("Shooter/HoodFinished", m_hood.isFinished());
     }
 }

@@ -404,6 +404,14 @@ public class RobotContainer {
         ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
 
 
+        // POV Left: Extend hood (step increment per press)
+        operateController.povLeft().onTrue(
+            new InstantCommand(shooterSubsystem::stepHoodExtend, shooterSubsystem));
+
+        // POV Right: Retract hood (step increment per press)
+        operateController.povRight().onTrue(
+            new InstantCommand(shooterSubsystem::stepHoodRetract, shooterSubsystem));
+
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
         // Right stick click: home the arm (must be done before any arm position commands)

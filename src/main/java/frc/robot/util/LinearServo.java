@@ -16,6 +16,8 @@ public class LinearServo extends Servo {
     private final String m_name;
 
     private static final double POSITION_TOLERANCE_MM = 0.5;
+    /** Default step size for incremental hood adjustments [mm] */
+    public static final double DEFAULT_STEP_MM = 5.0;
 
     public LinearServo(int channel, int length, int speed, int minPulseUs, int maxPulseUs) {
         super(channel);
@@ -34,6 +36,38 @@ public class LinearServo extends Servo {
 
     public LinearServo(int channel, int length, int speed) {
         this(channel, length, speed, 1000, 2000);
+    }
+
+    /**
+     * Extend the actuator by one step increment.
+     * Call this on a button press (not held) for discrete control.
+     */
+    public void stepExtend() {
+        setLinearPosition(setPos + DEFAULT_STEP_MM);
+    }
+
+    /**
+     * Extend the actuator by a custom step size.
+     * @param stepMm step size in mm (positive = extend)
+     */
+    public void stepExtend(double stepMm) {
+        setLinearPosition(setPos + Math.abs(stepMm));
+    }
+
+    /**
+     * Retract the actuator by one step increment.
+     * Call this on a button press (not held) for discrete control.
+     */
+    public void stepRetract() {
+        setLinearPosition(setPos - DEFAULT_STEP_MM);
+    }
+
+    /**
+     * Retract the actuator by a custom step size.
+     * @param stepMm step size in mm (positive value = retract distance)
+     */
+    public void stepRetract(double stepMm) {
+        setLinearPosition(setPos - Math.abs(stepMm));
     }
 
     public void setLinearPosition(double setpoint) {
@@ -67,10 +101,6 @@ public class LinearServo extends Servo {
     }
 
     public double getLinearPosition() {
-        return curPos;
-    }
-
-    public double getPosition() {
         return curPos;
     }
 
