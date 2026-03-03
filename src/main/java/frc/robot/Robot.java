@@ -73,7 +73,7 @@ public class Robot extends TimedRobot {
     // If vision is disabled for drivetrain, dont show the point in time vision estimate.
     if (m_robotContainer.basicInfoDashboard.isVisionEnabled()) {
         // NOTE: We show it for the camera that had the STRONGEST lock score.
-        Optional<Pose2d> showVisPose = m_robotContainer.m_multiCamlimelight.getLatestVisPose();
+        Optional<Pose2d> showVisPose = m_robotContainer.m_multiCamlimelight.getEstimatedPose();
         m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(showVisPose);
     }
     else {

@@ -266,38 +266,38 @@ public class SingleCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public Optional<Pose2d> getLatestVisPose() {
+    public Optional<Pose2d> getEstimatedPose() {
         return m_latestVisPose;
     }
 
     @Override
-    public double getCurrentConfidenceScore() {
+    public double getConfidenceScore() {
         return m_curConfidenceScore;
     }
 
     @Override
-    public boolean isAnyCameraLockedOn() {
+    public boolean hasTargetLock() {
         return m_numLockedTags > 0;
     }
 
     @Override
-    public boolean isAnyCameraMultiLockedOn() {
+    public boolean hasMultiTagLock() {
         return m_numLockedTags > 1;
     }
 
     @Override
-    public double getCurrentlyAlignedTx() {
+    public double getPrimaryTagTx() {
         return m_tx;
     }
 
     @Override
-    public List<Integer> getTargetList() {
+    public List<Integer> getVisibleTagIds() {
         return m_targetList;
     }
 
     /** Returns the ID of the last seen fiducial, or -1 if none. */
     @Override
-    public int getCurrentlyAlignedAprilTagId() {
+    public int getPrimaryTagId() {
         return m_lastTarget;
     }
 }

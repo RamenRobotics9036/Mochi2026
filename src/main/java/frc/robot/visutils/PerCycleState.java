@@ -11,8 +11,8 @@ public class PerCycleState {
     public Optional<SingleCamOdometry> bestLockedCam;
     public double bestLockedCamScore;
 
-    public boolean isAnyCameraLockedOn;
-    public boolean isAnyCameraMultiLockedOn;
+    public boolean hasTargetLock;
+    public boolean hasMultiTagLock;
 
     /** Constructor. */
     public PerCycleState() {
@@ -24,7 +24,7 @@ public class PerCycleState {
         bestLockedCam = Optional.empty();
         bestLockedCamScore = -1;
 
-        isAnyCameraLockedOn = false;
-        isAnyCameraMultiLockedOn = false;
+        hasTargetLock = false;
+        hasMultiTagLock = false;
     }
 }

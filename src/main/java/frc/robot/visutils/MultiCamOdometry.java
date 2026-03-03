@@ -72,27 +72,27 @@ public class MultiCamOdometry implements CamOdometryInterface {
             cam.periodic();
 
             // Is this the strongest lock we have seen so far?
-            double singleCamScore = cam.getCurrentConfidenceScore();
+            double singleCamScore = cam.getConfidenceScore();
             if (singleCamScore > m_perCycleState.bestLockedCamScore) {
                 m_perCycleState.bestLockedCam = Optional.of(cam);
                 m_perCycleState.bestLockedCamScore = singleCamScore;
             }
 
-            if (cam.isAnyCameraLockedOn()) {
-                m_perCycleState.isAnyCameraLockedOn = true;
+            if (cam.hasTargetLock()) {
+                m_perCycleState.hasTargetLock = true;
             }
 
-            if (cam.isAnyCameraMultiLockedOn()) {
-                m_perCycleState.isAnyCameraMultiLockedOn = true;
+            if (cam.hasMultiTagLock()) {
+                m_perCycleState.hasMultiTagLock = true;
             }
         }
     }
 
     @Override
-    public Optional<Pose2d> getLatestVisPose() {
+    public Optional<Pose2d> getEstimatedPose() {
         // NOTE: We return the pose from the camera with the strongest lock, if it exists.
         if (m_perCycleState.bestLockedCam.isPresent()) {
-            return m_perCycleState.bestLockedCam.get().getLatestVisPose();
+            return m_perCycleState.bestLockedCam.get().getEstimatedPose();
         }
         else {
             return Optional.empty();
@@ -100,10 +100,10 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public double getCurrentConfidenceScore() {
+    public double getConfidenceScore() {
         // NOTE: We return the confidence score from the camera with the strongest lock, if it exists.
         if (m_perCycleState.bestLockedCam.isPresent()) {
-            return m_perCycleState.bestLockedCam.get().getCurrentConfidenceScore();
+            return m_perCycleState.bestLockedCam.get().getConfidenceScore();
         }
         else {
             return 0.0;
@@ -111,36 +111,36 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public List<Integer> getTargetList() {
+    public List<Integer> getVisibleTagIds() {
         TreeSet<Integer> seen = new TreeSet<>();
         for (SingleCamOdometry cam : m_singleCamLimelightList) {
-            seen.addAll(cam.getTargetList());
+            seen.addAll(cam.getVisibleTagIds());
         }
         return new ArrayList<>(seen);
     }
 
     @Override
-    public boolean isAnyCameraLockedOn() {
-        return m_perCycleState.isAnyCameraLockedOn;
+    public boolean hasTargetLock() {
+        return m_perCycleState.hasTargetLock;
     }
 
     @Override
-    public boolean isAnyCameraMultiLockedOn() {
-        return m_perCycleState.isAnyCameraMultiLockedOn;
+    public boolean hasMultiTagLock() {
+        return m_perCycleState.hasMultiTagLock;
     }
 
     @Override
-    public double getCurrentlyAlignedTx() {
+    public double getPrimaryTagTx() {
         // NOTE: Always returns Camera 0 forward-facing camera result, since
         // we use this to align robot rotationally to a target.
-        return getPrimaryCam().getCurrentlyAlignedTx();
+        return getPrimaryCam().getPrimaryTagTx();
     }
 
     @Override
-    public int getCurrentlyAlignedAprilTagId() {
+    public int getPrimaryTagId() {
         // NOTE: Always returns Camera 0 forward-facing camera result, since
         // we use this to align robot rotationally to a target.
-        return getPrimaryCam().getCurrentlyAlignedAprilTagId();
+        return getPrimaryCam().getPrimaryTagId();
     }
 
     private SingleCamOdometry getPrimaryCam() {
