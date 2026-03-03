@@ -21,7 +21,7 @@ public class LinearServo extends Servo {
     public LinearServo(int channel, int length, int speed) {
         super(channel);
         // WPILib order: max, deadbandMax, center, deadbandMin, min
-        // setBoundsMicroseconds(2000, 1800, 1500, 1200, 1000);
+        setBoundsMicroseconds(2000, 1800, 1500, 1200, 1000);
         m_length = length;
         m_speed = speed;
         setPos = 0.0;
