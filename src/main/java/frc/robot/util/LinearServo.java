@@ -20,14 +20,14 @@ public class LinearServo extends Servo {
      */
     public LinearServo(int channel, int length, int speed) {
         super(channel);
-        // WPILib order: max, deadbandMax, center, deadbandMin, min
-        setBoundsMicroseconds(2000, 1800, 1500, 1200, 1000);
+        // Actuonix L16-R: 1000 µs = full retract, 2000 µs = full extend
+        // No deadband — this is a positional actuator, not a speed controller
+        setBoundsMicroseconds(2000, 1500, 1500, 1500, 1000);
         m_length = length;
         m_speed = speed;
         setPos = 0.0;
         curPos = 0.0;
         set(0.0);
-        // Need to initialize timing properly, else on very first update 'dt' will be since robot boot.
         lastTime = Timer.getFPGATimestamp();
     }
 
@@ -38,7 +38,7 @@ public class LinearServo extends Servo {
      */
     public void setLinearPosition(double setpoint) {
         setPos = MathUtil.clamp(setpoint, 0, m_length);
-        set(setPos / m_length);
+        setPosition(setPos / m_length); // use setPosition() for [0,1] positional mapping
     }
 
     /**
@@ -47,7 +47,7 @@ public class LinearServo extends Servo {
     public void updateCurPos() {
         double currentTime = Timer.getFPGATimestamp();
         double dt = currentTime - lastTime;
-        
+
         if (curPos > setPos + m_speed * dt) {
             curPos -= m_speed * dt;
         } else if (curPos < setPos - m_speed * dt) {
@@ -55,7 +55,7 @@ public class LinearServo extends Servo {
         } else {
             curPos = setPos;
         }
-        
+
         lastTime = currentTime;
     }
 
