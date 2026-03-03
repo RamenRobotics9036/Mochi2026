@@ -23,7 +23,6 @@ import frc.robot.visutils.VisionKalmanFilter;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -70,7 +69,8 @@ public class BasicInfoDashboard {
         m_basicInfoTable.getStringTopic("VisionKalmanSecondsStill").publish();
 
     private DoubleSupplier m_visionConfidenceSupplier = null;
-    private IntSupplier m_numLockedTagsSupplier = null;
+    private BooleanSupplier m_hasTargetLockSupplier = null;
+    private BooleanSupplier m_hasMultiTagLockSupplier = null;
     private DoubleSupplier m_txSupplier = null;
     private Supplier<List<Integer>> m_targetListSupplier = null;
     private Supplier<VisionKalmanFilter> m_visionKalmanSupplier = null;
@@ -131,7 +131,8 @@ public class BasicInfoDashboard {
      * Sets the suppliers for querying basic vision information.
      *
      * @param confidenceSupplier    A DoubleSupplier returning confidence 0-100
-     * @param numLockedTagsSupplier An IntSupplier returning the locked tag count
+     * @param hasTargetLockSupplier A BooleanSupplier returning true if any camera has a target lock
+     * @param hasMultiTagLockSupplier A BooleanSupplier returning true if any camera has 2+ targets locked
      * @param txSupplier            A DoubleSupplier returning tx in degrees
      * @param targetListSupplier    A Supplier returning comma-separated tag IDs
      * @param isMotionlessSupplier  A BooleanSupplier returning true when robot is motionless
@@ -139,13 +140,15 @@ public class BasicInfoDashboard {
      */
     public void setVisionDependencies(
             DoubleSupplier confidenceSupplier,
-            IntSupplier numLockedTagsSupplier,
+            BooleanSupplier hasTargetLockSupplier,
+            BooleanSupplier hasMultiTagLockSupplier,
             DoubleSupplier txSupplier,
             Supplier<List<Integer>> targetListSupplier,
             BooleanSupplier isMotionlessSupplier,
             DoubleSupplier secondsStillSupplier) {
         m_visionConfidenceSupplier = confidenceSupplier;
-        m_numLockedTagsSupplier = numLockedTagsSupplier;
+        m_hasTargetLockSupplier = hasTargetLockSupplier;
+        m_hasMultiTagLockSupplier = hasMultiTagLockSupplier;
         m_txSupplier = txSupplier;
         m_targetListSupplier = targetListSupplier;
         m_isRobotMotionlessSupplier = isMotionlessSupplier;
@@ -210,10 +213,14 @@ public class BasicInfoDashboard {
         if (m_visionConfidenceSupplier != null) {
             m_visionConfidence.set(m_visionConfidenceSupplier.getAsDouble());
         }
-        if (m_numLockedTagsSupplier != null) {
-            int numTags = m_numLockedTagsSupplier.getAsInt();
-            m_oneLocked.set(m_oneLockedDebouncer.calculate(numTags >= 1));
-            m_multiLocked.set(m_multiLockedDebouncer.calculate(numTags >= 2));
+
+        if (m_hasTargetLockSupplier != null) {
+            boolean hasTargetLock = m_hasTargetLockSupplier.getAsBoolean();
+            m_oneLocked.set(m_oneLockedDebouncer.calculate(hasTargetLock));
+        }
+        if (m_hasMultiTagLockSupplier != null) {
+            boolean hasMultiTagLock = m_hasMultiTagLockSupplier.getAsBoolean();
+            m_multiLocked.set(m_multiLockedDebouncer.calculate(hasMultiTagLock));
         }
         if (m_txSupplier != null) {
             m_visionTx.set(m_txSupplier.getAsDouble());

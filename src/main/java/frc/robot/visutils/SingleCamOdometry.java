@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 /**
  * Limelight-based odometry measurement source.
  */
-public class SingleCamOdometry {
+public class SingleCamOdometry implements CamOdometryInterface {
     private final String m_limelightName;
     private VisionSimInterface.EstimateConsumer m_estConsumer;
     private Matrix<N3, N1> m_curStdDevs = kSingleTagStdDevs;
@@ -30,7 +30,10 @@ public class SingleCamOdometry {
 
     private Optional<Pose2d> m_latestVisPose = Optional.empty();
     private double m_curConfidenceScore = 0.0;
-    private int m_numLockedTags = 0;
+    // Booleans mirror the CamOdometryInterface contract directly;
+    // no consumer needs the raw tag count.
+    private boolean m_hasTargetLock = false;
+    private boolean m_hasMultiTagLock = false;
     private double m_tx = 0.0;
     private List<Integer> m_targetList = Collections.emptyList();
     private int m_lastTarget = -1;
@@ -86,7 +89,8 @@ public class SingleCamOdometry {
 
     private void clearResults() {
         m_curConfidenceScore = 0.0;
-        m_numLockedTags = 0;
+        m_hasTargetLock = false;
+        m_hasMultiTagLock = false;
         m_tx = 0.0;
         m_targetList = Collections.emptyList();
     }
@@ -94,7 +98,8 @@ public class SingleCamOdometry {
     private void setResults(double confidenceScore, int numLockedTags,
                             LimelightHelpers.RawFiducial[] rawFiducials) {
         m_curConfidenceScore = confidenceScore;
-        m_numLockedTags = numLockedTags;
+        m_hasTargetLock = numLockedTags > 0;
+        m_hasMultiTagLock = numLockedTags > 1;
 
         // Horizontal offset to primary target (degrees)
         m_tx = LimelightHelpers.getTX(m_limelightName);
@@ -265,28 +270,39 @@ public class SingleCamOdometry {
         return Math.max(0, Math.min(100, confidence));
     }
 
-    public Optional<Pose2d> getLatestVisPose() {
+    @Override
+    public Optional<Pose2d> getEstimatedPose() {
         return m_latestVisPose;
     }
 
-    public double getCurrentConfidenceScore() {
+    @Override
+    public double getConfidenceScore() {
         return m_curConfidenceScore;
     }
 
-    public int getNumLockedTags() {
-        return m_numLockedTags;
+    @Override
+    public boolean hasTargetLock() {
+        return m_hasTargetLock;
     }
 
-    public double getTx() {
+    @Override
+    public boolean hasMultiTagLock() {
+        return m_hasMultiTagLock;
+    }
+
+    @Override
+    public double getPrimaryTagTx() {
         return m_tx;
     }
 
-    public List<Integer> getTargetList() {
+    @Override
+    public List<Integer> getVisibleTagIds() {
         return m_targetList;
     }
 
     /** Returns the ID of the last seen fiducial, or -1 if none. */
-    public int getLastTarget() {
+    @Override
+    public int getPrimaryTagId() {
         return m_lastTarget;
     }
 }

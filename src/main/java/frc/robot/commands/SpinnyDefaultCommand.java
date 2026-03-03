@@ -9,7 +9,6 @@ import frc.robot.subsystems.SpinnyWheels;
 
 public class SpinnyDefaultCommand extends Command{
     private SpinnyWheels m_spinny;
-    private double m_spinnyDirection = 1.0;
     private final Timer m_timer = new Timer();
 
     public SpinnyDefaultCommand(SpinnyWheels spinny){

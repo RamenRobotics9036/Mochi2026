@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.auto.AutoLogic;
 import frc.robot.visutils.PerCycleState;
-import frc.robot.visutils.PerCycleState.CameraSelectionMode;
 
 /**
  * The main robot class that controls the flow of the 2026 FRC robot code.
@@ -74,8 +73,7 @@ public class Robot extends TimedRobot {
     // If vision is disabled for drivetrain, dont show the point in time vision estimate.
     if (m_robotContainer.basicInfoDashboard.isVisionEnabled()) {
         // NOTE: We show it for the camera that had the STRONGEST lock score.
-        Optional<Pose2d> showVisPose = m_robotContainer.m_multiCamlimelight.getLatestVisPoseForSingleCam(
-            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+        Optional<Pose2d> showVisPose = m_robotContainer.m_multiCamlimelight.getEstimatedPose();
         m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(showVisPose);
     }
     else {
