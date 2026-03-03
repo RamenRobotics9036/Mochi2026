@@ -7,11 +7,10 @@ import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.sim.visionproducers.VisionSimInterface;
-import frc.robot.visutils.PerCycleState.CameraSelectionMode;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 
 
@@ -20,7 +19,6 @@ public class MultiCamOdometry implements CamOdometryInterface {
     private final BotConfigInterface m_configInterface;
     private final List<SingleCamOdometry> m_singleCamLimelightList;
     private final PerCycleState m_perCycleState = new PerCycleState();
-    private final ConsolidateMultipleCamResults m_consolidateResults;
 
     /** Constructor. */
     public MultiCamOdometry(
@@ -38,9 +36,6 @@ public class MultiCamOdometry implements CamOdometryInterface {
                 camInfo.robotToCam,
                 poseConsumer));
         }
-
-        m_consolidateResults = new ConsolidateMultipleCamResults(
-            m_singleCamLimelightList);
     }
 
     /**
@@ -93,57 +88,45 @@ public class MultiCamOdometry implements CamOdometryInterface {
         }
     }
 
-    /** Proxy calls to helper. */
-    // $TODO - No proxies please
-    public Optional<Pose2d> getLatestVisPoseForSingleCam(CameraSelectionMode selectionMode) {
-        return m_consolidateResults.getLatestVisPoseForSingleCam(
-            m_perCycleState,
-            selectionMode);
-    }
-
-    /** Proxy calls to helper. */
-    // $TODO - No proxies please
-    public double getCurrentConfidenceScoreForSingleCam(CameraSelectionMode selectionMode) {
-        return m_consolidateResults.getCurrentConfidenceScoreForSingleCam(
-            m_perCycleState,
-            selectionMode);
-    }
-
-    /** Proxy calls to helper. */
-    // $TODO - No proxies please
-    public List<Integer> getTargetListForAllCams() {
-        return m_consolidateResults.getTargetListForAllCams();
-    }
-
-    // $TODO - I think this can move into MultiCamOdometryFactory.create
-    public double getBestCurrentConfidenceScoreForSingleCam() {
-        return getCurrentConfidenceScoreForSingleCam(
-            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
-    }
-
     @Override
     public Optional<Pose2d> getLatestVisPose() {
-        return getLatestVisPoseForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+        // NOTE: We return the pose from the camera with the strongest lock, if it exists.
+        if (m_perCycleState.bestLockedCam.isPresent()) {
+            return m_perCycleState.bestLockedCam.get().getLatestVisPose();
+        }
+        else {
+            return Optional.empty();
+        }
     }
 
     @Override
     public double getCurrentConfidenceScore() {
-        return getCurrentConfidenceScoreForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+        // NOTE: We return the confidence score from the camera with the strongest lock, if it exists.
+        if (m_perCycleState.bestLockedCam.isPresent()) {
+            return m_perCycleState.bestLockedCam.get().getCurrentConfidenceScore();
+        }
+        else {
+            return 0.0;
+        }
     }
 
     @Override
     public List<Integer> getTargetList() {
-        return getTargetListForAllCams();
+        TreeSet<Integer> seen = new TreeSet<>();
+        for (SingleCamOdometry cam : m_singleCamLimelightList) {
+            seen.addAll(cam.getTargetList());
+        }
+        return new ArrayList<>(seen);
     }
 
     @Override
     public boolean isAnyCameraLockedOn() {
-        return m_perCycleState.maxLockCount > 0;
+        return m_perCycleState.isAnyCameraLockedOn;
     }
 
     @Override
     public boolean isAnyCameraMultiLockedOn() {
-        return m_perCycleState.maxLockCount > 1;
+        return m_perCycleState.isAnyCameraMultiLockedOn;
     }
 
     @Override

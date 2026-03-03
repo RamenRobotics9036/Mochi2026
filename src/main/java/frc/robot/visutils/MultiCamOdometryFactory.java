@@ -2,7 +2,6 @@ package frc.robot.visutils;
 
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.sim.visionproducers.VisionSimInterface;
-import frc.robot.visutils.PerCycleState.CameraSelectionMode;
 
 /** Factory for creating and wiring up a {@link MultiCamOdometry} instance. */
 public class MultiCamOdometryFactory {
@@ -38,11 +37,11 @@ public class MultiCamOdometryFactory {
 
         // $TODO - I think this can move into MultiCamOdometryFactory.create
         basicInfoDashboard.setVisionDependencies(
-            multiCam::getBestCurrentConfidenceScoreForSingleCam,
+            multiCam::getCurrentConfidenceScore,
             multiCam::isAnyCameraLockedOn,
             multiCam::isAnyCameraMultiLockedOn,
             multiCam::getCurrentlyAlignedTx,
-            multiCam::getTargetListForAllCams,
+            multiCam::getTargetList,
             motionlessTracker::isMotionless,
             motionlessTracker::getSecondsStill);
 
