@@ -76,19 +76,19 @@ public class MultiCamOdometry implements CamOdometryInterface {
         for (SingleCamOdometry cam : m_singleCamLimelightList) {
             cam.periodic();
 
+            // Is this the strongest lock we have seen so far?
             double singleCamScore = cam.getCurrentConfidenceScore();
-            boolean camHasTargets = cam.getNumLockedTags() > 0;
-            if (camHasTargets) {
-                // If it's first cam in list with a lock, remember that
-                if (m_perCycleState.firstInOrderLockedCam.isEmpty()) {
-                    m_perCycleState.firstInOrderLockedCam = Optional.of(cam);
-                }
+            if (singleCamScore > m_perCycleState.bestLockedCamScore) {
+                m_perCycleState.bestLockedCam = Optional.of(cam);
+                m_perCycleState.bestLockedCamScore = singleCamScore;
+            }
 
-                // Is this the strongest lock we have seen so far?
-                if (singleCamScore > m_perCycleState.bestLockedCamScore) {
-                    m_perCycleState.bestLockedCam = Optional.of(cam);
-                    m_perCycleState.bestLockedCamScore = singleCamScore;
-                }
+            if (cam.isAnyCameraLockedOn()) {
+                m_perCycleState.isAnyCameraLockedOn = true;
+            }
+
+            if (cam.isAnyCameraMultiLockedOn()) {
+                m_perCycleState.isAnyCameraMultiLockedOn = true;
             }
         }
     }
@@ -111,14 +111,6 @@ public class MultiCamOdometry implements CamOdometryInterface {
 
     /** Proxy calls to helper. */
     // $TODO - No proxies please
-    public int getNumLockedTagsForSingleCam(CameraSelectionMode selectionMode) {
-        return m_consolidateResults.getNumLockedTagsForSingleCam(
-            m_perCycleState,
-            selectionMode);
-    }
-
-    /** Proxy calls to helper. */
-    // $TODO - No proxies please
     public List<Integer> getTargetListForAllCams() {
         return m_consolidateResults.getTargetListForAllCams();
     }
@@ -126,12 +118,6 @@ public class MultiCamOdometry implements CamOdometryInterface {
     // $TODO - I think this can move into MultiCamOdometryFactory.create
     public double getBestCurrentConfidenceScoreForSingleCam() {
         return getCurrentConfidenceScoreForSingleCam(
-            CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
-    }
-
-    // $TODO - I think this can move into MultiCamOdometryFactory.create
-    public int getBestNumLockedTagsForSingleCam() {
-        return getNumLockedTagsForSingleCam(
             CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
     }
 
@@ -146,30 +132,37 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public int getNumLockedTags() {
-        return getNumLockedTagsForSingleCam(CameraSelectionMode.CAMERA_BEST_WITH_LOCK);
+    public List<Integer> getTargetList() {
+        return getTargetListForAllCams();
     }
 
     @Override
-    public List<Integer> getTargetList() {
-        return getTargetListForAllCams();
+    public boolean isAnyCameraLockedOn() {
+        return m_perCycleState.maxLockCount > 0;
+    }
+
+    @Override
+    public boolean isAnyCameraMultiLockedOn() {
+        return m_perCycleState.maxLockCount > 1;
     }
 
     @Override
     public double getCurrentlyAlignedTx() {
         // NOTE: Always returns Camera 0 forward-facing camera result, since
         // we use this to align robot rotationally to a target.
-        return m_consolidateResults.getCurrentlyAlignedTx(
-            m_perCycleState,
-            CameraSelectionMode.CAMERA_ALWAYS_CAM0);
+        return getPrimaryCam().getCurrentlyAlignedTx();
     }
 
     @Override
     public int getCurrentlyAlignedAprilTagId() {
         // NOTE: Always returns Camera 0 forward-facing camera result, since
         // we use this to align robot rotationally to a target.
-        return m_consolidateResults.getCurrentlyAlignedAprilTagId(
-            m_perCycleState,
-            CameraSelectionMode.CAMERA_ALWAYS_CAM0);
+        return getPrimaryCam().getCurrentlyAlignedAprilTagId();
+    }
+
+    private SingleCamOdometry getPrimaryCam() {
+        // Just return the first cam in the list, which is hopefully
+        // the forward-facing cam.
+        return m_singleCamLimelightList.get(0);
     }
 }

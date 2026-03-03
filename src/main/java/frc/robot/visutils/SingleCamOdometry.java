@@ -276,8 +276,13 @@ public class SingleCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public int getNumLockedTags() {
-        return m_numLockedTags;
+    public boolean isAnyCameraLockedOn() {
+        return m_numLockedTags > 0;
+    }
+
+    @Override
+    public boolean isAnyCameraMultiLockedOn() {
+        return m_numLockedTags > 1;
     }
 
     @Override

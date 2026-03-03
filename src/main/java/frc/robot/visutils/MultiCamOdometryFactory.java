@@ -39,7 +39,8 @@ public class MultiCamOdometryFactory {
         // $TODO - I think this can move into MultiCamOdometryFactory.create
         basicInfoDashboard.setVisionDependencies(
             multiCam::getBestCurrentConfidenceScoreForSingleCam,
-            multiCam::getBestNumLockedTagsForSingleCam,
+            multiCam::isAnyCameraLockedOn,
+            multiCam::isAnyCameraMultiLockedOn,
             multiCam::getCurrentlyAlignedTx,
             multiCam::getTargetListForAllCams,
             motionlessTracker::isMotionless,

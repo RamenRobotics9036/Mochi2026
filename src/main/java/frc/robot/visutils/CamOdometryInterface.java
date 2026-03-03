@@ -5,23 +5,34 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CamOdometryInterface {
+    /**
+     * Get Pose of camera with highest confidence score.
+     */
     Optional<Pose2d> getLatestVisPose();
-    double getCurrentConfidenceScore();
-    int getNumLockedTags();
-    List<Integer> getTargetList();
 
+    /**
+     * Get confidence score of camera with highest confidence score.
+     * Returns 0.0 if no camera has a lock.
+     */
+    double getCurrentConfidenceScore();
+
+    /**
+     * Returns unique list of IDs of all AprilTags that are seen
+     * by any camera.
+     */
+    List<Integer> getTargetList();
 
     /**
      * Returns True if ANY camera currently has a lock on at-least one
      * target.
      */
-    // $TODO - isAnyCameraLockedOn
+    boolean isAnyCameraLockedOn();
 
     /**
      * Returns True if ANY camera has a lock on at least TWO targets,
      * i.e. a multi-lock.
      */
-    // $TODO - isAnyCameraMultiLockedOn
+    boolean isAnyCameraMultiLockedOn();
 
     /**
      * Gets the ID of the target currently locked onto by

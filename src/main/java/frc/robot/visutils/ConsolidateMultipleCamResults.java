@@ -74,25 +74,6 @@ public class ConsolidateMultipleCamResults {
     }
 
     /**
-     * Returns the total number of AprilTags locked-on for a SINGLE camera
-     * (e.g. best camera, or cam0).
-     */
-    public int getNumLockedTagsForSingleCam(
-        PerCycleState cyclestate,
-        CameraSelectionMode selectionMode) {
-
-        Optional<SingleCamOdometry> cam = getAppropriateCamera(
-            cyclestate,
-            selectionMode);
-
-        if (cam.isPresent()) {
-            return cam.get().getNumLockedTags();
-        }
-
-        return 0;
-    }
-
-    /**
      * Returns Tx for a SINGLE camera (e.g. best camera, or cam0).
      * Returns 0.0 if no camera has a lock.
      */
