@@ -71,9 +71,10 @@ public class MultiCamOdometry implements CamOdometryInterface {
         for (SingleCamOdometry cam : m_singleCamLimelightList) {
             cam.periodic();
 
-            // Is this the strongest lock we have seen so far?
+            // Only consider cameras that actually have a target lock;
+            // without this guard a camera with score 0 beats the -1 reset sentinel.
             double singleCamScore = cam.getConfidenceScore();
-            if (singleCamScore > m_perCycleState.bestLockedCamScore) {
+            if (singleCamScore > 0 && singleCamScore > m_perCycleState.bestLockedCamScore) {
                 m_perCycleState.bestLockedCam = Optional.of(cam);
                 m_perCycleState.bestLockedCamScore = singleCamScore;
             }
@@ -144,8 +145,11 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     private SingleCamOdometry getPrimaryCam() {
-        // Just return the first cam in the list, which is hopefully
-        // the forward-facing cam.
+        // Return the first cam in the list (the forward-facing cam).
+        // Precondition: BotConfigInterface must provide at least one camera.
+        if (m_singleCamLimelightList.isEmpty()) {
+            throw new IllegalStateException("No cameras configured — BotConfigInterface must provide at least one camera.");
+        }
         return m_singleCamLimelightList.get(0);
     }
 }

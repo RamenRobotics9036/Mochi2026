@@ -30,7 +30,10 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
     private Optional<Pose2d> m_latestVisPose = Optional.empty();
     private double m_curConfidenceScore = 0.0;
-    private int m_numLockedTags = 0;
+    // Booleans mirror the CamOdometryInterface contract directly;
+    // no consumer needs the raw tag count.
+    private boolean m_hasTargetLock = false;
+    private boolean m_hasMultiTagLock = false;
     private double m_tx = 0.0;
     private List<Integer> m_targetList = Collections.emptyList();
     private int m_lastTarget = -1;
@@ -86,7 +89,8 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
     private void clearResults() {
         m_curConfidenceScore = 0.0;
-        m_numLockedTags = 0;
+        m_hasTargetLock = false;
+        m_hasMultiTagLock = false;
         m_tx = 0.0;
         m_targetList = Collections.emptyList();
     }
@@ -94,7 +98,8 @@ public class SingleCamOdometry implements CamOdometryInterface {
     private void setResults(double confidenceScore, int numLockedTags,
                             LimelightHelpers.RawFiducial[] rawFiducials) {
         m_curConfidenceScore = confidenceScore;
-        m_numLockedTags = numLockedTags;
+        m_hasTargetLock = numLockedTags > 0;
+        m_hasMultiTagLock = numLockedTags > 1;
 
         // Horizontal offset to primary target (degrees)
         m_tx = LimelightHelpers.getTX(m_limelightName);
@@ -277,12 +282,12 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
     @Override
     public boolean hasTargetLock() {
-        return m_numLockedTags > 0;
+        return m_hasTargetLock;
     }
 
     @Override
     public boolean hasMultiTagLock() {
-        return m_numLockedTags > 1;
+        return m_hasMultiTagLock;
     }
 
     @Override
