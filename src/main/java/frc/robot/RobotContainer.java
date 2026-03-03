@@ -67,7 +67,6 @@ import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometry;
 import frc.robot.visutils.MultiCamOdometryFactory;
-import frc.robot.visutils.PerCycleState.CameraSelectionMode;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import java.util.OptionalDouble;
