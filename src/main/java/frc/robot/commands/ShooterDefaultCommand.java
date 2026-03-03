@@ -27,9 +27,9 @@ public class ShooterDefaultCommand extends Command{
     public void execute() {
         int pov = m_controller.getHID().getPOV();
         if (pov == 90) {
-            m_shooter.nudgeHoodPosition(ShooterConstants.kHoodJogMmPerTick);
+            m_shooter.setHoodServo(0);
         } else if (pov == 270) {
-            m_shooter.nudgeHoodPosition(-ShooterConstants.kHoodJogMmPerTick);
+            m_shooter.setHoodServo(0.5);
         }
 
         if (m_controller.getRightTriggerAxis() > 0){
