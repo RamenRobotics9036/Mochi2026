@@ -3,22 +3,21 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants;
-import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 
-/** Deploys the intake arm and runs the intake rollers to collect fuel. */
+/** Runs the intake rollers to collect fuel, ignoring arm movement. */
 public class GetFuelCommand {
-    /** Returns a Command that deploys the arm and runs the intake. */
-    public static Command create(ArmSubsystem arm, IntakeSubsystem intake) {
+    /** Returns a Command that runs the intake rollers. */
+    public static Command create(IntakeSubsystem intake) {
+
         return new RunCommand(() -> {
-                arm.setArmPosition(Constants.ArmConstants.kMaxArmAngle);
                 intake.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
             },
             // Dependencies:
-            arm, intake)
-            .withTimeout(3.0)
+            intake)
+            .until(intake::isStalled)
+            .withTimeout(5.0)
             .finallyDo(() -> {
-                arm.stop();
                 intake.stop();
             });
     }

@@ -236,7 +236,7 @@ public class RobotContainer {
         /** Registers event triggers for PathPlanner */
         new EventTrigger("shoot").onTrue(ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
         new EventTrigger("Full Auto Climb").onTrue(FullAutoClimbCommand.create(climberSubsystem));
-        new EventTrigger("get fuel").onTrue(GetFuelCommand.create(armSubsystem, intakeSubsystem));
+        new EventTrigger("get fuel").onTrue(GetFuelCommand.create(intakeSubsystem));
         new EventTrigger("set intake bottom").onTrue(SetIntakeBottomCommand.create(armSubsystem, intakeSubsystem));
         new EventTrigger("set intake top").onTrue(SetIntakeTopCommand.create(armSubsystem, intakeSubsystem));
 
@@ -259,7 +259,7 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
 
-        NamedCommands.registerCommand("get fuel", GetFuelCommand.create(armSubsystem, intakeSubsystem));
+        NamedCommands.registerCommand("get fuel", GetFuelCommand.create(intakeSubsystem));
 
         NamedCommands.registerCommand("set intake bottom", SetIntakeBottomCommand.create(armSubsystem, intakeSubsystem));
 
