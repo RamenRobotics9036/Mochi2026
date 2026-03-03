@@ -35,7 +35,6 @@ public class MultiCamOdometryFactory {
             visionKalmanFilter,
             motionlessTracker::isMotionless);
 
-        // $TODO - I think this can move into MultiCamOdometryFactory.create
         basicInfoDashboard.setVisionDependencies(
             multiCam::getConfidenceScore,
             multiCam::hasTargetLock,
@@ -45,7 +44,6 @@ public class MultiCamOdometryFactory {
             motionlessTracker::isMotionless,
             motionlessTracker::getSecondsStill);
 
-        // $TODO - I think this can move into MultiCamOdometryFactory.create
         basicInfoDashboard.setVisionKalmanSupplier(() -> visionKalmanFilter);
 
         return multiCam;

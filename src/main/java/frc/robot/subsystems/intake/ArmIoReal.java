@@ -45,8 +45,6 @@ public class ArmIoReal implements ArmIoInterface {
         lArmConfig.closedLoop
             .p(ArmConstants.kArmPositionP);
 
-        // $TODO - Thomas style feedback is to move rArmConfig.idleMode and .SmartCurrentLimit up next to the equivalent
-        // calls for lArmConfig.  And then have .follow on rArmConfig call after all that on a separate line.
         rArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(ArmConstants.kArmStallLimit)
             .follow(m_lArmMotor, true);
