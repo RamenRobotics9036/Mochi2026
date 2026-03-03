@@ -37,7 +37,7 @@ class TestPhotonToLimelightConverter {
 
     private static final double TOLERANCE = 1e-6;
 
-    // ── Target A constants (fiducialId 19, sim-inspired) ──────────
+    // -- Target A constants (fiducialId 19, sim-inspired) ----------
 
     private static final double TARGET_A_YAW = 21.0;
     private static final double TARGET_A_PITCH = 15.0;
@@ -47,7 +47,7 @@ class TestPhotonToLimelightConverter {
     private static final Translation3d TARGET_A_TRANSLATION = new Translation3d(3.0, -1.0, -0.5);
     private static final double TARGET_A_AMBIGUITY = 0.10;
 
-    // ── Target B constants (fiducialId 20) ────────────────────────
+    // -- Target B constants (fiducialId 20) ------------------------
 
     private static final double TARGET_B_YAW = -5.0;
     private static final double TARGET_B_PITCH = 10.0;
@@ -60,7 +60,7 @@ class TestPhotonToLimelightConverter {
     private PhotonTrackedTarget m_targetA;
     private PhotonTrackedTarget m_targetB;
 
-    // ── Fixture builders ──────────────────────────────────────────
+    // -- Fixture builders ------------------------------------------
 
     /** Four dummy corners required by PhotonTrackedTarget constructor assertion. */
     private static final List<TargetCorner> FOUR_CORNERS = List.of(
@@ -106,9 +106,9 @@ class TestPhotonToLimelightConverter {
                 TARGET_B_ID, TARGET_B_TRANSLATION, TARGET_B_AMBIGUITY);
     }
 
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
     //  convertTarget
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
 
     @Test
     void convertTarget_nullTarget_setsInvalid() {
@@ -142,9 +142,9 @@ class TestPhotonToLimelightConverter {
         assertEquals(TARGET_B_YAW, data.tx, TOLERANCE);
     }
 
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
     //  convertTargetPose3d
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
 
     @Test
     void convertTargetPose3d_zeroRotation_producesCorrectArrays() {
@@ -190,9 +190,9 @@ class TestPhotonToLimelightConverter {
         assertEquals(Units.radiansToDegrees(yaw), data.targetPoseCameraSpace[5], TOLERANCE);
     }
 
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
     //  convertRawFiducials
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
 
     @Test
     void convertRawFiducials_emptyList_setsEmptyArray() {
@@ -245,9 +245,9 @@ class TestPhotonToLimelightConverter {
         assertEquals(TARGET_B_AMBIGUITY, data.rawFiducials[13], TOLERANCE);
     }
 
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
     //  convertLatency
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
 
     @Test
     void convertLatency_setsCorrectValues() {
@@ -272,9 +272,9 @@ class TestPhotonToLimelightConverter {
         assertEquals(latencyMs, data.pipelineLatencyMs, 0.01);
     }
 
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
     //  convertT2D
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
 
     @Test
     void convertT2D_emptyTargets_setsZeroValidFlag() {
@@ -327,9 +327,9 @@ class TestPhotonToLimelightConverter {
         assertEquals(TARGET_A_SKEW, data.t2d[16], TOLERANCE);   // skew from primary
     }
 
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
     //  convertPipelineResult (integration)
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
 
     @Test
     void convertPipelineResult_noTargets_returnsInvalidData() {
@@ -395,9 +395,9 @@ class TestPhotonToLimelightConverter {
         assertEquals(2, data.t2d[1], TOLERANCE);
     }
 
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
     //  convertBotpose
-    // ════════════════════════════════════════════════════════════════
+    // ================================================================
 
     @Test
     void convertBotpose_nullPose_setsEmptyArrays() {

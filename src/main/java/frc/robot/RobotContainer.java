@@ -61,11 +61,11 @@ import frc.robot.subsystems.intake.IntakeIoReal;
 import frc.robot.subsystems.shooter.ShooterIoReal;
 import frc.robot.visutils.AimController;
 import frc.robot.visutils.BasicInfoDashboard;
+import frc.robot.visutils.CamOdometryInterface;
 import frc.robot.visutils.DashboardFactory;
 import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.MotionlessTracker;
-import frc.robot.visutils.MultiCamOdometry;
 import frc.robot.visutils.MultiCamOdometryFactory;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
@@ -140,7 +140,7 @@ public class RobotContainer {
     /** Manages the tape-drop accuracy test workflow. */
     public final DriveAccuracyTester m_driveAccuracyTester;
 
-    public final MultiCamOdometry m_multiCamlimelight;
+    public final CamOdometryInterface m_multiCamlimelight;
 
     private final TwoMotorRollerIoInterface m_shooterIO = Robot.isSimulation()
         ? SimIoFactory.createShooterIoSim()

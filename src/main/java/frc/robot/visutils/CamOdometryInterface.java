@@ -3,6 +3,7 @@ package frc.robot.visutils;
 import edu.wpi.first.math.geometry.Pose2d;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BooleanSupplier;
 
 public interface CamOdometryInterface {
     /**
@@ -42,4 +43,21 @@ public interface CamOdometryInterface {
      * Returns 0 if no target is locked. Used to determine rotation error for alignment.
      */
     double getPrimaryTagTx();
+
+    /**
+     * Periodic update; should be called from robot periodic.
+     */
+    void periodic();
+
+    /**
+     * Sets the dependencies needed for vision processing.
+     *
+     * @param visionEnabledSupplier A BooleanSupplier returning true when vision is enabled
+     * @param filter The VisionKalmanFilter instance to inject measurements into
+     * @param isMotionlessSupplier Supplier that returns true when robot is motionless
+     */
+    void setVisionDependencies(
+            BooleanSupplier visionEnabledSupplier,
+            VisionKalmanFilter filter,
+            BooleanSupplier isMotionlessSupplier);
 }

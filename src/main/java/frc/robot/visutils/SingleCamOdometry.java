@@ -73,6 +73,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
      * @param filter The VisionKalmanFilter instance to inject measurements into
      * @param isMotionlessSupplier Supplier that returns true when robot is motionless
      */
+    @Override
     public void setVisionDependencies(
             BooleanSupplier visionEnabledSupplier,
             VisionKalmanFilter filter,
@@ -82,7 +83,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
         m_isMotionlessSupplier = isMotionlessSupplier;
     }
 
-    /** Periodic update; should be called from robot periodic. */
+    @Override
     public void periodic() {
         addVisionMeasurementV1();
     }

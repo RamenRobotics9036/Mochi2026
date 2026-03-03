@@ -1,12 +1,6 @@
 package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import frc.robot.Constants.VisionConstants;
-import frc.robot.Robot;
-import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.botconfig.BotConfigInterface.CameraInfo;
-import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,26 +10,12 @@ import java.util.function.BooleanSupplier;
 
 /** Reads from multiple limelight cameras. */
 public class MultiCamOdometry implements CamOdometryInterface {
-    private final BotConfigInterface m_configInterface;
-    private final List<SingleCamOdometry> m_singleCamLimelightList;
+    private final List<CamOdometryInterface> m_cameras;
     private final PerCycleState m_perCycleState = new PerCycleState();
 
     /** Constructor. */
-    public MultiCamOdometry(
-        BotConfigInterface configInterface,
-        VisionSimInterface.EstimateConsumer poseConsumer) {
-
-        m_configInterface = configInterface;
-
-        List<CameraInfo> cameraInfoList = m_configInterface.getCameras();
-
-        m_singleCamLimelightList = new ArrayList<>();
-        for (CameraInfo camInfo : cameraInfoList) {
-            m_singleCamLimelightList.add(new SingleCamOdometry(
-                camInfo.cameraName,
-                camInfo.robotToCam,
-                poseConsumer));
-        }
+    public MultiCamOdometry(List<CamOdometryInterface> cameras) {
+        m_cameras = new ArrayList<>(cameras);
     }
 
     /**
@@ -45,12 +25,13 @@ public class MultiCamOdometry implements CamOdometryInterface {
      * @param filter The VisionKalmanFilter instance to inject measurements into
      * @param isMotionlessSupplier Supplier that returns true when robot is motionless
      */
+    @Override
     public void setVisionDependencies(
             BooleanSupplier visionEnabledSupplier,
             VisionKalmanFilter filter,
             BooleanSupplier isMotionlessSupplier) {
 
-        for (SingleCamOdometry cam : m_singleCamLimelightList) {
+        for (CamOdometryInterface cam : m_cameras) {
             cam.setVisionDependencies(
                 visionEnabledSupplier,
                 filter,
@@ -64,11 +45,11 @@ public class MultiCamOdometry implements CamOdometryInterface {
      *   score that has a target lock.  We also track the FIRST camera
      *   (in order) that has a target lock.
      */
+    @Override
     public void periodic() {
-        // Reset best locked cam
         m_perCycleState.reset();
 
-        for (SingleCamOdometry cam : m_singleCamLimelightList) {
+        for (CamOdometryInterface cam : m_cameras) {
             cam.periodic();
 
             // Only consider cameras that actually have a target lock;
@@ -114,7 +95,7 @@ public class MultiCamOdometry implements CamOdometryInterface {
     @Override
     public List<Integer> getVisibleTagIds() {
         TreeSet<Integer> seen = new TreeSet<>();
-        for (SingleCamOdometry cam : m_singleCamLimelightList) {
+        for (CamOdometryInterface cam : m_cameras) {
             seen.addAll(cam.getVisibleTagIds());
         }
         return new ArrayList<>(seen);
@@ -144,12 +125,12 @@ public class MultiCamOdometry implements CamOdometryInterface {
         return getPrimaryCam().getPrimaryTagId();
     }
 
-    private SingleCamOdometry getPrimaryCam() {
+    private CamOdometryInterface getPrimaryCam() {
         // Return the first cam in the list (the forward-facing cam).
-        // Precondition: BotConfigInterface must provide at least one camera.
-        if (m_singleCamLimelightList.isEmpty()) {
-            throw new IllegalStateException("No cameras configured — BotConfigInterface must provide at least one camera.");
+        // Precondition: at least one camera must be provided.
+        if (m_cameras.isEmpty()) {
+            throw new IllegalStateException("No cameras configured — at least one camera must be provided.");
         }
-        return m_singleCamLimelightList.get(0);
+        return m_cameras.get(0);
     }
 }

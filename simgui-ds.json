@@ -4,11 +4,13 @@
       "axisConfig": [
         {
           "decKey": 263,
-          "incKey": 262
+          "incKey": 262,
+          "keyRate": 1.0
         },
         {
           "decKey": 265,
-          "incKey": 264
+          "incKey": 264,
+          "keyRate": 1.0
         },
         {},
         {},
