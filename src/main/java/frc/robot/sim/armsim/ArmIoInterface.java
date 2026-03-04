@@ -26,6 +26,12 @@ public interface ArmIoInterface {
     /** Stop arm motion immediately. */
     void stop();
 
+    /**
+     * Enable or disable hardware soft limits.
+     * Must be disabled during homing (encoder not yet zeroed) and enabled after homing completes.
+     */
+    void setSoftLimitsEnabled(boolean enabled);
+
     /** Read latest arm telemetry. */
     void updateOutputs(DeviceOutputs outputs);
 }

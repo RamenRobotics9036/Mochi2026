@@ -49,21 +49,23 @@ public final class Constants {
         /** Max angle (degrees) — lowered/deployed position. 
          * Measured on hardware: 2/23/2026 
         */
-        public static final double kMaxArmAngle = 143;
+        public static final double kMaxArmAngle = 160;
 
         /** Min angle (degrees) — raised/stowed position. */
-        public static final double kMinArmAngle = 0;
+        public static final double kMinArmAngle = 10;
 
         /** Position loop proportional gain. TODO: tune on hardware — 0.05 is a conservative starting value. */
         public static final double kArmPositionP = 0.05;
 
         // Arm homing (hard-stop) behavior
 
-        /** Open-loop speed used while homing toward the hard stop. 
-         * Negative sign means arm homes towards up position */
-        public static final double kArmHomingSpeed = -0.025;
-        /** Current (Amps) above which we consider the arm "stalled" against a stop while homing. */
-        public static final double kArmHomingStallCurrent = 20.0;
+        /** Open-loop speed used while homing toward the hard stop.
+         * Negative sign means arm homes towards up position.
+         * $TODO verify on hardware — too low won't produce detectable stall current */
+        public static final double kArmHomingSpeed = -0.05;
+        /** Current (Amps) above which we consider the arm "stalled" against a stop while homing.
+         * $TODO verify on hardware — must be achievable at kArmHomingSpeed but above free-spin current */
+        public static final double kArmHomingStallCurrent = 15.0;
         /** Arm output velocity (degrees per second) below which we consider motion stopped. */
         public static final double kArmHomingStallVelocity = 5.0;
         /** How long the stall condition must be continuously true to count as homed (seconds). */

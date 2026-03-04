@@ -45,6 +45,17 @@ public class ArmIoReal implements ArmIoInterface {
         lArmConfig.closedLoop
             .p(ArmConstants.kArmPositionP);
 
+        // Soft limits protect against overshoot in closed-loop mode.
+        // They are defined here but start DISABLED because the encoder is not zeroed until
+        // homing completes. Call setSoftLimitsEnabled(true) after homing.
+        // $TODO verify unit assumption: REV applies soft limits against the converted encoder
+        // value (degrees), so kMaxArmAngle/kMinArmAngle should be correct here.
+        lArmConfig.softLimit
+            .forwardSoftLimit((float) ArmConstants.kMaxArmAngle)
+            .forwardSoftLimitEnabled(false)
+            .reverseSoftLimit((float) ArmConstants.kMinArmAngle)
+            .reverseSoftLimitEnabled(false);
+
         rArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(ArmConstants.kArmStallLimit)
             .follow(m_lArmMotor, true);
@@ -80,9 +91,20 @@ public class ArmIoReal implements ArmIoInterface {
 
     @Override
     public void stop() {
-       // todo: reset mode to idle
         m_lArmMotor.stopMotor();
         m_rArmMotor.stopMotor();
+    }
+
+    @Override
+    public void setSoftLimitsEnabled(boolean enabled) {
+        SparkFlexConfig config = new SparkFlexConfig();
+        config.softLimit
+            .forwardSoftLimitEnabled(enabled)
+            .reverseSoftLimitEnabled(enabled);
+        m_lArmMotor.configure(
+            config,
+            ResetMode.kNoResetSafeParameters,
+            PersistMode.kNoPersistParameters);
     }
 
     @Override
