@@ -1,36 +1,25 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
 
 public class ShooterSubsystem extends SubsystemBase {
-    private final BotConfigInterface m_configInterface;
     private final TwoMotorRollerIoInterface m_shooterIO;
     private final TwoMotorRollerIoInterface.DeviceOutputs m_shooterOutputs =
         new TwoMotorRollerIoInterface.DeviceOutputs();
 
-    private Servo m_hood;
-
-    /** Creates a new ShooterSubsystem using the ShooterConstants from Constants.java. */
-    public ShooterSubsystem(BotConfigInterface configInterface, TwoMotorRollerIoInterface shooterIO) {
-        m_configInterface = configInterface;
+    /** Creates a new ShooterSubsystem. */
+    public ShooterSubsystem(TwoMotorRollerIoInterface shooterIO) {
         m_shooterIO = shooterIO;
-
-        m_hood = new Servo(Constants.ShooterConstants.kHoodPwmChannel);
     }
 
     public void setSpeed(double speed){
-
         m_shooterIO.setSpeed(speed);
     }
 
     public void stop(){
         m_shooterIO.stop();
-
     }
 
     /**

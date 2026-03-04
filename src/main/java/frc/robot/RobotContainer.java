@@ -149,7 +149,6 @@ public class RobotContainer {
         : new ShooterIoReal(m_configInterface);
 
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(
-        m_configInterface,
         m_shooterIO);
 
     private final RollerIoInterface m_indexerIO = Robot.isSimulation()
