@@ -166,8 +166,8 @@
               "topic": "/SmartDashboard/Spinny/VelocityRPM",
               "period": 0.06,
               "data_type": "double",
-              "min_value": 0.0,
-              "max_value": 1000.0,
+              "min_value": -500.0,
+              "max_value": 500.0,
               "divisions": 5,
               "inverted": false,
               "orientation": "horizontal"
