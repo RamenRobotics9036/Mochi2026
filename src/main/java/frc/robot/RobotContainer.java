@@ -333,6 +333,12 @@ public class RobotContainer {
             )
         ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
 
+        operateController.b().whileTrue(
+            new RunCommand(
+                () -> System.out.println(climberSubsystem.getEncoderValue()*ClimberConstants.kGearRatio),
+                climberSubsystem
+            )
+        );
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
