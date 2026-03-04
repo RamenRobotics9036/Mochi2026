@@ -33,6 +33,8 @@ public class ArmIoSim implements ArmIoInterface {
             double momentOfInertia,
             double armLengthMeters,
             double gearRatio) {
+        double initialArmPositionDegrees = (ArmConstants.kMinArmAngle + ArmConstants.kMaxArmAngle) / 2.0;
+
         m_armSim = new SingleJointedArmSim(
             kArmMotor,
             gearRatio,
@@ -40,8 +42,8 @@ public class ArmIoSim implements ArmIoInterface {
             armLengthMeters,
             Units.degreesToRadians(ArmConstants.kMinArmAngle),
             Units.degreesToRadians(ArmConstants.kMaxArmAngle),
-            true,
-            Units.degreesToRadians(ArmConstants.kMinArmAngle));
+            false, // No gravity since the arm will just fall
+            Units.degreesToRadians(initialArmPositionDegrees));
 
         m_simDevice = SimDevice.create(deviceName);
         if (m_simDevice != null) {

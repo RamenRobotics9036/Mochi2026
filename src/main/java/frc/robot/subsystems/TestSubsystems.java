@@ -8,6 +8,8 @@ import frc.robot.Constants.IndexerConstants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Robot;
+import frc.robot.commands.IntakeArmHomeCommand;
+import frc.robot.commands.SetIntakeBottomCommand;
 
 public class TestSubsystems {
     /** Temporary sequence command for wiring/testing. */
@@ -58,6 +60,32 @@ public class TestSubsystems {
                 Commands.waitSeconds(0.5),
                 Commands.runOnce(climberSubsystem::stop, climberSubsystem),
                 Commands.print("End")
+            );
+        }
+        else {
+            return Commands.none();
+        }
+    }
+
+    public static Command test_homing(
+            IntakeSubsystem intakeSubsystem,
+            IndexerSubsystem indexerSubsystem,
+            ShooterSubsystem shooterSubsystem,
+            ArmSubsystem armSubsystem,
+            ClimberSubsystem climberSubsystem) {
+        // For now, we ONLY allow running this in simulation, since it hasn't been tested
+        // on the real robot yet.
+        if (Robot.isSimulation()) {
+            return Commands.sequence(
+                Commands.print("Starting homing..."),
+                IntakeArmHomeCommand.create(armSubsystem),
+                Commands.waitUntil(armSubsystem::isArmHomed),
+                Commands.print("Homing complete. Raising arm to top..."),
+                SetIntakeBottomCommand.create(armSubsystem, intakeSubsystem),
+                Commands.print("Arm at top. Starting second homing..."),
+                IntakeArmHomeCommand.create(armSubsystem),
+                Commands.waitUntil(armSubsystem::isArmHomed),
+                Commands.print("Second homing complete.")
             );
         }
         else {
