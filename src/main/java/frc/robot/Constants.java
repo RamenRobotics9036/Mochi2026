@@ -178,9 +178,9 @@ public final class Constants {
 
         public static final double kGearRatio = 20;
         /** Maximum extension limit (motor rotations). */
-        public static final double kMaxHeight = 4.6;
+        public static final double kMaxHeight = 4.3 * kGearRatio;
         /** Minimum retraction limit. (in Meters for Height variables) */
-        public static final double kMinHeight = 0.0;
+        public static final double kMinHeight = 0.01;
 
         /** Max power (0.5 = 50% power). */
         public static final double kMaxOutputPercent = 0.40;
