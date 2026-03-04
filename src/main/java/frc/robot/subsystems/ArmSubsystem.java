@@ -120,7 +120,10 @@ public class ArmSubsystem extends SubsystemBase{
     }
 
     /** Stops the arm. Does nothing if homing is in progress (homingHelper manages motor output). */
-    public void stop(){
+    public void stop() {
+        // $TODO - Tyler, please fix: This stop() method is public, and caller should be
+        // able to assume that calling stop() will stop the arm, for safety and to avoid
+        // breaking the arm.  So short-circuiting here cannot be done.
         if (m_HomingState == ArmHomedState.HOMING) {
             return;
         }
