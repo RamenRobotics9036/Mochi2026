@@ -49,10 +49,10 @@ public final class Constants {
         /** Max angle (degrees) — lowered/deployed position. 
          * Measured on hardware: 2/23/2026 
         */
-        public static final double kMaxArmAngle = 143;
+        public static final double kMaxArmAngle = 160;
 
         /** Min angle (degrees) — raised/stowed position. */
-        public static final double kMinArmAngle = 0;
+        public static final double kMinArmAngle = 10;
 
         /** Position loop proportional gain. TODO: tune on hardware — 0.05 is a conservative starting value. */
         public static final double kArmPositionP = 0.05;
