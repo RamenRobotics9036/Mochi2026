@@ -338,7 +338,7 @@ public class RobotContainer {
 
         // Right stick click: home the arm (must be done before any arm position commands)
         operateController.rightStick().onTrue(
-            IntakeArmHomeCommand.create(armSubsystem, intakeSubsystem));
+            IntakeArmHomeCommand.create(armSubsystem));
 
         // Left stick click: set current arm position as the new "zero" reference point
         operateController.leftStick().onTrue(

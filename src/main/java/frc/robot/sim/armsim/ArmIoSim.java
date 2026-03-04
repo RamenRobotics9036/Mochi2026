@@ -79,6 +79,11 @@ public class ArmIoSim implements ArmIoInterface {
     }
 
     @Override
+    public void setSoftLimitsEnabled(boolean enabled) {
+        // SingleJointedArmSim enforces angle bounds natively — no action needed.
+    }
+
+    @Override
     public void updateOutputs(DeviceOutputs outputs) {
         if (m_positionControlEnabled) {
             double positionError = m_targetPosition - Units.radiansToDegrees(m_armSim.getAngleRads());

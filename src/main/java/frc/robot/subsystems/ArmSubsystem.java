@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -39,6 +40,8 @@ public class ArmSubsystem extends SubsystemBase{
         SmartDashboard.putString("Intake/ArmHomingState", m_HomingState.name());
         SmartDashboard.putNumber("Intake/ArmPosition", m_armOutputs.position);
         SmartDashboard.putNumber("Intake/ArmVelocity", m_armOutputs.velocity);
+        SmartDashboard.putBoolean("Intake/ArmAtMin", m_armOutputs.position <= ArmConstants.kMinArmAngle);
+        SmartDashboard.putBoolean("Intake/ArmAtMax", m_armOutputs.position >= ArmConstants.kMaxArmAngle);
         if(m_HomingState == ArmHomedState.HOMING) {
             homingHelper();
         }
@@ -75,6 +78,7 @@ public class ArmSubsystem extends SubsystemBase{
     /** Homes the arm by moving it to the zero position. */
     public void beginHoming() {
         if(m_HomingState != ArmHomedState.HOMING) {
+            m_armIO.setSoftLimitsEnabled(false);
             m_HomingState = ArmHomedState.HOMING;
             m_homingTimer.restart();
             m_stallStartSec = -1.0;
@@ -92,6 +96,7 @@ public class ArmSubsystem extends SubsystemBase{
      */
     public void setArmPosition(double position) {
         if (m_HomingState != ArmHomedState.HOMED) {
+            DriverStation.reportWarning("ArmSubsystem: setArmPosition called before homing — ignored", false);
             SmartDashboard.putString("Intake/ArmWarning", "setArmPosition before homing — ignored");
             return;
         }
@@ -109,9 +114,9 @@ public class ArmSubsystem extends SubsystemBase{
         return m_armOutputs.position >= (ArmConstants.kMaxArmAngle - 1.0);
     }
 
-    /** Checks if arm is homed. */
+    /** Returns true once the homing sequence has completed successfully. */
     public boolean isArmHomed() {
-        return m_armOutputs.position <= (ArmConstants.kMinArmAngle + 1.0);
+        return m_HomingState == ArmHomedState.HOMED;
     }
 
     /** Stops the arm. */
@@ -151,9 +156,11 @@ public class ArmSubsystem extends SubsystemBase{
                 && (m_homingTimer.get() - m_stallStartSec) >= ArmConstants.kArmHomingStallSeconds;
 
         if (stallLongEnough) {
-            stop();
             // This stop is the mechanical reference (0). Adjust if your "zero" should be some other angle.
             m_armIO.resetEncoderValue();
+            // Hold at stowed position with active position control instead of passive brake.
+            m_armIO.setPosition(ArmConstants.kMinArmAngle);
+            m_armIO.setSoftLimitsEnabled(true);
             m_HomingState = ArmHomedState.HOMED;
             m_homingTimer.stop();
             return;
@@ -164,6 +171,8 @@ public class ArmSubsystem extends SubsystemBase{
             stop();
             m_HomingState = ArmHomedState.NOT_HOMED;
             m_homingTimer.stop();
+            DriverStation.reportWarning("ArmSubsystem: homing timed out — arm NOT homed. Press right stick to retry.", false);
+            SmartDashboard.putString("Intake/ArmWarning", "Homing timed out — press right stick to retry");
         }
     }
 }
