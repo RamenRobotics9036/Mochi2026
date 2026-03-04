@@ -263,7 +263,22 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_multiTag_greaterDistance_lowerConfidence() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Near estimate — small stdDevs → high confidence.
+        PoseEstimate nearEst = multiTagEstimate(POSE_A, 1.0, 1.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(nearEst);
+        m_cam.periodic();
+        double nearConfidence = m_cam.getConfidenceScore();
+
+        // Far estimate — stdDevs scaled up by (1 + dist² / 30) → lower confidence.
+        PoseEstimate farEst = multiTagEstimate(POSE_A, 6.0, 2.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(farEst);
+        m_cam.periodic();
+        double farConfidence = m_cam.getConfidenceScore();
+
+        assertTrue(farConfidence < nearConfidence,
+            "Confidence at 6 m (" + farConfidence + ") should be lower than at 1 m (" + nearConfidence + ")");
     }
 
     // ------------------------------------------------------------------
@@ -276,7 +291,15 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_singleTag_ambiguityAboveThreshold_isRejected() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // ambiguity 0.71 > 0.7 → lock must be cleared.
+        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.71);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        assertFalse(m_cam.hasTargetLock());
+        assertFalse(m_cam.hasMultiTagLock());
     }
 
     /**
@@ -285,7 +308,15 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_singleTag_ambiguityExactlyAtThreshold_isAccepted() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // ambiguity == 0.7; condition is strictly > 0.7, so this must pass through.
+        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.7);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        assertTrue(m_cam.hasTargetLock());
+        assertTrue(m_cam.getConfidenceScore() > 0.0);
     }
 
     /**
@@ -294,7 +325,19 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_multiTag_highAmbiguity_isStillAccepted() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // tagCount == 2 → the single-tag ambiguity guard is not triggered.
+        RawFiducial f1 = new RawFiducial(3, 0, 0, 0, 2.0, 2.0, 0.9);
+        RawFiducial f2 = new RawFiducial(5, 0, 0, 0, 2.0, 2.0, 0.9);
+        PoseEstimate est = new PoseEstimate(POSE_A, 1.0, 0.0,
+            2, 0.0, 2.0, 0.0, new RawFiducial[]{f1, f2}, false);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        assertTrue(m_cam.hasTargetLock());
+        assertTrue(m_cam.hasMultiTagLock());
+        assertTrue(m_cam.getConfidenceScore() > 0.0);
     }
 
     // ------------------------------------------------------------------
@@ -308,7 +351,16 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_duplicateTimestamp_secondCallIsIgnored() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Both estimates share timestamp 1.0 — second call must be skipped.
+        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+        m_cam.periodic();
+
+        // Consumer must have fired exactly once.
+        assertEquals(1, m_consumeCallCount);
     }
 
     /**
@@ -317,7 +369,18 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_differentTimestamps_bothCallsAreProcessed() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        PoseEstimate est1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        PoseEstimate est2 = singleTagEstimate(POSE_A, 2.0, 2.0, 0.0);
+
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est1);
+        m_cam.periodic();
+
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est2);
+        m_cam.periodic();
+
+        assertEquals(2, m_consumeCallCount);
     }
 
     // ------------------------------------------------------------------
@@ -331,7 +394,20 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_visionDisabled_consumerNotCalled() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Wire a disabled vision supplier.
+        m_cam.setVisionDependencies(() -> false, null, null);
+
+        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        // Consumer must NOT have been called.
+        assertEquals(0, m_consumeCallCount);
+        // But internal state must still reflect a lock.
+        assertTrue(m_cam.hasTargetLock());
+        assertTrue(m_cam.getEstimatedPose().isPresent());
     }
 
     /**
@@ -340,7 +416,16 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_visionEnabled_consumerIsCalled() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        m_cam.setVisionDependencies(() -> true, null, null);
+
+        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        assertEquals(1, m_consumeCallCount);
+        assertEquals(POSE_A, m_lastConsumedPose);
     }
 
     // ------------------------------------------------------------------
@@ -354,7 +439,16 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_motionlessAndMultiTag_injectsKalman() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        m_cam.setVisionDependencies(() -> true, m_kalmanFilter, () -> true);
+
+        PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        Mockito.verify(m_kalmanFilter, Mockito.times(1))
+            .injectVisionMeasurement(POSE_A, 2);
     }
 
     /**
@@ -363,7 +457,16 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_movingAndMultiTag_doesNotInjectKalman() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        m_cam.setVisionDependencies(() -> true, m_kalmanFilter, () -> false);
+
+        PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        Mockito.verify(m_kalmanFilter, Mockito.never())
+            .injectVisionMeasurement(Mockito.any(), Mockito.anyInt());
     }
 
     /**
@@ -372,7 +475,16 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_motionlessAndSingleTag_doesNotInjectKalman() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        m_cam.setVisionDependencies(() -> true, m_kalmanFilter, () -> true);
+
+        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        Mockito.verify(m_kalmanFilter, Mockito.never())
+            .injectVisionMeasurement(Mockito.any(), Mockito.anyInt());
     }
 
     /**
@@ -381,7 +493,12 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_noKalmanFilterSet_doesNotThrow() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // No setVisionDependencies call — Kalman filter remains null.
+        PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        assertDoesNotThrow(() -> m_cam.periodic());
     }
 
     // ------------------------------------------------------------------
@@ -394,7 +511,14 @@ class TestSingleCamOdometry {
      */
     @Test
     void getConfidenceScore_rejectedEstimate_returnsZero() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Single-tag beyond 4 m → stdDevs = MAX_VALUE → confidence must be exactly 0.
+        PoseEstimate est = singleTagEstimate(POSE_A, 5.0, 1.0, 0.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        assertEquals(0.0, m_cam.getConfidenceScore());
     }
 
     /**
@@ -403,7 +527,16 @@ class TestSingleCamOdometry {
      */
     @Test
     void getConfidenceScore_nearZeroDistance_returnsHighScore() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // kMultiTagStdDevs = (0.5, 0.5, 1); at dist≈0 scale≈1 → posUncertainty≈0.707
+        // confidence = 100 * exp(-0.707/2) ≈ 70 → well above 50.
+        PoseEstimate est = multiTagEstimate(POSE_A, 0.01, 1.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        assertTrue(m_cam.getConfidenceScore() >= 50.0,
+            "Expected score >= 50 at near-zero distance, got: " + m_cam.getConfidenceScore());
     }
 
     /**
@@ -412,7 +545,22 @@ class TestSingleCamOdometry {
      */
     @Test
     void getConfidenceScore_multiTagModerateDistance_returnsIntermediateScore() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Multi-tag at near-zero gives highest score (≈70).
+        PoseEstimate nearEst = multiTagEstimate(POSE_A, 0.01, 1.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(nearEst);
+        m_cam.periodic();
+        double maxScore = m_cam.getConfidenceScore();
+
+        // Multi-tag at 3 m: scale = 1 + 9/30 = 1.3 → higher uncertainty → lower score (≈63).
+        PoseEstimate modEst = multiTagEstimate(POSE_A, 3.0, 2.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(modEst);
+        m_cam.periodic();
+        double midScore = m_cam.getConfidenceScore();
+
+        assertTrue(midScore > 0.0 && midScore < maxScore,
+            "Expected 0 < midScore (" + midScore + ") < maxScore (" + maxScore + ")");
     }
 
     // ------------------------------------------------------------------
@@ -425,7 +573,14 @@ class TestSingleCamOdometry {
      */
     @Test
     void getVisibleTagIds_afterLock_returnsRawFiducialIds() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // multiTagEstimate uses fiducial IDs 3 and 5.
+        PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        assertEquals(List.of(3, 5), m_cam.getVisibleTagIds());
     }
 
     /**
@@ -434,7 +589,14 @@ class TestSingleCamOdometry {
      */
     @Test
     void getPrimaryTagId_afterLock_returnsFirstFiducialId() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // multiTagEstimate: first fiducial has ID 3.
+        PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        assertEquals(3, m_cam.getPrimaryTagId());
     }
 
     /**
@@ -443,7 +605,13 @@ class TestSingleCamOdometry {
      */
     @Test
     void getVisibleTagIds_noTargets_returnsEmpty_andPrimaryTagIdIsMinusOne() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(null);
+
+        m_cam.periodic();
+
+        assertTrue(m_cam.getVisibleTagIds().isEmpty());
+        assertEquals(-1, m_cam.getPrimaryTagId());
     }
 
     /**
@@ -452,7 +620,15 @@ class TestSingleCamOdometry {
      */
     @Test
     void getPrimaryTagTx_afterLock_returnsLimelightTxValue() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        m_limelightMock.when(() -> LimelightHelpers.getTX(CAM_NAME)).thenReturn(12.5);
+
+        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        assertEquals(12.5, m_cam.getPrimaryTagTx());
     }
 
     /**
@@ -461,6 +637,11 @@ class TestSingleCamOdometry {
      */
     @Test
     void getPrimaryTagTx_noTargets_returnsZero() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(null);
+
+        m_cam.periodic();
+
+        assertEquals(0.0, m_cam.getPrimaryTagTx());
     }
 }
