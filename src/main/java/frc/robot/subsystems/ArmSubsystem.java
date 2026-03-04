@@ -119,8 +119,11 @@ public class ArmSubsystem extends SubsystemBase{
         return m_HomingState == ArmHomedState.HOMED;
     }
 
-    /** Stops the arm. */
+    /** Stops the arm. Does nothing if homing is in progress (homingHelper manages motor output). */
     public void stop(){
+        if (m_HomingState == ArmHomedState.HOMING) {
+            return;
+        }
         m_armIO.stop();
     }
 
