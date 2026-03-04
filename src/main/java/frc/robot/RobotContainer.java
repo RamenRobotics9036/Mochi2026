@@ -352,6 +352,12 @@ public class RobotContainer {
             )
         ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
 
+        operateController.b().whileTrue(
+            new RunCommand(
+                () -> System.out.println(   "Climber Position:" + (climberSubsystem.getEncoderValue()/ClimberConstants.kGearRatio)),
+                climberSubsystem
+            )
+        );
         operateController.povLeft().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setAngle(120)));
         operateController.povRight().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setAngle(0)));
 
