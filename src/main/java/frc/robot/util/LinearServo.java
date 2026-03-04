@@ -15,10 +15,17 @@ public class LinearServo extends Servo {
     private double lastTime;
     private final String m_name;
 
+    /** Position tolerance, used solely for the isFinished() function [mm] */
     private static final double POSITION_TOLERANCE_MM = 0.5;
     /** Default step size for incremental hood adjustments [mm] */
     public static final double DEFAULT_STEP_MM = 5.0;
 
+    /** Creates a new linear actuator servo
+     * 
+     * @param channel PWM channel for the linear actuator servo
+     * @param length Max length for the linear actuator servo [mm]
+     * @param speed Max no-load speed for the linear actuator servo [mm/s]
+     */
     public LinearServo(int channel, int length, int speed, int minPulseUs, int maxPulseUs) {
         super(channel);
         m_length = length;
@@ -43,6 +50,7 @@ public class LinearServo extends Servo {
      * Call this on a button press (not held) for discrete control.
      */
     public void stepExtend() {
+        System.out.println("Setting length to " + Double.toString(setPos - DEFAULT_STEP_MM) + " mm");
         setLinearPosition(setPos + DEFAULT_STEP_MM);
     }
 
@@ -51,6 +59,7 @@ public class LinearServo extends Servo {
      * @param stepMm step size in mm (positive = extend)
      */
     public void stepExtend(double stepMm) {
+        System.out.println("Setting length to " + Double.toString(setPos + Math.abs(stepMm)) + " mm using custom increments");
         setLinearPosition(setPos + Math.abs(stepMm));
     }
 
@@ -73,7 +82,11 @@ public class LinearServo extends Servo {
     public void setLinearPosition(double setpoint) {
         setPos = MathUtil.clamp(setpoint, 0, m_length);
         double fraction = setPos / m_length;
+
+
         super.setPosition(fraction);
+        System.out.println("Raw mm setpoint: " + Double.toString(setpoint) + ", clamped setpoint: " + Double.toString(setPos) + ", final fraction: " + Double.toString(fraction));
+        System.out.println("---");
     }
 
     public void updateCurPos() {

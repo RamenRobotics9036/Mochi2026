@@ -39,6 +39,8 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void nudgeHoodPosition(double deltaMm) {
+        System.out.println("Nudging hood by " + Double.toString(deltaMm));
+        System.out.println("Target nudge position: " + Double.toString(m_hood.getSetpoint() + deltaMm));
         m_hood.setLinearPosition(m_hood.getSetpoint() + deltaMm);
     }
 
