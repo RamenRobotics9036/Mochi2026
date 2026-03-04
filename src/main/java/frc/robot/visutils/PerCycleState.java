@@ -8,7 +8,7 @@ import java.util.Optional;
  */
 @SuppressWarnings("MemberName")
 public class PerCycleState {
-    public Optional<SingleCamOdometry> bestLockedCam;
+    public Optional<CamOdometryInterface> bestLockedCam;
     public double bestLockedCamScore;
 
     public boolean hasTargetLock;

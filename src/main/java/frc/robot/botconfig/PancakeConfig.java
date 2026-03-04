@@ -100,7 +100,7 @@ public class PancakeConfig implements BotConfigInterface {
      ************************************************************************************/
 
     private final List<CameraInfo> m_cameras = List.of(
-        new CameraInfo("limelight-fixed", new Transform3d(
+        new CameraInfo("limelight-fixedii", new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(-0.5),  // 1/2 inch back
                 Units.inchesToMeters(4.0),   // 4 inches left of center
@@ -108,9 +108,13 @@ public class PancakeConfig implements BotConfigInterface {
             ),
             new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
         )),
-        new CameraInfo("limelight-fixed2", new Transform3d(
-            new Translation3d(-0.5, 0.0, 0.5),
-            new Rotation3d(0, 0, Math.PI)
+        new CameraInfo("limelight-threea", new Transform3d(
+            new Translation3d(
+                Units.inchesToMeters(-0.5),  // 1/2 inch back
+                Units.inchesToMeters(-4.0),   // 4 inches RIGHT of center
+                Units.inchesToMeters(16.5)   // 12.5" deck + 4" mount
+            ),
+            new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
         ))
     );
 

@@ -1,7 +1,10 @@
 package frc.robot.visutils;
 
 import frc.robot.botconfig.BotConfigInterface;
+import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import java.util.ArrayList;
+import java.util.List;
 
 /** Factory for creating and wiring up a {@link MultiCamOdometry} instance. */
 public class MultiCamOdometryFactory {
@@ -17,18 +20,24 @@ public class MultiCamOdometryFactory {
      * @param basicInfoDashboard Dashboard to receive vision confidence/status updates
      * @param visionKalmanFilter Kalman filter for stationary vision estimation
      * @param motionlessTracker  Tracks whether the robot is motionless
-     * @return A fully configured {@link MultiCamOdometry} instance
+     * @return A fully configured {@link CamOdometryInterface} instance
      */
-    public static MultiCamOdometry create(
+    public static CamOdometryInterface create(
             BotConfigInterface configInterface,
             VisionSimInterface.EstimateConsumer poseConsumer,
             BasicInfoDashboard basicInfoDashboard,
             VisionKalmanFilter visionKalmanFilter,
             MotionlessTracker motionlessTracker) {
 
-        MultiCamOdometry multiCam = new MultiCamOdometry(
-            configInterface,
-            poseConsumer);
+        List<CamOdometryInterface> cameras = new ArrayList<>();
+        for (CameraInfo camInfo : configInterface.getCameras()) {
+            cameras.add(new SingleCamOdometry(
+                camInfo.cameraName,
+                camInfo.robotToCam,
+                poseConsumer));
+        }
+
+        CamOdometryInterface multiCam = new MultiCamOdometry(cameras);
 
         multiCam.setVisionDependencies(
             basicInfoDashboard::isVisionEnabled,
