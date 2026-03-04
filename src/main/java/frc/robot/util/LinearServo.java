@@ -50,7 +50,7 @@ public class LinearServo extends Servo {
      * Call this on a button press (not held) for discrete control.
      */
     public void stepExtend() {
-        System.out.println("Setting length to " + Double.toString(setPos - DEFAULT_STEP_MM) + " mm");
+        System.out.println("Setting length to " + Double.toString(setPos + DEFAULT_STEP_MM) + " mm");
         setLinearPosition(setPos + DEFAULT_STEP_MM);
     }
 
@@ -59,7 +59,6 @@ public class LinearServo extends Servo {
      * @param stepMm step size in mm (positive = extend)
      */
     public void stepExtend(double stepMm) {
-        System.out.println("Setting length to " + Double.toString(setPos + Math.abs(stepMm)) + " mm using custom increments");
         setLinearPosition(setPos + Math.abs(stepMm));
     }
 
@@ -68,6 +67,7 @@ public class LinearServo extends Servo {
      * Call this on a button press (not held) for discrete control.
      */
     public void stepRetract() {
+        System.out.println("Setting length to " + Double.toString(setPos - DEFAULT_STEP_MM) + " mm");
         setLinearPosition(setPos - DEFAULT_STEP_MM);
     }
 
@@ -82,7 +82,6 @@ public class LinearServo extends Servo {
     public void setLinearPosition(double setpoint) {
         setPos = MathUtil.clamp(setpoint, 0, m_length);
         double fraction = setPos / m_length;
-
 
         super.setPosition(fraction);
         System.out.println("Raw mm setpoint: " + Double.toString(setpoint) + ", clamped setpoint: " + Double.toString(setPos) + ", final fraction: " + Double.toString(fraction));

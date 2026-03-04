@@ -25,12 +25,12 @@ public class ShooterDefaultCommand extends Command{
 
     @Override
     public void execute() {
-        int pov = m_controller.getHID().getPOV();
-        if (pov == 90) {
-            m_shooter.nudgeHoodPosition(ShooterConstants.kHoodJogMmPerTick);
-        } else if (pov == 270) {
-            m_shooter.nudgeHoodPosition(-ShooterConstants.kHoodJogMmPerTick);
-        }
+        // int pov = m_controller.getHID().getPOV();
+        // if (pov == 90) {
+        //     m_shooter.nudgeHoodPosition(ShooterConstants.kHoodJogMmPerTick);
+        // } else if (pov == 270) {
+        //     m_shooter.nudgeHoodPosition(-ShooterConstants.kHoodJogMmPerTick);
+        // }
 
         if (m_controller.getRightTriggerAxis() > 0){
             m_shooter.setSpeed(ShooterConstants.kShootSpeed);

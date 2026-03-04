@@ -403,14 +403,13 @@ public class RobotContainer {
             )
         ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
 
-        //TODO: Why are these here if the same keys are being used in ShooterDefaultCommand to do non-incremental control?
-        // // POV Left: Extend hood (step increment per press)
-        // operateController.povLeft().onTrue(
-        //     new InstantCommand(shooterSubsystem::stepHoodExtend, shooterSubsystem));
+        // POV Left: Extend hood (step increment per press)
+        operateController.povLeft().onTrue(
+            new InstantCommand(shooterSubsystem::stepHoodExtend, shooterSubsystem));
 
-        // // POV Right: Retract hood (step increment per press)
-        // operateController.povRight().onTrue(
-        //     new InstantCommand(shooterSubsystem::stepHoodRetract, shooterSubsystem));
+        // POV Right: Retract hood (step increment per press)
+        operateController.povRight().onTrue(
+            new InstantCommand(shooterSubsystem::stepHoodRetract, shooterSubsystem));
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
