@@ -61,5 +61,6 @@
   "editor.formatOnSave": false,
   "java.format.settings.url": ".vscode/RamenFormatting.xml",
   "java.checkstyle.configuration": "${workspaceFolder}/.vscode/RamenCheckstyle.xml",
-  "java.checkstyle.version": "10.23.0"
+  "java.checkstyle.version": "10.23.0",
+  "python.analysis.extraPaths": ["testpaths"]
 }
