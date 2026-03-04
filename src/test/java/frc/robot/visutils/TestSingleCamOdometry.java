@@ -245,7 +245,15 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_multiTag_beyondFourMeters_isAccepted() {
-        throw new UnsupportedOperationException("Not yet implemented");
+        PoseEstimate est = multiTagEstimate(POSE_A, 6.0, 1.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+
+        m_cam.periodic();
+
+        assertTrue(m_cam.hasTargetLock());
+        assertTrue(m_cam.hasMultiTagLock());
+        assertTrue(m_cam.getConfidenceScore() > 0.0);
     }
 
     /**
