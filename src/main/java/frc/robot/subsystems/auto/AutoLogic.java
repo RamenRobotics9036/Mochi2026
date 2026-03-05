@@ -99,10 +99,16 @@ public final class  AutoLogic {
 
         // Pathplanner Autos
         autoPicker.addOption("Center Auto", "Center Auto");
-        autoPicker.addOption("Scale test", "Scale test");
-        autoPicker.addOption("Diagonal path", "Diagonal path");
         autoPicker.addOption("Cross", "Cross");
         autoPicker.setDefaultOption("testing shoot", "testing shoot");
+        autoPicker.addOption("testing intake fuel", "testing intake fuel");
+        autoPicker.addOption("testing jiggle", "testing jiggle");
+        autoPicker.addOption("R_Zone_Shoot_Home", "R_Zone_Shoot_Home");
+        autoPicker.addOption("L_Zone_Shoot_Home", "L_Zone_Shoot_Home");
+        autoPicker.addOption("C_ClimbShoot", "C_ClimbShoot");
+        autoPicker.addOption("C_Back_Spot_Shoot", "C_Back_Spot_Shoot");
+        autoPicker.addOption("R_Still_Shoot", "R_Still_Shoot");
+        autoPicker.addOption("L_Still_Shoot", "L_Still_Shoot");
     }
 
     /**
