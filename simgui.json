@@ -20,6 +20,7 @@
       "/SmartDashboard/Module 3": "Mechanism2d",
       "/SmartDashboard/PathPlanner": "Alerts",
       "/SmartDashboard/PhotonAlerts": "Alerts",
+      "/SmartDashboard/Sim/CycleResetPosition": "Command",
       "/SmartDashboard/Test Subsystems": "Command",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d"
     },

@@ -218,8 +218,10 @@ public class RobotContainer {
         AutoLogic.initShuffleboard(drivetrain);
         DashboardFactory.initDebugDashboard(
             m_configInterface,
+            m_simWrapper,
             m_glassField,
             m_driveAccuracyTester,
+            drivetrain,
             intakeSubsystem,
             m_indexerSubsystem,
             shooterSubsystem,
