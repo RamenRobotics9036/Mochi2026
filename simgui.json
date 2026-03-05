@@ -35,6 +35,11 @@
           "visible": true
         }
       },
+      "/Shuffleboard/Autos/Auto Selector": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/GlassField": {
         "AAABlueTape": {
           "arrows": false,
