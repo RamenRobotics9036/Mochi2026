@@ -7,13 +7,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Center Return"
+            "pathName": "C_BackShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Center"
+            "pathName": "C_ReturnShoot"
           }
         }
       ]

@@ -7,13 +7,25 @@
         {
           "type": "path",
           "data": {
-            "pathName": "GetFuel"
+            "pathName": "C_BackShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "FuelReturn"
+            "pathName": "C_BackClimb"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Full Auto Climb"
           }
         }
       ]

@@ -5,9 +5,27 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "SimpleDriveForwards"
+            "pathName": "R_Zone"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "get fuel"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "R_Return"
           }
         },
         {

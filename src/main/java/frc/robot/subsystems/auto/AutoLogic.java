@@ -97,12 +97,20 @@ public final class  AutoLogic {
         // Manual Autos
         autoPicker.addOption("Manual: Drive 2m Forward", K_MANUAL_DRIVE_NAME);
 
-        // Pathplanner Autos
-        autoPicker.addOption("Center Auto", "Center Auto");
-        autoPicker.addOption("Scale test", "Scale test");
-        autoPicker.addOption("Diagonal path", "Diagonal path");
-        autoPicker.addOption("Cross", "Cross");
+        // DEFAULT pathplanner auto
         autoPicker.setDefaultOption("testing shoot", "testing shoot");
+
+        // Rest of pathplanner Autos
+        autoPicker.addOption("Idos Backward then Forward", "Idos Backward then Forward");
+        autoPicker.addOption("Cross", "Cross");
+        autoPicker.addOption("testing intake fuel", "testing intake fuel");
+        autoPicker.addOption("testing jiggle", "testing jiggle");
+        autoPicker.addOption("R_Zone_Shoot_Home", "R_Zone_Shoot_Home");
+        autoPicker.addOption("L_Zone_Shoot_Home", "L_Zone_Shoot_Home");
+        autoPicker.addOption("C_ClimbShoot", "C_ClimbShoot");
+        autoPicker.addOption("C_Back_Spot_Shoot", "C_Back_Spot_Shoot");
+        autoPicker.addOption("R_Still_Shoot", "R_Still_Shoot");
+        autoPicker.addOption("L_Still_Shoot", "L_Still_Shoot");
     }
 
     /**
