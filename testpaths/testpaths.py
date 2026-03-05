@@ -59,20 +59,31 @@ def check_all_control_point_lengths(errors: list[str]) -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    errors: list[str] = []
-    check_every_auto_references_only_existing_path_files(errors)
-    check_all_autos_path_states_are_consistent(errors)
-    check_all_headings_are_aligned(errors)
-    check_all_waypoints_not_askew(errors)
-    check_all_path_position_continuity(errors)
-    check_all_control_point_lengths(errors)
+    checks = [
+        ("Missing path files",           check_every_auto_references_only_existing_path_files),
+        ("Path state consistency",       check_all_autos_path_states_are_consistent),
+        ("Heading alignment",            check_all_headings_are_aligned),
+        ("Waypoints not askew",          check_all_waypoints_not_askew),
+        ("Path position continuity",     check_all_path_position_continuity),
+        ("Control point lengths",        check_all_control_point_lengths),
+    ]
 
     # $TODO - We should check for consistency in the global constants in paths,
     # like max rotation velocity, etc.
 
-    if errors:
-        for error in errors:
-            print(f"ERROR: {error}", file=sys.stderr)
+    # $TODO - We should check that resetodometry is set for all paths!
+
+    any_errors = False
+    for header, check_fn in checks:
+        section_errors: list[str] = []
+        check_fn(section_errors)
+        if section_errors:
+            any_errors = True
+            print(f"\n--- {header} ---", file=sys.stderr)
+            for error in section_errors:
+                print(f"ERROR: {error}", file=sys.stderr)
+
+    if any_errors:
         sys.exit(1)
 
     print("All path checks passed.")
