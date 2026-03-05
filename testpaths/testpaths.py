@@ -62,9 +62,9 @@ def main() -> None:
     checks = [
         ("Missing path files",           check_every_auto_references_only_existing_path_files),
         ("Path state consistency",       check_all_autos_path_states_are_consistent),
-        ("Heading alignment",            check_all_headings_are_aligned),
-        ("Waypoints not askew",          check_all_waypoints_not_askew),
         ("Path position continuity",     check_all_path_position_continuity),
+        ("Heading alignment",            check_all_headings_are_aligned),
+        ("Waypoints askew",          check_all_waypoints_not_askew),
         ("Control point lengths",        check_all_control_point_lengths),
     ]
 
