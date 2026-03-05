@@ -47,6 +47,8 @@ public class MultiCamOdometry implements CamOdometryInterface {
      */
     @Override
     public void periodic() {
+        int num = 0;
+
         m_perCycleState.reset();
 
         for (CamOdometryInterface cam : m_cameras) {
@@ -55,6 +57,7 @@ public class MultiCamOdometry implements CamOdometryInterface {
             // Only consider cameras that actually have a target lock;
             // without this guard a camera with score 0 beats the -1 reset sentinel.
             double singleCamScore = cam.getConfidenceScore();
+
             if (singleCamScore > 0 && singleCamScore > m_perCycleState.bestLockedCamScore) {
                 m_perCycleState.bestLockedCam = Optional.of(cam);
                 m_perCycleState.bestLockedCamScore = singleCamScore;

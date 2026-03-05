@@ -29,8 +29,12 @@ public class MultiCamOdometryFactory {
             VisionKalmanFilter visionKalmanFilter,
             MotionlessTracker motionlessTracker) {
 
+        String finalstr = "";
+
         List<CamOdometryInterface> cameras = new ArrayList<>();
         for (CameraInfo camInfo : configInterface.getCameras()) {
+            String str = "**ADDING CAMERA: " + camInfo.cameraName;
+            finalstr = finalstr + str;
             cameras.add(new SingleCamOdometry(
                 camInfo.cameraName,
                 camInfo.robotToCam,
