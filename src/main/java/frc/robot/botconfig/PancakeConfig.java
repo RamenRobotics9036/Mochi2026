@@ -114,7 +114,7 @@ public class PancakeConfig implements BotConfigInterface {
                 Units.inchesToMeters(2.0),   // 4 inches RIGHT of center
                 Units.inchesToMeters(9.0)   // 12.5" deck + 4" mount
             ),
-            new Rotation3d(0, Math.toRadians(-28), 0)  // 23 degrees up
+            new Rotation3d(0, Math.toRadians(-28), Math.toRadians(180))  // 23 degrees up
         ))
     );
 
