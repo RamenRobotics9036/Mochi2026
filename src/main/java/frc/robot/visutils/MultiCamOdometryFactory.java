@@ -58,6 +58,7 @@ public class MultiCamOdometryFactory {
             multiCam::hasMultiTagLock,
             multiCam::getPrimaryTagTx,
             multiCam::getVisibleTagIds,
+            multiCam::getVisionErrorAtSnapTime,
             motionlessTracker::isMotionless,
             motionlessTracker::getSecondsStill);
 
