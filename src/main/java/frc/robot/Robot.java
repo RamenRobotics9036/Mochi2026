@@ -89,7 +89,7 @@ public class Robot extends TimedRobot {
     SwerveDriveState driveState = m_robotContainer.drivetrain.getState();
 
     // Take field info gathered, and show it on dashboard
-    updateFieldDisplay(
+    m_robotContainer.m_showVisionOnField.updateFieldDisplay(
         showVisPose,
         kalmanDisplay,
         blueTapePose,
@@ -101,29 +101,6 @@ public class Robot extends TimedRobot {
     if (m_robotContainer.basicInfoDashboard != null) {
         m_robotContainer.basicInfoDashboard.update();
     }
-  }
-
-  private void updateFieldDisplay(
-      Optional<Pose2d> showVisPose,
-      DisplayInfo kalmanDisplay,
-      Optional<Pose2d> blueTapePose,
-      Optional<Pose2d> redTapePose,
-      SwerveDriveState driveState) {
-
-      // Show estimate pose for vision, if we currently see AprilTag.
-      m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(showVisPose);
-
-      // Show VisionKalmanFilter converged pose (offset forward for visibility)
-      m_robotContainer.m_showVisionOnField.showKalmanVisionPose(
-          kalmanDisplay.pose(),
-          kalmanDisplay.hasConverged() ? 0 : 1);
-
-      // Show tape locations on field
-      m_robotContainer.m_showVisionOnField.showBlueTape(blueTapePose);
-      m_robotContainer.m_showVisionOnField.showRedTape(redTapePose);
-
-      // Show robot pose and wheel positions on field
-      m_robotContainer.m_showVisionOnField.showEstimatedPoseAndWheels(driveState);
   }
 
   @Override
