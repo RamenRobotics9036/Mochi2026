@@ -32,6 +32,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
     private double m_lastTimestamp = 0;
 
     private Optional<Pose2d> m_latestVisPose = Optional.empty();
+    private Optional<Transform2d> m_latestVisionError = Optional.empty();
     private double m_curConfidenceScore = 0.0;
     // Booleans mirror the CamOdometryInterface contract directly;
     // no consumer needs the raw tag count.
@@ -148,6 +149,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
         m_hasMultiTagLock = false;
         m_tx = 0.0;
         m_targetList = Collections.emptyList();
+        m_latestVisionError = Optional.empty();
     }
 
     private void setResults(double confidenceScore, int numLockedTags,
@@ -235,6 +237,10 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
         m_lastTimestamp = mt1.timestampSeconds;
 
+        // We track how far-off this vision estimate is, using the ACTUAL pose in the past
+        // of where the robot was when the camera image was snapped.
+        m_latestVisionError = calcVisionErrorAtSnapTime(mt1.pose, mt1.timestampSeconds);
+
         // Update std devs based on tag count and distance.  And confidence score.
         m_curStdDevs = calculateEstimationStdDevs(mt1);
         m_curConfidenceScore = getConfidenceScore(m_curStdDevs);
@@ -267,8 +273,6 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
 
         if (m_estConsumer != null) {
-            // $TODO - estConsumer should also get the result of calcVisionErrorAtSnapTime, to know time-appropriate
-            // offset of vision pose at TIME of snapshot.
             m_estConsumer.accept(mt1.pose, mt1.timestampSeconds, m_curStdDevs);
         }
     }
@@ -325,6 +329,11 @@ public class SingleCamOdometry implements CamOdometryInterface {
         double confidence = 100.0 * Math.exp(-posUncertainty / 2.0);
 
         return Math.max(0, Math.min(100, confidence));
+    }
+
+    @Override
+    public Optional<Transform2d> getVisionErrorAtSnapTime() {
+        return m_latestVisionError;
     }
 
     @Override

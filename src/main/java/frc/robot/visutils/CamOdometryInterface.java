@@ -1,6 +1,7 @@
 package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
@@ -10,6 +11,14 @@ public interface CamOdometryInterface {
      * Get pose estimate from the camera with highest confidence score.
      */
     Optional<Pose2d> getEstimatedPose();
+
+    /**
+     * Returns the offset between where wheel odometry thought the robot was at
+     * the image-capture timestamp and where vision says it is.
+     * Empty if no pose sampler is wired up, the pose buffer is too short,
+     * or no camera had a lock this cycle.
+     */
+    Optional<Transform2d> getVisionErrorAtSnapTime();
 
     /**
      * Get confidence score of the camera with highest confidence score.
