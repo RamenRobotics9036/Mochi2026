@@ -98,7 +98,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
      * @return The Transform2d offset, or empty if no sampler is set or the
      *         pose buffer has no entry for that timestamp
      */
-    private Optional<Transform2d> calcTranslationAtSnapTime(
+    private Optional<Transform2d> calcVisionErrorAtSnapTime(
             Pose2d visionPose, double fpgaTimestampSeconds) {
         if (m_poseSampler == null) {
             return Optional.empty();
@@ -267,7 +267,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
 
         if (m_estConsumer != null) {
-            // $TODO - estConsumer should also get the result of calcTranslationAtSnapTime, to know time-appropriate
+            // $TODO - estConsumer should also get the result of calcVisionErrorAtSnapTime, to know time-appropriate
             // offset of vision pose at TIME of snapshot.
             m_estConsumer.accept(mt1.pose, mt1.timestampSeconds, m_curStdDevs);
         }
