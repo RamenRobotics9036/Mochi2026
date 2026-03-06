@@ -83,6 +83,42 @@ public class SingleCamOdometry implements CamOdometryInterface {
         m_poseSampler = poseSampler;
     }
 
+    /**
+     * Calculates the offset between where the drivetrain thought the robot was
+     * at the camera snap timestamp and where vision says it is now.
+     *
+     * <p>Calls {@code m_poseSampler} (i.e. {@code drivetrain::samplePoseAt}) with
+     * the FPGA timestamp converted to the {@link Utils#getCurrentTimeSeconds()} epoch,
+     * then returns the {@link Transform2d} from that sampled pose to {@code visionPose}
+     * (translation + rotation delta).
+     *
+     * @param visionPose           The pose reported by vision for this measurement
+     * @param fpgaTimestampSeconds FPGA timestamp (seconds) when the image was captured
+     *                             (i.e. {@code mt1.timestampSeconds})
+     * @return The Transform2d offset, or empty if no sampler is set or the
+     *         pose buffer has no entry for that timestamp
+     */
+    private Optional<Transform2d> calcTranslationAtSnapTime(
+            Pose2d visionPose, double fpgaTimestampSeconds) {
+        if (m_poseSampler == null) {
+            return Optional.empty();
+        }
+
+        // samplePoseAt requires getCurrentTimeSeconds epoch, not FPGA epoch
+        double currentTimeEpoch = Utils.fpgaToCurrentTime(fpgaTimestampSeconds);
+        Optional<Pose2d> sampledPose = m_poseSampler.apply(currentTimeEpoch);
+        if (sampledPose.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Transform2d from sampledPose → visionPose (translation + rotation offset)
+        Optional<Transform2d> result = Optional.of(visionPose.minus(sampledPose.get()));
+
+        // System.out.println(String.format("Vision offset at snap time: (x=%.2f m, y=%.2f m, rot=%.1f°)",
+        //     result.get().getX(), result.get().getY(), result.get().getRotation().getDegrees()));
+
+        return result;
+    }
 
     /**
      * Sets the dependencies needed for vision processing.
@@ -231,6 +267,8 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
 
         if (m_estConsumer != null) {
+            // $TODO - estConsumer should also get the result of calcTranslationAtSnapTime, to know time-appropriate
+            // offset of vision pose at TIME of snapshot.
             m_estConsumer.accept(mt1.pose, mt1.timestampSeconds, m_curStdDevs);
         }
     }
