@@ -358,6 +358,24 @@
               "period": 0.06,
               "data_type": "boolean"
             }
+          },
+          {
+            "title": "Vision Pose vs. Estimate Pose",
+            "x": 0.0,
+            "y": 512.0,
+            "width": 896.0,
+            "height": 256.0,
+            "type": "Graph",
+            "properties": {
+              "topic": "/BasicInfo/VisErrorCentimeters",
+              "period": 0.033,
+              "data_type": "double",
+              "time_displayed": 5.0,
+              "min_value": 0.0,
+              "max_value": 25.0,
+              "color": 4278238420,
+              "line_width": 2.0
+            }
           }
         ]
       }

@@ -53,6 +53,7 @@ public class BasicInfoDashboard {
     private final BooleanPublisher m_multiLocked = m_basicInfoTable.getBooleanTopic("MultiLocked").publish();
     private final DoublePublisher m_visionTx = m_basicInfoTable.getDoubleTopic("VisionTx").publish();
     private final StringPublisher m_targetList = m_basicInfoTable.getStringTopic("TargetList").publish();
+    private final DoublePublisher m_visErrorCentimeters = m_basicInfoTable.getDoubleTopic("VisErrorCentimeters").publish();
 
     /** Bidirectional toggle for enabling/disabling vision measurement injection. */
     private final BooleanEntry m_visionEnabled =
@@ -170,6 +171,10 @@ public class BasicInfoDashboard {
         m_visionKalmanSupplier = supplier;
     }
 
+    private static double calcVisErrorMeters(Optional<Transform2d> error) {
+        return error.map(t -> t.getTranslation().getNorm()).orElse(0.0);
+    }
+
     private static String targetListToString(List<Integer> targets) {
         return targets.stream()
             .map(String::valueOf)
@@ -231,6 +236,10 @@ public class BasicInfoDashboard {
         if (m_txSupplier != null) {
             m_visionTx.set(m_txSupplier.getAsDouble());
         }
+        if (m_visErrorAtSnapTimeSupplier != null) {
+            m_visErrorCentimeters.set(100.0 * calcVisErrorMeters(m_visErrorAtSnapTimeSupplier.get()));
+        }
+
         if (m_targetListSupplier != null) {
             List<Integer> targets = m_targetListSupplier.get();
             boolean hasTargets = !targets.isEmpty();
