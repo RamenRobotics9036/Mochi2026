@@ -240,6 +240,7 @@ public class RobotContainer {
 
         m_multiCamlimelight = MultiCamOdometryFactory.create(
             m_configInterface,
+            drivetrain::samplePoseAt,
             drivetrain::addVisionMeasurement,
             basicInfoDashboard,
             m_visionKalmanFilter,

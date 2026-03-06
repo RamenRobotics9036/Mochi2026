@@ -6,16 +6,19 @@ import static frc.robot.sim.visionproducers.VisionSimConstants.Vision.kSingleTag
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import com.ctre.phoenix6.Utils;
 import frc.robot.LimelightHelpers;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 
@@ -42,6 +45,9 @@ public class SingleCamOdometry implements CamOdometryInterface {
     private BooleanSupplier m_isMotionlessSupplier = null;
     private BooleanSupplier m_visionEnabledSupplier = () -> true;
 
+    // Samples the drivetrain's historical pose at a given FPGA timestamp (seconds)
+    private Function<Double, Optional<Pose2d>> m_poseSampler = null;
+
     /** Constructor. */
     public SingleCamOdometry(
         String limelightName,
@@ -65,6 +71,18 @@ public class SingleCamOdometry implements CamOdometryInterface {
             Math.toDegrees(robotToCam.getRotation().getZ())
         );
     }
+
+    /**
+     * Sets a function that samples the drivetrain's pose history at a given
+     * timestamp in the {@link Utils#getCurrentTimeSeconds()} epoch.
+     * Pass {@code drivetrain::samplePoseAt} here.
+     *
+     * @param poseSampler Function from getCurrentTimeSeconds timestamp to an Optional pose
+     */
+    public void setPoseSampler(Function<Double, Optional<Pose2d>> poseSampler) {
+        m_poseSampler = poseSampler;
+    }
+
 
     /**
      * Sets the dependencies needed for vision processing.

@@ -1,10 +1,13 @@
 package frc.robot.visutils;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 /** Factory for creating and wiring up a {@link MultiCamOdometry} instance. */
 public class MultiCamOdometryFactory {
@@ -16,6 +19,8 @@ public class MultiCamOdometryFactory {
      * Creates a {@link MultiCamOdometry} and wires it to the dashboard and vision filter.
      *
      * @param configInterface    Bot configuration (cameras, speeds, etc.)
+     * @param poseSampler        Samples the drivetrain's historical pose at a given timestamp
+     *                           (e.g. {@code drivetrain::samplePoseAt})
      * @param poseConsumer       Consumer for vision pose estimates (e.g. {@code drivetrain::addVisionMeasurement})
      * @param basicInfoDashboard Dashboard to receive vision confidence/status updates
      * @param visionKalmanFilter Kalman filter for stationary vision estimation
@@ -24,6 +29,7 @@ public class MultiCamOdometryFactory {
      */
     public static CamOdometryInterface create(
             BotConfigInterface configInterface,
+            Function<Double, Optional<Pose2d>> poseSampler,
             VisionSimInterface.EstimateConsumer poseConsumer,
             BasicInfoDashboard basicInfoDashboard,
             VisionKalmanFilter visionKalmanFilter,
@@ -31,10 +37,12 @@ public class MultiCamOdometryFactory {
 
         List<CamOdometryInterface> cameras = new ArrayList<>();
         for (CameraInfo camInfo : configInterface.getCameras()) {
-            cameras.add(new SingleCamOdometry(
+            SingleCamOdometry cam = new SingleCamOdometry(
                 camInfo.cameraName,
                 camInfo.robotToCam,
-                poseConsumer));
+                poseConsumer);
+            cam.setPoseSampler(poseSampler);
+            cameras.add(cam);
         }
 
         CamOdometryInterface multiCam = new MultiCamOdometry(cameras);
