@@ -47,16 +47,18 @@ public class SingleCamOdometry implements CamOdometryInterface {
     private BooleanSupplier m_visionEnabledSupplier = () -> true;
 
     // Samples the drivetrain's historical pose at a given FPGA timestamp (seconds)
-    private Function<Double, Optional<Pose2d>> m_poseSampler = null;
+    private final Function<Double, Optional<Pose2d>> m_poseSampler;
 
     /** Constructor. */
     public SingleCamOdometry(
         String limelightName,
         Transform3d robotToCam,
-        VisionSimInterface.EstimateConsumer poseConsumer) {
+        VisionSimInterface.EstimateConsumer poseConsumer,
+        Function<Double, Optional<Pose2d>> poseSampler) {
 
         m_estConsumer = poseConsumer;
         m_limelightName = limelightName;
+        m_poseSampler = poseSampler;
 
         setCameraPoseRobotSpace(m_limelightName, robotToCam);
     }
@@ -71,17 +73,6 @@ public class SingleCamOdometry implements CamOdometryInterface {
             Math.toDegrees(robotToCam.getRotation().getY()),
             Math.toDegrees(robotToCam.getRotation().getZ())
         );
-    }
-
-    /**
-     * Sets a function that samples the drivetrain's pose history at a given
-     * timestamp in the {@link Utils#getCurrentTimeSeconds()} epoch.
-     * Pass {@code drivetrain::samplePoseAt} here.
-     *
-     * @param poseSampler Function from getCurrentTimeSeconds timestamp to an Optional pose
-     */
-    public void setPoseSampler(Function<Double, Optional<Pose2d>> poseSampler) {
-        m_poseSampler = poseSampler;
     }
 
     /**

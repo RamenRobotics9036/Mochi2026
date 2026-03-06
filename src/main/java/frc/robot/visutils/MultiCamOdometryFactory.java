@@ -37,12 +37,11 @@ public class MultiCamOdometryFactory {
 
         List<CamOdometryInterface> cameras = new ArrayList<>();
         for (CameraInfo camInfo : configInterface.getCameras()) {
-            SingleCamOdometry cam = new SingleCamOdometry(
+            cameras.add(new SingleCamOdometry(
                 camInfo.cameraName,
                 camInfo.robotToCam,
-                poseConsumer);
-            cam.setPoseSampler(poseSampler);
-            cameras.add(cam);
+                poseConsumer,
+                poseSampler));
         }
 
         CamOdometryInterface multiCam = new MultiCamOdometry(cameras);

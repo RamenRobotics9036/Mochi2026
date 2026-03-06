@@ -81,7 +81,7 @@ class TestSingleCamOdometry {
         m_kalmanFilter = Mockito.mock(VisionKalmanFilter.class);
 
         // Identity transform — no rotation or translation from robot to camera.
-        m_cam = new SingleCamOdometry(CAM_NAME, new Transform3d(), consumer);
+        m_cam = new SingleCamOdometry(CAM_NAME, new Transform3d(), consumer, null);
     }
 
     @AfterEach
