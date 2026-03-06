@@ -6,6 +6,8 @@ package frc.robot;
 
 import java.util.Optional;
 
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -16,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.PerCycleState;
+import frc.robot.visutils.VisionKalmanFilter.DisplayInfo;
 
 /**
  * The main robot class that controls the flow of the 2026 FRC robot code.
@@ -55,6 +58,7 @@ public class Robot extends TimedRobot {
    * Called every 20ms regardless of mode.
    * Runs the CommandScheduler, which handles all active command execution.
    */
+  @SuppressWarnings("VariableDeclarationUsageDistance")
   @Override
   public void robotPeriodic() {
     // Update motionless tracking early - this resets Kalman filter when robot moves
@@ -70,36 +74,56 @@ public class Robot extends TimedRobot {
 
     m_robotContainer.m_multiCamlimelight.periodic();
 
-    // If vision is disabled for drivetrain, dont show the point in time vision estimate.
-    if (m_robotContainer.basicInfoDashboard.isVisionEnabled()) {
-        // NOTE: We show it for the camera that had the STRONGEST lock score.
-        Optional<Pose2d> showVisPose = m_robotContainer.m_multiCamlimelight.getEstimatedPose();
-        m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(showVisPose);
-    }
-    else {
-        m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(Optional.empty());
-    }
+    Optional<Pose2d> showVisPose = m_robotContainer.basicInfoDashboard.isVisionEnabled() ?
+        m_robotContainer.m_multiCamlimelight.getEstimatedPose() :
+        Optional.empty();
 
-    // Show VisionKalmanFilter converged pose (offset forward for visibility)
-    var kalmanDisplay = m_robotContainer.m_visionKalmanFilter.getFieldDisplayInfo(0.4);
-    m_robotContainer.m_showVisionOnField.showKalmanVisionPose(
-        kalmanDisplay.pose(),
-        kalmanDisplay.hasConverged() ? 0 : 1);
+    DisplayInfo kalmanDisplay = m_robotContainer.m_visionKalmanFilter.getFieldDisplayInfo(0.4);
 
     // Show tape locations on field
-    m_robotContainer.m_showVisionOnField.showBlueTape(m_robotContainer.m_driveAccuracyTester.getBlueTapePose());
-    m_robotContainer.m_showVisionOnField.showRedTape(m_robotContainer.m_driveAccuracyTester.getRedTapePose());
+    Optional<Pose2d> blueTapePose = m_robotContainer.m_driveAccuracyTester.getBlueTapePose();
+    Optional<Pose2d> redTapePose = m_robotContainer.m_driveAccuracyTester.getRedTapePose();
 
     CommandScheduler.getInstance().run();
 
-    var driveState = m_robotContainer.drivetrain.getState();
-    m_robotContainer.m_showVisionOnField.showEstimatedPoseAndWheels(driveState);
+    SwerveDriveState driveState = m_robotContainer.drivetrain.getState();
+
+    // Take field info gathered, and show it on dashboard
+    updateFieldDisplay(
+        showVisPose,
+        kalmanDisplay,
+        blueTapePose,
+        redTapePose,
+        driveState);
 
     // We update logging after CommandScheduler.run(), so that any commands that
     // changed drivetrain state are reflected in the telemetry.
     if (m_robotContainer.basicInfoDashboard != null) {
         m_robotContainer.basicInfoDashboard.update();
     }
+  }
+
+  private void updateFieldDisplay(
+      Optional<Pose2d> showVisPose,
+      DisplayInfo kalmanDisplay,
+      Optional<Pose2d> blueTapePose,
+      Optional<Pose2d> redTapePose,
+      SwerveDriveState driveState) {
+
+      // Show estimate pose for vision, if we currently see AprilTag.
+      m_robotContainer.m_showVisionOnField.showPointInTimeVisionEstimate(showVisPose);
+
+      // Show VisionKalmanFilter converged pose (offset forward for visibility)
+      m_robotContainer.m_showVisionOnField.showKalmanVisionPose(
+          kalmanDisplay.pose(),
+          kalmanDisplay.hasConverged() ? 0 : 1);
+
+      // Show tape locations on field
+      m_robotContainer.m_showVisionOnField.showBlueTape(blueTapePose);
+      m_robotContainer.m_showVisionOnField.showRedTape(redTapePose);
+
+      // Show robot pose and wheel positions on field
+      m_robotContainer.m_showVisionOnField.showEstimatedPoseAndWheels(driveState);
   }
 
   @Override
