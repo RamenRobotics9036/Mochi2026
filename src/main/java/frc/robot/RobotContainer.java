@@ -405,13 +405,9 @@ public class RobotContainer {
         ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
 
 
-        // POV Left: Extend hood (step increment per press)
-        operateController.povLeft().onTrue(
-            new InstantCommand(hoodSubsystem::stepHoodExtend, hoodSubsystem));
-
-        // POV Right: Retract hood (step increment per press)
-        operateController.povRight().onTrue(
-            new InstantCommand(hoodSubsystem::stepHoodRetract, hoodSubsystem));
+        // POV Left and Right are now exclusively handled by the HoodSubsystem DefaultCommand 
+        // for continuous jogging (held). Discrete step commands have been removed to prevent 
+        // scheduling race conditions.
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 

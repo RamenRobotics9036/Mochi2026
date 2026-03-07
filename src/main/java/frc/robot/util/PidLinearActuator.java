@@ -133,7 +133,9 @@ public class PidLinearActuator {
     }
 
     /**
-     * Stops an active jog and holds the current rate-limited setpoint.
+     * Stops an active jog command.
+     * The rate-limited setpoint will smoothly continue toward whatever target 
+     * was explicitly requested during the active jog phase.
      *
      * @return true if a jog was active and was stopped
      */
@@ -143,8 +145,7 @@ public class PidLinearActuator {
             return false;
         }
         m_jogActive = false;
-        // Hold wherever the rate-limited setpoint currently is
-        setTargetInternal(m_rateLimitedSetpointMM);
+
         return true;
     }
 
