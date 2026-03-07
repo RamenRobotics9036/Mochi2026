@@ -31,6 +31,9 @@ public class PidLinearActuator {
     private boolean m_skipNextJogIncrement;
     private boolean m_stallEventLatched;
 
+    // Add: track whether at least one full update cycle has completed
+    private boolean m_hasUpdatedOnce;
+
     public PidLinearActuator(
             int pwmChannel,
             int analogChannel,
@@ -110,6 +113,9 @@ public class PidLinearActuator {
         m_skipNextJogIncrement = false;
         m_stallEventLatched = false;
 
+        // Initialize the new flag
+        m_hasUpdatedOnce = false;
+
         m_motor.stopMotor();
         m_pid.reset();
     }
@@ -163,13 +169,18 @@ public class PidLinearActuator {
         double output = m_pid.calculate(currentPositionMM, m_rateLimitedSetpointMM);
         output = MathUtil.clamp(output, -m_maxPidOutput, m_maxPidOutput);
 
+        // Software limit stops
         if (currentPositionMM <= m_minPositionMM && output < 0.0) {
             output = 0.0;
         } else if (currentPositionMM >= m_maxPositionMM && output > 0.0) {
             output = 0.0;
         }
 
-        boolean atTarget = isAtTargetInternal();
+        // Guard: never declare atTarget on the very first cycle — PID internal
+        // velocity error is zero by default which makes atSetpoint() lie.
+        boolean atTarget = m_hasUpdatedOnce && isAtTargetInternal();
+        m_hasUpdatedOnce = true;
+
         if (atTarget) {
             output = 0.0;
             m_baselinePositionMM = currentPositionMM;
@@ -185,15 +196,25 @@ public class PidLinearActuator {
                 output = 0.0;
                 atTarget = true;
             }
-        } else {
-            m_lastMotionTimestampSec = currentTimeSec;
+        } else if (!atTarget) {
+            // Only reset stall timer when output is low AND not yet at target,
+            // so a brief output dip doesn't prevent stall detection.
+            // Do NOT reset timer here — remove the else branch that did so.
         }
+        // NOTE: removed the old `else { m_lastMotionTimestampSec = currentTimeSec; }`
+        // That was resetting the stall timer whenever output was below threshold,
+        // which prevented stall detection from ever firing.
 
         if (atTarget) {
             m_motor.stopMotor();
         } else {
             m_motor.set(output);
         }
+
+        // Debug instrumentation — remove after confirmed working
+        System.out.printf(
+            "[PidActuator] pos=%.2f mm | setpoint=%.2f mm | target=%.2f mm | output=%.3f | atTarget=%b%n",
+            currentPositionMM, m_rateLimitedSetpointMM, m_targetPositionMM, output, atTarget);
 
         m_lastMeasuredPositionMM = currentPositionMM;
         m_lastUpdateTimestampSec = currentTimeSec;
@@ -244,6 +265,7 @@ public class PidLinearActuator {
         m_rateLimitedSetpointMM = currentPositionMM;
         m_baselinePositionMM = currentPositionMM;
         m_lastMotionTimestampSec = Timer.getFPGATimestamp();
+        m_hasUpdatedOnce = false; // Reset so next update doesn't fire atTarget immediately
         m_pid.reset();
         m_motor.stopMotor();
     }
@@ -260,9 +282,13 @@ public class PidLinearActuator {
     }
 
     private boolean isAtTargetInternal() {
-        return Math.abs(m_targetPositionMM - m_rateLimitedSetpointMM) <= m_positionToleranceMM
-            && Math.abs(m_targetPositionMM - getCurrentPositionMM()) <= m_positionToleranceMM
-            && m_pid.atSetpoint();
+        // Do NOT use m_pid.atSetpoint() — its velocity error is 0 on first cycle
+        // and the velocity tolerance interacts poorly with slow actuators.
+        // Use explicit position checks only.
+        double rateLimitedError = Math.abs(m_targetPositionMM - m_rateLimitedSetpointMM);
+        double positionError = Math.abs(m_targetPositionMM - getCurrentPositionMM());
+        return rateLimitedError <= m_positionToleranceMM
+            && positionError <= m_positionToleranceMM;
     }
 
     private double clampToLimits(double positionMM) {
