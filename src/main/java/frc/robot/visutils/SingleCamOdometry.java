@@ -201,21 +201,20 @@ public class SingleCamOdometry implements CamOdometryInterface {
     }
 
     private void addVisionMeasurementV1() {
-        LimelightHelpers.PoseEstimate mt1 =
-            LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName);
+        LimelightHelpers.PoseEstimate mt1 = sanitizePoseEstimate(
+            LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName));
+        LimelightHelpers.PoseEstimate mt2 = sanitizePoseEstimate(
+            LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(m_limelightName));
 
-        // Limelighthelpers 2026.1 no longer returns null when no targets are visible.
-        // So need to sanitize mt1 value so mt1 == null is still "no targets".
-        if (mt1 == null || mt1.tagCount == 0) {
-            mt1 = null;
-        }
+        // Prefer MegaTag2 when available, fall back to MegaTag1.
+        LimelightHelpers.PoseEstimate poseEstimate = mt2 != null ? mt2 : mt1;
 
-        // printDebugLimelightInfo(mt1);
+        // printDebugLimelightInfo(poseEstimate);
 
         // Save the latest vision estimate so that it can be queried
-        m_latestVisPose = Optional.ofNullable(mt1).map(est -> est.pose);
+        m_latestVisPose = Optional.ofNullable(poseEstimate).map(est -> est.pose);
 
-        if (mt1 == null || mt1.tagCount == 0) {
+        if (poseEstimate == null || poseEstimate.tagCount == 0) {
             // In simulation, limelight may not be present until a few cycles of periodic, since we
             // populate it via NetworkTables later.
             clearResults();
@@ -223,21 +222,22 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
 
         // Skip if this is the same data we already processed
-        if (mt1.timestampSeconds == m_lastTimestamp) {
+        if (poseEstimate.timestampSeconds == m_lastTimestamp) {
             return;
         }
-        m_lastTimestamp = mt1.timestampSeconds;
+        m_lastTimestamp = poseEstimate.timestampSeconds;
 
         // We track how far-off this vision estimate is, using the ACTUAL pose in the past
         // of where the robot was when the camera image was snapped.
-        m_latestVisionError = calcVisionErrorAtSnapTime(mt1.pose, mt1.timestampSeconds);
+        m_latestVisionError =
+            calcVisionErrorAtSnapTime(poseEstimate.pose, poseEstimate.timestampSeconds);
 
         // Update std devs based on tag count and distance.  And confidence score.
-        m_curStdDevs = calculateEstimationStdDevs(mt1);
+        m_curStdDevs = calculateEstimationStdDevs(poseEstimate);
         m_curConfidenceScore = getConfidenceScore(m_curStdDevs);
 
-        if (mt1.tagCount == 1 && mt1.rawFiducials.length == 1) {
-            if (mt1.rawFiducials[0].ambiguity > 0.7) {
+        if (poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) {
+            if (poseEstimate.rawFiducials[0].ambiguity > 0.7) {
                 setResults(m_curConfidenceScore, 0, null);
                 return;
             }
@@ -249,7 +249,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
             return;
         }
 
-        setResults(m_curConfidenceScore, mt1.tagCount, mt1.rawFiducials);
+        setResults(m_curConfidenceScore, poseEstimate.tagCount, poseEstimate.rawFiducials);
 
         // Skip injecting vision measurements if vision is disabled
         if (!m_visionEnabledSupplier.getAsBoolean()) {
@@ -258,14 +258,25 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
         // Inject into vision Kalman filter if robot is motionless and we have multi-tag
         if (m_visionKalmanFilter != null && m_isMotionlessSupplier != null) {
-            if (m_isMotionlessSupplier.getAsBoolean() && mt1.tagCount >= 2) {
-                m_visionKalmanFilter.injectVisionMeasurement(mt1.pose, mt1.tagCount);
+            if (m_isMotionlessSupplier.getAsBoolean() && poseEstimate.tagCount >= 2) {
+                m_visionKalmanFilter.injectVisionMeasurement(
+                    poseEstimate.pose, poseEstimate.tagCount);
             }
         }
 
         if (m_estConsumer != null) {
-            m_estConsumer.accept(mt1.pose, mt1.timestampSeconds, m_curStdDevs);
+            m_estConsumer.accept(
+                poseEstimate.pose, poseEstimate.timestampSeconds, m_curStdDevs);
         }
+    }
+
+    private LimelightHelpers.PoseEstimate sanitizePoseEstimate(
+            LimelightHelpers.PoseEstimate poseEstimate) {
+        // LimelightHelpers 2026.1 no longer returns null when no targets are visible.
+        if (poseEstimate == null || poseEstimate.tagCount == 0) {
+            return null;
+        }
+        return poseEstimate;
     }
 
     /**

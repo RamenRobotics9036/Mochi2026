@@ -116,6 +116,50 @@ class TestSingleCamOdometry {
 
     /** Representative pose used across several tests. */
     private static final Pose2d POSE_A = new Pose2d(3.0, 2.0, Rotation2d.kZero);
+    private static final Pose2d POSE_B = new Pose2d(6.0, 1.0, Rotation2d.kPi);
+
+    // ------------------------------------------------------------------
+    // 0. MegaTag preference/fallback
+    // ------------------------------------------------------------------
+
+    @Test
+    void periodic_megatag2Available_prefersMegaTag2() {
+        PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        PoseEstimate mt2 = new PoseEstimate(
+            POSE_B, 1.0, 0.0, 2, 0.0, 2.0, 0.0,
+            new RawFiducial[]{
+                new RawFiducial(1, 0, 0, 0, 2.0, 2.0, 0.1),
+                new RawFiducial(2, 0, 0, 0, 2.0, 2.0, 0.1)
+            },
+            true);
+
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(mt1);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(CAM_NAME))
+            .thenReturn(mt2);
+
+        m_cam.periodic();
+
+        assertEquals(POSE_B, m_cam.getEstimatedPose().orElseThrow());
+        assertEquals(POSE_B, m_lastConsumedPose);
+        assertTrue(m_cam.hasMultiTagLock());
+    }
+
+    @Test
+    void periodic_noMegaTag2_fallsBackToMegaTag1() {
+        PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(CAM_NAME))
+            .thenReturn(null);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(mt1);
+
+        m_cam.periodic();
+
+        assertEquals(POSE_A, m_cam.getEstimatedPose().orElseThrow());
+        assertEquals(POSE_A, m_lastConsumedPose);
+        assertTrue(m_cam.hasTargetLock());
+    }
 
     // ------------------------------------------------------------------
     // 1. No-target path
