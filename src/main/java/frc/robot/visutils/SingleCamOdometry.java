@@ -247,7 +247,9 @@ public class SingleCamOdometry implements CamOdometryInterface {
         m_curStdDevs = calculateEstimationStdDevs(poseEstimate);
         m_curConfidenceScore = getConfidenceScore(m_curStdDevs);
 
-        if (poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) {
+        // Ambiguity only matters for MegaTag1 (pure visual PnP); MT2 resolves ambiguity
+        // using the gyro heading, so this check must not apply to MT2 estimates.
+        if (!poseEstimate.isMegaTag2 && poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) {
             if (poseEstimate.rawFiducials[0].ambiguity > 0.7) {
                 setResults(m_curConfidenceScore, 0, null);
                 return;
