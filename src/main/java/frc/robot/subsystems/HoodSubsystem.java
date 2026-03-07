@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.HoodConstants;
 import frc.robot.util.PidLinearActuator;
 
-/** Controls the shooter hood actuator with analog-feedback PID. */
+/** Controls the shooter hood using an Actuonix L16-R servo actuator. */
 public class HoodSubsystem extends SubsystemBase {
     private static final double MOTION_EPSILON_MM = 1e-6;
 
@@ -19,23 +19,10 @@ public class HoodSubsystem extends SubsystemBase {
 
     private final PidLinearActuator m_hoodActuator = new PidLinearActuator(
         HoodConstants.HOOD_PWM_CHANNEL,
-        HoodConstants.HOOD_POT_CHANNEL,
-        HoodConstants.HOOD_MOTOR_INVERTED,
-        HoodConstants.HOOD_POT_RANGE_MM,
-        HoodConstants.HOOD_POT_OFFSET_MM,
         HoodConstants.HOOD_MIN_MM,
         HoodConstants.HOOD_MAX_MM,
         HoodConstants.HOOD_MAX_RATE_MM_PER_SEC,
-        HoodConstants.HOOD_LOOP_PERIOD_SEC,
-        HoodConstants.HOOD_kP,
-        HoodConstants.HOOD_kI,
-        HoodConstants.HOOD_kD,
-        HoodConstants.HOOD_POSITION_TOLERANCE_MM,
-        HoodConstants.HOOD_VELOCITY_TOLERANCE_MM_PER_SEC,
-        HoodConstants.HOOD_MAX_PID_OUTPUT,
-        HoodConstants.HOOD_MIN_MOVEMENT_MM,
-        HoodConstants.HOOD_STALL_TIMEOUT_SEC,
-        HoodConstants.HOOD_STALL_OUTPUT_THRESHOLD);
+        HoodConstants.HOOD_POSITION_TOLERANCE_MM);
 
     private MotionAction m_motionAction = MotionAction.HOLD;
     private boolean m_wasAtTarget;
@@ -76,10 +63,9 @@ public class HoodSubsystem extends SubsystemBase {
         m_motionAction = MotionAction.HOLD;
         m_wasAtTarget = true;
         DataLogManager.log(String.format(
-            "Hood jog-stop | time=%.3f s | hold=%.2f mm | baseline=%.2f mm",
+            "Hood jog-stop | time=%.3f s | setpoint=%.2f mm",
             Timer.getFPGATimestamp(),
-            getHoodPosition(),
-            getHoodBaselinePosition()));
+            m_hoodActuator.getCurrentSetpointMM()));
     }
 
     public void setHoodPosition(double positionMM) {
@@ -88,16 +74,13 @@ public class HoodSubsystem extends SubsystemBase {
         logMotionCommand(MotionAction.DIRECT, "direct-set", requestedDeltaMM, appliedDeltaMM);
     }
 
+    /** Returns the current rate-limited setpoint (what is being sent to the servo now). */
     public double getHoodPosition() {
-        return m_hoodActuator.getCurrentPositionMM();
+        return m_hoodActuator.getCurrentSetpointMM();
     }
 
     public double getHoodTargetPosition() {
         return m_hoodActuator.getTargetPositionMM();
-    }
-
-    public double getHoodBaselinePosition() {
-        return m_hoodActuator.getBaselinePositionMM();
     }
 
     public boolean isHoodAtTarget() {
@@ -108,26 +91,14 @@ public class HoodSubsystem extends SubsystemBase {
     public void periodic() {
         m_hoodActuator.update();
 
-        if (m_hoodActuator.consumeStallEvent()) {
-            DataLogManager.log(String.format(
-                "Hood stall-hold | time=%.3f s | pos=%.2f mm | baseline=%.2f mm",
-                Timer.getFPGATimestamp(),
-                getHoodPosition(),
-                getHoodBaselinePosition()));
-            m_motionAction = MotionAction.HOLD;
-            m_wasAtTarget = true;
-            return;
-        }
-
         boolean atTarget = isHoodAtTarget();
         if (!m_wasAtTarget && atTarget) {
             DataLogManager.log(String.format(
-                "Hood settled | time=%.3f s | action=%s | pos=%.2f mm | target=%.2f mm | baseline=%.2f mm",
+                "Hood settled | time=%.3f s | action=%s | setpoint=%.2f mm | target=%.2f mm",
                 Timer.getFPGATimestamp(),
                 m_motionAction.name(),
-                getHoodPosition(),
-                getHoodTargetPosition(),
-                getHoodBaselinePosition()));
+                m_hoodActuator.getCurrentSetpointMM(),
+                getHoodTargetPosition()));
             m_motionAction = MotionAction.HOLD;
         }
 
@@ -149,13 +120,12 @@ public class HoodSubsystem extends SubsystemBase {
 
         m_motionAction = action;
         DataLogManager.log(String.format(
-            "Hood %s | time=%.3f s | requestedDelta=%.2f mm | appliedDelta=%.2f mm | pos=%.2f mm | target=%.2f mm | baseline=%.2f mm",
+            "Hood %s | time=%.3f s | requestedDelta=%.2f mm | appliedDelta=%.2f mm | setpoint=%.2f mm | target=%.2f mm",
             label,
             Timer.getFPGATimestamp(),
             requestedDeltaMM,
             appliedDeltaMM,
-            getHoodPosition(),
-            getHoodTargetPosition(),
-            getHoodBaselinePosition()));
+            m_hoodActuator.getCurrentSetpointMM(),
+            getHoodTargetPosition()));
     }
 }

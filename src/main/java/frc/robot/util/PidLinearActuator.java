@@ -1,296 +1,219 @@
 package frc.robot.util;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj.AnalogPotentiometer;
+import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
-/** PID-controlled linear actuator wrapper with analog potentiometer feedback. */
+/**
+ * Linear actuator wrapper for the Actuonix L16-R series.
+ *
+ * <p>The L16-R is a self-contained RC servo actuator with internal position control.
+ * It expects a standard RC PWM signal (1.0ms–2.0ms pulse width), identical to a hobby servo.
+ * No external PID, potentiometer, or motor controller is required or appropriate.
+ *
+ * <p>WPILib's {@link Servo} class produces the correct PWM signal.
+ * {@code set(0.0)} = fully retracted, {@code set(1.0)} = fully extended.
+ *
+ * <p>This class provides:
+ * <ul>
+ *   <li>Software position limits in mm
+ *   <li>Rate-limited setpoint advancement (to avoid slamming the actuator)
+ *   <li>Jog and discrete step movement API
+ *   <li>At-target detection based on setpoint proximity
+ * </ul>
+ */
 public class PidLinearActuator {
-    private final PWMSparkMax m_motor;
-    private final AnalogPotentiometer m_potentiometer;
-    private final PIDController m_pid;
+
+    private final Servo m_actuator;
 
     private final double m_minPositionMM;
     private final double m_maxPositionMM;
+    private final double m_rangeMM;
     private final double m_maxRateMMPerSec;
     private final double m_positionToleranceMM;
-    private final double m_maxPidOutput;
-    private final double m_minMovementMM;
-    private final double m_stallTimeoutSec;
-    private final double m_stallOutputThreshold;
 
     private double m_targetPositionMM;
     private double m_rateLimitedSetpointMM;
-    private double m_baselinePositionMM;
-    private double m_lastMeasuredPositionMM;
     private double m_lastUpdateTimestampSec;
-    private double m_lastMotionTimestampSec;
     private boolean m_jogActive;
     private boolean m_skipNextJogIncrement;
-    private boolean m_stallEventLatched;
-    // FIX #3: guard against atSetpoint() lying after reset()
-    private boolean m_pidWasReset;
 
+    /**
+     * Constructs a PidLinearActuator backed by an L16-R servo actuator.
+     *
+     * @param pwmChannel         RoboRIO PWM port connected to the L16-R signal wire
+     * @param minPositionMM      Software minimum position in mm (fully retracted end)
+     * @param maxPositionMM      Software maximum position in mm (fully extended end)
+     * @param maxRateMMPerSec    Maximum rate of setpoint change in mm/s (rate limiter)
+     * @param positionToleranceMM Tolerance in mm for at-target detection
+     */
     public PidLinearActuator(
             int pwmChannel,
-            int analogChannel,
-            boolean motorInverted,
-            double potRangeMM,
-            double potOffsetMM,
             double minPositionMM,
             double maxPositionMM,
             double maxRateMMPerSec,
-            double loopPeriodSec,
-            double kP,
-            double kI,
-            double kD,
-            double positionToleranceMM,
-            double velocityToleranceMMPerSec,
-            double maxPidOutput,
-            double minMovementMM,
-            double stallTimeoutSec,
-            double stallOutputThreshold) {
-        if (potRangeMM == 0.0) {
-            throw new IllegalArgumentException("Potentiometer range must be non-zero.");
-        }
-        if (maxPositionMM < minPositionMM) {
-            throw new IllegalArgumentException("Max position must be >= min position.");
+            double positionToleranceMM) {
+
+        if (maxPositionMM <= minPositionMM) {
+            throw new IllegalArgumentException("maxPositionMM must be > minPositionMM.");
         }
         if (maxRateMMPerSec <= 0.0) {
-            throw new IllegalArgumentException("Max rate must be positive.");
-        }
-        if (loopPeriodSec <= 0.0) {
-            throw new IllegalArgumentException("Loop period must be positive.");
+            throw new IllegalArgumentException("maxRateMMPerSec must be positive.");
         }
         if (positionToleranceMM < 0.0) {
-            throw new IllegalArgumentException("Position tolerance cannot be negative.");
-        }
-        if (velocityToleranceMMPerSec < 0.0) {
-            throw new IllegalArgumentException("Velocity tolerance cannot be negative.");
-        }
-        if (maxPidOutput <= 0.0 || maxPidOutput > 1.0) {
-            throw new IllegalArgumentException("Max PID output must be in (0, 1].");
-        }
-        if (minMovementMM < 0.0) {
-            throw new IllegalArgumentException("Minimum movement cannot be negative.");
-        }
-        if (stallTimeoutSec <= 0.0) {
-            throw new IllegalArgumentException("Stall timeout must be positive.");
-        }
-        if (stallOutputThreshold < 0.0 || stallOutputThreshold > 1.0) {
-            throw new IllegalArgumentException("Stall output threshold must be in [0, 1].");
+            throw new IllegalArgumentException("positionToleranceMM cannot be negative.");
         }
 
-        m_motor = new PWMSparkMax(pwmChannel);
-        m_motor.setInverted(motorInverted);
-
-        m_potentiometer = new AnalogPotentiometer(analogChannel, potRangeMM, potOffsetMM);
-        m_pid = new PIDController(kP, kI, kD, loopPeriodSec);
-        m_pid.setTolerance(positionToleranceMM, velocityToleranceMMPerSec);
+        m_actuator = new Servo(pwmChannel);
 
         m_minPositionMM = minPositionMM;
         m_maxPositionMM = maxPositionMM;
+        m_rangeMM = maxPositionMM - minPositionMM;
         m_maxRateMMPerSec = maxRateMMPerSec;
         m_positionToleranceMM = positionToleranceMM;
-        m_maxPidOutput = maxPidOutput;
-        m_minMovementMM = minMovementMM;
-        m_stallTimeoutSec = stallTimeoutSec;
-        m_stallOutputThreshold = stallOutputThreshold;
 
-        double initialPositionMM = getCurrentPositionMM();
-        double nowSec = Timer.getFPGATimestamp();
-
-        m_targetPositionMM = initialPositionMM;
-        m_rateLimitedSetpointMM = initialPositionMM;
-        // FIX #1: baseline must always reflect ACTUAL current position, not target
-        m_baselinePositionMM = initialPositionMM;
-        m_lastMeasuredPositionMM = initialPositionMM;
-        m_lastUpdateTimestampSec = nowSec;
-        m_lastMotionTimestampSec = nowSec;
+        // Start at the retracted (minimum) position
+        m_targetPositionMM = minPositionMM;
+        m_rateLimitedSetpointMM = minPositionMM;
+        m_lastUpdateTimestampSec = Timer.getFPGATimestamp();
         m_jogActive = false;
         m_skipNextJogIncrement = false;
-        m_stallEventLatched = false;
-        m_pidWasReset = true; // FIX #3
 
-        m_motor.stopMotor();
-        m_pid.reset();
+        // Command servo to retracted position on startup
+        m_actuator.set(positionToServoFraction(minPositionMM));
     }
 
+    /**
+     * Steps the target position by a fixed delta from the current target.
+     * Suppresses the next jog increment to avoid conflict with jog commands.
+     *
+     * @param deltaMM distance to step in mm (positive = extend, negative = retract)
+     * @return actual delta applied after clamping, in mm
+     */
     public double stepBy(double deltaMM) {
         m_jogActive = false;
         m_skipNextJogIncrement = true;
-        // FIX #1: step from ACTUAL current position, not baseline
-        // baseline was being corrupted by setTargetInternal setting it to target
-        return setTargetInternal(getCurrentPositionMM() + deltaMM);
+        return setTargetInternal(m_targetPositionMM + deltaMM);
     }
 
+    /**
+     * Sets the absolute target position directly.
+     *
+     * @param positionMM desired position in mm
+     * @return actual delta applied after clamping, in mm
+     */
     public double setTargetPositionMM(double positionMM) {
         m_jogActive = false;
         m_skipNextJogIncrement = false;
         return setTargetInternal(positionMM);
     }
 
+    /**
+     * Incrementally jogs the target position. Called repeatedly from a periodic command
+     * while a button is held.
+     *
+     * @param deltaMM per-cycle jog increment in mm
+     * @return actual delta applied, {@code Double.NaN} if skipped, or {@code 0.0} if no delta
+     */
     public double jogBy(double deltaMM) {
         if (deltaMM == 0.0) {
             return 0.0;
         }
-
         if (m_skipNextJogIncrement) {
             m_skipNextJogIncrement = false;
             return Double.NaN;
         }
-
         m_jogActive = true;
         return setTargetInternal(m_targetPositionMM + deltaMM);
     }
 
+    /**
+     * Stops an active jog and holds the current rate-limited setpoint.
+     *
+     * @return true if a jog was active and was stopped
+     */
     public boolean stopJog() {
         m_skipNextJogIncrement = false;
-
         if (!m_jogActive) {
             return false;
         }
-
         m_jogActive = false;
-        holdCurrentPosition();
+        // Hold wherever the rate-limited setpoint currently is
+        setTargetInternal(m_rateLimitedSetpointMM);
         return true;
     }
 
+    /**
+     * Must be called every robot loop (e.g. from subsystem {@code periodic()}).
+     * Advances the rate-limited setpoint and commands the servo.
+     */
     public void update() {
         double currentTimeSec = Timer.getFPGATimestamp();
         double dtSeconds = Math.max(0.0, currentTimeSec - m_lastUpdateTimestampSec);
-        double currentPositionMM = getCurrentPositionMM();
-        double movementThisCycleMM = Math.abs(currentPositionMM - m_lastMeasuredPositionMM);
 
         advanceRateLimitedSetpoint(dtSeconds);
 
-        double output = m_pid.calculate(currentPositionMM, m_rateLimitedSetpointMM);
+        double servoFraction = positionToServoFraction(m_rateLimitedSetpointMM);
+        m_actuator.set(servoFraction);
 
-        // FIX #3: clear the reset guard now that calculate() has run once with real error
-        m_pidWasReset = false;
-
-        output = MathUtil.clamp(output, -m_maxPidOutput, m_maxPidOutput);
-
-        if (currentPositionMM <= m_minPositionMM && output < 0.0) {
-            output = 0.0;
-        } else if (currentPositionMM >= m_maxPositionMM && output > 0.0) {
-            output = 0.0;
-        }
-
-        boolean atTarget = isAtTargetInternal();
-        if (atTarget) {
-            output = 0.0;
-            // FIX #1: update baseline to actual position only when truly at target
-            m_baselinePositionMM = currentPositionMM;
-        }
-
-        // FIX #2: only reset stall timer when actively moving (output >= threshold AND moving)
-        // Removed the else branch that reset the timer on low output — that prevented stall detection
-        if (!atTarget && Math.abs(output) >= m_stallOutputThreshold) {
-            if (movementThisCycleMM >= m_minMovementMM) {
-                m_lastMotionTimestampSec = currentTimeSec;
-            } else if (currentTimeSec - m_lastMotionTimestampSec >= m_stallTimeoutSec) {
-                holdCurrentPosition();
-                m_stallEventLatched = true;
-                currentPositionMM = m_baselinePositionMM;
-                output = 0.0;
-                atTarget = true;
-            }
-            // FIX #2: removed `else { m_lastMotionTimestampSec = currentTimeSec; }`
-        }
-
-        // Debug instrumentation — remove once motor movement is confirmed
-        double error = m_targetPositionMM - currentPositionMM;
         System.out.printf(
-            "[PidActuator] pos=%.2f | target=%.2f | setpoint=%.2f | error=%.2f | output=%.3f | atTarget=%b | pidReset=%b%n",
-            currentPositionMM, m_targetPositionMM, m_rateLimitedSetpointMM,
-            error, output, atTarget, m_pidWasReset);
+            "[L16-R] target=%.2fmm | setpoint=%.2fmm | servo=%.3f | atTarget=%b%n",
+            m_targetPositionMM, m_rateLimitedSetpointMM, servoFraction, isAtTarget());
 
-        if (atTarget) {
-            m_motor.stopMotor();
-        } else {
-            m_motor.set(output);
-        }
-
-        m_lastMeasuredPositionMM = currentPositionMM;
         m_lastUpdateTimestampSec = currentTimeSec;
     }
 
-    public double getCurrentPositionMM() {
-        return clampToLimits(m_potentiometer.get());
-    }
-
+    /** Returns the current target position in mm (after clamping). */
     public double getTargetPositionMM() {
         return m_targetPositionMM;
     }
 
-    public double getBaselinePositionMM() {
-        return m_baselinePositionMM;
+    /**
+     * Returns the current rate-limited setpoint in mm.
+     * This is what is actually being commanded to the servo right now.
+     */
+    public double getCurrentSetpointMM() {
+        return m_rateLimitedSetpointMM;
     }
 
+    /**
+     * Returns true when the rate-limited setpoint has reached the target within tolerance.
+     * Because the L16-R has internal position control, this is a reasonable proxy for
+     * physical at-target — the servo will be tracking the setpoint internally.
+     */
     public boolean isAtTarget() {
-        return isAtTargetInternal();
+        return Math.abs(m_targetPositionMM - m_rateLimitedSetpointMM) <= m_positionToleranceMM;
     }
 
-    public boolean consumeStallEvent() {
-        boolean hadStallEvent = m_stallEventLatched;
-        m_stallEventLatched = false;
-        return hadStallEvent;
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    private double setTargetInternal(double requestedPositionMM) {
+        double previousTargetMM = m_targetPositionMM;
+        m_targetPositionMM = clampToLimits(requestedPositionMM);
+        return m_targetPositionMM - previousTargetMM;
     }
 
     private void advanceRateLimitedSetpoint(double dtSeconds) {
         if (dtSeconds <= 0.0) {
             return;
         }
-
         double maxStepMM = m_maxRateMMPerSec * dtSeconds;
-        double setpointErrorMM = m_targetPositionMM - m_rateLimitedSetpointMM;
-
-        if (Math.abs(setpointErrorMM) <= maxStepMM) {
+        double error = m_targetPositionMM - m_rateLimitedSetpointMM;
+        if (Math.abs(error) <= maxStepMM) {
             m_rateLimitedSetpointMM = m_targetPositionMM;
-            return;
+        } else {
+            m_rateLimitedSetpointMM += Math.copySign(maxStepMM, error);
         }
-
-        m_rateLimitedSetpointMM += Math.copySign(maxStepMM, setpointErrorMM);
     }
 
-    private void holdCurrentPosition() {
-        double currentPositionMM = getCurrentPositionMM();
-
-        m_targetPositionMM = currentPositionMM;
-        m_rateLimitedSetpointMM = currentPositionMM;
-        m_baselinePositionMM = currentPositionMM;
-        m_lastMotionTimestampSec = Timer.getFPGATimestamp();
-        m_pidWasReset = true; // FIX #3: guard atSetpoint() after reset
-        m_pid.reset();
-        m_motor.stopMotor();
-    }
-
-    private double setTargetInternal(double requestedPositionMM) {
-        double previousTargetMM = m_targetPositionMM;
-        double clampedTargetMM = clampToLimits(requestedPositionMM);
-
-        m_targetPositionMM = clampedTargetMM;
-        // FIX #1: do NOT set m_baselinePositionMM here — baseline is actual position,
-        // not the target. Baseline is updated in update() when atTarget is true,
-        // and in holdCurrentPosition(). Setting it to target here caused stepBy()
-        // to repeatedly step from the target instead of actual position.
-        m_stallEventLatched = false;
-
-        return clampedTargetMM - previousTargetMM;
-    }
-
-    private boolean isAtTargetInternal() {
-        // FIX #3: never declare atTarget immediately after PID reset — velocity error is 0
-        if (m_pidWasReset) {
-            return false;
-        }
-        // FIX: removed m_pid.atSetpoint() — unreliable after reset() and with slow actuators.
-        // Use explicit position-only checks against positionToleranceMM.
-        return Math.abs(m_targetPositionMM - m_rateLimitedSetpointMM) <= m_positionToleranceMM
-            && Math.abs(m_targetPositionMM - getCurrentPositionMM()) <= m_positionToleranceMM;
+    /**
+     * Converts a position in mm to a servo fraction [0.0, 1.0].
+     * 0.0 = fully retracted (minPositionMM), 1.0 = fully extended (maxPositionMM).
+     */
+    private double positionToServoFraction(double positionMM) {
+        return MathUtil.clamp((positionMM - m_minPositionMM) / m_rangeMM, 0.0, 1.0);
     }
 
     private double clampToLimits(double positionMM) {

@@ -132,50 +132,32 @@ public final class Constants {
         public static final double kShooterGearRatio = 1.0;
     }
 
-    /** Constants for the WCP/Actuonix shooter hood actuator. */
+    /** Constants for the Actuonix L16-R shooter hood actuator. */
     public static final class HoodConstants {
-        /** PWM channel used by the hood motor controller. */
+        /** PWM channel connected to the L16-R signal wire. */
         public static final int HOOD_PWM_CHANNEL = 0;
-        /** Analog input channel used by the hood actuator potentiometer. */
-        public static final int HOOD_POT_CHANNEL = 0;
-        /** Invert the hood motor output if positive power retracts instead of extends. */
-        public static final boolean HOOD_MOTOR_INVERTED = false;
 
-        /** Minimum allowed hood extension in millimeters. */
+        /** Minimum allowed hood extension in millimeters (fully retracted). */
         public static final double HOOD_MIN_MM = 0.0;
-        /** Maximum usable hood extension in millimeters. */
+        /** Maximum allowed hood extension in millimeters (fully extended). */
         public static final double HOOD_MAX_MM = 43.0;
-        /** Calibrated potentiometer range in millimeters. */
-        public static final double HOOD_POT_RANGE_MM = HOOD_MAX_MM - HOOD_MIN_MM;
-        /** Potentiometer offset in millimeters at the fully retracted soft limit. */
-        public static final double HOOD_POT_OFFSET_MM = HOOD_MIN_MM;
 
-        /** Discrete hood adjustment per D-pad press. */
-        public static final double HOOD_STEP_MM = 5.0;
-        /** Maximum commanded hood motion rate. */
+        /** Maximum rate at which the software setpoint advances (mm/s).
+         *  Prevents slamming the actuator to a new position instantly. */
         public static final double HOOD_MAX_RATE_MM_PER_SEC = 32.0;
-        /** Nominal WPILib scheduler period used for jog increments. */
+
+        /** Acceptable setpoint error for considering the hood settled (mm). */
+        public static final double HOOD_POSITION_TOLERANCE_MM = 0.5;
+
+        /** Discrete hood adjustment per D-pad press (mm). */
+        public static final double HOOD_STEP_MM = 5.0;
+
+        /** Nominal WPILib scheduler period (seconds). */
         public static final double HOOD_LOOP_PERIOD_SEC = 0.02;
-        /** Continuous jog increment for a 20 ms scheduler loop. */
+
+        /** Continuous jog increment per 20 ms scheduler tick (mm). */
         public static final double HOOD_JOG_MM_PER_TICK =
             HOOD_MAX_RATE_MM_PER_SEC * HOOD_LOOP_PERIOD_SEC;
-
-        /** Conservative closed-loop gains for the hood actuator. Tune on hardware as needed. */
-        public static final double HOOD_kP = 0.05;
-        public static final double HOOD_kI = 0.0;
-        public static final double HOOD_kD = 0.002;
-        /** Acceptable position error for considering the hood settled. */
-        public static final double HOOD_POSITION_TOLERANCE_MM = 0.5;
-        /** Acceptable residual velocity for considering the hood settled. */
-        public static final double HOOD_VELOCITY_TOLERANCE_MM_PER_SEC = 3.0;
-        /** Maximum closed-loop motor output. */
-        public static final double HOOD_MAX_PID_OUTPUT = 0.45;
-        /** Minimum measured motion we count as real movement for stall checks. */
-        public static final double HOOD_MIN_MOVEMENT_MM = 0.05;
-        /** Time without estimated movement before the software stall guard holds position. */
-        public static final double HOOD_STALL_TIMEOUT_SEC = 0.75;
-        /** Output magnitude above which a lack of motion counts as a stall candidate. */
-        public static final double HOOD_STALL_OUTPUT_THRESHOLD = 0.18;
     }
 
     /**
@@ -288,4 +270,8 @@ public final class Constants {
         /** Linear velocity threshold for "motionless" detection (m/s). */
         public static final double kMotionlessLinearThreshold = 0.05;
     }
+
+    // Find your hood/actuator constants and check these values:
+    // positionToleranceMM is probably something like 5.0 or 10.0 — way too large
+    // kP is probably 0.0 or near 0 — causing output=0.000 even when error exists
 }
