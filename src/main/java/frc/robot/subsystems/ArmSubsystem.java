@@ -104,6 +104,11 @@ public class ArmSubsystem extends SubsystemBase{
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
     }
 
+    /** Returns the current position of the arm in degrees. */
+    public double getArmPosition() {
+        return m_armOutputs.position;
+    }
+
     /** Manually resets the arm encoder to zero. */
     public void setArmZero() {
         m_armIO.resetEncoderValue();
@@ -125,7 +130,8 @@ public class ArmSubsystem extends SubsystemBase{
         // able to assume that calling stop() will stop the arm, for safety and to avoid
         // breaking the arm.  So short-circuiting here cannot be done.
         if (m_HomingState == ArmHomedState.HOMING) {
-            return;
+            m_HomingState = ArmHomedState.NOT_HOMED;
+            m_homingTimer.stop();
         }
         m_armIO.stop();
     }

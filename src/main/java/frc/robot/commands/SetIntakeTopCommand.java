@@ -11,11 +11,12 @@ public class SetIntakeTopCommand {
     /** Returns a Command that drives the arm up, stopping it when done or interrupted. */
     public static Command create(ArmSubsystem arm, IntakeSubsystem intake) {
         return new RunCommand(
-                () -> arm.setArmPosition(Constants.ArmConstants.kMinArmAngle),
+                () -> arm.moveArmWithSpeed(Constants.ArmConstants.kArmHomingSpeed),
                 // Dependencies:
                 arm, intake)
             // Initialize the homing sequence before the command starts running updates
             .beforeStarting(arm::beginHoming)
+            .until(() -> Math.abs(arm.getArmPosition() - Constants.ArmConstants.kMinArmAngle) < 2.0)
             .withTimeout(2.0)
             .finallyDo(arm::stop);
     }
