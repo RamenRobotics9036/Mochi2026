@@ -251,7 +251,7 @@
           },
           {
             "title": "TargetList",
-            "x": 640.0,
+            "x": 768.0,
             "y": 0.0,
             "width": 256.0,
             "height": 128.0,
@@ -393,6 +393,23 @@
               "max_value": 25.0,
               "color": 4278238420,
               "line_width": 2.0
+            }
+          },
+          {
+            "title": "MT2",
+            "x": 640.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/BasicInfo/IsMt2",
+              "period": 0.06,
+              "data_type": "boolean",
+              "true_color": 4283215696,
+              "false_color": 4278190080,
+              "true_icon": "None",
+              "false_icon": "None"
             }
           }
         ]
