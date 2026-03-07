@@ -54,6 +54,7 @@ public class BasicInfoDashboard {
     private final DoublePublisher m_visionTx = m_basicInfoTable.getDoubleTopic("VisionTx").publish();
     private final StringPublisher m_targetList = m_basicInfoTable.getStringTopic("TargetList").publish();
     private final DoublePublisher m_visErrorCentimeters = m_basicInfoTable.getDoubleTopic("VisErrorCentimeters").publish();
+    private final DoublePublisher m_visErrorMultiTagCentimeters = m_basicInfoTable.getDoubleTopic("VisErrorMultiTagCentimeters").publish();
 
     /** Bidirectional toggle for enabling/disabling vision measurement injection. */
     private final BooleanEntry m_visionEnabled =
@@ -248,7 +249,10 @@ public class BasicInfoDashboard {
             m_visionTx.set(m_txSupplier.getAsDouble());
         }
         if (m_visErrorAtSnapTimeSupplier != null) {
-            m_visErrorCentimeters.set(100.0 * calcVisErrorMeters(m_visErrorAtSnapTimeSupplier.get()));
+            double visErrorMeters = calcVisErrorMeters(m_visErrorAtSnapTimeSupplier.get());
+            m_visErrorCentimeters.set(100.0 * visErrorMeters);
+            boolean hasMultiTag = m_hasMultiTagLockSupplier != null && m_hasMultiTagLockSupplier.getAsBoolean();
+            m_visErrorMultiTagCentimeters.set(hasMultiTag ? 100.0 * visErrorMeters : 0.0);
         }
 
         if (m_targetListSupplier != null) {
