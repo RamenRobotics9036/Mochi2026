@@ -316,11 +316,20 @@ public class SingleCamOdometry implements CamOdometryInterface {
             estStdDevs = kMultiTagStdDevs;
         }
 
-        // Increase std devs based on (average) distance
-        if (numTags == 1 && avgDist > 4) {
+        // Increase std devs based on (average) distance.
+        // MT1 single-tag poses become unreliable past 4 m due to PnP ambiguity; reject them.
+        // MT2 is gyro-fused and does not have this problem, so the cutoff is skipped for it.
+        if (!poseEstimate.isMegaTag2 && numTags == 1 && avgDist > 4) {
             return VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
         }
-        return estStdDevs.times(1 + (avgDist * avgDist / 30));
+        Matrix<N3, N1> result = estStdDevs.times(1 + (avgDist * avgDist / 30));
+        if (poseEstimate.isMegaTag2) {
+            // MT2's reported rotation is the gyro heading reflected back — it carries no new
+            // rotational information, so we set theta std dev to a very large value so the
+            // pose estimator ignores the rotational component of this measurement.
+            return VecBuilder.fill(result.get(0, 0), result.get(1, 0), 9999999.0);
+        }
+        return result;
     }
 
     /**
