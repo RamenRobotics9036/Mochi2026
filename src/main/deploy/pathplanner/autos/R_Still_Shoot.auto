@@ -7,21 +7,13 @@
         {
           "type": "path",
           "data": {
-<<<<<<<< HEAD:src/main/deploy/pathplanner/autos/testing jiggle.auto
-            "pathName": "Center"
-========
             "pathName": "R_Still_Shoot"
->>>>>>>> main:src/main/deploy/pathplanner/autos/R_Still_Shoot.auto
           }
         },
         {
           "type": "named",
           "data": {
-<<<<<<<< HEAD:src/main/deploy/pathplanner/autos/testing jiggle.auto
-            "name": "Jiggle"
-========
             "name": "shoot"
->>>>>>>> main:src/main/deploy/pathplanner/autos/R_Still_Shoot.auto
           }
         }
       ]
