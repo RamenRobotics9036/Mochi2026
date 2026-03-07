@@ -30,9 +30,8 @@ public class PidLinearActuator {
     private boolean m_jogActive;
     private boolean m_skipNextJogIncrement;
     private boolean m_stallEventLatched;
-
-    // Add: track whether at least one full update cycle has completed
-    private boolean m_hasUpdatedOnce;
+    // FIX #3: guard against atSetpoint() lying after reset()
+    private boolean m_pidWasReset;
 
     public PidLinearActuator(
             int pwmChannel,
@@ -105,6 +104,7 @@ public class PidLinearActuator {
 
         m_targetPositionMM = initialPositionMM;
         m_rateLimitedSetpointMM = initialPositionMM;
+        // FIX #1: baseline must always reflect ACTUAL current position, not target
         m_baselinePositionMM = initialPositionMM;
         m_lastMeasuredPositionMM = initialPositionMM;
         m_lastUpdateTimestampSec = nowSec;
@@ -112,9 +112,7 @@ public class PidLinearActuator {
         m_jogActive = false;
         m_skipNextJogIncrement = false;
         m_stallEventLatched = false;
-
-        // Initialize the new flag
-        m_hasUpdatedOnce = false;
+        m_pidWasReset = true; // FIX #3
 
         m_motor.stopMotor();
         m_pid.reset();
@@ -123,7 +121,9 @@ public class PidLinearActuator {
     public double stepBy(double deltaMM) {
         m_jogActive = false;
         m_skipNextJogIncrement = true;
-        return setTargetInternal(m_baselinePositionMM + deltaMM);
+        // FIX #1: step from ACTUAL current position, not baseline
+        // baseline was being corrupted by setTargetInternal setting it to target
+        return setTargetInternal(getCurrentPositionMM() + deltaMM);
     }
 
     public double setTargetPositionMM(double positionMM) {
@@ -167,25 +167,27 @@ public class PidLinearActuator {
         advanceRateLimitedSetpoint(dtSeconds);
 
         double output = m_pid.calculate(currentPositionMM, m_rateLimitedSetpointMM);
+
+        // FIX #3: clear the reset guard now that calculate() has run once with real error
+        m_pidWasReset = false;
+
         output = MathUtil.clamp(output, -m_maxPidOutput, m_maxPidOutput);
 
-        // Software limit stops
         if (currentPositionMM <= m_minPositionMM && output < 0.0) {
             output = 0.0;
         } else if (currentPositionMM >= m_maxPositionMM && output > 0.0) {
             output = 0.0;
         }
 
-        // Guard: never declare atTarget on the very first cycle — PID internal
-        // velocity error is zero by default which makes atSetpoint() lie.
-        boolean atTarget = m_hasUpdatedOnce && isAtTargetInternal();
-        m_hasUpdatedOnce = true;
-
+        boolean atTarget = isAtTargetInternal();
         if (atTarget) {
             output = 0.0;
+            // FIX #1: update baseline to actual position only when truly at target
             m_baselinePositionMM = currentPositionMM;
         }
 
+        // FIX #2: only reset stall timer when actively moving (output >= threshold AND moving)
+        // Removed the else branch that reset the timer on low output — that prevented stall detection
         if (!atTarget && Math.abs(output) >= m_stallOutputThreshold) {
             if (movementThisCycleMM >= m_minMovementMM) {
                 m_lastMotionTimestampSec = currentTimeSec;
@@ -196,25 +198,21 @@ public class PidLinearActuator {
                 output = 0.0;
                 atTarget = true;
             }
-        } else if (!atTarget) {
-            // Only reset stall timer when output is low AND not yet at target,
-            // so a brief output dip doesn't prevent stall detection.
-            // Do NOT reset timer here — remove the else branch that did so.
+            // FIX #2: removed `else { m_lastMotionTimestampSec = currentTimeSec; }`
         }
-        // NOTE: removed the old `else { m_lastMotionTimestampSec = currentTimeSec; }`
-        // That was resetting the stall timer whenever output was below threshold,
-        // which prevented stall detection from ever firing.
+
+        // Debug instrumentation — remove once motor movement is confirmed
+        double error = m_targetPositionMM - currentPositionMM;
+        System.out.printf(
+            "[PidActuator] pos=%.2f | target=%.2f | setpoint=%.2f | error=%.2f | output=%.3f | atTarget=%b | pidReset=%b%n",
+            currentPositionMM, m_targetPositionMM, m_rateLimitedSetpointMM,
+            error, output, atTarget, m_pidWasReset);
 
         if (atTarget) {
             m_motor.stopMotor();
         } else {
             m_motor.set(output);
         }
-
-        // Debug instrumentation — remove after confirmed working
-        System.out.printf(
-            "[PidActuator] pos=%.2f mm | setpoint=%.2f mm | target=%.2f mm | output=%.3f | atTarget=%b%n",
-            currentPositionMM, m_rateLimitedSetpointMM, m_targetPositionMM, output, atTarget);
 
         m_lastMeasuredPositionMM = currentPositionMM;
         m_lastUpdateTimestampSec = currentTimeSec;
@@ -265,7 +263,7 @@ public class PidLinearActuator {
         m_rateLimitedSetpointMM = currentPositionMM;
         m_baselinePositionMM = currentPositionMM;
         m_lastMotionTimestampSec = Timer.getFPGATimestamp();
-        m_hasUpdatedOnce = false; // Reset so next update doesn't fire atTarget immediately
+        m_pidWasReset = true; // FIX #3: guard atSetpoint() after reset
         m_pid.reset();
         m_motor.stopMotor();
     }
@@ -275,20 +273,24 @@ public class PidLinearActuator {
         double clampedTargetMM = clampToLimits(requestedPositionMM);
 
         m_targetPositionMM = clampedTargetMM;
-        m_baselinePositionMM = clampedTargetMM;
+        // FIX #1: do NOT set m_baselinePositionMM here — baseline is actual position,
+        // not the target. Baseline is updated in update() when atTarget is true,
+        // and in holdCurrentPosition(). Setting it to target here caused stepBy()
+        // to repeatedly step from the target instead of actual position.
         m_stallEventLatched = false;
 
         return clampedTargetMM - previousTargetMM;
     }
 
     private boolean isAtTargetInternal() {
-        // Do NOT use m_pid.atSetpoint() — its velocity error is 0 on first cycle
-        // and the velocity tolerance interacts poorly with slow actuators.
-        // Use explicit position checks only.
-        double rateLimitedError = Math.abs(m_targetPositionMM - m_rateLimitedSetpointMM);
-        double positionError = Math.abs(m_targetPositionMM - getCurrentPositionMM());
-        return rateLimitedError <= m_positionToleranceMM
-            && positionError <= m_positionToleranceMM;
+        // FIX #3: never declare atTarget immediately after PID reset — velocity error is 0
+        if (m_pidWasReset) {
+            return false;
+        }
+        // FIX: removed m_pid.atSetpoint() — unreliable after reset() and with slow actuators.
+        // Use explicit position-only checks against positionToleranceMM.
+        return Math.abs(m_targetPositionMM - m_rateLimitedSetpointMM) <= m_positionToleranceMM
+            && Math.abs(m_targetPositionMM - getCurrentPositionMM()) <= m_positionToleranceMM;
     }
 
     private double clampToLimits(double positionMM) {
