@@ -16,6 +16,7 @@ import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 import java.util.List;
 import java.util.Optional;
@@ -49,16 +50,21 @@ public class SingleCamOdometry implements CamOdometryInterface {
     // Samples the drivetrain's historical pose at a given FPGA timestamp (seconds)
     private final Function<Double, Optional<Pose2d>> m_poseSampler;
 
+    // Supplies the robot's current heading (degrees, WPILib blue-alliance frame) for MegaTag2
+    private final DoubleSupplier m_yawDegreesSupplier;
+
     /** Constructor. */
     public SingleCamOdometry(
         String limelightName,
         Transform3d robotToCam,
         VisionSimInterface.EstimateConsumer poseConsumer,
-        Function<Double, Optional<Pose2d>> poseSampler) {
+        Function<Double, Optional<Pose2d>> poseSampler,
+        DoubleSupplier yawDegreesSupplier) {
 
         m_estConsumer = poseConsumer;
         m_limelightName = limelightName;
         m_poseSampler = poseSampler;
+        m_yawDegreesSupplier = yawDegreesSupplier;
 
         setCameraPoseRobotSpace(m_limelightName, robotToCam);
     }
@@ -201,6 +207,11 @@ public class SingleCamOdometry implements CamOdometryInterface {
     }
 
     private void addVisionMeasurementV1() {
+        // MegaTag2 requires the robot's current heading to be pushed to the Limelight
+        // before each poll so it can fuse gyro data with its visual solve.
+        LimelightHelpers.SetRobotOrientation_NoFlush(
+            m_limelightName, m_yawDegreesSupplier.getAsDouble(), 0, 0, 0, 0, 0);
+
         LimelightHelpers.PoseEstimate mt1 = sanitizePoseEstimate(
             LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName));
         LimelightHelpers.PoseEstimate mt2 = sanitizePoseEstimate(
