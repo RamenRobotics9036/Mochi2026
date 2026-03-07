@@ -52,6 +52,7 @@ import frc.robot.sim.armsim.ArmIoSim;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
@@ -149,9 +150,9 @@ public class RobotContainer {
             Constants.ShooterConstants.kShooterGearRatio)
         : new ShooterIoReal(m_configInterface);
 
-    public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(
-        m_configInterface,
-        m_shooterIO);
+    public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(m_shooterIO);
+
+    public final HoodSubsystem hoodSubsystem = new HoodSubsystem();
 
     private final RollerIoInterface m_indexerIO = Robot.isSimulation()
         ? new RollerIoSim(
@@ -406,11 +407,11 @@ public class RobotContainer {
 
         // POV Left: Extend hood (step increment per press)
         operateController.povLeft().onTrue(
-            new InstantCommand(shooterSubsystem::stepHoodExtend, shooterSubsystem));
+            new InstantCommand(hoodSubsystem::stepHoodExtend, hoodSubsystem));
 
         // POV Right: Retract hood (step increment per press)
         operateController.povRight().onTrue(
-            new InstantCommand(shooterSubsystem::stepHoodRetract, shooterSubsystem));
+            new InstantCommand(hoodSubsystem::stepHoodRetract, hoodSubsystem));
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
@@ -456,6 +457,20 @@ public class RobotContainer {
                      .withVelocityY(inputs.driveY())
                      .withRotationalRate(inputs.rotatetX());
             })
+        );
+
+        hoodSubsystem.setDefaultCommand(
+            new RunCommand(() -> {
+                int pov = operateController.getHID().getPOV();
+
+                if (pov == 270) {
+                    hoodSubsystem.jogExtend();
+                } else if (pov == 90) {
+                    hoodSubsystem.jogRetract();
+                } else {
+                    hoodSubsystem.stopJog();
+                }
+            }, hoodSubsystem)
         );
 
         //shooterSubsystem.setDefaultCommand(new ShooterTestCommand(shooterSubsystem, operateController));
