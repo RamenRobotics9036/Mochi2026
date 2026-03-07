@@ -54,6 +54,16 @@ public interface CamOdometryInterface {
     double getPrimaryTagTx();
 
     /**
+     * Pushes the robot's current heading to the Limelight for MegaTag2 and flushes.
+     */
+    void setRobotOrientation();
+
+    /**
+     * Pushes the robot's current heading to the Limelight for MegaTag2 without flushing.
+     */
+    void setRobotOrientation_NoFlush();
+
+    /**
      * Periodic update; should be called from robot periodic.
      */
     void periodic();

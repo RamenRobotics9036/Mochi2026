@@ -206,12 +206,19 @@ public class SingleCamOdometry implements CamOdometryInterface {
         System.out.println(sb.toString());
     }
 
-    private void addVisionMeasurementV1() {
-        // MegaTag2 requires the robot's current heading to be pushed to the Limelight
-        // before each poll so it can fuse gyro data with its visual solve.
+    @Override
+    public void setRobotOrientation() {
+        LimelightHelpers.SetRobotOrientation(
+            m_limelightName, m_yawDegreesSupplier.getAsDouble(), 0, 0, 0, 0, 0);
+    }
+
+    @Override
+    public void setRobotOrientation_NoFlush() {
         LimelightHelpers.SetRobotOrientation_NoFlush(
             m_limelightName, m_yawDegreesSupplier.getAsDouble(), 0, 0, 0, 0, 0);
+    }
 
+    private void addVisionMeasurementV1() {
         LimelightHelpers.PoseEstimate mt1 = sanitizePoseEstimate(
             LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName));
         LimelightHelpers.PoseEstimate mt2 = sanitizePoseEstimate(
