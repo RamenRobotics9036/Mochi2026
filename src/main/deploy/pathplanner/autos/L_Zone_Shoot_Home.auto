@@ -7,19 +7,32 @@
         {
           "type": "named",
           "data": {
-            "name": "shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "L_Zone"
+            "name": "home intake arm"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "get fuel"
+            "name": "shoot"
+          }
+        },
+        {
+          "type": "parallel",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "L_Zone"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "get fuel"
+                }
+              }
+            ]
           }
         },
         {

@@ -249,6 +249,8 @@ public class RobotContainer {
     /** Registers named commands for PathPlanner */
     private void registerNamedCommands() {
         NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
+        
+        NamedCommands.registerCommand("home intake arm", IntakeArmHomeCommand.create(armSubsystem));
 
         NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
 
