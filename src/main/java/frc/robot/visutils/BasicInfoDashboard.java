@@ -172,7 +172,18 @@ public class BasicInfoDashboard {
     }
 
     private static double calcVisErrorMeters(Optional<Transform2d> error) {
-        return error.map(t -> t.getTranslation().getNorm()).orElse(0.0);
+        if (error.isEmpty()) {
+            return 0.0;
+        }
+
+        double errorMeters = error.get().getTranslation().getNorm();
+
+        if (errorMeters > VisionInjectFilter.MAX_DISTANCE_METERS) {
+            // If the error is unreasonably large, likely due to a bad measurement, ignore it.
+            return 0.0;
+        }
+
+        return errorMeters;
     }
 
     private static String targetListToString(List<Integer> targets) {
