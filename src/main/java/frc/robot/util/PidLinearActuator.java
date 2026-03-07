@@ -67,9 +67,10 @@ public class PidLinearActuator {
         m_actuator = new Servo(pwmChannel);
 
         // L16-R requires standard RC PWM: 1000µs (retracted) to 2000µs (extended).
-        // WPILib's Servo default range is ~600µs–2400µs, which the L16-R rejects as
-        // out-of-bounds and disables its motor entirely. This must be set explicitly.
-        m_actuator.setBoundsMicroseconds(2000, 1520, 1500, 1480, 1000);
+        // deadbandMax and deadbandMin are both set to 1500 (same as center) to
+        // eliminate any deadband zone — the L16-R is a linear actuator, not a
+        // rotation servo, so no center deadband is needed or desirable.
+        m_actuator.setBoundsMicroseconds(2000, 1500, 1500, 1500, 1000);
 
         m_minPositionMM = minPositionMM;
         m_maxPositionMM = maxPositionMM;
