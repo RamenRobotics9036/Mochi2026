@@ -12,7 +12,7 @@ public class SetIntakeBottomCommand {
     public static Command create(ArmSubsystem arm, IntakeSubsystem intake) {
         // $TODO - Tarun, shouldnt the IntakeBottomCommand set arm position to kMINArmAngle instead of kMAXArmAngle?
         return new RunCommand(
-                () -> arm.setArmPosition(Constants.ArmConstants.kMinArmAngle),
+                () -> arm.setArmPosition(Constants.ArmConstants.kMaxArmAngle),
                 // Dependencies:
                 arm, intake)
             // Initialize the homing sequence before the command starts running updates
