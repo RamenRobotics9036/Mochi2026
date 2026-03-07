@@ -62,7 +62,7 @@ public class RobotIdentity {
         }
         else if (Robot.isSimulation()) {
             System.out.println(">>> Detected: SIMULATION");
-            m_identityResult = new IdentityResult(new CompConfig(), "Simulation");
+            m_identityResult = new IdentityResult(new PancakeConfig(), "Simulation");
         }
         else {
             DriverStation.reportError("UNKNOWN RIO MAC! Defaulting to COMPETITION.", false);

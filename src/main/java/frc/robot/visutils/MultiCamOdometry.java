@@ -1,6 +1,7 @@
 package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -68,6 +69,14 @@ public class MultiCamOdometry implements CamOdometryInterface {
                 m_perCycleState.hasMultiTagLock = true;
             }
         }
+    }
+
+    @Override
+    public Optional<Transform2d> getVisionErrorAtSnapTime() {
+        if (m_perCycleState.bestLockedCam.isPresent()) {
+            return m_perCycleState.bestLockedCam.get().getVisionErrorAtSnapTime();
+        }
+        return Optional.empty();
     }
 
     @Override

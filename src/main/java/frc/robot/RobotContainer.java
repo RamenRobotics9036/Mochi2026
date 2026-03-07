@@ -55,7 +55,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SpinnyWheels;
 import frc.robot.subsystems.TestSubsystems;
-import frc.robot.auto.AutoLogic;
+import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.subsystems.indexer.IndexerIoReal;
 import frc.robot.subsystems.intake.ArmIoReal;
 import frc.robot.subsystems.intake.IntakeIoReal;
@@ -219,8 +219,10 @@ public class RobotContainer {
         AutoLogic.initShuffleboard(drivetrain);
         DashboardFactory.initDebugDashboard(
             m_configInterface,
+            m_simWrapper,
             m_glassField,
             m_driveAccuracyTester,
+            drivetrain,
             intakeSubsystem,
             m_indexerSubsystem,
             shooterSubsystem,
@@ -247,6 +249,7 @@ public class RobotContainer {
 
         m_multiCamlimelight = MultiCamOdometryFactory.create(
             m_configInterface,
+            drivetrain::samplePoseAt,
             drivetrain::addVisionMeasurement,
             basicInfoDashboard,
             m_visionKalmanFilter,

@@ -7,13 +7,21 @@
         {
           "type": "path",
           "data": {
+<<<<<<<< HEAD:src/main/deploy/pathplanner/autos/testing intake fuel.auto
             "pathName": "Center"
+========
+            "pathName": "SimpleDriveForwards"
+>>>>>>>> main:src/main/deploy/pathplanner/autos/testing jiggle.auto
           }
         },
         {
           "type": "named",
           "data": {
+<<<<<<<< HEAD:src/main/deploy/pathplanner/autos/testing intake fuel.auto
+            "name": "get fuel"
+========
             "name": "Jiggle"
+>>>>>>>> main:src/main/deploy/pathplanner/autos/testing jiggle.auto
           }
         }
       ]

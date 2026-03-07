@@ -3,15 +3,6 @@
   "waypoints": [
     {
       "anchor": {
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/C_BackShoot.path
-        "x": 3.5732667617689007,
-        "y": 4.766034236804566
-      },
-      "prevControl": null,
-      "nextControl": {
-        "x": 4.015293757363388,
-        "y": 4.73963303820499
-========
         "x": 3.527,
         "y": 7.39
       },
@@ -19,28 +10,18 @@
       "nextControl": {
         "x": 3.2783702792165994,
         "y": 7.3638607203012745
->>>>>>>> main:src/main/deploy/pathplanner/paths/R_Still_Shoot.path
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/C_BackShoot.path
-        "x": 2.4217261055634807,
-        "y": 4.766034236804566
-      },
-      "prevControl": {
-        "x": 1.952476806890238,
-        "y": 4.7759236005255294
-========
         "x": 3.527,
         "y": 7.39
       },
       "prevControl": {
         "x": 3.805976435318371,
         "y": 7.419355767088208
->>>>>>>> main:src/main/deploy/pathplanner/paths/R_Still_Shoot.path
       },
       "nextControl": null,
       "isLocked": false,
@@ -61,21 +42,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/C_BackShoot.path
-    "rotation": -14.036243467926612
-========
     "rotation": -69.146
->>>>>>>> main:src/main/deploy/pathplanner/paths/R_Still_Shoot.path
   },
   "reversed": false,
   "folder": null,
   "idealStartingState": {
     "velocity": 0,
-<<<<<<<< HEAD:src/main/deploy/pathplanner/paths/C_BackShoot.path
-    "rotation": 0.0
-========
     "rotation": -69.146
->>>>>>>> main:src/main/deploy/pathplanner/paths/R_Still_Shoot.path
   },
   "useDefaultConstraints": true
 }

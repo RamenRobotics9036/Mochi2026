@@ -31,7 +31,7 @@ public class VisionSimConstants {
         public static final double kCalibErrorAvg = 0.35;
         public static final double kCalibErrorStdDev = 0.10;
         public static final double kCameraFPS = 15;
-        public static final double kAvgLatencyMs = 50;
+        public static final double kAvgLatencyMs = 100; // quite a high camera latency
         public static final double kLatencyStdDevMs = 15;
         public static final double kMinTargetAreaPixels = 10.0;
         public static final double kMaxSightRangeMeters = 3.0;
