@@ -61,7 +61,7 @@ public class LimelightTablePublisher {
         table.getEntry("botpose_wpiblue").setDoubleArray(data.botposeWpiBlue);
         table.getEntry("botpose_wpired").setDoubleArray(data.botposeWpiRed);
         // Also publish as MegaTag2 format (same data for simulation purposes)
-        table.getEntry("botpose_orb_wpiblue").setDoubleArray(data.botposeWpiBlue);
-        table.getEntry("botpose_orb_wpired").setDoubleArray(data.botposeWpiRed);
+        //table.getEntry("botpose_orb_wpiblue").setDoubleArray(data.botposeWpiBlue);
+        //table.getEntry("botpose_orb_wpired").setDoubleArray(data.botposeWpiRed);
     }
 }
