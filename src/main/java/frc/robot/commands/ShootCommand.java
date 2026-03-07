@@ -19,7 +19,7 @@ public class ShootCommand {
             },
             // Dependencies:
             shooter, indexer)
-            .withTimeout(5.0)
+            .withTimeout(8.0)
 
             // finallyDo ensures motors are stopped even if command is
             // cancelled.
