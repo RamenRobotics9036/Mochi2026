@@ -4,9 +4,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import frc.robot.Constants.VisionConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.DoubleSupplier;
 import java.util.function.Function;
 
 /** Factory for creating and wiring up a {@link MultiCamOdometry} instance. */
@@ -22,6 +24,8 @@ public class MultiCamOdometryFactory {
      * @param poseSampler        Samples the drivetrain's historical pose at a given timestamp
      *                           (e.g. {@code drivetrain::samplePoseAt})
      * @param poseConsumer       Consumer for vision pose estimates (e.g. {@code drivetrain::addVisionMeasurement})
+     * @param yawDegreesSupplier Supplies the robot's current heading in degrees (WPILib blue-alliance
+     *                           frame) for MegaTag2 orientation updates
      * @param basicInfoDashboard Dashboard to receive vision confidence/status updates
      * @param visionKalmanFilter Kalman filter for stationary vision estimation
      * @param motionlessTracker  Tracks whether the robot is motionless
@@ -31,6 +35,7 @@ public class MultiCamOdometryFactory {
             BotConfigInterface configInterface,
             Function<Double, Optional<Pose2d>> poseSampler,
             VisionSimInterface.EstimateConsumer poseConsumer,
+            DoubleSupplier yawDegreesSupplier,
             BasicInfoDashboard basicInfoDashboard,
             VisionKalmanFilter visionKalmanFilter,
             MotionlessTracker motionlessTracker) {
@@ -41,7 +46,9 @@ public class MultiCamOdometryFactory {
                 camInfo.cameraName,
                 camInfo.robotToCam,
                 poseConsumer,
-                poseSampler));
+                poseSampler,
+                yawDegreesSupplier,
+                VisionConstants.kSupportMegatag2));
         }
 
         CamOdometryInterface multiCam = new MultiCamOdometry(cameras);
@@ -55,6 +62,7 @@ public class MultiCamOdometryFactory {
             multiCam::getConfidenceScore,
             multiCam::hasTargetLock,
             multiCam::hasMultiTagLock,
+            multiCam::isLatestMt2,
             multiCam::getPrimaryTagTx,
             multiCam::getVisibleTagIds,
             multiCam::getVisionErrorAtSnapTime,

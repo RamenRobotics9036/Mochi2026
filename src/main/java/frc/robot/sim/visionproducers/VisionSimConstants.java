@@ -16,6 +16,9 @@ public class VisionSimConstants {
         // with simulated subsystems.
         public static final boolean kForceSimWrapperOff = false;
 
+        // Whether to also publish MegaTag2 pose entries (botpose_orb_wpiblue / botpose_orb_wpired).
+        public static final boolean kPublishMt2Poses = true;
+
         // Camera name (must match PhotonVision camera name)
         public static final String kPhotonCameraNamePrefix = "photon-";
 

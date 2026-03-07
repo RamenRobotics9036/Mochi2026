@@ -2,6 +2,7 @@ package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import frc.robot.LimelightHelpers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,6 +47,21 @@ public class MultiCamOdometry implements CamOdometryInterface {
      *   score that has a target lock.  We also track the FIRST camera
      *   (in order) that has a target lock.
      */
+    @Override
+    public void setRobotOrientation() {
+        for (CamOdometryInterface cam : m_cameras) {
+            cam.setRobotOrientation_NoFlush();
+        }
+        LimelightHelpers.Flush();
+    }
+
+    @Override
+    public void setRobotOrientation_NoFlush() {
+        for (CamOdometryInterface cam : m_cameras) {
+            cam.setRobotOrientation_NoFlush();
+        }
+    }
+
     @Override
     public void periodic() {
         m_perCycleState.reset();
@@ -118,6 +134,14 @@ public class MultiCamOdometry implements CamOdometryInterface {
     @Override
     public boolean hasMultiTagLock() {
         return m_perCycleState.hasMultiTagLock;
+    }
+
+    @Override
+    public boolean isLatestMt2() {
+        if (m_perCycleState.bestLockedCam.isPresent()) {
+            return m_perCycleState.bestLockedCam.get().isLatestMt2();
+        }
+        return false;
     }
 
     @Override

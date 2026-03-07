@@ -46,8 +46,8 @@ public final class Constants {
         public static final int kLeftArmMotorID = 20;
         public static final int kRightArmMotorID = 21;
 
-        /** Max angle (degrees) — lowered/deployed position. 
-         * Measured on hardware: 2/23/2026 
+        /** Max angle (degrees) — lowered/deployed position.
+         * Measured on hardware: 2/23/2026
         */
         public static final double kMaxArmAngle = 160;
 
@@ -219,6 +219,17 @@ public final class Constants {
     public static final class VisionConstants {
         /** Default value for the VisionEnabled toggle (true = vision on). */
         public static final boolean kVisionEnabledDefault = true;
+
+        /** When false, MegaTag2 pose estimates are never requested or used. */
+        // $TODO - Enable after testing
+        public static final boolean kSupportMegatag2 = false;
+
+        /**
+         * Distance advantage (meters) given to MegaTag2 when comparing estimates.
+         * MT2 is preferred over MT1 if its avgTagDist is within this margin of MT1's,
+         * because gyro-fused rotation makes the estimate more reliable at similar range.
+         */
+        public static final double kMt2DistanceAdvantageMeter = 0.5;
     }
 
     /**

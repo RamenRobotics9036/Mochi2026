@@ -42,6 +42,11 @@ public interface CamOdometryInterface {
     boolean hasMultiTagLock();
 
     /**
+     * Returns true if the latest pose estimate from the best-locked camera used MegaTag2.
+     */
+    boolean isLatestMt2();
+
+    /**
      * Gets the AprilTag ID locked onto by the PRIMARY camera, or -1 if none.
      * Used to determine which tag the robot is aligned to for turning.
      */
@@ -52,6 +57,16 @@ public interface CamOdometryInterface {
      * Returns 0 if no target is locked. Used to determine rotation error for alignment.
      */
     double getPrimaryTagTx();
+
+    /**
+     * Pushes the robot's current heading to the Limelight for MegaTag2 and flushes.
+     */
+    void setRobotOrientation();
+
+    /**
+     * Pushes the robot's current heading to the Limelight for MegaTag2 without flushing.
+     */
+    void setRobotOrientation_NoFlush();
 
     /**
      * Periodic update; should be called from robot periodic.

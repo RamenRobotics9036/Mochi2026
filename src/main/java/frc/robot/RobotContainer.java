@@ -252,6 +252,7 @@ public class RobotContainer {
             m_configInterface,
             drivetrain::samplePoseAt,
             drivetrain::addVisionMeasurement,
+            () -> drivetrain.getState().Pose.getRotation().getDegrees(),
             basicInfoDashboard,
             m_visionKalmanFilter,
             m_motionlessTracker);
