@@ -11,7 +11,7 @@ public class SetIntakeBottomCommand {
     /** Returns a Command that drives the arm down, stopping it when done or interrupted. */
     public static Command create(ArmSubsystem arm, IntakeSubsystem intake) {
         return new RunCommand(
-                () -> arm.setArmPosition(Constants.ArmConstants.kMaxArmAngle),
+                () -> arm.setArmPosition(Constants.ArmConstants.kMinArmAngle),
                 // Dependencies:
                 arm, intake)
             // Initialize the homing sequence before the command starts running updates
