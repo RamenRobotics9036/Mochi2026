@@ -21,10 +21,13 @@ public class ClimberSubsystem extends SubsystemBase {
      * Sets climber speed with software limit checks.
      */
     public void setClimbSpeed(double request) {
-        if(request > 0 && getEncoderValue() <= ClimberConstants.kMaxHeight){
+        double height = getEncoderValue();
+        if(request > 0 && height <= ClimberConstants.kMaxHeight){
             m_io.setSpeed(request);
-        } else if(request < 0 && getEncoderValue() >= ClimberConstants.kMinHeight){
+        } else if(request < 0 && height >= ClimberConstants.kMinHeight){
             m_io.setSpeed(request);
+        } else{
+            m_io.setSpeed(0.0);
         }
     }
 
