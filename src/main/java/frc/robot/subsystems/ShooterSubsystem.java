@@ -13,7 +13,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private final TwoMotorRollerIoInterface.DeviceOutputs m_shooterOutputs =
         new TwoMotorRollerIoInterface.DeviceOutputs();
 
-    private LinearServo m_hood;
+    public LinearServo m_hood;
 
     public ShooterSubsystem(BotConfigInterface configInterface, TwoMotorRollerIoInterface shooterIO) {
         m_configInterface = configInterface;
@@ -42,6 +42,18 @@ public class ShooterSubsystem extends SubsystemBase {
         System.out.println("Nudging hood by " + Double.toString(deltaMm));
         System.out.println("Target nudge position: " + Double.toString(m_hood.getSetpoint() + deltaMm));
         m_hood.setLinearPosition(m_hood.getSetpoint() + deltaMm);
+    }
+
+    /** Extend hood by one default step increment. */
+    public void extendHood() {
+        System.out.println("extending hood");
+        m_hood.set(0.5);
+    }
+
+    /** Extend hood by one default step increment. */
+    public void retractHood() {
+        System.out.println("retracting hood");
+        m_hood.set(0.5);
     }
 
     /** Extend hood by one default step increment. */

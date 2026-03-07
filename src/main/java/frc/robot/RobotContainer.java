@@ -405,11 +405,11 @@ public class RobotContainer {
 
         // POV Left: Extend hood (step increment per press)
         operateController.povLeft().onTrue(
-            new InstantCommand(shooterSubsystem::stepHoodExtend, shooterSubsystem));
+            new InstantCommand(shooterSubsystem::extendHood, shooterSubsystem));
 
         // POV Right: Retract hood (step increment per press)
         operateController.povRight().onTrue(
-            new InstantCommand(shooterSubsystem::stepHoodRetract, shooterSubsystem));
+            new InstantCommand(shooterSubsystem::retractHood, shooterSubsystem));
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
