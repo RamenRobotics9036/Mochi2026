@@ -348,8 +348,8 @@
           },
           {
             "title": "VisionEnabled",
-            "x": 0.0,
-            "y": 384.0,
+            "x": 384.0,
+            "y": 128.0,
             "width": 384.0,
             "height": 128.0,
             "type": "Toggle Switch",
@@ -362,12 +362,30 @@
           {
             "title": "Vision Pose vs. Estimate Pose",
             "x": 0.0,
-            "y": 512.0,
+            "y": 384.0,
             "width": 896.0,
             "height": 256.0,
             "type": "Graph",
             "properties": {
               "topic": "/BasicInfo/VisErrorCentimeters",
+              "period": 0.033,
+              "data_type": "double",
+              "time_displayed": 5.0,
+              "min_value": 0.0,
+              "max_value": 25.0,
+              "color": 4278238420,
+              "line_width": 2.0
+            }
+          },
+          {
+            "title": "High confidence Vision Pose vs. Estimate Pose",
+            "x": 0.0,
+            "y": 640.0,
+            "width": 896.0,
+            "height": 256.0,
+            "type": "Graph",
+            "properties": {
+              "topic": "/BasicInfo/VisErrorMultiTagCentimeters",
               "period": 0.033,
               "data_type": "double",
               "time_displayed": 5.0,
