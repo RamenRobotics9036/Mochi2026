@@ -6,16 +6,19 @@ import static frc.robot.sim.visionproducers.VisionSimConstants.Vision.kSingleTag
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import com.ctre.phoenix6.Utils;
 import frc.robot.LimelightHelpers;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.function.BooleanSupplier;
+import java.util.function.Function;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
 import java.util.stream.Collectors;
 
 
@@ -29,6 +32,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
     private double m_lastTimestamp = 0;
 
     private Optional<Pose2d> m_latestVisPose = Optional.empty();
+    private Optional<Transform2d> m_latestVisionError = Optional.empty();
     private double m_curConfidenceScore = 0.0;
     // Booleans mirror the CamOdometryInterface contract directly;
     // no consumer needs the raw tag count.
@@ -42,14 +46,19 @@ public class SingleCamOdometry implements CamOdometryInterface {
     private BooleanSupplier m_isMotionlessSupplier = null;
     private BooleanSupplier m_visionEnabledSupplier = () -> true;
 
+    // Samples the drivetrain's historical pose at a given FPGA timestamp (seconds)
+    private final Function<Double, Optional<Pose2d>> m_poseSampler;
+
     /** Constructor. */
     public SingleCamOdometry(
         String limelightName,
         Transform3d robotToCam,
-        VisionSimInterface.EstimateConsumer poseConsumer) {
+        VisionSimInterface.EstimateConsumer poseConsumer,
+        Function<Double, Optional<Pose2d>> poseSampler) {
 
         m_estConsumer = poseConsumer;
         m_limelightName = limelightName;
+        m_poseSampler = poseSampler;
 
         setCameraPoseRobotSpace(m_limelightName, robotToCam);
     }
@@ -64,6 +73,43 @@ public class SingleCamOdometry implements CamOdometryInterface {
             Math.toDegrees(robotToCam.getRotation().getY()),
             Math.toDegrees(robotToCam.getRotation().getZ())
         );
+    }
+
+    /**
+     * Calculates the offset between where the drivetrain thought the robot was
+     * at the camera snap timestamp and where vision says it is now.
+     *
+     * <p>Calls {@code m_poseSampler} (i.e. {@code drivetrain::samplePoseAt}) with
+     * the FPGA timestamp converted to the {@link Utils#getCurrentTimeSeconds()} epoch,
+     * then returns the {@link Transform2d} from that sampled pose to {@code visionPose}
+     * (translation + rotation delta).
+     *
+     * @param visionPose           The pose reported by vision for this measurement
+     * @param fpgaTimestampSeconds FPGA timestamp (seconds) when the image was captured
+     *                             (i.e. {@code mt1.timestampSeconds})
+     * @return The Transform2d offset, or empty if no sampler is set or the
+     *         pose buffer has no entry for that timestamp
+     */
+    private Optional<Transform2d> calcVisionErrorAtSnapTime(
+            Pose2d visionPose, double fpgaTimestampSeconds) {
+        if (m_poseSampler == null) {
+            return Optional.empty();
+        }
+
+        // samplePoseAt requires getCurrentTimeSeconds epoch, not FPGA epoch
+        double currentTimeEpoch = Utils.fpgaToCurrentTime(fpgaTimestampSeconds);
+        Optional<Pose2d> sampledPose = m_poseSampler.apply(currentTimeEpoch);
+        if (sampledPose.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Transform2d from sampledPose → visionPose (translation + rotation offset)
+        Optional<Transform2d> result = Optional.of(visionPose.minus(sampledPose.get()));
+
+        // System.out.println(String.format("Vision offset at snap time: (x=%.2f m, y=%.2f m, rot=%.1f°)",
+        //     result.get().getX(), result.get().getY(), result.get().getRotation().getDegrees()));
+
+        return result;
     }
 
     /**
@@ -94,6 +140,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
         m_hasMultiTagLock = false;
         m_tx = 0.0;
         m_targetList = Collections.emptyList();
+        m_latestVisionError = Optional.empty();
     }
 
     private void setResults(double confidenceScore, int numLockedTags,
@@ -180,6 +227,10 @@ public class SingleCamOdometry implements CamOdometryInterface {
             return;
         }
         m_lastTimestamp = mt1.timestampSeconds;
+
+        // We track how far-off this vision estimate is, using the ACTUAL pose in the past
+        // of where the robot was when the camera image was snapped.
+        m_latestVisionError = calcVisionErrorAtSnapTime(mt1.pose, mt1.timestampSeconds);
 
         // Update std devs based on tag count and distance.  And confidence score.
         m_curStdDevs = calculateEstimationStdDevs(mt1);
@@ -269,6 +320,11 @@ public class SingleCamOdometry implements CamOdometryInterface {
         double confidence = 100.0 * Math.exp(-posUncertainty / 2.0);
 
         return Math.max(0, Math.min(100, confidence));
+    }
+
+    @Override
+    public Optional<Transform2d> getVisionErrorAtSnapTime() {
+        return m_latestVisionError;
     }
 
     @Override

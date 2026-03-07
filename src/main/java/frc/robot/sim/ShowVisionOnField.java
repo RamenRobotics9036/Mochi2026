@@ -1,6 +1,7 @@
 package frc.robot.sim;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -9,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.visutils.ShowIcon;
+import frc.robot.visutils.VisionKalmanFilter.DisplayInfo;
 
 import java.util.List;
 import java.util.Optional;
@@ -72,12 +74,35 @@ public class ShowVisionOnField {
         m_simulationField = Optional.ofNullable(simulationField);
     }
 
+    public void updateFieldDisplay(
+        Optional<Pose2d> showVisPose,
+        DisplayInfo kalmanDisplay,
+        Optional<Pose2d> blueTapePose,
+        Optional<Pose2d> redTapePose,
+        SwerveDriveState driveState) {
+
+        // Show estimate pose for vision, if we currently see AprilTag.
+        showPointInTimeVisionEstimate(showVisPose);
+
+        // Show VisionKalmanFilter converged pose (offset forward for visibility)
+        showKalmanVisionPose(
+            kalmanDisplay.pose(),
+            kalmanDisplay.hasConverged() ? 0 : 1);
+
+        // Show tape locations on field
+        showBlueTape(blueTapePose);
+        showRedTape(redTapePose);
+
+        // Show robot pose and wheel positions on field
+        showEstimatedPoseAndWheels(driveState);
+    }
+
     /**
      * Shows the estimated robot pose and wheel positions on the field.
      *
      * @param driveState The current swerve drive state containing pose and module states
      */
-    public void showEstimatedPoseAndWheels(
+    private void showEstimatedPoseAndWheels(
         SwerveDrivetrain.SwerveDriveState driveState) {
 
         // Always show robot pose and wheels on real/glass field
@@ -122,7 +147,7 @@ public class ShowVisionOnField {
      *
      * @param visionPose The vision pose if present, or empty to hide the estimate
      */
-    public void showPointInTimeVisionEstimate(Optional<Pose2d> visionPose) {
+    private void showPointInTimeVisionEstimate(Optional<Pose2d> visionPose) {
         // Always show point in time vision pose on real/glass field
         m_realGlassField.ifPresent(f -> {
             visionPose.ifPresentOrElse(
@@ -150,7 +175,7 @@ public class ShowVisionOnField {
      * @param kalmanPose The Kalman-filtered pose if present, or empty to hide
      * @param showIndex Index selecting which appearance to use (0=converged, 1=not converged)
      */
-    public void showKalmanVisionPose(Optional<Pose2d> kalmanPose, int showIndex) {
+    private void showKalmanVisionPose(Optional<Pose2d> kalmanPose, int showIndex) {
         showIcon(m_kalmanIcon, kalmanPose, showIndex);
     }
 
@@ -159,7 +184,7 @@ public class ShowVisionOnField {
      *
      * @param pose The pose to display, or empty to hide
      */
-    public void showBlueTape(Optional<Pose2d> pose) {
+    private void showBlueTape(Optional<Pose2d> pose) {
         showIcon(m_blueTape, pose, 0);
     }
 
@@ -168,7 +193,7 @@ public class ShowVisionOnField {
      *
      * @param pose The pose to display, or empty to hide
      */
-    public void showRedTape(Optional<Pose2d> pose) {
+    private void showRedTape(Optional<Pose2d> pose) {
         showIcon(m_redTape, pose, 0);
     }
 
@@ -180,7 +205,7 @@ public class ShowVisionOnField {
      * @param pose The pose to display, or empty to hide all objects
      * @param showIndex Index into the icon's object names selecting which to display
      */
-    public void showIcon(ShowIcon icon, Optional<Pose2d> pose, int showIndex) {
+    private void showIcon(ShowIcon icon, Optional<Pose2d> pose, int showIndex) {
         // Always show on real/glass field
         icon.show(m_realGlassField, pose, showIndex);
 

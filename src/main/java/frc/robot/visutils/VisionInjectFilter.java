@@ -38,7 +38,7 @@ public class VisionInjectFilter {
     private static final double IGNORE_WINDOW_END_OFFSET = 0.0;
 
     /** Maximum allowed distance (meters) between vision pose and current pose */
-    private static final double MAX_DISTANCE_METERS = 5.0;
+    public static final double MAX_DISTANCE_METERS = 5.0;
 
     /** Track the last time the pose was reset to filter stale vision measurements. */
     private double m_lastResetTimestamp = RESET_INIT_CONSTANT;

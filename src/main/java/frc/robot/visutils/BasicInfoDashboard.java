@@ -7,6 +7,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
@@ -21,6 +22,7 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.visutils.VisionKalmanFilter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -51,6 +53,8 @@ public class BasicInfoDashboard {
     private final BooleanPublisher m_multiLocked = m_basicInfoTable.getBooleanTopic("MultiLocked").publish();
     private final DoublePublisher m_visionTx = m_basicInfoTable.getDoubleTopic("VisionTx").publish();
     private final StringPublisher m_targetList = m_basicInfoTable.getStringTopic("TargetList").publish();
+    private final DoublePublisher m_visErrorCentimeters = m_basicInfoTable.getDoubleTopic("VisErrorCentimeters").publish();
+    private final DoublePublisher m_visErrorMultiTagCentimeters = m_basicInfoTable.getDoubleTopic("VisErrorMultiTagCentimeters").publish();
 
     /** Bidirectional toggle for enabling/disabling vision measurement injection. */
     private final BooleanEntry m_visionEnabled =
@@ -76,6 +80,7 @@ public class BasicInfoDashboard {
     private Supplier<VisionKalmanFilter> m_visionKalmanSupplier = null;
     private BooleanSupplier m_isRobotMotionlessSupplier = null;
     private DoubleSupplier m_secondsStillSupplier = null;
+    private Supplier<Optional<Transform2d>> m_visErrorAtSnapTimeSupplier = null;
 
     /** When true, vision is forcibly disabled regardless of the dashboard toggle. */
     private boolean m_forceDisableVision = false;
@@ -130,13 +135,14 @@ public class BasicInfoDashboard {
     /**
      * Sets the suppliers for querying basic vision information.
      *
-     * @param confidenceSupplier    A DoubleSupplier returning confidence 0-100
-     * @param hasTargetLockSupplier A BooleanSupplier returning true if any camera has a target lock
-     * @param hasMultiTagLockSupplier A BooleanSupplier returning true if any camera has 2+ targets locked
-     * @param txSupplier            A DoubleSupplier returning tx in degrees
-     * @param targetListSupplier    A Supplier returning comma-separated tag IDs
-     * @param isMotionlessSupplier  A BooleanSupplier returning true when robot is motionless
-     * @param secondsStillSupplier  A DoubleSupplier returning seconds the robot has been still
+     * @param confidenceSupplier         A DoubleSupplier returning confidence 0-100
+     * @param hasTargetLockSupplier      A BooleanSupplier returning true if any camera has a target lock
+     * @param hasMultiTagLockSupplier    A BooleanSupplier returning true if any camera has 2+ targets locked
+     * @param txSupplier                 A DoubleSupplier returning tx in degrees
+     * @param targetListSupplier         A Supplier returning comma-separated tag IDs
+     * @param visErrorAtSnapTimeSupplier A Supplier returning the vision error at image-capture time
+     * @param isMotionlessSupplier       A BooleanSupplier returning true when robot is motionless
+     * @param secondsStillSupplier       A DoubleSupplier returning seconds the robot has been still
      */
     public void setVisionDependencies(
             DoubleSupplier confidenceSupplier,
@@ -144,6 +150,7 @@ public class BasicInfoDashboard {
             BooleanSupplier hasMultiTagLockSupplier,
             DoubleSupplier txSupplier,
             Supplier<List<Integer>> targetListSupplier,
+            Supplier<Optional<Transform2d>> visErrorAtSnapTimeSupplier,
             BooleanSupplier isMotionlessSupplier,
             DoubleSupplier secondsStillSupplier) {
         m_visionConfidenceSupplier = confidenceSupplier;
@@ -151,6 +158,7 @@ public class BasicInfoDashboard {
         m_hasMultiTagLockSupplier = hasMultiTagLockSupplier;
         m_txSupplier = txSupplier;
         m_targetListSupplier = targetListSupplier;
+        m_visErrorAtSnapTimeSupplier = visErrorAtSnapTimeSupplier;
         m_isRobotMotionlessSupplier = isMotionlessSupplier;
         m_secondsStillSupplier = secondsStillSupplier;
     }
@@ -162,6 +170,21 @@ public class BasicInfoDashboard {
      */
     public void setVisionKalmanSupplier(Supplier<VisionKalmanFilter> supplier) {
         m_visionKalmanSupplier = supplier;
+    }
+
+    private static double calcVisErrorMeters(Optional<Transform2d> error) {
+        if (error.isEmpty()) {
+            return 0.0;
+        }
+
+        double errorMeters = error.get().getTranslation().getNorm();
+
+        if (errorMeters > VisionInjectFilter.MAX_DISTANCE_METERS) {
+            // If the error is unreasonably large, likely due to a bad measurement, ignore it.
+            return 0.0;
+        }
+
+        return errorMeters;
     }
 
     private static String targetListToString(List<Integer> targets) {
@@ -225,6 +248,13 @@ public class BasicInfoDashboard {
         if (m_txSupplier != null) {
             m_visionTx.set(m_txSupplier.getAsDouble());
         }
+        if (m_visErrorAtSnapTimeSupplier != null) {
+            double visErrorMeters = calcVisErrorMeters(m_visErrorAtSnapTimeSupplier.get());
+            m_visErrorCentimeters.set(100.0 * visErrorMeters);
+            boolean hasMultiTag = m_hasMultiTagLockSupplier != null && m_hasMultiTagLockSupplier.getAsBoolean();
+            m_visErrorMultiTagCentimeters.set(hasMultiTag ? 100.0 * visErrorMeters : 0.0);
+        }
+
         if (m_targetListSupplier != null) {
             List<Integer> targets = m_targetListSupplier.get();
             boolean hasTargets = !targets.isEmpty();
