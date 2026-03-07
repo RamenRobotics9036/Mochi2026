@@ -11,8 +11,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * The 2017 turret shooter hood subsystem
  * @author Peter Dentch
  */
-public class ShooterHood extends SubsystemBase {
-    private static ShooterHood instance = null;
+public class HoodSubsystem extends SubsystemBase {
+    private static HoodSubsystem instance = null;
 
     private static Servo hoodServo;
 
@@ -45,7 +45,7 @@ public class ShooterHood extends SubsystemBase {
     /**
      * Default constructor for the subsystem 
      */
-    private ShooterHood(){
+    public HoodSubsystem(){
     	hoodServo = new Servo(Constants.ShooterConstants.kHoodPwmChannel);
     	hoodServo.setBoundsMicroseconds(HOOD_MAX_PWM, CENTER_SERVO_PWM + SERVO_DEADBAND, 
     			CENTER_SERVO_PWM, CENTER_SERVO_PWM - SERVO_DEADBAND, HOOD_MIN_PWM);
@@ -55,9 +55,9 @@ public class ShooterHood extends SubsystemBase {
      * Returns the shooter hood singleton object
      * @return is the current shooter hood object
      */
-    public static ShooterHood getInstance(){
+    public static HoodSubsystem getInstance(){
     	if(instance == null)
-    		instance = new ShooterHood();
+    		instance = new HoodSubsystem();
     	
     	return instance;
     }
