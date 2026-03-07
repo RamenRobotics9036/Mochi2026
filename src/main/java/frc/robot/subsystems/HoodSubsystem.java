@@ -18,6 +18,7 @@ public class HoodSubsystem extends SubsystemBase {
     }
 
     private final PidLinearActuator m_hoodActuator = new PidLinearActuator(
+        "Hood",          // <-- added: SmartDashboard telemetry namespace
         HoodConstants.HOOD_PWM_CHANNEL,
         HoodConstants.HOOD_MIN_MM,
         HoodConstants.HOOD_MAX_MM,
