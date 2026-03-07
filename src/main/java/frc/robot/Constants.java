@@ -129,13 +129,18 @@ public final class Constants {
         public static final int kCurrentSupplyLimit = 50; //TODO: filler value
         public static final int kCurrentStatorLimit = 40; //TODO: filler value
 
-        /** PWM channer for the linear actuator servo. */
-        public static final int kHoodPwmChannel = 0; //TODO: filler value
-
         /** Shooting speed */
         public static final double kShootSpeed = 0.60; //TODO: filler value
 
         public static final double kShooterGearRatio = 1.0;
+    }
+
+    /**
+     * Constants for the hood's linear actuator servo
+     */
+    public static final class HoodConstants {
+        /** PWM channel for the linear actuator servo. */
+        public static final int kHoodPwmChannel = 0;
     }
 
     /**
