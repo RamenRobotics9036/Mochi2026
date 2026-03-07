@@ -76,6 +76,7 @@ public class HoodSubsystem extends SubsystemBase {
 	startAngle = hoodServo.getAngle();
 	startTime = Timer.getFPGATimestamp();
 		
+    System.out.println("Setting angle to "+Double.toString(degrees)+" degrees");
 	hoodServo.setAngle(degrees);
     }
 
