@@ -60,6 +60,7 @@ public class MultiCamOdometryFactory {
             multiCam::getConfidenceScore,
             multiCam::hasTargetLock,
             multiCam::hasMultiTagLock,
+            multiCam::isLatestMt2,
             multiCam::getPrimaryTagTx,
             multiCam::getVisibleTagIds,
             multiCam::getVisionErrorAtSnapTime,

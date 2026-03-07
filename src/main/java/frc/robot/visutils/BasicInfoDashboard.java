@@ -51,6 +51,7 @@ public class BasicInfoDashboard {
     private final DoublePublisher m_visionConfidence = m_basicInfoTable.getDoubleTopic("VisionConfidence").publish();
     private final BooleanPublisher m_oneLocked = m_basicInfoTable.getBooleanTopic("OneLocked").publish();
     private final BooleanPublisher m_multiLocked = m_basicInfoTable.getBooleanTopic("MultiLocked").publish();
+    private final BooleanPublisher m_isMt2 = m_basicInfoTable.getBooleanTopic("IsMt2").publish();
     private final DoublePublisher m_visionTx = m_basicInfoTable.getDoubleTopic("VisionTx").publish();
     private final StringPublisher m_targetList = m_basicInfoTable.getStringTopic("TargetList").publish();
     private final DoublePublisher m_visErrorCentimeters = m_basicInfoTable.getDoubleTopic("VisErrorCentimeters").publish();
@@ -75,6 +76,7 @@ public class BasicInfoDashboard {
     private DoubleSupplier m_visionConfidenceSupplier = null;
     private BooleanSupplier m_hasTargetLockSupplier = null;
     private BooleanSupplier m_hasMultiTagLockSupplier = null;
+    private BooleanSupplier m_isLatestMt2Supplier = null;
     private DoubleSupplier m_txSupplier = null;
     private Supplier<List<Integer>> m_targetListSupplier = null;
     private Supplier<VisionKalmanFilter> m_visionKalmanSupplier = null;
@@ -90,6 +92,8 @@ public class BasicInfoDashboard {
     private final Debouncer m_oneLockedDebouncer =
         new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
     private final Debouncer m_multiLockedDebouncer =
+        new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
+    private final Debouncer m_isMt2Debouncer =
         new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
     private final Debouncer m_targetListDebouncer =
         new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
@@ -138,6 +142,7 @@ public class BasicInfoDashboard {
      * @param confidenceSupplier         A DoubleSupplier returning confidence 0-100
      * @param hasTargetLockSupplier      A BooleanSupplier returning true if any camera has a target lock
      * @param hasMultiTagLockSupplier    A BooleanSupplier returning true if any camera has 2+ targets locked
+     * @param isLatestMt2Supplier        A BooleanSupplier returning true if the best camera's latest estimate used MegaTag2
      * @param txSupplier                 A DoubleSupplier returning tx in degrees
      * @param targetListSupplier         A Supplier returning comma-separated tag IDs
      * @param visErrorAtSnapTimeSupplier A Supplier returning the vision error at image-capture time
@@ -148,6 +153,7 @@ public class BasicInfoDashboard {
             DoubleSupplier confidenceSupplier,
             BooleanSupplier hasTargetLockSupplier,
             BooleanSupplier hasMultiTagLockSupplier,
+            BooleanSupplier isLatestMt2Supplier,
             DoubleSupplier txSupplier,
             Supplier<List<Integer>> targetListSupplier,
             Supplier<Optional<Transform2d>> visErrorAtSnapTimeSupplier,
@@ -156,6 +162,7 @@ public class BasicInfoDashboard {
         m_visionConfidenceSupplier = confidenceSupplier;
         m_hasTargetLockSupplier = hasTargetLockSupplier;
         m_hasMultiTagLockSupplier = hasMultiTagLockSupplier;
+        m_isLatestMt2Supplier = isLatestMt2Supplier;
         m_txSupplier = txSupplier;
         m_targetListSupplier = targetListSupplier;
         m_visErrorAtSnapTimeSupplier = visErrorAtSnapTimeSupplier;
@@ -244,6 +251,10 @@ public class BasicInfoDashboard {
         if (m_hasMultiTagLockSupplier != null) {
             boolean hasMultiTagLock = m_hasMultiTagLockSupplier.getAsBoolean();
             m_multiLocked.set(m_multiLockedDebouncer.calculate(hasMultiTagLock));
+        }
+        if (m_isLatestMt2Supplier != null) {
+            boolean isLatestMt2 = m_isLatestMt2Supplier.getAsBoolean();
+            m_isMt2.set(m_isMt2Debouncer.calculate(isLatestMt2));
         }
         if (m_txSupplier != null) {
             m_visionTx.set(m_txSupplier.getAsDouble());

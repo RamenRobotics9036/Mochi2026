@@ -137,6 +137,14 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     @Override
+    public boolean isLatestMt2() {
+        if (m_perCycleState.bestLockedCam.isPresent()) {
+            return m_perCycleState.bestLockedCam.get().isLatestMt2();
+        }
+        return false;
+    }
+
+    @Override
     public double getPrimaryTagTx() {
         // NOTE: Always returns Camera 0 forward-facing camera result, since
         // we use this to align robot rotationally to a target.

@@ -39,6 +39,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
     // no consumer needs the raw tag count.
     private boolean m_hasTargetLock = false;
     private boolean m_hasMultiTagLock = false;
+    private boolean m_isLatestMt2 = false;
     private double m_tx = 0.0;
     private List<Integer> m_targetList = Collections.emptyList();
     private int m_lastTarget = -1;
@@ -144,16 +145,18 @@ public class SingleCamOdometry implements CamOdometryInterface {
         m_curConfidenceScore = 0.0;
         m_hasTargetLock = false;
         m_hasMultiTagLock = false;
+        m_isLatestMt2 = false;
         m_tx = 0.0;
         m_targetList = Collections.emptyList();
         m_latestVisionError = Optional.empty();
     }
 
     private void setResults(double confidenceScore, int numLockedTags,
-                            LimelightHelpers.RawFiducial[] rawFiducials) {
+                            LimelightHelpers.RawFiducial[] rawFiducials, boolean isMegaTag2) {
         m_curConfidenceScore = confidenceScore;
         m_hasTargetLock = numLockedTags > 0;
         m_hasMultiTagLock = numLockedTags > 1;
+        m_isLatestMt2 = isMegaTag2 && numLockedTags > 0;
 
         // Horizontal offset to primary target (degrees)
         m_tx = LimelightHelpers.getTX(m_limelightName);
@@ -258,18 +261,18 @@ public class SingleCamOdometry implements CamOdometryInterface {
         // using the gyro heading, so this check must not apply to MT2 estimates.
         if (!poseEstimate.isMegaTag2 && poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) {
             if (poseEstimate.rawFiducials[0].ambiguity > 0.7) {
-                setResults(m_curConfidenceScore, 0, null);
+                setResults(m_curConfidenceScore, 0, null, false);
                 return;
             }
         }
 
         // Check if std devs indicate rejection
         if (m_curStdDevs.get(0, 0) == Double.MAX_VALUE) {
-            setResults(m_curConfidenceScore, 0, null);
+            setResults(m_curConfidenceScore, 0, null, false);
             return;
         }
 
-        setResults(m_curConfidenceScore, poseEstimate.tagCount, poseEstimate.rawFiducials);
+        setResults(m_curConfidenceScore, poseEstimate.tagCount, poseEstimate.rawFiducials, poseEstimate.isMegaTag2);
 
         // Skip injecting vision measurements if vision is disabled
         if (!m_visionEnabledSupplier.getAsBoolean()) {
@@ -385,6 +388,11 @@ public class SingleCamOdometry implements CamOdometryInterface {
     @Override
     public boolean hasMultiTagLock() {
         return m_hasMultiTagLock;
+    }
+
+    @Override
+    public boolean isLatestMt2() {
+        return m_isLatestMt2;
     }
 
     @Override

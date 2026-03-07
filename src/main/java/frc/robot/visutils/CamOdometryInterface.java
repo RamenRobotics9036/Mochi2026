@@ -42,6 +42,11 @@ public interface CamOdometryInterface {
     boolean hasMultiTagLock();
 
     /**
+     * Returns true if the latest pose estimate from the best-locked camera used MegaTag2.
+     */
+    boolean isLatestMt2();
+
+    /**
      * Gets the AprilTag ID locked onto by the PRIMARY camera, or -1 if none.
      * Used to determine which tag the robot is aligned to for turning.
      */
