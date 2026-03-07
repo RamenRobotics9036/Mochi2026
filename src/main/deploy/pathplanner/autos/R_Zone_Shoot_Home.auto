@@ -21,18 +21,6 @@
           "data": {
             "name": "get fuel"
           }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "R_Return"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shoot"
-          }
         }
       ]
     }
