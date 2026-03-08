@@ -97,6 +97,9 @@ public final class  AutoLogic {
         // Default
         autoPicker.setDefaultOption("Bump_Shoot_Move_Back", "Bump_Shoot_Move_Back");
 
+        autoPicker.addOption("L Bump_Shoot_Move_Back", "L Bump_Shoot_Move_Back");
+        autoPicker.addOption("R Bump_Shoot_Move_Back", "R Bump_Shoot_Move_Back");
+
         // Pathplanner Autos
         // autoPicker.addOption("Idos Backward then Forward", "Idos Backward then Forward");
         // autoPicker.addOption("Cross", "Cross");
