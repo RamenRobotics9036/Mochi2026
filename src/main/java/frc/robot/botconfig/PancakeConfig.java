@@ -95,6 +95,49 @@ public class PancakeConfig implements BotConfigInterface {
 
     /*************************************************************************************
      *
+     * FORCE DISABLE SUBSYSTEMS (e.g. Pancake is missing several)
+     *
+     ************************************************************************************/
+
+    /** Force disable shooter. */
+    @Override
+    public boolean shouldForceDisableShooter() {
+        return true;
+    }
+
+    /** Force disable indexer. */
+    @Override
+    public boolean shouldForceDisableIndexer() {
+        return true;
+    }
+
+    /** Force disable spinny. */
+    @Override
+    public boolean shouldForceDisableSpinny() {
+        return true;
+    }
+
+    /** Force disable climber. */
+    @Override
+    public boolean shouldForceDisableClimber() {
+        return true;
+    }
+
+    /** Force disable intake. */
+    @Override
+    public boolean shouldForceDisableIntake() {
+        return true;
+    }
+
+    /** Force disable intake arm. */
+    @Override
+    public boolean shouldForceDisableIntakeArm() {
+        return true;
+    }
+
+
+    /*************************************************************************************
+     *
      * VISION
      *
      ************************************************************************************/
