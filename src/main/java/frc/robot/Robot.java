@@ -72,6 +72,7 @@ public class Robot extends TimedRobot {
         m_robotContainer.m_simWrapper.robotPeriodic();
     }
 
+    m_robotContainer.m_multiCamlimelight.setRobotOrientation();
     m_robotContainer.m_multiCamlimelight.periodic();
 
     Optional<Pose2d> showVisPose = m_robotContainer.basicInfoDashboard.isVisionEnabled() ?
