@@ -75,11 +75,11 @@ public class HoodSubsystem extends SubsystemBase {
 
 
     // $TODO - C.L. TEMPORARY extra protection to avoid servo damage while testing
-    if (degrees < 10.0) {
-        degrees = 10.0;
+    if (degrees < 0.0) {
+        degrees = 0.0;
     }
-    if (degrees > 170.0) {
-        degrees = 170.0;
+    if (degrees > 120.0) {
+        degrees = 120.0;
     }
 
 

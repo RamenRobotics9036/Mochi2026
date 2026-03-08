@@ -351,7 +351,7 @@ public class RobotContainer {
             )
         ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
 
-        operateController.povLeft().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setAngle(90)));
+        operateController.povLeft().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setAngle(120)));
         operateController.povRight().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setAngle(0)));
 
 
