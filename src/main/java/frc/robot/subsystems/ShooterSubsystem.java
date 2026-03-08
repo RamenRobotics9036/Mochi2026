@@ -13,14 +13,10 @@ public class ShooterSubsystem extends SubsystemBase {
     private final TwoMotorRollerIoInterface.DeviceOutputs m_shooterOutputs =
         new TwoMotorRollerIoInterface.DeviceOutputs();
 
-    private Servo m_hood;
-
     /** Creates a new ShooterSubsystem using the ShooterConstants from Constants.java. */
     public ShooterSubsystem(BotConfigInterface configInterface, TwoMotorRollerIoInterface shooterIO) {
         m_configInterface = configInterface;
         m_shooterIO = shooterIO;
-
-        m_hood = new Servo(Constants.ShooterConstants.kHoodPwmChannel);
     }
 
     public void setSpeed(double speed){

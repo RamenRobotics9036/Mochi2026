@@ -48,6 +48,7 @@ import frc.robot.sim.SimWrapper;
 import frc.robot.sim.armsim.ArmIoInterface;
 import frc.robot.subsystems.ArmSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
+import frc.robot.subsystems.HoodSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
@@ -193,6 +194,9 @@ public class RobotContainer {
 
     /** Arm subsystem driven through the IO abstraction. */
     public final ArmSubsystem armSubsystem = new ArmSubsystem(m_intakeArmIo);
+
+    /** Hood subsystem using Actuonix linear actuator */
+    public final HoodSubsystem hoodSubsystem = new HoodSubsystem();
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
@@ -346,6 +350,9 @@ public class RobotContainer {
                 climberSubsystem
             )
         ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
+
+        operateController.povLeft().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setAngle(90)));
+        operateController.povRight().onTrue(hoodSubsystem.runOnce(() -> hoodSubsystem.setAngle(0)));
 
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
