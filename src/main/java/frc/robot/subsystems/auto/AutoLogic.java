@@ -98,11 +98,11 @@ public final class  AutoLogic {
         autoPicker.addOption("Manual: Drive 2m Forward", K_MANUAL_DRIVE_NAME);
 
         // DEFAULT pathplanner auto
-        autoPicker.setDefaultOption("testing shoot", "testing shoot");
+        autoPicker.addOption("testing shoot", "testing shoot");
 
         // Rest of pathplanner Autos
         autoPicker.addOption("Idos Backward then Forward", "Idos Backward then Forward");
-        autoPicker.addOption("Bump_Shoot_Move_Back", "Bump_Shoot_Move_Back");
+        autoPicker.setDefaultOption("Bump_Shoot_Move_Back", "Bump_Shoot_Move_Back");
         autoPicker.addOption("Cross", "Cross");
         autoPicker.addOption("testing intake fuel", "testing intake fuel");
         autoPicker.addOption("testing jiggle", "testing jiggle");
