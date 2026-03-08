@@ -142,47 +142,53 @@ public class RobotContainer {
 
     public final CamOdometryInterface m_multiCamlimelight;
 
-    private final TwoMotorRollerIoInterface m_shooterIO = Robot.isSimulation()
+    private final TwoMotorRollerIoInterface m_shooterIo =
+        (Robot.isSimulation() || m_configInterface.shouldForceDisableShooter())
         ? SimIoFactory.createShooterIoSim()
         : new ShooterIoReal(m_configInterface);
 
     public final ShooterSubsystem shooterSubsystem = new ShooterSubsystem(
         m_configInterface,
-        m_shooterIO);
+        m_shooterIo);
 
-    private final RollerIoInterface m_indexerIO = Robot.isSimulation()
+    private final RollerIoInterface m_indexerIo =
+        (Robot.isSimulation() || m_configInterface.shouldForceDisableIndexer())
         ? SimIoFactory.createIndexerIoSim()
         : new IndexerIoReal();
 
-    private final RollerIoInterface m_spinnyIO = Robot.isSimulation()
+    private final RollerIoInterface m_spinnyIo =
+        (Robot.isSimulation() || m_configInterface.shouldForceDisableSpinny())
         ? SimIoFactory.createSpinnyIoSim()
         : new frc.robot.subsystems.spinny.SpinnyIoReal();
 
-    public final SpinnyWheels m_spinnyWheels = new SpinnyWheels(m_spinnyIO);
+    public final SpinnyWheels m_spinnyWheels = new SpinnyWheels(m_spinnyIo);
 
-    public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem(m_indexerIO);
+    public final IndexerSubsystem m_indexerSubsystem = new IndexerSubsystem(m_indexerIo);
 
-    private final ElevatorIoInterface m_climberIO = Robot.isSimulation()
+    private final ElevatorIoInterface m_climberIo =
+        (Robot.isSimulation() || m_configInterface.shouldForceDisableClimber())
         ? SimIoFactory.createClimberIoSim()
         : new ClimberIoReal();
 
-    public final ClimberSubsystem climberSubsystem = new ClimberSubsystem(m_climberIO);
+    public final ClimberSubsystem climberSubsystem = new ClimberSubsystem(m_climberIo);
 
     /** Intake IO: real hardware or FlywheelSim depending on mode. */
-    private final RollerIoInterface m_intakeIO = Robot.isSimulation()
+    private final RollerIoInterface m_intakeIo =
+        (Robot.isSimulation() || m_configInterface.shouldForceDisableIntake())
         ? SimIoFactory.createIntakeIoSim()
         : new IntakeIoReal();
 
-    private final ArmIoInterface m_intakeArmIO = Robot.isSimulation()
+    private final ArmIoInterface m_intakeArmIo =
+        (Robot.isSimulation() || m_configInterface.shouldForceDisableIntakeArm())
         ? SimIoFactory.createIntakeArmIoSim()
         : new ArmIoReal();
 
     /** Intake subsystem driven through the IO abstraction. */
     public final IntakeSubsystem intakeSubsystem =
-        new IntakeSubsystem(m_intakeIO);
+        new IntakeSubsystem(m_intakeIo);
 
     /** Arm subsystem driven through the IO abstraction. */
-    public final ArmSubsystem armSubsystem = new ArmSubsystem(m_intakeArmIO);
+    public final ArmSubsystem armSubsystem = new ArmSubsystem(m_intakeArmIo);
 
     /** Vision-only Kalman filter for precise stationary position estimation. */
     public final VisionKalmanFilter m_visionKalmanFilter = new VisionKalmanFilter();
