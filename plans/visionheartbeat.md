@@ -36,9 +36,9 @@ public VisionHeartBeat(String limelightName, int checkIntervalCycles)
 | `m_cycleCount` | `int` | counts calls to `update()` |
 | `m_lastHeartbeat` | `double` | last seen heartbeat value |
 | `m_isHeartbeating` | `boolean` | cached result — flag 1 |
-| `m_hasTid` | `boolean` | cached result — flag 2 |
-| `m_hasMt1Pose` | `boolean` | cached result — flag 3 |
-| `m_hasMt2Pose` | `boolean` | cached result — flag 4 |
+| `m_hasSeenTid` | `boolean` | latching result — flag 2 (true once seen, reset on heartbeat loss) |
+| `m_hasSeenMt1Pose` | `boolean` | latching result — flag 3 (true once seen, reset on heartbeat loss) |
+| `m_hasSeenMt2Pose` | `boolean` | latching result — flag 4 (true once seen, reset on heartbeat loss) |
 
 ---
 
@@ -52,19 +52,31 @@ if (cycleCount % checkInterval != 0) return   // return early, cached values unc
 
 // --- heartbeat ---
 newHeartbeat = LimelightHelpers.getHeartbeat(name)
-isHeartbeating = (newHeartbeat != lastHeartbeat)
+isHeartbeating = !isNaN(lastHeartbeat) && (newHeartbeat != lastHeartbeat)
 lastHeartbeat  = newHeartbeat
 
-// --- tid ---
-hasTid = (LimelightHelpers.getFiducialID(name) != -1)
+// If heartbeat lost, reset all latches immediately on this same check
+if (!isHeartbeating) {
+    hasSeenTid = false
+    hasSeenMt1Pose = false
+    hasSeenMt2Pose = false
+    return
+}
 
-// --- MegaTag1 pose ---
-mt1 = LimelightHelpers.getBotPoseEstimate_wpiBlue(name)
-hasMt1Pose = LimelightHelpers.validPoseEstimate(mt1)
+// --- tid (latch: stop checking once true) ---
+if (!hasSeenTid) {
+    hasSeenTid = (LimelightHelpers.getFiducialID(name) != -1)
+}
 
-// --- MegaTag2 pose ---
-mt2 = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(name)
-hasMt2Pose = LimelightHelpers.validPoseEstimate(mt2)
+// --- MegaTag1 pose (latch: stop checking once true) ---
+if (!hasSeenMt1Pose) {
+    hasSeenMt1Pose = LimelightHelpers.validPoseEstimate(getBotPoseEstimate_wpiBlue(name))
+}
+
+// --- MegaTag2 pose (latch: stop checking once true) ---
+if (!hasSeenMt2Pose) {
+    hasSeenMt2Pose = LimelightHelpers.validPoseEstimate(getBotPoseEstimate_wpiBlue_MegaTag2(name))
+}
 ```
 
 `LimelightHelpers.validPoseEstimate()` already null-checks and verifies `rawFiducials.length != 0`, so use it directly.
@@ -80,21 +92,21 @@ public void update()
 /** True if the Limelight heartbeat counter is incrementing. */
 public boolean isHeartbeating()
 
-/** True if a fiducial target has been detected (tid != -1). */
-public boolean hasTid()
+/** True if a fiducial target has ever been seen (tid != -1) since last heartbeat. Latches true. */
+public boolean hasSeenTid()
 
-/** True if MegaTag1 has returned a valid pose estimate. */
-public boolean hasMt1Pose()
+/** True if MegaTag1 has ever returned a valid pose since last heartbeat. Latches true. */
+public boolean hasSeenMt1Pose()
 
-/** True if MegaTag2 has returned a valid pose estimate. */
-public boolean hasMt2Pose()
+/** True if MegaTag2 has ever returned a valid pose since last heartbeat. Latches true. */
+public boolean hasSeenMt2Pose()
 ```
 
 ---
 
 ## Notes
 
-- The four cached booleans are initialized to `false`; they stay `false` until the first real check fires (after `checkInterval` cycles). This is intentional — callers should treat `false` as "not yet confirmed", not "definitely broken".
+- All flags initialize to `false`. `isHeartbeating` is re-evaluated every check interval. `hasSeenTid`, `hasSeenMt1Pose`, and `hasSeenMt2Pose` are **latching**: once flipped to `true` they stop being checked and remain `true` — until `isHeartbeating` becomes `false`, which resets all three on that same check (then they latch again once re-seen).
 - No SmartDashboard/logging calls are included in this class itself; callers can log the four getters if desired.
 - No dependency on `Constants.java` is needed unless the team later wants to centralise the default interval. For now, hard-code the default as `20` inside the class.
 - The two-arg constructor exists so callers can tune polling frequency (e.g. slower checks while disabled, or faster during testing).
@@ -149,19 +161,21 @@ private static LimelightHelpers.PoseEstimate invalidEstimate() {
 - `heartbeat_incrementing_isTrue` — supplier returns incrementing values (use `AtomicLong`); assert `isHeartbeating() == true`.
 - `heartbeat_stopsIncrementing_becomesFalse` — starts incrementing (true), then freezes; assert flips to false after next check.
 
-**Tid**
+**hasSeenTid — latching**
 
-- `tid_negativeOne_isFalse` — supplier returns `-1.0`; assert `hasTid() == false`.
-- `tid_validId_isTrue` — supplier returns `5.0`; assert `hasTid() == true`.
+- `hasSeenTid_neverValid_isFalse` — incrementing heartbeat (so camera is active), tid supplier always returns `-1`; assert `hasSeenTid() == false`.
+- `hasSeenTid_validOnce_latches` — start with tid=-1 (false), flip to tid=5 (latches true), flip back to tid=-1; assert still true.
+- `hasSeenTid_resetsOnHeartbeatLoss` — latch to true, then freeze heartbeat; assert hasSeenTid() resets to false on same check.
 
-**MegaTag1 pose**
+**hasSeenMt1Pose — latching**
 
-- `mt1_invalidEstimate_isFalse` — supplier returns `invalidEstimate()`; assert `hasMt1Pose() == false`.
-- `mt1_validEstimate_isTrue` — supplier returns `validEstimate()`; assert `hasMt1Pose() == true`.
+- `hasSeenMt1Pose_neverValid_isFalse` — heartbeating, mt1 always invalid; assert false.
+- `hasSeenMt1Pose_validOnce_latches` — start invalid, flip to valid (latches), flip back to invalid; assert still true.
+- `hasSeenMt1Pose_resetsOnHeartbeatLoss` — latch to true, freeze heartbeat; assert resets to false.
 
-**MegaTag2 pose**
+**hasSeenMt2Pose — latching**
 
-- `mt2_invalidEstimate_isFalse` / `mt2_validEstimate_isTrue` — same pattern as MT1.
+- Same three test pattern as MT1.
 
 **Interval skipping**
 

@@ -20,6 +20,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
  */
 public class LimelightTablePublisher {
     private final NetworkTable table;
+    private long m_heartbeat = 1;
 
     /** Constructor. */
     public LimelightTablePublisher(String limelightName) {
@@ -61,7 +62,10 @@ public class LimelightTablePublisher {
         table.getEntry("botpose_wpiblue").setDoubleArray(data.botposeWpiBlue);
         table.getEntry("botpose_wpired").setDoubleArray(data.botposeWpiRed);
         // Also publish as MegaTag2 format (same data for simulation purposes)
-        table.getEntry("botpose_orb_wpiblue").setDoubleArray(data.botposeWpiBlue);
-        table.getEntry("botpose_orb_wpired").setDoubleArray(data.botposeWpiRed);
+        //table.getEntry("botpose_orb_wpiblue").setDoubleArray(data.botposeWpiBlue);
+        //table.getEntry("botpose_orb_wpired").setDoubleArray(data.botposeWpiRed);
+
+        // Heartbeat — increments forever so VisionHeartBeat can detect the camera is alive
+        table.getEntry("hb").setDouble(m_heartbeat++);
     }
 }

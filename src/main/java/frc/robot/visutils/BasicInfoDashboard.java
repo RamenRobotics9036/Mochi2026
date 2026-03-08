@@ -85,6 +85,20 @@ public class BasicInfoDashboard {
     /** When true, vision is forcibly disabled regardless of the dashboard toggle. */
     private boolean m_forceDisableVision = false;
 
+    /** Bundles a VisionHeartBeat with its NT publisher for one camera. */
+    private static class CameraMonitor {
+        final VisionHeartBeat heartbeat;
+        final StringPublisher status;
+
+        CameraMonitor(String cameraName, String networkTableKeyName, NetworkTable parent) {
+            heartbeat = new VisionHeartBeat(cameraName);
+            status = parent.getSubTable(networkTableKeyName).getStringTopic("Status").publish();
+        }
+    }
+
+    /** Per-camera heartbeat monitors. */
+    private final List<CameraMonitor> m_cameraMonitors;
+
     // Debouncers for locked indicators (prevents flickering)
     private static final double kLockedDebounceSeconds = 0.25;
     private final Debouncer m_oneLockedDebouncer =
@@ -98,11 +112,21 @@ public class BasicInfoDashboard {
     /**
      * Constructs a BasicInfoDashboard.
      *
-     * @param drivetrain The swerve drivetrain to get info from
+     * @param drivetrain  The swerve drivetrain to get info from
+     * @param cameraNames Names of all Limelight cameras to monitor
      */
-    public BasicInfoDashboard(SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain) {
+    public BasicInfoDashboard(SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain, List<String> cameraNames) {
         m_drivetrain = drivetrain;
         m_pigeon = drivetrain.getPigeon2();
+
+        NetworkTable cameraTable = m_basicInfoTable.getSubTable("Camera");
+        m_cameraMonitors = new java.util.ArrayList<>();
+        for (int i = 0; i < cameraNames.size(); i++) {
+            m_cameraMonitors.add(new CameraMonitor(
+                cameraNames.get(i),
+                "Camera" + (i + 1),
+                cameraTable));
+        }
 
         // Publish the default value so the toggle appears in Elastic immediately.
         m_visionEnabled.set(Constants.VisionConstants.kVisionEnabledDefault);
@@ -293,6 +317,13 @@ public class BasicInfoDashboard {
         if (m_secondsStillSupplier != null) {
             double seconds = m_secondsStillSupplier.getAsDouble();
             m_visionKalmanSecondsStill.set(String.format("%.1f", seconds));
+        }
+
+        /* Update and publish per-camera heartbeat status (only write NT when state may have changed) */
+        for (CameraMonitor mon : m_cameraMonitors) {
+            if (mon.heartbeat.update()) {
+                mon.status.set(mon.heartbeat.getCameraStatus());
+            }
         }
     }
 }
