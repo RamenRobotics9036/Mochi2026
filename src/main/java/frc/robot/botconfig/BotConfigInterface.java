@@ -114,6 +114,31 @@ public interface BotConfigInterface {
 
     /*************************************************************************************
      *
+     * FORCE DISABLE SUBSYSTEMS (e.g. Pancake is missing several)
+     *
+     ************************************************************************************/
+
+    /** Force disable shooter. */
+    boolean shouldForceDisableShooter();
+
+    /** Force disable indexer. */
+    boolean shouldForceDisableIndexer();
+
+    /** Force disable spinny. */
+    boolean shouldForceDisableSpinny();
+
+    /** Force disable climber. */
+    boolean shouldForceDisableClimber();
+
+    /** Force disable intake. */
+    boolean shouldForceDisableIntake();
+
+    /** Force disable intake arm. */
+    boolean shouldForceDisableIntakeArm();
+
+
+    /*************************************************************************************
+     *
      * VISION
      *
      ************************************************************************************/

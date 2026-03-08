@@ -94,6 +94,48 @@ public class CompConfig implements BotConfigInterface {
         return GeneratedCompConstants.createDrivetrain();
     }
 
+    /*************************************************************************************
+     *
+     * FORCE DISABLE SUBSYSTEMS (e.g. Pancake is missing several)
+     *
+     ************************************************************************************/
+
+    /** Force disable shooter. */
+    @Override
+    public boolean shouldForceDisableShooter() {
+        return false;
+    }
+
+    /** Force disable indexer. */
+    @Override
+    public boolean shouldForceDisableIndexer() {
+        return false;
+    }
+
+    /** Force disable spinny. */
+    @Override
+    public boolean shouldForceDisableSpinny() {
+        return false;
+    }
+
+    /** Force disable climber. */
+    @Override
+    public boolean shouldForceDisableClimber() {
+        return false;
+    }
+
+    /** Force disable intake. */
+    @Override
+    public boolean shouldForceDisableIntake() {
+        return false;
+    }
+
+    /** Force disable intake arm. */
+    @Override
+    public boolean shouldForceDisableIntakeArm() {
+        return false;
+    }
+
 
     /*************************************************************************************
      *
