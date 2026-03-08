@@ -61,13 +61,10 @@ public class ShowVisionOnField {
             throw new IllegalArgumentException("realField cannot be null");
         }
 
-        // Only when we're debugging in simulation do we show extra visualizations on the
-        // PhotonVision sim field.
-        if (simulationField != null && !Robot.isSimulation()) {
-            throw new IllegalArgumentException("simulationField should only be in isSimulation mode");
-        }
-        if (simulationField == null && Robot.isSimulation()) {
-            throw new IllegalArgumentException("simulationField cannot be null in simulation mode");
+        // simulationField should ALWAYS be null in non-simulation.  In Simulation, it's optional
+        // that simulationField is provided.
+        if (!Robot.isSimulation() && simulationField != null) {
+            throw new IllegalArgumentException("simulationField should be null when in real mode");
         }
 
         m_realGlassField = Optional.ofNullable(realGlassField);

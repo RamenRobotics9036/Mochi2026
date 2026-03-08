@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
+import frc.robot.sim.visionproducers.VisionSimConstants;
 import frc.robot.sim.visionproducers.VisionSimFactory;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
@@ -152,11 +153,6 @@ public class SimWrapper {
             CommandSwerveDrivetrain drivetrain) {
 
         if (simWrapper == null) {
-            // Sanity check that simWrapper is only null if !Robot.isSimulation()
-            if (Robot.isSimulation()) {
-                throw new IllegalStateException("SimWrapper is null in simulation mode");
-            }
-
             return;
         }
         simWrapper.configureSimBindings(driftTrigger, resetTrigger, drivetrain);
@@ -175,9 +171,10 @@ public class SimWrapper {
             SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
             Consumer<Pose2d> poseResetConsumer) {
 
-        if (!Robot.isSimulation()) {
+        if (!Robot.isSimulation() || VisionSimConstants.Vision.kForceSimWrapperOff) {
             return null;
         }
+
         return new SimWrapper(configInterface, drivetrain, poseResetConsumer);
     }
 

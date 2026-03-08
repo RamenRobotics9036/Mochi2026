@@ -12,6 +12,10 @@ import edu.wpi.first.math.numbers.N3;
 
 public class VisionSimConstants {
     public static class Vision {
+        // Whether to force simWrapper OFF in simulation.  This is useful for debugging the real robot running
+        // with simulated subsystems.
+        public static final boolean kForceSimWrapperOff = false;
+
         // Camera name (must match PhotonVision camera name)
         public static final String kPhotonCameraNamePrefix = "photon-";
 
