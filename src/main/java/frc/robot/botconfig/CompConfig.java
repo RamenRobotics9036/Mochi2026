@@ -102,19 +102,7 @@ public class CompConfig implements BotConfigInterface {
      ************************************************************************************/
 
     private final List<CameraInfo> m_cameras = List.of(
-        new CameraInfo("limelight-fixed", new Transform3d(
-            new Translation3d(
-                Units.inchesToMeters(-0.5),  // 1/2 inch back
-                Units.inchesToMeters(4.0),   // 4 inches left of center
-                Units.inchesToMeters(16.5)   // 12.5" deck + 4" mount
-            ),
-            new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
-        ))
-    );
-
-    // $TODO - Eventually get rid of this when we have second camera installed on bot
-    private final List<CameraInfo> m_cameras_sim = List.of(
-        new CameraInfo("limelight-fixed", new Transform3d(
+        new CameraInfo("limelight", new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(-0.5),  // 1/2 inch back
                 Units.inchesToMeters(4.0),   // 4 inches left of center
@@ -122,17 +110,18 @@ public class CompConfig implements BotConfigInterface {
             ),
             new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
         )),
-        new CameraInfo("limelight-fixed2", new Transform3d(
-            new Translation3d(-0.5, 0.0, 0.5),
-            new Rotation3d(0, 0, Math.PI)
+        new CameraInfo("limelight-back", new Transform3d(
+            new Translation3d(
+                Units.inchesToMeters(-11.75),         // + is forward
+                Units.inchesToMeters(1.75),   // + is left
+                Units.inchesToMeters(8.75)    // x" deck + 4" mount
+            ),
+            new Rotation3d(0, Math.toRadians(-30), Math.toRadians(180))  // x degrees up, backwards
         ))
     );
 
     @Override
     public List<CameraInfo> getCameras() {
-        if (Robot.isSimulation()) {
-            return m_cameras_sim;
-        }
         return m_cameras;
     }
 }
