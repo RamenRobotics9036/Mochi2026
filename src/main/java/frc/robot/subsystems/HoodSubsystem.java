@@ -30,27 +30,27 @@ public class HoodSubsystem extends SubsystemBase {
 
     private static final double HOOD_MAX_POSITION = 1.0; //percent servo travel to max hood position
     private static final double HOOD_MIN_POSITION = 0.0; //percent servo travel to min hood position
-    
+
     //SERVO Parameters from https://s3.amazonaws.com/actuonix/Actuonix+L16+Datasheet.pdf
     private static final int MAX_SERVO_PWM = 2000; //microseconds
     private static final int MIN_SERVO_PWM = 1000; //microseconds
     private static final int SERVO_RANGE = MAX_SERVO_PWM - MIN_SERVO_PWM;
     private static final int CENTER_SERVO_PWM = 1500; //microseconds
     private static final int SERVO_DEADBAND = 0; //microseconds - no deadband
-    
+
     // pwm values in ms for the max and min angles of the shooter hood
     private static final int HOOD_MAX_PWM = MIN_SERVO_PWM + (int)Math.round(SERVO_RANGE * HOOD_MAX_POSITION);
     private static final int HOOD_MIN_PWM = MIN_SERVO_PWM + (int)Math.round(SERVO_RANGE * HOOD_MIN_POSITION);
-    
+
     /**
-     * Default constructor for the subsystem 
+     * Default constructor for the subsystem
      */
     public HoodSubsystem(){
     	hoodServo = new Servo(Constants.ShooterConstants.kHoodPwmChannel);
-    	hoodServo.setBoundsMicroseconds(HOOD_MAX_PWM, CENTER_SERVO_PWM + SERVO_DEADBAND, 
+    	hoodServo.setBoundsMicroseconds(HOOD_MAX_PWM, CENTER_SERVO_PWM + SERVO_DEADBAND,
     			CENTER_SERVO_PWM, CENTER_SERVO_PWM - SERVO_DEADBAND, HOOD_MIN_PWM);
     }
-	
+
     /**
      * Returns the shooter hood singleton object
      * @return is the current shooter hood object
@@ -58,10 +58,10 @@ public class HoodSubsystem extends SubsystemBase {
     public static HoodSubsystem getInstance(){
     	if(instance == null)
     		instance = new HoodSubsystem();
-    	
+
     	return instance;
     }
-	
+
     /**
      * Takes a given angle and rotates the servo motor to that angle
      * @param degrees the angle limited by the min and max values defined in RobotMap
@@ -69,13 +69,23 @@ public class HoodSubsystem extends SubsystemBase {
     public void setAngle(double degrees){
     	if(degrees <= WPILIB_MIN_SERVO_ANGLE)
 		degrees = WPILIB_MIN_SERVO_ANGLE;
-		
+
 	if(degrees >= WPILIB_MAX_SERVO_ANGLE)
 		degrees = WPILIB_MAX_SERVO_ANGLE;
-		
+
+
+    // $TODO - C.L. TEMPORARY extra protection to avoid servo damage while testing
+    if (degrees < 10.0) {
+        degrees = 10.0;
+    }
+    if (degrees > 170.0) {
+        degrees = 170.0;
+    }
+
+
 	startAngle = hoodServo.getAngle();
 	startTime = Timer.getFPGATimestamp();
-		
+
     System.out.println("Setting angle to "+Double.toString(degrees)+" degrees");
 	hoodServo.setAngle(degrees);
     }
@@ -87,23 +97,23 @@ public class HoodSubsystem extends SubsystemBase {
      * @return the estimated current angle of the servo in degrees
      */
     public double getAngle(){
-		
+
 	return hoodServo.getAngle();
-		
+
 	//endAngle = hoodServo.getAngle();
 //	double angleDifference = endAngle - startAngle;
 //	double timeDifference = Timer.getFPGATimestamp() - startTime;
 //
 //	if(angleDifference > 0)
-//		currentAngle = (startAngle + (timeDifference * DEGREES_PER_SECOND));		
+//		currentAngle = (startAngle + (timeDifference * DEGREES_PER_SECOND));
 //	else if(angleDifference < 0)
 //		currentAngle = (startAngle - (timeDifference * DEGREES_PER_SECOND));
 //	else //angleDifference == 0
 //		currentAngle = endAngle;
-//	
+//
 //	return currentAngle;
     }
-	
+
     /**
      * Sets the default command of the subsystem
      */
