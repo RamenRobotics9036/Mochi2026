@@ -173,7 +173,7 @@ public class BasicInfoDashboard {
      * @param isMotionlessSupplier       A BooleanSupplier returning true when robot is motionless
      * @param secondsStillSupplier       A DoubleSupplier returning seconds the robot has been still
      */
-    public void setVisionDependencies(
+    public void setVisionDependenciesOnDash(
             DoubleSupplier confidenceSupplier,
             BooleanSupplier hasTargetLockSupplier,
             BooleanSupplier hasMultiTagLockSupplier,

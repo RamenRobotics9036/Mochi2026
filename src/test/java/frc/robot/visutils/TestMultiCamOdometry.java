@@ -75,15 +75,14 @@ class TestMultiCamOdometry {
         CamOdometryInterface cam1 = newMockCam();
         MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
 
-        BooleanSupplier visionEnabled = () -> true;
         VisionKalmanFilter filter = Mockito.mock(VisionKalmanFilter.class);
         BooleanSupplier isMotionless = () -> false;
 
-        multiCam.setVisionDependencies(visionEnabled, filter, isMotionless);
+        multiCam.setVisionDependenciesOnCamera(filter, isMotionless);
 
         // Verify that both cameras received the exact same dependency references.
-        Mockito.verify(cam0).setVisionDependencies(visionEnabled, filter, isMotionless);
-        Mockito.verify(cam1).setVisionDependencies(visionEnabled, filter, isMotionless);
+        Mockito.verify(cam0).setVisionDependenciesOnCamera(filter, isMotionless);
+        Mockito.verify(cam1).setVisionDependenciesOnCamera(filter, isMotionless);
     }
 
     // ------------------------------------------------------------------

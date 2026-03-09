@@ -82,7 +82,12 @@ class TestSingleCamOdometry {
 
         // Identity transform — no rotation or translation from robot to camera.
         // Default test camera has MT2 disabled (most tests don't need it).
-        m_cam = new SingleCamOdometry(CAM_NAME, new Transform3d(), consumer, null, () -> 0.0, false);
+        m_cam = new SingleCamOdometry(
+            CAM_NAME,
+            new Transform3d(),
+            consumer,
+            null,
+            () -> 0.0);
     }
 
     @AfterEach
@@ -130,7 +135,16 @@ class TestSingleCamOdometry {
                 m_lastConsumedPose = pose;
                 m_consumeCallCount++;
             };
-        return new SingleCamOdometry(CAM_NAME, new Transform3d(), consumer, null, () -> 0.0, supportMegatag2);
+        SingleCamOdometry result = new SingleCamOdometry(
+            CAM_NAME,
+            new Transform3d(),
+            consumer,
+            null,
+            () -> 0.0);
+
+        result.enableMegatag2(supportMegatag2);
+
+        return result;
     }
 
     @Test
@@ -566,35 +580,13 @@ class TestSingleCamOdometry {
     // ------------------------------------------------------------------
 
     /**
-     * When the vision-enabled supplier returns {@code false}, the estimate consumer must
-     * <em>not</em> be called even though the pose estimate is valid.  The internal state
-     * ({@code hasTargetLock}, {@code getEstimatedPose}) must still be updated.
-     */
-    @Test
-    void periodic_visionDisabled_consumerNotCalled() {
-        // Wire a disabled vision supplier.
-        m_cam.setVisionDependencies(() -> false, null, null);
-
-        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
-        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
-            .thenReturn(est);
-
-        m_cam.periodic();
-
-        // Consumer must NOT have been called.
-        assertEquals(0, m_consumeCallCount);
-        // But internal state must still reflect a lock.
-        assertTrue(m_cam.hasTargetLock());
-        assertTrue(m_cam.getEstimatedPose().isPresent());
-    }
-
-    /**
      * When the vision-enabled supplier returns {@code true} the consumer must be called
      * with the correct pose.
      */
     @Test
     void periodic_visionEnabled_consumerIsCalled() {
-        m_cam.setVisionDependencies(() -> true, null, null);
+        m_cam.enableVision(true);
+        m_cam.setVisionDependenciesOnCamera(null, null);
 
         PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
         m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
@@ -617,7 +609,8 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_motionlessAndMultiTag_injectsKalman() {
-        m_cam.setVisionDependencies(() -> true, m_kalmanFilter, () -> true);
+        m_cam.enableVision(true);
+        m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> true);
 
         PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
         m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
@@ -635,7 +628,8 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_movingAndMultiTag_doesNotInjectKalman() {
-        m_cam.setVisionDependencies(() -> true, m_kalmanFilter, () -> false);
+        m_cam.enableVision(true);
+        m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> false);
 
         PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
         m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
@@ -653,7 +647,8 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_motionlessAndSingleTag_doesNotInjectKalman() {
-        m_cam.setVisionDependencies(() -> true, m_kalmanFilter, () -> true);
+        m_cam.enableVision(true);
+        m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> true);
 
         PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
         m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))

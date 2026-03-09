@@ -218,7 +218,7 @@ public final class Constants {
     // curl -X POST http://10.90.36.15:5807/upload-fieldmap -H "Content-Type: application/json" --data-binary @FRC2026_ANDYMARK.fmap
     public static final class VisionConstants {
         /** Default value for the VisionEnabled toggle (true = vision on). */
-        public static final boolean kVisionEnabledDefault = true;
+        public static final boolean kVisionEnabledDefault = false;
 
         /** When false, MegaTag2 pose estimates are never requested or used. */
         // $TODO - Enable after testing
