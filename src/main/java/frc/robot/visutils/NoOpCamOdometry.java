@@ -68,9 +68,6 @@ class NoOpCamOdometry implements CamOdometryInterface {
     public void enableVision(boolean enabled) {}
 
     @Override
-    public void enableMegatag2(boolean enabled) {}
-
-    @Override
     public void setVisionDependenciesOnCamera(
             VisionKalmanFilter filter,
             BooleanSupplier isMotionlessSupplier) {}

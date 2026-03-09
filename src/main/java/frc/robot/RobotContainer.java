@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.VisionConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.FullAutoClimbCommand;
@@ -131,6 +130,7 @@ public class RobotContainer {
     public final CommandSwerveDrivetrain drivetrain = m_configInterface.createDrivetrain();
 
     public final BasicInfoDashboard basicInfoDashboard = new BasicInfoDashboard(
+        m_configInterface,
         drivetrain,
         m_configInterface.getCameras().stream()
             .map(c -> c.cameraName)
@@ -260,9 +260,7 @@ public class RobotContainer {
             () -> drivetrain.getState().Pose.getRotation().getDegrees(),
             basicInfoDashboard,
             m_visionKalmanFilter,
-            m_motionlessTracker,
-            VisionConstants.kSupportMegatag2,
-            VisionConstants.kAutoVisionInjectionEnabled);
+            m_motionlessTracker);
     }
 
     /** Registers named commands for PathPlanner */

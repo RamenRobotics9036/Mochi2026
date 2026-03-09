@@ -143,6 +143,15 @@ public interface BotConfigInterface {
      *
      ************************************************************************************/
 
+    /** Default value for the VisionEnabled dashboard toggle (true = vision on by default). */
+    boolean isVisionEnabledDefault();
+
+    /** When false, MegaTag2 pose estimates are never requested or used. */
+    boolean isMegaTag2Supported();
+
+    /** When true, vision pose estimates are automatically injected into the drivetrain pose estimator. */
+    boolean isAutoVisionInjectionEnabled();
+
     /** Camera configurations for the real robot. */
     List<CameraInfo> getCameras();
 

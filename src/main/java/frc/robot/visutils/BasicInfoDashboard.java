@@ -17,8 +17,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import frc.robot.Constants;
-import frc.robot.Constants.VisionConstants;
+import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.visutils.VisionKalmanFilter;
 
 import java.util.List;
@@ -58,8 +57,8 @@ public class BasicInfoDashboard {
     private final DoublePublisher m_visErrorMultiTagCentimeters = m_basicInfoTable.getDoubleTopic("VisErrorMultiTagCentimeters").publish();
 
     /** Bidirectional toggle for enabling/disabling vision measurement injection. */
-    private final BooleanEntry m_visionEnabled =
-        m_basicInfoTable.getBooleanTopic("VisionEnabled").getEntry(Constants.VisionConstants.kVisionEnabledDefault);
+    private final BooleanEntry m_visionEnabled;
+    private final BotConfigInterface m_configInterface;
 
     /* Vision Kalman filter outputs */
     private final DoubleArrayPublisher m_visionKalmanPose =
@@ -116,12 +115,19 @@ public class BasicInfoDashboard {
     /**
      * Constructs a BasicInfoDashboard.
      *
-     * @param drivetrain  The swerve drivetrain to get info from
-     * @param cameraNames Names of all Limelight cameras to monitor
+     * @param drivetrain      The swerve drivetrain to get info from
+     * @param cameraNames     Names of all Limelight cameras to monitor
+     * @param configInterface Bot configuration (vision defaults, etc.)
      */
-    public BasicInfoDashboard(SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain, List<String> cameraNames) {
+    public BasicInfoDashboard(
+        BotConfigInterface configInterface,
+        SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
+        List<String> cameraNames) {
+
         m_drivetrain = drivetrain;
         m_pigeon = drivetrain.getPigeon2();
+        m_configInterface = configInterface;
+        m_visionEnabled = m_basicInfoTable.getBooleanTopic("VisionEnabled").getEntry(m_configInterface.isVisionEnabledDefault());
 
         NetworkTable cameraTable = m_basicInfoTable.getSubTable("Camera");
         m_cameraMonitors = new java.util.ArrayList<>();
@@ -133,7 +139,7 @@ public class BasicInfoDashboard {
         }
 
         // Publish the default value so the toggle appears in Elastic immediately.
-        m_visionEnabled.set(Constants.VisionConstants.kVisionEnabledDefault);
+        m_visionEnabled.set(m_configInterface.isVisionEnabledDefault());
     }
 
     /**
@@ -146,7 +152,7 @@ public class BasicInfoDashboard {
         if (m_forceDisableVision) {
             return false;
         }
-        return m_visionEnabled.get(Constants.VisionConstants.kVisionEnabledDefault);
+        return m_visionEnabled.get(m_configInterface.isVisionEnabledDefault());
     }
 
     /**

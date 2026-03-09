@@ -12,6 +12,7 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import com.ctre.phoenix6.Utils;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers;
@@ -31,10 +32,8 @@ import java.util.stream.Collectors;
  * Limelight-based odometry measurement source.
  */
 public class SingleCamOdometry implements CamOdometryInterface {
-    // These two enable-values are initialized here, but can be dynamically updated
-    // using the enableVision() and enableMegatag2() methods.
-    private boolean m_megaTag2Enabled;
-    private boolean m_autoVisionInjectionEnabled;
+    private final boolean m_megaTag2Enabled;
+    private final boolean m_autoVisionInjectionEnabled;
 
     private final String m_limelightName;
     private VisionSimInterface.EstimateConsumer m_estConsumer;
@@ -153,11 +152,6 @@ public class SingleCamOdometry implements CamOdometryInterface {
     @Override
     public void enableVision(boolean enabled) {
         throw new UnsupportedOperationException("Vision enabling/disabling is not supported at the SingleCamOdometry level; enable/disable the entire wrapper instead.");
-    }
-
-    @Override
-    public void enableMegatag2(boolean enabled) {
-        m_megaTag2Enabled = enabled;
     }
 
     private void clearResults() {
@@ -311,18 +305,16 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
         setResults(m_curConfidenceScore, poseEstimate.tagCount, poseEstimate.rawFiducials, poseEstimate.isMegaTag2);
 
-        // $TODO2 - We should ONLY inject vision measurements in AUTO.  Does that
-        // mean we neeed to move this to a autoPeriodic or something else?
-        // Only injecting vision measurements if vision is enabled
-        if (true) {
-
-            // Inject into vision Kalman filter if robot is motionless and we have multi-tag
-            if (m_visionKalmanFilter != null && m_isMotionlessSupplier != null) {
-                if (m_isMotionlessSupplier.getAsBoolean() && poseEstimate.tagCount >= 2) {
-                    m_visionKalmanFilter.injectVisionMeasurement(
-                        poseEstimate.pose, poseEstimate.tagCount);
-                }
+        // Inject into vision Kalman filter if robot is motionless and we have multi-tag
+        if (m_visionKalmanFilter != null && m_isMotionlessSupplier != null) {
+            if (m_isMotionlessSupplier.getAsBoolean() && poseEstimate.tagCount >= 2) {
+                m_visionKalmanFilter.injectVisionMeasurement(
+                    poseEstimate.pose, poseEstimate.tagCount);
             }
+        }
+
+        // $We should ONLY inject vision measurements in AUTO.
+        if (m_autoVisionInjectionEnabled && !DriverStation.isTeleopEnabled()) {
 
             if (m_estConsumer != null) {
                 m_estConsumer.accept(

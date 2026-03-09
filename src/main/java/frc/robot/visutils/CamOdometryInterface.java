@@ -78,12 +78,6 @@ public interface CamOdometryInterface {
      */
     void enableVision(boolean enabled);
 
-    // $TODO2 - Get rid of this
-    /**
-     * Enable/Disable MegaTag2 pose estimation support.
-     */
-    void enableMegatag2(boolean enabled);
-
     /**
      * Sets the dependencies needed for vision processing.
      *
