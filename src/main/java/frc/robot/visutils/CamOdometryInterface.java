@@ -74,14 +74,22 @@ public interface CamOdometryInterface {
     void periodic();
 
     /**
+     * Enable/Disable vision processing.
+     */
+    void enableVision(boolean enabled);
+
+    /**
+     * Enable/Disable MegaTag2 pose estimation support.
+     */
+    void enableMegatag2(boolean enabled);
+
+    /**
      * Sets the dependencies needed for vision processing.
      *
-     * @param visionEnabledSupplier A BooleanSupplier returning true when vision is enabled
      * @param filter The VisionKalmanFilter instance to inject measurements into
      * @param isMotionlessSupplier Supplier that returns true when robot is motionless
      */
-    void setVisionDependencies(
-            BooleanSupplier visionEnabledSupplier,
+    void setVisionDependenciesOnCamera(
             VisionKalmanFilter filter,
             BooleanSupplier isMotionlessSupplier);
 }

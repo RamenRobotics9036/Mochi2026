@@ -2,6 +2,7 @@ package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,8 @@ import java.util.function.BooleanSupplier;
 
 /** Reads from multiple limelight cameras. */
 public class MultiCamOdometry implements CamOdometryInterface {
+    private boolean m_megaTag2Enabled = Constants.VisionConstants.kSupportMegatag2;
+
     private final List<CamOdometryInterface> m_cameras;
     private final PerCycleState m_perCycleState = new PerCycleState();
 
@@ -23,19 +26,16 @@ public class MultiCamOdometry implements CamOdometryInterface {
     /**
      * Sets the dependencies needed for vision processing.
      *
-     * @param visionEnabledSupplier A BooleanSupplier returning true when vision is enabled
      * @param filter The VisionKalmanFilter instance to inject measurements into
      * @param isMotionlessSupplier Supplier that returns true when robot is motionless
      */
     @Override
-    public void setVisionDependencies(
-            BooleanSupplier visionEnabledSupplier,
+    public void setVisionDependenciesOnCamera(
             VisionKalmanFilter filter,
             BooleanSupplier isMotionlessSupplier) {
 
         for (CamOdometryInterface cam : m_cameras) {
-            cam.setVisionDependencies(
-                visionEnabledSupplier,
+            cam.setVisionDependenciesOnCamera(
                 filter,
                 isMotionlessSupplier);
         }
@@ -49,23 +49,35 @@ public class MultiCamOdometry implements CamOdometryInterface {
      */
     @Override
     public void setRobotOrientation() {
-        for (CamOdometryInterface cam : m_cameras) {
-            cam.setRobotOrientation_NoFlush();
+        if (isMegaTag2Enabled()) {
+            for (CamOdometryInterface cam : m_cameras) {
+                cam.setRobotOrientation_NoFlush();
+            }
+            LimelightHelpers.Flush();
         }
-        LimelightHelpers.Flush();
     }
 
     @Override
     public void setRobotOrientation_NoFlush() {
-        for (CamOdometryInterface cam : m_cameras) {
-            cam.setRobotOrientation_NoFlush();
+        if (isMegaTag2Enabled()) {
+            for (CamOdometryInterface cam : m_cameras) {
+                cam.setRobotOrientation_NoFlush();
+            }
         }
     }
 
     @Override
     public void periodic() {
-        m_perCycleState.reset();
+        // For Megatag2 support, we need to push the robot's current heading to the
+        // Limelight every cycle.
+        if (isMegaTag2Enabled()) {
+            // This is expensive since it flushes NetworkTables on each call,
+            // but we need to do it every cycle to keep the Limelight updated with
+            // the robot's heading.  So we dont call it if vision or megatag2 is disabled.
+            setRobotOrientation();
+        }
 
+        m_perCycleState.reset();
         for (CamOdometryInterface cam : m_cameras) {
             cam.periodic();
 
@@ -84,6 +96,24 @@ public class MultiCamOdometry implements CamOdometryInterface {
             if (cam.hasMultiTagLock()) {
                 m_perCycleState.hasMultiTagLock = true;
             }
+        }
+    }
+
+    @Override
+    public void enableVision(boolean enabled) {
+        // NOTE: We dont track whether vision is enabled in this class, instead its
+        // tracked in the wrapper.
+        for (CamOdometryInterface cam : m_cameras) {
+            cam.enableVision(enabled);
+        }
+    }
+
+    @Override
+    public void enableMegatag2(boolean enabled) {
+        m_megaTag2Enabled = enabled;
+
+        for (CamOdometryInterface cam : m_cameras) {
+            cam.enableMegatag2(enabled);
         }
     }
 
@@ -165,5 +195,9 @@ public class MultiCamOdometry implements CamOdometryInterface {
             throw new IllegalStateException("No cameras configured — at least one camera must be provided.");
         }
         return m_cameras.get(0);
+    }
+
+    private boolean isMegaTag2Enabled() {
+        return m_megaTag2Enabled;
     }
 }

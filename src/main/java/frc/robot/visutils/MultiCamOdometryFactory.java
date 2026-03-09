@@ -23,9 +23,10 @@ public class MultiCamOdometryFactory {
      * @param configInterface    Bot configuration (cameras, speeds, etc.)
      * @param poseSampler        Samples the drivetrain's historical pose at a given timestamp
      *                           (e.g. {@code drivetrain::samplePoseAt})
-     * @param poseConsumer       Consumer for vision pose estimates (e.g. {@code drivetrain::addVisionMeasurement})
-     * @param yawDegreesSupplier Supplies the robot's current heading in degrees (WPILib blue-alliance
-     *                           frame) for MegaTag2 orientation updates
+     * @param poseConsumer       Consumer for vision pose estimates
+     *                           (e.g. {@code drivetrain::addVisionMeasurement})
+     * @param yawDegreesSupplier Supplies the robot's current heading in degrees
+     *                           (WPILib blue-alliance frame) for MegaTag2 orientation updates
      * @param basicInfoDashboard Dashboard to receive vision confidence/status updates
      * @param visionKalmanFilter Kalman filter for stationary vision estimation
      * @param motionlessTracker  Tracks whether the robot is motionless
@@ -47,30 +48,33 @@ public class MultiCamOdometryFactory {
                 camInfo.robotToCam,
                 poseConsumer,
                 poseSampler,
-                yawDegreesSupplier,
-                VisionConstants.kSupportMegatag2));
+                yawDegreesSupplier));
         }
 
         CamOdometryInterface multiCam = new MultiCamOdometry(cameras);
 
-        multiCam.setVisionDependencies(
-            basicInfoDashboard::isVisionEnabled,
+        MultiCamOdometryWrapper wrapper =
+                new MultiCamOdometryWrapper(multiCam, VisionConstants.kVisionEnabledDefault);
+
+        wrapper.enableMegatag2(VisionConstants.kSupportMegatag2);
+
+        wrapper.setVisionDependenciesOnCamera(
             visionKalmanFilter,
             motionlessTracker::isMotionless);
 
-        basicInfoDashboard.setVisionDependencies(
-            multiCam::getConfidenceScore,
-            multiCam::hasTargetLock,
-            multiCam::hasMultiTagLock,
-            multiCam::isLatestMt2,
-            multiCam::getPrimaryTagTx,
-            multiCam::getVisibleTagIds,
-            multiCam::getVisionErrorAtSnapTime,
+        basicInfoDashboard.setVisionDependenciesOnDash(
+            wrapper::getConfidenceScore,
+            wrapper::hasTargetLock,
+            wrapper::hasMultiTagLock,
+            wrapper::isLatestMt2,
+            wrapper::getPrimaryTagTx,
+            wrapper::getVisibleTagIds,
+            wrapper::getVisionErrorAtSnapTime,
             motionlessTracker::isMotionless,
             motionlessTracker::getSecondsStill);
 
         basicInfoDashboard.setVisionKalmanSupplier(() -> visionKalmanFilter);
 
-        return multiCam;
+        return wrapper;
     }
 }

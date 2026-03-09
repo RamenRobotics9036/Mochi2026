@@ -72,12 +72,15 @@ public class Robot extends TimedRobot {
         m_robotContainer.m_simWrapper.robotPeriodic();
     }
 
-    m_robotContainer.m_multiCamlimelight.setRobotOrientation();
+    // We allow vision to be enabled/disabled DYNAMICALLY from dashboard, so we set whether
+    // its enabled on EACH cycle.
+    m_robotContainer.m_multiCamlimelight.enableVision(
+        m_robotContainer.basicInfoDashboard.isVisionEnabled());
+
     m_robotContainer.m_multiCamlimelight.periodic();
 
-    Optional<Pose2d> showVisPose = m_robotContainer.basicInfoDashboard.isVisionEnabled() ?
-        m_robotContainer.m_multiCamlimelight.getEstimatedPose() :
-        Optional.empty();
+    Optional<Pose2d> showVisPose =
+      m_robotContainer.m_multiCamlimelight.getEstimatedPose();
 
     DisplayInfo kalmanDisplay = m_robotContainer.m_visionKalmanFilter.getFieldDisplayInfo(0.4);
 
