@@ -12,10 +12,6 @@ import java.util.function.BooleanSupplier;
  * <p>When enabled, all calls are delegated to {@code m_multiCamReal}. When disabled, all calls are
  * delegated to {@code m_multiCamNoop}, which returns safe default values and performs no side
  * effects.
- *
- * <p>Configuration calls ({@link #setVisionDependenciesOnCamera} and {@link #enableMegatag2}) are
- * always forwarded to the real camera regardless of the current enable state, so that the real
- * camera is fully configured when re-enabled.
  */
 public class MultiCamOdometryWrapper implements CamOdometryInterface {
     private final CamOdometryInterface m_multiCamReal;
@@ -105,15 +101,6 @@ public class MultiCamOdometryWrapper implements CamOdometryInterface {
     @Override
     public void enableVision(boolean enabled) {
         m_enabled = enabled;
-    }
-
-    /**
-     * Always forwarded to the real camera — MT2 configuration is independent of enable state so
-     * that the real camera is correctly configured when re-enabled.
-     */
-    @Override
-    public void enableMegatag2(boolean enabled) {
-        m_multiCamReal.enableMegatag2(enabled);
     }
 
     /**

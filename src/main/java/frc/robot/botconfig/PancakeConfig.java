@@ -142,6 +142,21 @@ public class PancakeConfig implements BotConfigInterface {
      *
      ************************************************************************************/
 
+    @Override
+    public boolean isVisionEnabledDefault() {
+        return true;
+    }
+
+    @Override
+    public boolean isMegaTag2Supported() {
+        return false; // $TODO2 - Enable after testing
+    }
+
+    @Override
+    public boolean isAutoVisionInjectionEnabled() {
+        return true;
+    }
+
     private final List<CameraInfo> m_cameras = List.of(
         new CameraInfo("limelight-fixedii", new Transform3d(
             new Translation3d(

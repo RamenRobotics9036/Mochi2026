@@ -13,8 +13,8 @@ import java.util.function.BooleanSupplier;
 
 /** Reads from multiple limelight cameras. */
 public class MultiCamOdometry implements CamOdometryInterface {
-    private boolean m_megaTag2Enabled;
-    private boolean m_autoVisionInjectionEnabled;
+    private final boolean m_megaTag2Enabled;
+    private final boolean m_autoVisionInjectionEnabled;
 
     private final List<CamOdometryInterface> m_cameras;
     private final PerCycleState m_perCycleState = new PerCycleState();
@@ -109,15 +109,6 @@ public class MultiCamOdometry implements CamOdometryInterface {
     @Override
     public void enableVision(boolean enabled) {
         throw new UnsupportedOperationException("Vision enabling/disabling is not supported at the MultiCamOdometry level; enable/disable the entire wrapper instead.");
-    }
-
-    @Override
-    public void enableMegatag2(boolean enabled) {
-        m_megaTag2Enabled = enabled;
-
-        for (CamOdometryInterface cam : m_cameras) {
-            cam.enableMegatag2(enabled);
-        }
     }
 
     @Override

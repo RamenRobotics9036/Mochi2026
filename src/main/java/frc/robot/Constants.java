@@ -217,19 +217,6 @@ public final class Constants {
     // To upload fmap:
     // curl -X POST http://10.90.36.15:5807/upload-fieldmap -H "Content-Type: application/json" --data-binary @FRC2026_ANDYMARK.fmap
     public static final class VisionConstants {
-        /** Default value for the VisionEnabled toggle (true = vision on). */
-        public static final boolean kVisionEnabledDefault = false;
-
-        /** When false, MegaTag2 pose estimates are never requested or used. */
-        // $TODO2 - Enable after testing
-        public static final boolean kSupportMegatag2 = false;
-
-        /**
-         * When true, vision pose estimates are automatically injected into the drivetrain pose estimator;
-         * when false, they must be manually consumed from the dashboard.
-         * */
-        public static final boolean kAutoVisionInjectionEnabled = true;
-
         /**
          * Distance advantage (meters) given to MegaTag2 when comparing estimates.
          * MT2 is preferred over MT1 if its avgTagDist is within this margin of MT1's,

@@ -4,7 +4,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.sim.visionproducers.VisionSimInterface;
-import frc.robot.Constants.VisionConstants;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,9 +38,10 @@ public class MultiCamOdometryFactory {
             DoubleSupplier yawDegreesSupplier,
             BasicInfoDashboard basicInfoDashboard,
             VisionKalmanFilter visionKalmanFilter,
-            MotionlessTracker motionlessTracker,
-            boolean megaTag2Enabled,
-            boolean autoVisionInjectionEnabled) {
+            MotionlessTracker motionlessTracker) {
+
+        boolean megaTag2Enabled = configInterface.isMegaTag2Supported();
+        boolean autoVisionInjectionEnabled = configInterface.isAutoVisionInjectionEnabled();
 
         List<CamOdometryInterface> cameras = new ArrayList<>();
         for (CameraInfo camInfo : configInterface.getCameras()) {
@@ -61,7 +61,7 @@ public class MultiCamOdometryFactory {
             autoVisionInjectionEnabled);
 
         MultiCamOdometryWrapper wrapper =
-                new MultiCamOdometryWrapper(multiCam, VisionConstants.kVisionEnabledDefault);
+                new MultiCamOdometryWrapper(multiCam, configInterface.isVisionEnabledDefault());
 
         wrapper.setVisionDependenciesOnCamera(
             visionKalmanFilter,

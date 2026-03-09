@@ -345,26 +345,6 @@ class TestMultiCamOdometryWrapper {
     // ------------------------------------------------------------------
 
     @Test
-    void enableMegatag2_alwaysForwardedToReal_whenEnabled() {
-        CamOdometryInterface real = newRealMock();
-        MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, true);
-
-        wrapper.enableMegatag2(false);
-
-        Mockito.verify(real).enableMegatag2(false);
-    }
-
-    @Test
-    void enableMegatag2_alwaysForwardedToReal_whenDisabled() {
-        CamOdometryInterface real = newRealMock();
-        MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, false);
-
-        wrapper.enableMegatag2(true);
-
-        Mockito.verify(real).enableMegatag2(true);
-    }
-
-    @Test
     void setVisionDependenciesOnCamera_alwaysForwardedToReal_whenEnabled() {
         CamOdometryInterface real = newRealMock();
         MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, true);
@@ -455,8 +435,6 @@ class TestMultiCamOdometryWrapper {
             noop.setRobotOrientation_NoFlush();
             noop.enableVision(true);
             noop.enableVision(false);
-            noop.enableMegatag2(true);
-            noop.enableMegatag2(false);
             noop.setVisionDependenciesOnCamera(null, null);
         });
     }
