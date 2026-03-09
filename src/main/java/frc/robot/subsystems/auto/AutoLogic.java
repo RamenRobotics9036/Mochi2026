@@ -95,9 +95,8 @@ public final class  AutoLogic {
     /** Adds both PathPlanner routines and hard-coded manual routines to the chooser. */
     private static void addAutoOptions() {
         // Default
-        autoPicker.setDefaultOption("Bump_Shoot_Move_Back", "Bump_Shoot_Move_Back");
+        autoPicker.setDefaultOption("L Bump_Shoot_Move_Back", "L Bump_Shoot_Move_Back");
 
-        autoPicker.addOption("L Bump_Shoot_Move_Back", "L Bump_Shoot_Move_Back");
         autoPicker.addOption("R Bump_Shoot_Move_Back", "R Bump_Shoot_Move_Back");
 
         // Pathplanner Autos
