@@ -39,7 +39,9 @@ public class MultiCamOdometryFactory {
             DoubleSupplier yawDegreesSupplier,
             BasicInfoDashboard basicInfoDashboard,
             VisionKalmanFilter visionKalmanFilter,
-            MotionlessTracker motionlessTracker) {
+            MotionlessTracker motionlessTracker,
+            boolean megaTag2Enabled,
+            boolean autoVisionInjectionEnabled) {
 
         List<CamOdometryInterface> cameras = new ArrayList<>();
         for (CameraInfo camInfo : configInterface.getCameras()) {
@@ -48,15 +50,18 @@ public class MultiCamOdometryFactory {
                 camInfo.robotToCam,
                 poseConsumer,
                 poseSampler,
-                yawDegreesSupplier));
+                yawDegreesSupplier,
+                megaTag2Enabled,
+                autoVisionInjectionEnabled));
         }
 
-        CamOdometryInterface multiCam = new MultiCamOdometry(cameras);
+        CamOdometryInterface multiCam = new MultiCamOdometry(
+            cameras,
+            megaTag2Enabled,
+            autoVisionInjectionEnabled);
 
         MultiCamOdometryWrapper wrapper =
                 new MultiCamOdometryWrapper(multiCam, VisionConstants.kVisionEnabledDefault);
-
-        wrapper.enableMegatag2(VisionConstants.kSupportMegatag2);
 
         wrapper.setVisionDependenciesOnCamera(
             visionKalmanFilter,

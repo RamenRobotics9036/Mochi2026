@@ -221,8 +221,14 @@ public final class Constants {
         public static final boolean kVisionEnabledDefault = false;
 
         /** When false, MegaTag2 pose estimates are never requested or used. */
-        // $TODO - Enable after testing
+        // $TODO2 - Enable after testing
         public static final boolean kSupportMegatag2 = false;
+
+        /**
+         * When true, vision pose estimates are automatically injected into the drivetrain pose estimator;
+         * when false, they must be manually consumed from the dashboard.
+         * */
+        public static final boolean kAutoVisionInjectionEnabled = true;
 
         /**
          * Distance advantage (meters) given to MegaTag2 when comparing estimates.

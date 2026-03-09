@@ -87,7 +87,9 @@ class TestSingleCamOdometry {
             new Transform3d(),
             consumer,
             null,
-            () -> 0.0);
+            () -> 0.0,
+            true,
+            true);
     }
 
     @AfterEach
@@ -140,9 +142,9 @@ class TestSingleCamOdometry {
             new Transform3d(),
             consumer,
             null,
-            () -> 0.0);
-
-        result.enableMegatag2(supportMegatag2);
+            () -> 0.0,
+             supportMegatag2,
+             true);
 
         return result;
     }
@@ -585,17 +587,11 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_visionEnabled_consumerIsCalled() {
-        m_cam.enableVision(true);
-        m_cam.setVisionDependenciesOnCamera(null, null);
-
-        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
-        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
-            .thenReturn(est);
-
-        m_cam.periodic();
-
-        assertEquals(1, m_consumeCallCount);
-        assertEquals(POSE_A, m_lastConsumedPose);
+        // enableVision is not supported at the SingleCamOdometry level; verify it throws.
+        UnsupportedOperationException ex = assertThrows(
+            UnsupportedOperationException.class, () -> m_cam.enableVision(true));
+        assertTrue(ex.getMessage().contains("SingleCamOdometry"),
+            "Exception message should mention SingleCamOdometry, got: " + ex.getMessage());
     }
 
     // ------------------------------------------------------------------
@@ -609,7 +605,10 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_motionlessAndMultiTag_injectsKalman() {
-        m_cam.enableVision(true);
+        UnsupportedOperationException ex = assertThrows(
+            UnsupportedOperationException.class, () -> m_cam.enableVision(true));
+        assertTrue(ex.getMessage().contains("SingleCamOdometry"),
+            "Exception message should mention SingleCamOdometry, got: " + ex.getMessage());
         m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> true);
 
         PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
@@ -628,7 +627,10 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_movingAndMultiTag_doesNotInjectKalman() {
-        m_cam.enableVision(true);
+        UnsupportedOperationException ex = assertThrows(
+            UnsupportedOperationException.class, () -> m_cam.enableVision(true));
+        assertTrue(ex.getMessage().contains("SingleCamOdometry"),
+            "Exception message should mention SingleCamOdometry, got: " + ex.getMessage());
         m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> false);
 
         PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
@@ -647,7 +649,10 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_motionlessAndSingleTag_doesNotInjectKalman() {
-        m_cam.enableVision(true);
+        UnsupportedOperationException ex = assertThrows(
+            UnsupportedOperationException.class, () -> m_cam.enableVision(true));
+        assertTrue(ex.getMessage().contains("SingleCamOdometry"),
+            "Exception message should mention SingleCamOdometry, got: " + ex.getMessage());
         m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> true);
 
         PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);

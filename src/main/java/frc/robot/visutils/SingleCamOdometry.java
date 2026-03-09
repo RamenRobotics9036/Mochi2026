@@ -33,7 +33,8 @@ import java.util.stream.Collectors;
 public class SingleCamOdometry implements CamOdometryInterface {
     // These two enable-values are initialized here, but can be dynamically updated
     // using the enableVision() and enableMegatag2() methods.
-    private boolean m_megaTag2Enabled = Constants.VisionConstants.kSupportMegatag2;
+    private boolean m_megaTag2Enabled;
+    private boolean m_autoVisionInjectionEnabled;
 
     private final String m_limelightName;
     private VisionSimInterface.EstimateConsumer m_estConsumer;
@@ -67,12 +68,16 @@ public class SingleCamOdometry implements CamOdometryInterface {
         Transform3d robotToCam,
         VisionSimInterface.EstimateConsumer poseConsumer,
         Function<Double, Optional<Pose2d>> poseSampler,
-        DoubleSupplier yawDegreesSupplier) {
+        DoubleSupplier yawDegreesSupplier,
+        boolean megaTag2Enabled,
+        boolean autoVisionInjectionEnabled) {
 
         m_estConsumer = poseConsumer;
         m_limelightName = limelightName;
         m_poseSampler = poseSampler;
         m_yawDegreesSupplier = yawDegreesSupplier;
+        m_megaTag2Enabled = megaTag2Enabled;
+        m_autoVisionInjectionEnabled = autoVisionInjectionEnabled;
 
         setCameraPoseRobotSpace(m_limelightName, robotToCam);
     }
@@ -147,8 +152,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
     @Override
     public void enableVision(boolean enabled) {
-        // NOTE: We dont track whether vision is enabled in this class, instead its
-        // tracked in the wrapper.
+        throw new UnsupportedOperationException("Vision enabling/disabling is not supported at the SingleCamOdometry level; enable/disable the entire wrapper instead.");
     }
 
     @Override
