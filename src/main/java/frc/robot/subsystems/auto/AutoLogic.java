@@ -154,7 +154,11 @@ public final class  AutoLogic {
 
     /** Returns the string currently selected in the dashboard chooser. */
     public static String getSelectedName() {
-        return autoPicker.getSelected();
+        String selected = autoPicker.getSelected();
+
+        // In-case the AutoLogic removes an option that is currently selected, getSeelected()
+        // returns null.  So we return an empty string instead to avoid null pointer exceptions.
+        return selected != null ? selected : "";
     }
 
     /** Retrieves the command for the currently selected dashboard option. */
