@@ -15,6 +15,7 @@ public class ClimberSubsystem extends SubsystemBase {
     /** Constructor. */
     public ClimberSubsystem(ElevatorIoInterface io) {
         m_io = io;
+        m_io.resetEncoder();
     }
 
     /**
