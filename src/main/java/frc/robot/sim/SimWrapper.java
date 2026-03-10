@@ -1,9 +1,8 @@
 package frc.robot.sim;
 
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
@@ -13,6 +12,7 @@ import frc.robot.sim.visionproducers.VisionSimFactory;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
+import static edu.wpi.first.units.Units.*;
 import java.util.function.Consumer;
 
 
@@ -29,9 +29,9 @@ import java.util.function.Consumer;
 public class SimWrapper {
     private final BotConfigInterface m_configInterface;
 
-    private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_drivetrain;
     private final GroundTruthSimInterface m_groundTruthSim;
     private final VisionSimInterface m_visionSim;
+    public final FaultyAutoSim m_faultyAutoSim;
 
     /**
      * Creates a new SimWrapper.
@@ -42,7 +42,7 @@ public class SimWrapper {
      */
     public SimWrapper(
             BotConfigInterface configInterface,
-            SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
+            CommandSwerveDrivetrain drivetrain,
             Consumer<Pose2d> poseResetConsumer) {
 
         if (!Robot.isSimulation()) {
@@ -57,16 +57,19 @@ public class SimWrapper {
 
         m_configInterface = configInterface;
 
-        m_drivetrain = drivetrain;
-
-        // Create ground truth simulation
+        // Create ground truth simulation and wire it into the drivetrain's high-frequency
+        // sim notifier so it integrates pose at the same 4 ms rate as updateSimState.
         m_groundTruthSim = GroundTruthSimFactory.create(drivetrain, poseResetConsumer);
+        drivetrain.setHighFreqSimCallback(m_groundTruthSim::updateGroundTruthPose);
 
         // Create vision simulation
         m_visionSim = VisionSimFactory.create(m_configInterface);
         if (m_visionSim == null) {
             throw new IllegalStateException("VisionSimInterface creation failed");
         }
+
+        // Create faulty auto sim (fault injection for testing)
+        m_faultyAutoSim = new FaultyAutoSim(m_groundTruthSim, m_visionSim);
     }
 
     /**
@@ -82,8 +85,6 @@ public class SimWrapper {
      * Updates physics simulation and vision based on ground truth pose.
      */
     public void simulationPeriodic() {
-        var driveState = m_drivetrain.getState();
-
         // Update ground truth physics simulation
         m_groundTruthSim.simulationPeriodic();
 
@@ -106,9 +107,26 @@ public class SimWrapper {
 
     /**
      * Proxy call to ground truth sim to inject odometry drift.
+     *
+     * @param xOffsetFrontBack X translation offset in meters (+ = forward, - = backward)
+     * @param yOffsetLeftRight Y translation offset in meters (+ = left, - = right)
+     * @param rotationOffsetDegrees Rotation offset in degrees
      */
-    public void injectDrift(double translationOffsetMeters, double rotationOffsetDegrees) {
-        m_groundTruthSim.injectDrift(translationOffsetMeters, rotationOffsetDegrees);
+    public void injectDriftToPoseEstimate(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
+        m_groundTruthSim.injectDriftToPoseEstimate(xOffsetFrontBack, yOffsetLeftRight, rotationOffsetDegrees);
+    }
+
+    /**
+     * Proxy call to ground truth sim to offset the ground truth pose.
+     * Moves where the robot "actually is" (and thus where cameras see AprilTags)
+     * without touching the odometry estimate.
+     *
+     * @param xOffsetFrontBack X translation offset in meters (+ = forward, - = backward)
+     * @param yOffsetLeftRight Y translation offset in meters (+ = left, - = right)
+     * @param rotationOffsetDegrees Rotation offset in degrees
+     */
+    public void injectDriftToGroundTruth(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
+        m_groundTruthSim.injectDriftToGroundTruth(xOffsetFrontBack, yOffsetLeftRight, rotationOffsetDegrees);
     }
 
     /**
@@ -118,6 +136,32 @@ public class SimWrapper {
      */
     public void cycleResetPosition(Pose2d blueAlliancePose) {
         m_groundTruthSim.cycleResetPosition(blueAlliancePose);
+    }
+
+    /**
+     * Nudges the ground truth pose 12 inches to the right (robot-local -Y).
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     */
+    public static void nudgeRight12Inches(SimWrapper simWrapper) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.injectDriftToGroundTruth(0, Units.inchesToMeters(12), 0);
+    }
+
+    /**
+     * Nudges the ground truth pose 20 degrees clockwise (negative rotation).
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     */
+    public static void nudgeRotate45Degrees(SimWrapper simWrapper) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.injectDriftToGroundTruth(0, 0, -45);
     }
 
     /**
@@ -132,7 +176,14 @@ public class SimWrapper {
             Trigger resetTrigger,
             CommandSwerveDrivetrain drivetrain) {
 
-        driftTrigger.onTrue(drivetrain.runOnce(() -> injectDrift(0.5, 15.0)));
+        driftTrigger.onTrue(drivetrain.runOnce(() -> {
+            // Random translation up to 0.5 m in a random direction, random rotation sign
+            double angle = Math.random() * 2 * Math.PI;
+            double xFrontBack = 0.5 * Math.cos(angle);
+            double yLeftRight = 0.5 * Math.sin(angle);
+            double dtheta = 15.0 * (Math.random() > 0.5 ? 1 : -1);
+            injectDriftToGroundTruth(xFrontBack, yLeftRight, dtheta);
+        }));
         resetTrigger.onTrue(drivetrain.runOnce(() ->
             cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
     }
@@ -168,7 +219,7 @@ public class SimWrapper {
      */
     public static SimWrapper create(
             BotConfigInterface configInterface,
-            SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
+            CommandSwerveDrivetrain drivetrain,
             Consumer<Pose2d> poseResetConsumer) {
 
         if (!Robot.isSimulation() || VisionSimConstants.Vision.kForceSimWrapperOff) {
@@ -176,6 +227,61 @@ public class SimWrapper {
         }
 
         return new SimWrapper(configInterface, drivetrain, poseResetConsumer);
+    }
+
+    /**
+     * Enables or disables simulated rightward pull during forward motion.
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     * @param enabled true to enable pull-right, false to disable
+     */
+    public static void enablePullRight(SimWrapper simWrapper, boolean enabled) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.m_faultyAutoSim.enablePullRight(enabled);
+    }
+
+    /**
+     * Enables or disables simulated clockwise rotation drift during turning.
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     * @param enabled true to enable clockwise rotation drift, false to disable
+     */
+    public static void enableRotateClockwise(SimWrapper simWrapper, boolean enabled) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.m_faultyAutoSim.enableRotateClockwise(enabled);
+    }
+
+    /**
+     * Offsets the primary camera's simulated physical position to model miscalibration.
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     * @param offset Additional transform on top of the static mounting offset (zero = reset)
+     */
+    public static void enableCameraMisplaced(SimWrapper simWrapper, Transform3d offset) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.m_faultyAutoSim.enableCameraMisplaced(offset);
+    }
+
+    /**
+     * Resets all simulated auto faults to their default (disabled) state.
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     */
+    public static void resetAllAutoSimFaults(SimWrapper simWrapper) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.m_faultyAutoSim.resetAllAutoSimFaults();
     }
 
     /**  Gets the ground truth pose from the simulation. */

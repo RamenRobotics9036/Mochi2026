@@ -10,8 +10,16 @@ import edu.wpi.first.math.geometry.Pose2d;
 public interface GroundTruthSimInterface {
 
     /**
-     * Updates ground truth pose and publishes telemetry.
-     * Call this from Robot.simulationPeriodic().
+     * Integrates chassis speeds into the ground truth pose for one time step.
+     * Must be called at a high frequency (e.g. 250 Hz) — register this as the
+     * high-frequency sim callback on {@code CommandSwerveDrivetrain}.
+     */
+    double updateGroundTruthPose();
+
+    /**
+     * Publishes telemetry for the current simulation state.
+     * Called from {@link #simulationPeriodic()} at the standard 50 Hz robot loop rate.
+     * Ground truth pose integration is handled separately via {@link #updateGroundTruthPose()}.
      */
     void simulationPeriodic();
 
@@ -42,8 +50,36 @@ public interface GroundTruthSimInterface {
      * The ground truth pose remains unchanged, but the pose estimator
      * is reset to a drifted position. Vision should then correct this drift.
      *
-     * @param translationOffsetMeters How far to offset the estimated position (meters)
-     * @param rotationOffsetDegrees How far to offset the estimated heading (degrees)
+     * @param xOffsetFrontBack Forward/back offset in the robot's local frame (meters)
+     * @param yOffsetLeftRight Left/right offset in the robot's local frame (meters)
+     * @param rotationOffsetDegrees Heading offset (degrees)
      */
-    void injectDrift(double translationOffsetMeters, double rotationOffsetDegrees);
+    void injectDriftToPoseEstimate(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees);
+
+    /**
+     * Offsets the ground truth pose while leaving the pose estimator unchanged.
+     * This moves where the robot "actually is" in simulation (and thus where
+     * cameras see AprilTags), without touching the odometry estimate.
+     *
+     * @param xOffsetFrontBack Forward/back offset in the robot's local frame (meters)
+     * @param yOffsetLeftRight Left/right offset in the robot's local frame (meters)
+     * @param rotationOffsetDegrees Heading offset (degrees)
+     */
+    void injectDriftToGroundTruth(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees);
+
+    /**
+     * Enables or disables simulated rightward pull during forward motion.
+     * When enabled, the ground truth pose drifts right proportional to forward travel,
+     * simulating real-world drivetrain asymmetry.
+     *
+     * @param enabled true to enable pull-right, false to disable
+     */
+    void enablePullRight(boolean enabled);
+
+    /**
+     * Enables or disables simulated clockwise rotation drift during turning.
+     *
+     * @param enabled true to enable clockwise rotation drift, false to disable
+     */
+    void enableRotateClockwise(boolean enabled);
 }

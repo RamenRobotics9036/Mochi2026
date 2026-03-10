@@ -1,13 +1,18 @@
 package frc.robot.visutils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
 import frc.robot.Constants.VisionKalmanConstants;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link MotionlessTracker}.
@@ -296,7 +301,8 @@ class TestMotionlessTracker {
             duration = m_tracker.getSecondsStill();
             assertEquals(1.5, duration, 0.05,
                 "Should report ~1.5 s of stillness");
-        } finally {
+        }
+        finally {
             SimHooks.resumeTiming();
         }
     }
@@ -315,7 +321,8 @@ class TestMotionlessTracker {
             m_tracker.update();
             assertEquals(0.0, m_tracker.getSecondsStill(), 1e-6,
                 "Duration should reset to 0 when moving");
-        } finally {
+        }
+        finally {
             SimHooks.resumeTiming();
         }
     }
@@ -343,7 +350,8 @@ class TestMotionlessTracker {
             double second = m_tracker.getSecondsStill();
             assertTrue(second < 0.5,
                 "New still period should start fresh, got " + second);
-        } finally {
+        }
+        finally {
             SimHooks.resumeTiming();
         }
     }

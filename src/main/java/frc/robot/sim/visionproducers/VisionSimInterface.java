@@ -2,6 +2,7 @@ package frc.robot.sim.visionproducers;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -14,19 +15,13 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 public interface VisionSimInterface {
 
     /**
-     * Functional interface for consuming pose estimates from the vision system.
+     * Immutable payload for drivetrain vision measurement injection.
      */
-    @FunctionalInterface
-    public static interface EstimateConsumer {
-        /**
-         * Accept a pose estimate from the vision system.
-         *
-         * @param pose The estimated robot pose
-         * @param timestamp The timestamp of the estimate
-         * @param estimationStdDevs The standard deviations of the estimation
-         */
-        void accept(Pose2d pose, double timestamp, Matrix<N3, N1> estimationStdDevs);
-    }
+    public static record DrivetrainVisionPoseInfo(
+            Pose2d pose,
+            double timestamp,
+            Matrix<N3, N1> estimationStdDevs,
+            int tagCount) {}
 
     /**
      * Process vision data. Should be called periodically (e.g., from robotPeriodic).
@@ -54,4 +49,12 @@ public interface VisionSimInterface {
      * @return The debug Field2d, or null if not in simulation
      */
     Field2d getSimDebugField();
+
+    /**
+     * Dynamically offsets the primary camera's simulated physical position.
+     * Does not affect what the pose estimator believes — models miscalibration.
+     *
+     * @param offset Additional transform on top of the static mounting offset (zero = reset)
+     */
+    void enablePrimaryCameraMisplaced(Transform3d offset);
 }

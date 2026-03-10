@@ -1,21 +1,18 @@
 package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
+import frc.robot.visutils.evaluateposes.EvaluatePosesInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.TreeSet;
-import java.util.function.BooleanSupplier;
 
 
 /** Reads from multiple limelight cameras. */
 public class MultiCamOdometry implements CamOdometryInterface {
     private final boolean m_megaTag2Enabled;
-    private final boolean m_autoVisionInjectionEnabled;
-
     private final List<CamOdometryInterface> m_cameras;
     private final PerCycleState m_perCycleState = new PerCycleState();
 
@@ -23,29 +20,11 @@ public class MultiCamOdometry implements CamOdometryInterface {
     public MultiCamOdometry(
         List<CamOdometryInterface> cameras,
         boolean megaTag2Enabled,
-        boolean autoVisionInjectionEnabled) {
+        boolean autoVisionInjectionEnabled,
+        EvaluatePosesInterface evaluatePoses) {
 
         m_cameras = new ArrayList<>(cameras);
         m_megaTag2Enabled = megaTag2Enabled;
-        m_autoVisionInjectionEnabled = autoVisionInjectionEnabled;
-    }
-
-    /**
-     * Sets the dependencies needed for vision processing.
-     *
-     * @param filter The VisionKalmanFilter instance to inject measurements into
-     * @param isMotionlessSupplier Supplier that returns true when robot is motionless
-     */
-    @Override
-    public void setVisionDependenciesOnCamera(
-            VisionKalmanFilter filter,
-            BooleanSupplier isMotionlessSupplier) {
-
-        for (CamOdometryInterface cam : m_cameras) {
-            cam.setVisionDependenciesOnCamera(
-                filter,
-                isMotionlessSupplier);
-        }
     }
 
     /**
@@ -58,17 +37,17 @@ public class MultiCamOdometry implements CamOdometryInterface {
     public void setRobotOrientation() {
         if (isMegaTag2Enabled()) {
             for (CamOdometryInterface cam : m_cameras) {
-                cam.setRobotOrientation_NoFlush();
+                cam.setRobotOrientationNoFlush();
             }
             LimelightHelpers.Flush();
         }
     }
 
     @Override
-    public void setRobotOrientation_NoFlush() {
+    public void setRobotOrientationNoFlush() {
         if (isMegaTag2Enabled()) {
             for (CamOdometryInterface cam : m_cameras) {
-                cam.setRobotOrientation_NoFlush();
+                cam.setRobotOrientationNoFlush();
             }
         }
     }
@@ -88,6 +67,7 @@ public class MultiCamOdometry implements CamOdometryInterface {
         for (CamOdometryInterface cam : m_cameras) {
             cam.periodic();
 
+            // $TODO2 - Pick camera with highest confidence score each cycle
             // Only consider cameras that actually have a target lock;
             // without this guard a camera with score 0 beats the -1 reset sentinel.
             double singleCamScore = cam.getConfidenceScore();
@@ -112,11 +92,11 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public Optional<Transform2d> getVisionErrorAtSnapTime() {
+    public OptionalDouble getVisionErrorAtSnapTime() {
         if (m_perCycleState.bestLockedCam.isPresent()) {
             return m_perCycleState.bestLockedCam.get().getVisionErrorAtSnapTime();
         }
-        return Optional.empty();
+        return OptionalDouble.empty();
     }
 
     @Override
@@ -132,7 +112,8 @@ public class MultiCamOdometry implements CamOdometryInterface {
 
     @Override
     public double getConfidenceScore() {
-        // NOTE: We return the confidence score from the camera with the strongest lock, if it exists.
+        // NOTE: We return the confidence score from the camera with the strongest
+        // lock, if it exists.
         if (m_perCycleState.bestLockedCam.isPresent()) {
             return m_perCycleState.bestLockedCam.get().getConfidenceScore();
         }
@@ -186,7 +167,8 @@ public class MultiCamOdometry implements CamOdometryInterface {
         // Return the first cam in the list (the forward-facing cam).
         // Precondition: at least one camera must be provided.
         if (m_cameras.isEmpty()) {
-            throw new IllegalStateException("No cameras configured — at least one camera must be provided.");
+            throw new IllegalStateException(
+                "No cameras configured — at least one camera must be provided.");
         }
         return m_cameras.get(0);
     }

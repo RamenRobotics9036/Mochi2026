@@ -1,17 +1,21 @@
 package frc.robot.visutils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
-import org.junit.jupiter.api.*;
+import java.util.OptionalDouble;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 
 /**
  * Unit tests for {@link MultiCamOdometryWrapper} and {@link NoOpCamOdometry}.
@@ -24,8 +28,8 @@ import org.mockito.Mockito;
  *       are silent; the real camera is never called.
  *   <li><b>enableVision toggle</b> — switching between enabled and disabled mid-session works
  *       correctly.
- *   <li><b>Config methods bypass</b> — {@code setVisionDependenciesOnCamera} and {@code
- *       enableMegatag2} always reach the real camera regardless of enable state.
+ *   <li><b>Config methods bypass</b> — {@code enableMegatag2} always reaches the real camera
+ *       regardless of enable state.
  *   <li><b>NoOpCamOdometry</b> — returns documented safe defaults and never throws.
  * </ul>
  */
@@ -41,14 +45,12 @@ class TestMultiCamOdometryWrapper {
     // ------------------------------------------------------------------
 
     private static final Pose2d POSE_A = new Pose2d(3.0, 2.0, Rotation2d.kZero);
-    private static final Transform2d TRANSFORM_A =
-            new Transform2d(1.0, 0.5, Rotation2d.kZero);
 
     /** Create a mock real camera pre-configured with non-default return values. */
     private static CamOdometryInterface newRealMock() {
         CamOdometryInterface mock = Mockito.mock(CamOdometryInterface.class);
         Mockito.when(mock.getEstimatedPose()).thenReturn(Optional.of(POSE_A));
-        Mockito.when(mock.getVisionErrorAtSnapTime()).thenReturn(Optional.of(TRANSFORM_A));
+        Mockito.when(mock.getVisionErrorAtSnapTime()).thenReturn(OptionalDouble.of(1.0));
         Mockito.when(mock.getConfidenceScore()).thenReturn(0.85);
         Mockito.when(mock.getVisibleTagIds()).thenReturn(List.of(1, 2, 3));
         Mockito.when(mock.hasTargetLock()).thenReturn(true);
@@ -77,7 +79,7 @@ class TestMultiCamOdometryWrapper {
         CamOdometryInterface real = newRealMock();
         MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, true);
 
-        assertEquals(Optional.of(TRANSFORM_A), wrapper.getVisionErrorAtSnapTime());
+        assertEquals(OptionalDouble.of(1.0), wrapper.getVisionErrorAtSnapTime());
         Mockito.verify(real).getVisionErrorAtSnapTime();
     }
 
@@ -169,9 +171,9 @@ class TestMultiCamOdometryWrapper {
         CamOdometryInterface real = newRealMock();
         MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, true);
 
-        wrapper.setRobotOrientation_NoFlush();
+        wrapper.setRobotOrientationNoFlush();
 
-        Mockito.verify(real).setRobotOrientation_NoFlush();
+        Mockito.verify(real).setRobotOrientationNoFlush();
     }
 
     // ------------------------------------------------------------------
@@ -192,7 +194,7 @@ class TestMultiCamOdometryWrapper {
         CamOdometryInterface real = newRealMock();
         MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, false);
 
-        assertEquals(Optional.empty(), wrapper.getVisionErrorAtSnapTime());
+        assertEquals(OptionalDouble.empty(), wrapper.getVisionErrorAtSnapTime());
         Mockito.verify(real, Mockito.never()).getVisionErrorAtSnapTime();
     }
 
@@ -284,9 +286,9 @@ class TestMultiCamOdometryWrapper {
         CamOdometryInterface real = newRealMock();
         MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, false);
 
-        wrapper.setRobotOrientation_NoFlush();
+        wrapper.setRobotOrientationNoFlush();
 
-        Mockito.verify(real, Mockito.never()).setRobotOrientation_NoFlush();
+        Mockito.verify(real, Mockito.never()).setRobotOrientationNoFlush();
     }
 
     // ------------------------------------------------------------------
@@ -341,34 +343,6 @@ class TestMultiCamOdometryWrapper {
     }
 
     // ------------------------------------------------------------------
-    // 4. Config methods always reach the real camera (bypass enable gate)
-    // ------------------------------------------------------------------
-
-    @Test
-    void setVisionDependenciesOnCamera_alwaysForwardedToReal_whenEnabled() {
-        CamOdometryInterface real = newRealMock();
-        MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, true);
-        VisionKalmanFilter filter = Mockito.mock(VisionKalmanFilter.class);
-        BooleanSupplier motionless = () -> true;
-
-        wrapper.setVisionDependenciesOnCamera(filter, motionless);
-
-        Mockito.verify(real).setVisionDependenciesOnCamera(filter, motionless);
-    }
-
-    @Test
-    void setVisionDependenciesOnCamera_alwaysForwardedToReal_whenDisabled() {
-        CamOdometryInterface real = newRealMock();
-        MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, false);
-        VisionKalmanFilter filter = Mockito.mock(VisionKalmanFilter.class);
-        BooleanSupplier motionless = () -> true;
-
-        wrapper.setVisionDependenciesOnCamera(filter, motionless);
-
-        Mockito.verify(real).setVisionDependenciesOnCamera(filter, motionless);
-    }
-
-    // ------------------------------------------------------------------
     // 5. NoOpCamOdometry — safe defaults, no throws
     // ------------------------------------------------------------------
 
@@ -381,7 +355,7 @@ class TestMultiCamOdometryWrapper {
     @Test
     void noOp_getVisionErrorAtSnapTime_returnsEmpty() {
         NoOpCamOdometry noop = new NoOpCamOdometry();
-        assertEquals(Optional.empty(), noop.getVisionErrorAtSnapTime());
+        assertEquals(OptionalDouble.empty(), noop.getVisionErrorAtSnapTime());
     }
 
     @Test
@@ -432,10 +406,9 @@ class TestMultiCamOdometryWrapper {
         assertDoesNotThrow(() -> {
             noop.periodic();
             noop.setRobotOrientation();
-            noop.setRobotOrientation_NoFlush();
+            noop.setRobotOrientationNoFlush();
             noop.enableVision(true);
             noop.enableVision(false);
-            noop.setVisionDependenciesOnCamera(null, null);
         });
     }
 }

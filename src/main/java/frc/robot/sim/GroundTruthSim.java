@@ -12,18 +12,23 @@
 
 package frc.robot.sim;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.visutils.AllianceCalc;
 import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 
@@ -46,9 +51,6 @@ public class GroundTruthSim implements GroundTruthSimInterface {
     /** Consumer to notify RobotContainer when pose is reset. */
     private final Consumer<Pose2d> m_poseResetConsumer;
 
-    /** Source of randomness for drift injection (injectable for testing). */
-    private final DoubleSupplier m_randomSource;
-
     /** The ground truth pose tracks where the robot actually is in simulation physics. */
     private Pose2d m_groundTruthPose = new Pose2d();
 
@@ -63,6 +65,26 @@ public class GroundTruthSim implements GroundTruthSimInterface {
 
     /** Timeout in seconds before cycle resets to beginning. */
     private static final double CYCLE_TIMEOUT_SECONDS = 2.0;
+
+    /**
+     * Simulated rightward pull: how far right (meters) the robot drifts
+     * for each meter of forward travel. Models real-world drivetrain asymmetry.
+     */
+    private static final double kRightDriftMetersPerMeterForward = Inches.of(6).in(Meters);
+
+    /**
+     * Simulated clockwise rotation: how many radians the robot drifts clockwise
+     * for each meter of forward travel. Models real-world drivetrain turn asymmetry.
+     */
+    private static final double kClockwiseRotationRadiansPerMeterForward =
+        Degrees.of(10).in(Radians);
+
+    /** Whether the simulated rightward pull is currently active. */
+    private boolean m_pullRightEnabled = false;
+
+    /** Whether the simulated clockwise rotation drift is currently active. */
+    private boolean m_rotateClockwiseEnabled = false;
+
     private double m_lastCycleTime = 0.0;
 
     /** Current position in the reset cycle (0-N). */
@@ -85,8 +107,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
             () -> drivetrain.getState().Speeds,
             () -> drivetrain.getState().Pose,
             drivetrain::resetPose,
-            poseResetConsumer,
-            Math::random);
+            poseResetConsumer);
     }
 
     /**
@@ -98,15 +119,13 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * @param estimatedPoseSupplier Supplies the current estimated pose from the pose estimator
      * @param drivetrainResetPose Consumer to reset the drivetrain's pose estimator
      * @param poseResetConsumer Consumer to be called when pose is reset (e.g. for vision)
-     * @param randomSource Supplies values in [0, 1) for drift injection
      * @throws IllegalStateException if called outside of simulation mode
      */
     GroundTruthSim(
         Supplier<ChassisSpeeds> speedsSupplier,
         Supplier<Pose2d> estimatedPoseSupplier,
         Consumer<Pose2d> drivetrainResetPose,
-        Consumer<Pose2d> poseResetConsumer,
-        DoubleSupplier randomSource) {
+        Consumer<Pose2d> poseResetConsumer) {
 
         if (!Robot.isSimulation()) {
             throw new IllegalStateException("GroundTruthSim only instantiated in simulation mode");
@@ -115,7 +134,6 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         this.m_estimatedPoseSupplier = estimatedPoseSupplier;
         this.m_drivetrainResetPose = drivetrainResetPose;
         this.m_poseResetConsumer = poseResetConsumer;
-        this.m_randomSource = randomSource;
         this.m_lastUpdateTime = Utils.getCurrentTimeSeconds();
     }
 
@@ -123,7 +141,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * Updates the ground truth pose by integrating chassis speeds.
      * Call this from Robot.simulationPeriodic().
      */
-    public void updateGroundTruthPose() {
+    public double updateGroundTruthPose() {
         double currentTime = Utils.getCurrentTimeSeconds();
         double deltaTime = currentTime - m_lastUpdateTime;
         m_lastUpdateTime = currentTime;
@@ -134,6 +152,18 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         double dx = speeds.vxMetersPerSecond * deltaTime;
         double dy = speeds.vyMetersPerSecond * deltaTime;
         double dtheta = speeds.omegaRadiansPerSecond * deltaTime;
+
+        // Simulate rightward pull: robot drifts right proportional to forward movement only.
+        // (in robot frame, right = negative Y; no effect when driving backwards)
+        if (m_pullRightEnabled) {
+            dy -= Math.max(dx, 0) * kRightDriftMetersPerMeterForward;
+        }
+
+        // Simulate clockwise rotation drift: robot turns CW proportional to forward movement only.
+        // (clockwise = negative dtheta; no effect when driving backwards)
+        if (m_rotateClockwiseEnabled) {
+            dtheta -= Math.max(dx, 0) * kClockwiseRotationRadiansPerMeterForward;
+        }
 
         double distanceThisStep = Math.hypot(dx, dy);
         double rotationThisStep = Math.abs(dtheta);
@@ -153,6 +183,9 @@ public class GroundTruthSim implements GroundTruthSimInterface {
             m_groundTruthPose.getY() + fieldDy,
             m_groundTruthPose.getRotation().plus(new Rotation2d(dtheta))
         );
+
+        // Return the radians rotate this step
+        return dtheta;
     }
 
     /**
@@ -248,28 +281,56 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * @param rotationOffsetDegrees How far to offset the estimated heading (degrees)
      */
     @Override
-    public void injectDrift(double translationOffsetMeters, double rotationOffsetDegrees) {
+    public void injectDriftToPoseEstimate(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
         // Get current estimated pose
         Pose2d currentPose = m_estimatedPoseSupplier.get();
 
-        // Create offset - add random direction for translation
-        double angle = m_randomSource.getAsDouble() * 2 * Math.PI;
-        double dx = translationOffsetMeters * Math.cos(angle);
-        double dy = translationOffsetMeters * Math.sin(angle);
-
-        // Apply random sign to rotation
-        double dtheta = rotationOffsetDegrees * (m_randomSource.getAsDouble() > 0.5 ? 1 : -1);
-
-        // Create the drifted pose
-        Pose2d driftedPose = new Pose2d(
-            currentPose.getX() + dx,
-            currentPose.getY() + dy,
-            currentPose.getRotation().plus(Rotation2d.fromDegrees(dtheta))
+        // Apply offsets in the robot's local frame (x = forward, y = left)
+        Pose2d driftedPose = currentPose.transformBy(
+            new Transform2d(xOffsetFrontBack, yOffsetLeftRight, Rotation2d.fromDegrees(rotationOffsetDegrees))
         );
 
         // Reset the pose estimator to the drifted position
         // The ground truth pose remains at the actual position
         m_drivetrainResetPose.accept(driftedPose);
+    }
+
+    /**
+     * Offsets the ground truth pose while leaving the pose estimator unchanged.
+     * This moves where the robot "actually is" in simulation (and thus where
+     * cameras see AprilTags), without touching the odometry estimate.
+     *
+     * @param xOffsetFrontBack Forward/back offset in the robot's local frame (meters)
+     * @param yOffsetLeftRight Left/right offset in the robot's local frame (meters)
+     * @param rotationOffsetDegrees Heading offset (degrees)
+     */
+    @Override
+    public void injectDriftToGroundTruth(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
+        // Apply offsets in the robot's local frame (x = forward, y = left)
+        m_groundTruthPose = m_groundTruthPose.transformBy(
+            new Transform2d(xOffsetFrontBack, yOffsetLeftRight, Rotation2d.fromDegrees(rotationOffsetDegrees))
+        );
+        // The pose estimator is left untouched
+    }
+
+    /**
+     * Enables or disables simulated rightward pull during forward motion.
+     *
+     * @param enabled true to enable pull-right, false to disable
+     */
+    @Override
+    public void enablePullRight(boolean enabled) {
+        m_pullRightEnabled = enabled;
+    }
+
+    /**
+     * Enables or disables simulated clockwise rotation drift during turning.
+     *
+     * @param enabled true to enable clockwise rotation drift, false to disable
+     */
+    @Override
+    public void enableRotateClockwise(boolean enabled) {
+        m_rotateClockwiseEnabled = enabled;
     }
 
     /**
@@ -306,10 +367,9 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      */
     @Override
     public void simulationPeriodic() {
-        // Update the ground truth pose tracking
-        updateGroundTruthPose();
-
-        // Publish simulation telemetry (pose errors, etc.)
+        // Ground truth pose is integrated at high frequency via updateGroundTruthPose()
+        // (registered as setHighFreqSimCallback on CommandSwerveDrivetrain).
+        // Here we only publish telemetry at the standard 50 Hz robot loop rate.
         publishTelemetry();
     }
 }

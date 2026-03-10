@@ -1,6 +1,7 @@
 package frc.robot.subsystems.auto;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.config.RobotConfig;
@@ -20,7 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
+import frc.robot.Robot;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.DriveForwardNow;
 
@@ -46,7 +47,7 @@ public final class  AutoLogic {
     private static CommandSwerveDrivetrain m_drivetrain;
 
     /** Constant name for the manual backup autonomous routine. */
-    private static final String K_MANUAL_DRIVE_NAME = "MANUAL: Drive 2m Forward";
+    private static final String K_MANUAL_DRIVE_NAME = "SIM: Drive 15M straight (no pathplan, rotate clockwise)";
 
     private AutoLogic() {
         throw new UnsupportedOperationException("Static utility class!");
@@ -101,6 +102,15 @@ public final class  AutoLogic {
         autoPicker.addOption("L Bump_Shoot_Climb", "L Bump_Shoot_Climb");
         autoPicker.addOption("R Bump_Shoot_Climb", "R Bump_Shoot_Climb");
 
+        if (Robot.isSimulation()) {
+            autoPicker.addOption("SIM: Nudge Right", "Sim Nudge Right");
+            autoPicker.addOption("SIM: Nudge Rotate", "Sim Nudge Rotate");
+            autoPicker.addOption(K_MANUAL_DRIVE_NAME, K_MANUAL_DRIVE_NAME);
+            autoPicker.addOption("SIM: Drive Across Field (pull right)", "Sim Drive Accross Field Pull Right");
+            autoPicker.addOption("SIM: Drive Across Field (rotate clockwise)", "Sim Drive Accross Field Rotate Clockwise");
+            autoPicker.addOption("SIM: Drive Across Field (camera misplaced)", "Sim Drive Accross Field Camera Misplaced");
+        }
+
         // Pathplanner Autos
         // autoPicker.addOption("Idos Backward then Forward", "Idos Backward then Forward");
         // autoPicker.addOption("Cross", "Cross");
@@ -125,7 +135,10 @@ public final class  AutoLogic {
 
         // Check for manual code-based routines first
         if (autoName.equals(K_MANUAL_DRIVE_NAME)) {
-            return new DriveForwardNow(m_drivetrain, 2.0, true).withName("ManualDriveForward");
+            return Commands.sequence(
+                NamedCommands.getCommand("faulty-rotate-clockwise"),
+                new DriveForwardNow(m_drivetrain, 15.0, false)
+            ).withName("ManualDriveForward");
         }
 
         // Build PathPlanner GUI routines

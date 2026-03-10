@@ -1,14 +1,26 @@
 package frc.robot.visutils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants.VisionKalmanConstants;
-import org.junit.jupiter.api.*;
+import frc.robot.sim.visionproducers.VisionSimInterface.DrivetrainVisionPoseInfo;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 
 class TestVisionKalmanFilter {
+
+    private static void inject(VisionKalmanFilter filter, Pose2d pose, int tagCount) {
+        filter.accept(new DrivetrainVisionPoseInfo(pose, 0.0, null, tagCount));
+    }
 
     @BeforeAll
     static void initHal() {
@@ -50,7 +62,7 @@ class TestVisionKalmanFilter {
 
     @Test
     void test_singleTagMeasurement_rejected() {
-        m_filter.injectVisionMeasurement(
+        inject(m_filter,
             new Pose2d(5.0, 3.0, Rotation2d.fromDegrees(30)), 1);
 
         assertFalse(m_filter.isInitialized(),
@@ -60,7 +72,7 @@ class TestVisionKalmanFilter {
 
     @Test
     void test_zeroTagMeasurement_rejected() {
-        m_filter.injectVisionMeasurement(
+        inject(m_filter,
             new Pose2d(5.0, 3.0, Rotation2d.fromDegrees(30)), 0);
 
         assertFalse(m_filter.isInitialized());
@@ -72,7 +84,7 @@ class TestVisionKalmanFilter {
     @Test
     void test_firstMeasurement_initializesState() {
         Pose2d pose = new Pose2d(2.0, 3.0, Rotation2d.fromDegrees(45));
-        m_filter.injectVisionMeasurement(pose, 2);
+        inject(m_filter, pose, 2);
 
         assertTrue(m_filter.isInitialized());
         assertEquals(1, m_filter.getMeasurementCount());
@@ -85,14 +97,14 @@ class TestVisionKalmanFilter {
 
     @Test
     void test_firstMeasurement_setsInitialCovariance() {
-        m_filter.injectVisionMeasurement(
+        inject(m_filter,
             new Pose2d(1.0, 1.0, new Rotation2d()), 2);
 
-        var P = m_filter.getCovariance();
-        assertNotNull(P);
-        assertEquals(VisionKalmanConstants.kInitialPositionVariance, P.get(0, 0), 1e-9);
-        assertEquals(VisionKalmanConstants.kInitialPositionVariance, P.get(1, 1), 1e-9);
-        assertEquals(VisionKalmanConstants.kInitialAngleVariance, P.get(2, 2), 1e-9);
+        var p = m_filter.getCovariance();
+        assertNotNull(p);
+        assertEquals(VisionKalmanConstants.kInitialPositionVariance, p.get(0, 0), 1e-9);
+        assertEquals(VisionKalmanConstants.kInitialPositionVariance, p.get(1, 1), 1e-9);
+        assertEquals(VisionKalmanConstants.kInitialAngleVariance, p.get(2, 2), 1e-9);
     }
 
     // ---- Convergence behavior ----
@@ -101,14 +113,14 @@ class TestVisionKalmanFilter {
     void test_estimateConverges_towardTruePose() {
         // Initialize with an intentionally wrong pose
         Pose2d wrongPose = new Pose2d(0.0, 0.0, Rotation2d.fromDegrees(0));
-        m_filter.injectVisionMeasurement(wrongPose, 2);
+        inject(m_filter, wrongPose, 2);
         double initialError = wrongPose.getTranslation().getDistance(
             new Pose2d(5.0, 3.0, Rotation2d.fromDegrees(90)).getTranslation());
 
         // After one correction the estimate should move toward the true pose
         // but the covariance should NOT yet meet convergence thresholds
         Pose2d truePose = new Pose2d(5.0, 3.0, Rotation2d.fromDegrees(90));
-        m_filter.injectVisionMeasurement(truePose, 3);
+        inject(m_filter, truePose, 3);
 
         assertFalse(m_filter.hasConverged(),
             "Filter should not have converged after only 2 total measurements");
@@ -123,7 +135,7 @@ class TestVisionKalmanFilter {
 
         // Now inject many more measurements at the true pose
         for (int i = 0; i < 50; i++) {
-            m_filter.injectVisionMeasurement(truePose, 3);
+            inject(m_filter, truePose, 3);
         }
 
         // Final error should be smaller than early error
@@ -141,13 +153,13 @@ class TestVisionKalmanFilter {
     void test_hasConverged_falseInitially_trueAfterEnoughMeasurements() {
         Pose2d pose = new Pose2d(2.0, 3.0, Rotation2d.fromDegrees(45));
 
-        m_filter.injectVisionMeasurement(pose, 2);
+        inject(m_filter, pose, 2);
         assertFalse(m_filter.hasConverged(),
             "Should not converge after just one measurement");
 
         // Inject until converged
         for (int i = 0; i < 200; i++) {
-            m_filter.injectVisionMeasurement(pose, 3);
+            inject(m_filter, pose, 3);
             if (m_filter.hasConverged()) {
                 break;
             }
@@ -160,7 +172,7 @@ class TestVisionKalmanFilter {
     void test_hasConvergedWithCustomThresholds() {
         Pose2d pose = new Pose2d(1.0, 1.0, new Rotation2d());
 
-        m_filter.injectVisionMeasurement(pose, 2);
+        inject(m_filter, pose, 2);
 
         // Very loose thresholds — should converge immediately
         assertTrue(m_filter.hasConverged(100.0, 100.0),
@@ -177,7 +189,7 @@ class TestVisionKalmanFilter {
     void test_reset_clearsAllState() {
         Pose2d pose = new Pose2d(5.0, 3.0, Rotation2d.fromDegrees(90));
         for (int i = 0; i < 10; i++) {
-            m_filter.injectVisionMeasurement(pose, 3);
+            inject(m_filter, pose, 3);
         }
         assertTrue(m_filter.isInitialized());
         assertTrue(m_filter.getMeasurementCount() > 0);
@@ -193,12 +205,12 @@ class TestVisionKalmanFilter {
 
     @Test
     void test_reset_allowsReinitializationAtNewPose() {
-        m_filter.injectVisionMeasurement(
+        inject(m_filter,
             new Pose2d(1.0, 1.0, new Rotation2d()), 2);
         m_filter.reset();
 
         Pose2d newPose = new Pose2d(8.0, 6.0, Rotation2d.fromDegrees(180));
-        m_filter.injectVisionMeasurement(newPose, 2);
+        inject(m_filter, newPose, 2);
 
         assertTrue(m_filter.isInitialized());
         assertEquals(1, m_filter.getMeasurementCount());
@@ -211,11 +223,11 @@ class TestVisionKalmanFilter {
     @Test
     void test_angleWrapping_nearPositive180() {
         // Initialize at +170°, then inject measurements at +175°
-        m_filter.injectVisionMeasurement(
+        inject(m_filter,
             new Pose2d(1.0, 1.0, Rotation2d.fromDegrees(170)), 2);
 
         for (int i = 0; i < 50; i++) {
-            m_filter.injectVisionMeasurement(
+            inject(m_filter,
                 new Pose2d(1.0, 1.0, Rotation2d.fromDegrees(175)), 3);
         }
 
@@ -228,11 +240,11 @@ class TestVisionKalmanFilter {
     @Test
     void test_angleWrapping_acrossBoundary() {
         // Initialize at +170°, then inject measurements at -170° (across the ±180° boundary)
-        m_filter.injectVisionMeasurement(
+        inject(m_filter,
             new Pose2d(1.0, 1.0, Rotation2d.fromDegrees(170)), 2);
 
         for (int i = 0; i < 50; i++) {
-            m_filter.injectVisionMeasurement(
+            inject(m_filter,
                 new Pose2d(1.0, 1.0, Rotation2d.fromDegrees(-170)), 3);
         }
 
@@ -245,11 +257,11 @@ class TestVisionKalmanFilter {
 
     @Test
     void test_angleWrapping_nearNegative180() {
-        m_filter.injectVisionMeasurement(
+        inject(m_filter,
             new Pose2d(1.0, 1.0, Rotation2d.fromDegrees(-175)), 2);
 
         for (int i = 0; i < 50; i++) {
-            m_filter.injectVisionMeasurement(
+            inject(m_filter,
                 new Pose2d(1.0, 1.0, Rotation2d.fromDegrees(-170)), 3);
         }
 
@@ -265,16 +277,16 @@ class TestVisionKalmanFilter {
     void test_positionStdDev_decreasesWithMeasurements() {
         Pose2d pose = new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(0));
 
-        m_filter.injectVisionMeasurement(pose, 2);
+        inject(m_filter, pose, 2);
         double stdDevAfter1 = m_filter.getPositionStdDev();
 
         for (int i = 0; i < 10; i++) {
-            m_filter.injectVisionMeasurement(pose, 2);
+            inject(m_filter, pose, 2);
         }
         double stdDevAfter11 = m_filter.getPositionStdDev();
 
         for (int i = 0; i < 40; i++) {
-            m_filter.injectVisionMeasurement(pose, 2);
+            inject(m_filter, pose, 2);
         }
         double stdDevAfter51 = m_filter.getPositionStdDev();
 
@@ -288,11 +300,11 @@ class TestVisionKalmanFilter {
     void test_angleStdDevDegrees_decreasesWithMeasurements() {
         Pose2d pose = new Pose2d(1.0, 1.0, Rotation2d.fromDegrees(45));
 
-        m_filter.injectVisionMeasurement(pose, 2);
+        inject(m_filter, pose, 2);
         double angleStdAfter1 = m_filter.getAngleStdDevDegrees();
 
         for (int i = 0; i < 20; i++) {
-            m_filter.injectVisionMeasurement(pose, 3);
+            inject(m_filter, pose, 3);
         }
         double angleStdAfter21 = m_filter.getAngleStdDevDegrees();
 
@@ -314,7 +326,7 @@ class TestVisionKalmanFilter {
     @Test
     void test_getFieldDisplayInfo_returnsOffsetPoseWhenInitialized() {
         Pose2d pose = new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(0));
-        m_filter.injectVisionMeasurement(pose, 2);
+        inject(m_filter, pose, 2);
 
         double offset = 0.5;
         var info = m_filter.getFieldDisplayInfo(offset);
@@ -333,7 +345,7 @@ class TestVisionKalmanFilter {
     void test_getFieldDisplayInfo_offsetRotatesWithHeading() {
         // At 90° heading, forward offset adds to Y instead of X
         Pose2d pose = new Pose2d(3.0, 4.0, Rotation2d.fromDegrees(90));
-        m_filter.injectVisionMeasurement(pose, 2);
+        inject(m_filter, pose, 2);
 
         double offset = 0.5;
         var info = m_filter.getFieldDisplayInfo(offset);
@@ -349,12 +361,12 @@ class TestVisionKalmanFilter {
     void test_getFieldDisplayInfo_convergenceStatusReflected() {
         Pose2d pose = new Pose2d(1.0, 1.0, new Rotation2d());
 
-        m_filter.injectVisionMeasurement(pose, 2);
+        inject(m_filter, pose, 2);
         assertFalse(m_filter.getFieldDisplayInfo(0).hasConverged(),
             "Should not be converged after one measurement");
 
         for (int i = 0; i < 200; i++) {
-            m_filter.injectVisionMeasurement(pose, 4);
+            inject(m_filter, pose, 4);
         }
         assertTrue(m_filter.getFieldDisplayInfo(0).hasConverged(),
             "Should be converged after many measurements");
@@ -370,13 +382,13 @@ class TestVisionKalmanFilter {
         // Filter with 2 tags
         VisionKalmanFilter filter2Tags = new VisionKalmanFilter();
         for (int i = 0; i < numMeasurements; i++) {
-            filter2Tags.injectVisionMeasurement(pose, 2);
+            inject(filter2Tags, pose, 2);
         }
 
         // Filter with 4 tags
         VisionKalmanFilter filter4Tags = new VisionKalmanFilter();
         for (int i = 0; i < numMeasurements; i++) {
-            filter4Tags.injectVisionMeasurement(pose, 4);
+            inject(filter4Tags, pose, 4);
         }
 
         double stdDev2Tags = filter2Tags.getPositionStdDev();
@@ -394,17 +406,17 @@ class TestVisionKalmanFilter {
         Pose2d pose = new Pose2d(1.0, 1.0, new Rotation2d());
 
         // Single-tag should not increment
-        m_filter.injectVisionMeasurement(pose, 1);
+        inject(m_filter, pose, 1);
         assertEquals(0, m_filter.getMeasurementCount());
 
         // Multi-tag should increment
-        m_filter.injectVisionMeasurement(pose, 2);
+        inject(m_filter, pose, 2);
         assertEquals(1, m_filter.getMeasurementCount());
 
-        m_filter.injectVisionMeasurement(pose, 3);
+        inject(m_filter, pose, 3);
         assertEquals(2, m_filter.getMeasurementCount());
 
-        m_filter.injectVisionMeasurement(pose, 4);
+        inject(m_filter, pose, 4);
         assertEquals(3, m_filter.getMeasurementCount());
     }
 }
