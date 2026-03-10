@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.IndexerConstants;
@@ -11,6 +12,8 @@ public class ShooterDefaultCommand extends Command{
     private ShooterSubsystem m_shooter;
     private IndexerSubsystem m_indexer;
     private CommandXboxController m_controller;
+    private final Timer m_timer = new Timer();
+    private boolean wasShooterJustRunning = false;
 
     public ShooterDefaultCommand(ShooterSubsystem shooter, IndexerSubsystem indexer, CommandXboxController controller){
         m_shooter = shooter;
@@ -27,14 +30,29 @@ public class ShooterDefaultCommand extends Command{
     public void execute() {
         if (m_controller.y().getAsBoolean()){
             m_shooter.setSpeed(ShooterConstants.kShootSpeed);
-            m_indexer.setSpeed(IndexerConstants.kIndexSpeed);
+            if (wasShooterJustRunning) {
+                if (m_timer.get() >= 0.25) {
+                    m_indexer.setSpeed(IndexerConstants.kIndexSpeed);
+                }
+            } else {
+                wasShooterJustRunning = true;
+                m_timer.reset();
+            }
         } else if (m_controller.rightBumper().getAsBoolean()) {
             m_shooter.setSpeed(ShooterConstants.kShootSpeed);
-            m_indexer.setSpeed(-IndexerConstants.kIndexSpeed);
+            if (wasShooterJustRunning) {
+                if (m_timer.get() >= 0.25) {
+                    m_indexer.setSpeed(-IndexerConstants.kIndexSpeed);
+                }
+            } else {
+                wasShooterJustRunning = true;
+                m_timer.reset();
+            }
         } else {
+            wasShooterJustRunning = false;
             m_shooter.stop();
             m_indexer.stop();
-        }
+        };
     }
 
     @Override
