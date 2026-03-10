@@ -119,13 +119,14 @@ public class ArmSubsystem extends SubsystemBase{
         return m_HomingState == ArmHomedState.HOMED;
     }
 
-    /** Stops the arm. Does nothing if homing is in progress (homingHelper manages motor output). */
+    /** Stops the arm. */
     public void stop() {
-        // $TODO - Tyler, please fix: This stop() method is public, and caller should be
-        // able to assume that calling stop() will stop the arm, for safety and to avoid
-        // breaking the arm.  So short-circuiting here cannot be done.
         if (m_HomingState == ArmHomedState.HOMING) {
-            return;
+            DriverStation.reportWarning("ArmSubsystem: homing interrupted by stop() call — arm NOT homed. Press right stick to retry.", false);
+            SmartDashboard.putString("Intake/ArmWarning", "Homing interrupted by stop() call — press right stick to retry");
+            m_HomingState = ArmHomedState.NOT_HOMED;
+            m_homingTimer.stop();
+            m_armIO.setSoftLimitsEnabled(false);
         }
         m_armIO.stop();
     }
