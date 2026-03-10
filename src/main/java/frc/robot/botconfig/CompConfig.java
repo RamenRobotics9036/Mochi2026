@@ -145,12 +145,12 @@ public class CompConfig implements BotConfigInterface {
 
     @Override
     public boolean isVisionEnabledDefault() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isMegaTag2Supported() {
-        return false; // $TODO2 - Enable after testing
+        return true; // $TODO2 - Enable after testing
     }
 
     @Override
