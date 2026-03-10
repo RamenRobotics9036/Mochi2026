@@ -214,14 +214,7 @@ public class BasicInfoDashboard {
             return 0.0;
         }
 
-        double errorMeters = error.get().getTranslation().getNorm();
-
-        if (errorMeters > VisionInjectFilter.MAX_DISTANCE_METERS) {
-            // If the error is unreasonably large, likely due to a bad measurement, ignore it.
-            return 0.0;
-        }
-
-        return errorMeters;
+        return error.get().getTranslation().getNorm();
     }
 
     private static String targetListToString(List<Integer> targets) {

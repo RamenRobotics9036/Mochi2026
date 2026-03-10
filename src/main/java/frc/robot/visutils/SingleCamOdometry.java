@@ -16,13 +16,16 @@ import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers;
+import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import frc.robot.util.MathUtils;
+import frc.robot.visutils.evaluateposes.EvaluatePosesInterface;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -55,6 +58,11 @@ public class SingleCamOdometry implements CamOdometryInterface {
     private VisionKalmanFilter m_visionKalmanFilter = null;
     private BooleanSupplier m_isMotionlessSupplier = null;
 
+    private final EvaluatePosesInterface m_evaluatePoses;
+
+    // Lambda to query current robot pose
+    private final Supplier<Pose2d> m_currentRobotPoseSupplier;
+
     // Samples the drivetrain's historical pose at a given FPGA timestamp (seconds)
     private final Function<Double, Optional<Pose2d>> m_poseSampler;
 
@@ -66,17 +74,21 @@ public class SingleCamOdometry implements CamOdometryInterface {
         String limelightName,
         Transform3d robotToCam,
         VisionSimInterface.EstimateConsumer poseConsumer,
+        Supplier<Pose2d> currentRobotPoseSupplier,
         Function<Double, Optional<Pose2d>> poseSampler,
         DoubleSupplier yawDegreesSupplier,
         boolean megaTag2Enabled,
-        boolean autoVisionInjectionEnabled) {
+        boolean autoVisionInjectionEnabled,
+        EvaluatePosesInterface evaluatePoses) {
 
         m_estConsumer = poseConsumer;
         m_limelightName = limelightName;
         m_poseSampler = poseSampler;
+        m_currentRobotPoseSupplier = currentRobotPoseSupplier;
         m_yawDegreesSupplier = yawDegreesSupplier;
         m_megaTag2Enabled = megaTag2Enabled;
         m_autoVisionInjectionEnabled = autoVisionInjectionEnabled;
+        m_evaluatePoses = evaluatePoses;
 
         setCameraPoseRobotSpace(m_limelightName, robotToCam);
     }
@@ -108,6 +120,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
      * @return The Transform2d offset, or empty if no sampler is set or the
      *         pose buffer has no entry for that timestamp
      */
+    // $TODO2 - Get vision error at SnapTime
     private Optional<Transform2d> calcVisionErrorAtSnapTime(
             Pose2d visionPose, double fpgaTimestampSeconds) {
         if (m_poseSampler == null) {
@@ -186,42 +199,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
     }
 
-    // Optional method to help debug limelight vision
-    @SuppressWarnings("unused")
-    private void printDebugLimelightInfo(LimelightHelpers.PoseEstimate mt1) {
-        StringBuilder sb = new StringBuilder("Camera info: ");
-
-        // Horizontal offset to primary target (degrees)
-        double tempTx = LimelightHelpers.getTX(m_limelightName);
-        sb.append(String.format("tx=%7.2f°", tempTx));
-
-        double tempId = LimelightHelpers.getFiducialID(m_limelightName);
-        sb.append(String.format(", ID=%4s", tempId >= 0 ? String.valueOf((int) tempId) : "None"));
-
-        if (mt1 == null) {
-            sb.append(", No pose estimate");
-        }
-        else {
-            sb.append(String.format(", tags=%d, pose=(%6.2f, %6.2f, %7.1f°)",
-                mt1.tagCount,
-                mt1.pose.getX(),
-                mt1.pose.getY(),
-                mt1.pose.getRotation().getDegrees()));
-        }
-
-        // Try getting RAW fiducials directly from NetworkTables
-        LimelightHelpers.RawFiducial[] fiducials =
-            LimelightHelpers.getRawFiducials(m_limelightName);
-        if (fiducials.length > 0) {
-            String ids = Arrays.stream(fiducials)
-                .map(f -> String.valueOf(f.id))
-                .collect(Collectors.joining(", "));
-            sb.append(", rawFiducials=[" + ids + "]");
-        }
-
-        System.out.println(sb.toString());
-    }
-
+    // $TODO2 - Setting robot orientation
     @Override
     public void setRobotOrientation() {
         if (isMegaTag2Enabled()) {
@@ -236,6 +214,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
     }
 
+    // $TODO2 - Setting robot orientation
     @Override
     public void setRobotOrientation_NoFlush() {
         if (isMegaTag2Enabled()) {
@@ -250,25 +229,20 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
     }
 
+    // $TODO2 - Code that checks whether to discard bad estimates
     private void addVisionMeasurementV1() {
-        LimelightHelpers.PoseEstimate mt1 = sanitizePoseEstimate(
+        PoseEstimate mt1 = sanitizePoseEstimate(
             LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName));
-        LimelightHelpers.PoseEstimate mt2 = isMegaTag2Enabled()
+        PoseEstimate mt2 = isMegaTag2Enabled()
             ? sanitizePoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(m_limelightName))
             : null;
 
-        // Pick the better estimate: more tags wins; on a tie, closer average distance wins;
-        // on a tie in both, prefer MT2 for its gyro-fused rotation stability.
-        LimelightHelpers.PoseEstimate poseEstimate = pickBestEstimate(mt1, mt2);
-
-        // printDebugLimelightInfo(poseEstimate);
+        PoseEstimate poseEstimate = m_evaluatePoses.pickMegatag1vsMegatag2(mt1, mt2);
 
         // Save the latest vision estimate so that it can be queried
         m_latestVisPose = Optional.ofNullable(poseEstimate).map(est -> est.pose);
 
-        if (poseEstimate == null || poseEstimate.tagCount == 0) {
-            // In simulation, limelight may not be present until a few cycles of periodic, since we
-            // populate it via NetworkTables later.
+        if (m_evaluatePoses.isVisionPoseBad(poseEstimate, m_currentRobotPoseSupplier.get())) {
             clearResults();
             return;
         }
@@ -323,37 +297,13 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
     }
 
-    private LimelightHelpers.PoseEstimate sanitizePoseEstimate(
-            LimelightHelpers.PoseEstimate poseEstimate) {
+    private PoseEstimate sanitizePoseEstimate(
+            PoseEstimate poseEstimate) {
         // LimelightHelpers 2026.1 no longer returns null when no targets are visible.
         if (poseEstimate == null || poseEstimate.tagCount == 0) {
             return null;
         }
         return poseEstimate;
-    }
-
-    /**
-     * Picks the better of two pose estimates. More tags wins; on a tie, closer
-     * average tag distance wins (with MT2 getting a distance advantage since its
-     * gyro-fused rotation is more reliable at similar range); if still tied,
-     * prefer MT2 for gyro-fused stability. Either or both may be null.
-     */
-    static LimelightHelpers.PoseEstimate pickBestEstimate(
-            LimelightHelpers.PoseEstimate a,
-            LimelightHelpers.PoseEstimate b) {
-        if (a == null) return b;
-        if (b == null) return a;
-        if (a.tagCount != b.tagCount) {
-            return a.tagCount > b.tagCount ? a : b;
-        }
-        // Give MT2 a distance advantage by penalizing non-MT2 estimates, so values never go negative.
-        double distA = a.avgTagDist + (a.isMegaTag2 ? 0.0 : VisionConstants.kMt2DistanceAdvantageMeter);
-        double distB = b.avgTagDist + (b.isMegaTag2 ? 0.0 : VisionConstants.kMt2DistanceAdvantageMeter);
-        if (!MathUtils.approxEqual(distA, distB)) {
-            return distA < distB ? a : b;
-        }
-        // All else equal, prefer MT2 for gyro-fused rotation stability.
-        return b.isMegaTag2 ? b : a;
     }
 
     /**
@@ -363,7 +313,8 @@ public class SingleCamOdometry implements CamOdometryInterface {
      * @param poseEstimate The Limelight pose estimate to evaluate
      * @return The calculated standard deviations matrix
      */
-    private Matrix<N3, N1> calculateEstimationStdDevs(LimelightHelpers.PoseEstimate poseEstimate) {
+    // $TODO2 - Calculate standard deviations for vision pose
+    private Matrix<N3, N1> calculateEstimationStdDevs(PoseEstimate poseEstimate) {
         if (poseEstimate == null || poseEstimate.tagCount == 0) {
             // No pose input. Default to single-tag std devs
             return kSingleTagStdDevs;
@@ -403,6 +354,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
      * @param stdDevs The (x, y, theta) standard deviations matrix
      * @return Confidence from 0 (no confidence) to 100 (highest)
      */
+    // $TODO2 - Calculate confidence scores
     private double getConfidenceScore(Matrix<N3, N1> stdDevs) {
         // Handle rejection case
         if (stdDevs.get(0, 0) >= Double.MAX_VALUE) {

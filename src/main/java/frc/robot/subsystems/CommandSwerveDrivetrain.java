@@ -353,23 +353,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
      * @param timestampSeconds The timestamp of the vision measurement in seconds.
      */
-    // A wrapper that calls InjectFilter to determine whether to ignore this vision measurement or not
     private boolean shouldIgnoreVisionMeas(
-        Pose2d newVisionRobotPose,
-        Pose2d currentRobotPose,
         double timestampSeconds) {
 
         return m_visionFilter.shouldIgnore(
-                newVisionRobotPose,
-                currentRobotPose,
                 timestampSeconds);
     }
 
     @Override
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
         if (shouldIgnoreVisionMeas(
-            visionRobotPoseMeters,
-            getState().Pose,
             timestampSeconds)) {
 
             return;
@@ -398,8 +391,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Matrix<N3, N1> visionMeasurementStdDevs) {
 
         if (shouldIgnoreVisionMeas(
-            visionRobotPoseMeters,
-            getState().Pose,
             timestampSeconds)) {
 
             return;

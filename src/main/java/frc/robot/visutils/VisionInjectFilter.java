@@ -37,9 +37,6 @@ public class VisionInjectFilter {
     /** How far forward in time (seconds) after reset to stop ignoring vision measurements */
     private static final double IGNORE_WINDOW_END_OFFSET = 0.0;
 
-    /** Maximum allowed distance (meters) between vision pose and current pose */
-    public static final double MAX_DISTANCE_METERS = 5.0;
-
     /** Track the last time the pose was reset to filter stale vision measurements. */
     private double m_lastResetTimestamp = RESET_INIT_CONSTANT;
 
@@ -53,6 +50,7 @@ public class VisionInjectFilter {
         m_lastResetTimestamp = currentTimeSeconds;
     }
 
+    // $TODO2 - Ignore stale timestamps around pose reset
     private boolean shouldIgnoreOldTimestamps(double timestampSeconds) {
         if (m_lastResetTimestamp == RESET_INIT_CONSTANT) {
             return false;
@@ -65,16 +63,6 @@ public class VisionInjectFilter {
         return convertedTimestamp >= ignoreWindowStart && convertedTimestamp <= ignoreWindowEnd;
     }
 
-    private boolean shouldIgnoreFarAway(Pose2d pose1, Pose2d pose2) {
-        // Can't calculate distance with null poses
-        if (pose1 == null || pose2 == null) {
-            return true;
-        }
-
-        double distanceMeters = pose1.getTranslation().getDistance(pose2.getTranslation());
-        return distanceMeters > MAX_DISTANCE_METERS;
-    }
-
     /**
      * Determines if a vision measurement should be ignored based on its timestamp
      * relative to the last pose reset.
@@ -83,18 +71,8 @@ public class VisionInjectFilter {
      * @return true if the measurement should be ignored, false otherwise.
      */
     public boolean shouldIgnore(
-        Pose2d newVisionRobotPose,
-        Pose2d currentRobotPose,
         double timestampSeconds) {
 
-        if (shouldIgnoreOldTimestamps(timestampSeconds)) {
-            return true;
-        }
-
-        if (shouldIgnoreFarAway(newVisionRobotPose, currentRobotPose)) {
-            return true;
-        }
-
-        return false;
+        return shouldIgnoreOldTimestamps(timestampSeconds);
     }
 }

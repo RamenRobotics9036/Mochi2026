@@ -10,7 +10,10 @@ import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import frc.robot.visutils.evaluateposes.EvaluatePosesMochiV1;
 import java.util.List;
+import java.util.function.Supplier;
+
 import org.junit.jupiter.api.*;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -86,10 +89,12 @@ class TestSingleCamOdometry {
             CAM_NAME,
             new Transform3d(),
             consumer,
+            () -> POSE_A,
             null,
             () -> 0.0,
             true,
-            true);
+            true,
+            new EvaluatePosesMochiV1());
     }
 
     @AfterEach
@@ -130,8 +135,12 @@ class TestSingleCamOdometry {
     // 0. MegaTag preference/fallback
     // ------------------------------------------------------------------
 
-    /** Helper to create a camera with an explicit MT2 flag. */
+    /** Helper to create a camera with an explicit MT2 flag (defaults to POSE_A as current pose). */
     private SingleCamOdometry createCamWithMt2(boolean supportMegatag2) {
+        return createCamWithMt2(supportMegatag2, () -> POSE_A);
+    }
+
+    private SingleCamOdometry createCamWithMt2(boolean supportMegatag2, Supplier<Pose2d> currentRobotPoseSupplier) {
         VisionSimInterface.EstimateConsumer consumer =
             (pose, ts, stdDevs) -> {
                 m_lastConsumedPose = pose;
@@ -141,17 +150,19 @@ class TestSingleCamOdometry {
             CAM_NAME,
             new Transform3d(),
             consumer,
+            currentRobotPoseSupplier,
             null,
             () -> 0.0,
              supportMegatag2,
-             true);
+             true,
+             new EvaluatePosesMochiV1());
 
         return result;
     }
 
     @Test
     void periodic_megatag2Enabled_mt2MoreTags_prefersMt2() {
-        SingleCamOdometry cam = createCamWithMt2(true);
+        SingleCamOdometry cam = createCamWithMt2(true, () -> POSE_B);
         PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
         PoseEstimate mt2 = new PoseEstimate(
             POSE_B, 1.0, 0.0, 2, 0.0, 2.0, 0.0,
@@ -176,7 +187,7 @@ class TestSingleCamOdometry {
 
     @Test
     void periodic_megatag2Enabled_mt1MoreTags_prefersMt1() {
-        SingleCamOdometry cam = createCamWithMt2(true);
+        SingleCamOdometry cam = createCamWithMt2(true, () -> POSE_A);
         // MT1 sees 3 tags at 2m
         RawFiducial f1 = new RawFiducial(1, 0, 0, 0, 2.0, 2.0, 0.1);
         RawFiducial f2 = new RawFiducial(2, 0, 0, 0, 2.0, 2.0, 0.1);
@@ -205,7 +216,7 @@ class TestSingleCamOdometry {
 
     @Test
     void periodic_megatag2Enabled_sameTagCount_mt1MuchCloser_prefersMt1() {
-        SingleCamOdometry cam = createCamWithMt2(true);
+        SingleCamOdometry cam = createCamWithMt2(true, () -> POSE_A);
         // Both see 1 tag; MT1 at 2m, MT2 at 3.5m — gap exceeds the MT2 distance advantage
         PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
         PoseEstimate mt2 = new PoseEstimate(
@@ -226,7 +237,7 @@ class TestSingleCamOdometry {
 
     @Test
     void periodic_megatag2Enabled_sameTagCount_mt2SlightlyFarther_prefersMt2() {
-        SingleCamOdometry cam = createCamWithMt2(true);
+        SingleCamOdometry cam = createCamWithMt2(true, () -> POSE_B);
         // Both see 1 tag; MT1 at 2.0m, MT2 at 2.3m — within the 0.5m MT2 advantage
         PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
         PoseEstimate mt2 = new PoseEstimate(

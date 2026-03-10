@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
+import frc.robot.visutils.evaluateposes.EvaluatePosesInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,16 +19,19 @@ public class MultiCamOdometry implements CamOdometryInterface {
 
     private final List<CamOdometryInterface> m_cameras;
     private final PerCycleState m_perCycleState = new PerCycleState();
+    private final EvaluatePosesInterface m_evaluatePoses;
 
     /** Constructor. */
     public MultiCamOdometry(
         List<CamOdometryInterface> cameras,
         boolean megaTag2Enabled,
-        boolean autoVisionInjectionEnabled) {
+        boolean autoVisionInjectionEnabled,
+        EvaluatePosesInterface evaluatePoses) {
 
         m_cameras = new ArrayList<>(cameras);
         m_megaTag2Enabled = megaTag2Enabled;
         m_autoVisionInjectionEnabled = autoVisionInjectionEnabled;
+        m_evaluatePoses = evaluatePoses;
     }
 
     /**
@@ -88,6 +92,7 @@ public class MultiCamOdometry implements CamOdometryInterface {
         for (CamOdometryInterface cam : m_cameras) {
             cam.periodic();
 
+            // $TODO2 - Pick camera with highest confidence score each cycle
             // Only consider cameras that actually have a target lock;
             // without this guard a camera with score 0 beats the -1 reset sentinel.
             double singleCamScore = cam.getConfidenceScore();

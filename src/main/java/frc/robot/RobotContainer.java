@@ -256,11 +256,13 @@ public class RobotContainer {
         m_multiCamlimelight = MultiCamOdometryFactory.create(
             m_configInterface,
             drivetrain::samplePoseAt,
+            () -> drivetrain.getState().Pose,
             drivetrain::addVisionMeasurement,
             () -> drivetrain.getState().Pose.getRotation().getDegrees(),
             basicInfoDashboard,
             m_visionKalmanFilter,
-            m_motionlessTracker);
+            m_motionlessTracker,
+            m_configInterface.getEvaluatePosesName());
     }
 
     /** Registers named commands for PathPlanner */
