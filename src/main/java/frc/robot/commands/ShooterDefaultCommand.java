@@ -10,11 +10,17 @@ import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 
 public class ShooterDefaultCommand extends Command{
+    /** The subsystem for the motors used to shoot the ball */
     private ShooterSubsystem m_shooter;
+    /** The subsystem for the indexer used to feed the shooter */
     private IndexerSubsystem m_indexer;
+    /** The operator controller, used to control the shooter and indexer */
     private CommandXboxController m_controller;
-    private final Debouncer m_debouncer = new Debouncer(0.25, DebounceType.kRising);
+    /** The Debouncer object used to delay indexer activation */
+    private final Debouncer m_debouncer = new Debouncer(IndexerConstants.kIndexDelay, DebounceType.kRising);
+    /** The direction the indexer is spinning (from -1.0 to 1.0) */
     private double indexerDirection = 0.0;
+    /** Whether the indexer should be running */
     private boolean indexerEnabled = false;
 
     public ShooterDefaultCommand(ShooterSubsystem shooter, IndexerSubsystem indexer, CommandXboxController controller){
@@ -30,6 +36,11 @@ public class ShooterDefaultCommand extends Command{
         m_debouncer.calculate(false); //In case the default command gets interrupted
     }
 
+    /** 
+     * Spins up the shooter for 0.25 seconds, then activates the indexer to feed it.
+     * 
+     * Right bumper makes the indexer spin backwards in case balls get stuck.
+     */
     @Override
     public void execute() {
         if (m_controller.y().getAsBoolean()) indexerDirection = 1.0;
@@ -42,7 +53,7 @@ public class ShooterDefaultCommand extends Command{
             m_shooter.setSpeed(ShooterConstants.kShootSpeed);
             
             if (indexerEnabled) {
-                m_indexer.setSpeed(indexerDirection * IndexerConstants.kIndexSpeed);
+                m_indexer.setSpeed(Math.signum(indexerDirection) * IndexerConstants.kIndexSpeed);
             }
 
         } else {
