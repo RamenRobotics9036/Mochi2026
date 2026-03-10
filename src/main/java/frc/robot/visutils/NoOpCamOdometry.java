@@ -1,11 +1,11 @@
 package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
+import java.util.OptionalDouble;
+
 
 /** No-op implementation of {@link CamOdometryInterface} that returns safe default values. */
 class NoOpCamOdometry implements CamOdometryInterface {
@@ -16,8 +16,8 @@ class NoOpCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public Optional<Transform2d> getVisionErrorAtSnapTime() {
-        return Optional.empty();
+    public OptionalDouble getVisionErrorAtSnapTime() {
+        return OptionalDouble.empty();
     }
 
     @Override
@@ -59,16 +59,11 @@ class NoOpCamOdometry implements CamOdometryInterface {
     public void setRobotOrientation() {}
 
     @Override
-    public void setRobotOrientation_NoFlush() {}
+    public void setRobotOrientationNoFlush() {}
 
     @Override
     public void periodic() {}
 
     @Override
     public void enableVision(boolean enabled) {}
-
-    @Override
-    public void setVisionDependenciesOnCamera(
-            VisionKalmanFilter filter,
-            BooleanSupplier isMotionlessSupplier) {}
 }

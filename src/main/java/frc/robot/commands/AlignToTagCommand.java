@@ -68,8 +68,8 @@ public class AlignToTagCommand extends Command {
         m_maxAngularVelocity = MaxAngularVelocity;
 
         // The limelight's name is different in simulation.
-        m_limelightName = m_configInterface.getCameraName(0);
-        
+        m_limelightName = m_configInterface.getCameras().getCameraName(0);
+
         addRequirements(m_drivetrain);
     }
 
@@ -137,7 +137,7 @@ public class AlignToTagCommand extends Command {
 
     /**
      * Stops the command if one of the following is true:
-     * 
+     *
      * The command was called without any AprilTags being within view of the Limelight
      * The robot has finished alignment to the AprilTag
      * The driver is trying to move the robot and the command should be interrupted

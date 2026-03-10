@@ -1,12 +1,20 @@
 package frc.robot.visutils;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,8 +23,12 @@ import frc.robot.subsystems.auto.AutoLogic;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.function.Consumer;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+
 
 class TestDriveAccuracyTester {
 
@@ -33,7 +45,8 @@ class TestDriveAccuracyTester {
     void setUp() {
         m_mockDrive = mock(CommandSwerveDrivetrain.class);
         m_mockKalman = mock(VisionKalmanFilter.class);
-        m_tester = new DriveAccuracyTester(m_mockDrive, m_mockKalman, b -> {});
+        m_tester = new DriveAccuracyTester(m_mockDrive, m_mockKalman);
+        m_tester.setForceDisableVision(b -> {});
         CommandScheduler.getInstance().cancelAll();
         CommandScheduler.getInstance().unregisterAllSubsystems();
     }
@@ -84,7 +97,8 @@ class TestDriveAccuracyTester {
             }
 
             cmd.end(false);
-        } finally {
+        }
+        finally {
             SimHooks.resumeTiming();
         }
     }
@@ -105,7 +119,8 @@ class TestDriveAccuracyTester {
                 cmd.execute();
             }
             cmd.end(true);
-        } finally {
+        }
+        finally {
             SimHooks.resumeTiming();
         }
     }
@@ -120,7 +135,8 @@ class TestDriveAccuracyTester {
         System.setOut(new PrintStream(captured));
         try {
             action.run();
-        } finally {
+        }
+        finally {
             System.setOut(originalOut);
         }
         return captured.toString();
@@ -197,7 +213,11 @@ class TestDriveAccuracyTester {
             Pose2d blueTape = m_tester.getBlueTapePose().get();
             assertEquals(expectedTapePose.getX(), blueTape.getX(), 1e-6, "Blue tape X");
             assertEquals(expectedTapePose.getY(), blueTape.getY(), 1e-6, "Blue tape Y");
-            assertEquals(expectedTapePose.getRotation().getDegrees(), blueTape.getRotation().getDegrees(), 1e-6, "Blue tape rotation");
+            assertEquals(
+                expectedTapePose.getRotation().getDegrees(),
+                blueTape.getRotation().getDegrees(),
+                1e-6,
+                "Blue tape rotation");
 
             assertTrue(m_tester.getRedTapePose().isPresent(),
                 "Red tape should have been placed");
@@ -244,8 +264,8 @@ class TestDriveAccuracyTester {
         @SuppressWarnings("unchecked")
         Consumer<Boolean> mockForceDisableVision = mock(Consumer.class);
 
-        DriveAccuracyTester tester = new DriveAccuracyTester(
-            m_mockDrive, m_mockKalman, mockForceDisableVision);
+        DriveAccuracyTester tester = new DriveAccuracyTester(m_mockDrive, m_mockKalman);
+        tester.setForceDisableVision(mockForceDisableVision);
 
         when(m_mockKalman.hasConverged()).thenReturn(true);
         when(m_mockKalman.getEstimate())
@@ -300,6 +320,7 @@ class TestDriveAccuracyTester {
         assertTrue(m_tester.getRedTapePose().isEmpty(), "Red tape should be empty after clear");
     }
 
+    @SuppressWarnings("VariableDeclarationUsageDistance")
     @Test
     void test_preExistingTape_clearedAtSequenceStart() {
         Pose2d firstPose = new Pose2d(1.0, 2.0, Rotation2d.fromDegrees(0));
@@ -351,8 +372,8 @@ class TestDriveAccuracyTester {
         @SuppressWarnings("unchecked")
         Consumer<Boolean> mockForceDisableVision = mock(Consumer.class);
 
-        DriveAccuracyTester tester = new DriveAccuracyTester(
-            m_mockDrive, m_mockKalman, mockForceDisableVision);
+        DriveAccuracyTester tester = new DriveAccuracyTester(m_mockDrive, m_mockKalman);
+        tester.setForceDisableVision(mockForceDisableVision);
 
         // Kalman NOT converged — preconditions will fail
         when(m_mockKalman.hasConverged()).thenReturn(false);
@@ -375,8 +396,8 @@ class TestDriveAccuracyTester {
         @SuppressWarnings("unchecked")
         Consumer<Boolean> mockForceDisableVision = mock(Consumer.class);
 
-        DriveAccuracyTester tester = new DriveAccuracyTester(
-            m_mockDrive, m_mockKalman, mockForceDisableVision);
+        DriveAccuracyTester tester = new DriveAccuracyTester(m_mockDrive, m_mockKalman);
+        tester.setForceDisableVision(mockForceDisableVision);
 
         when(m_mockKalman.hasConverged()).thenReturn(true);
         when(m_mockKalman.getEstimate())
@@ -402,6 +423,7 @@ class TestDriveAccuracyTester {
         }
     }
 
+    @SuppressWarnings("VariableDeclarationUsageDistance")
     @Test
     void test_commandCanBeReusedTwice() {
         when(m_mockKalman.hasConverged()).thenReturn(true);

@@ -1,7 +1,5 @@
 package frc.robot.visutils;
 
-import java.util.Optional;
-
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -10,6 +8,11 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants.VisionKalmanConstants;
+import robotutils.pub.interfaces.SimLimelightProducerInterface.DrivetrainVisionPoseInfo;
+
+import java.util.Optional;
+import java.util.function.Consumer;
+
 
 /**
  * A vision-only Kalman filter for accurately averaging robot position
@@ -22,7 +25,7 @@ import frc.robot.Constants.VisionKalmanConstants;
  * <p>The filter converges over time as more measurements are taken,
  * with the covariance matrix P shrinking to indicate increased certainty.
  */
-public class VisionKalmanFilter {
+public class VisionKalmanFilter implements Consumer<DrivetrainVisionPoseInfo> {
 
     /**
      * Bundles the Kalman filter's display state for field visualization.
@@ -32,26 +35,42 @@ public class VisionKalmanFilter {
      */
     public record DisplayInfo(Optional<Pose2d> pose, boolean hasConverged) {}
 
-    /** State vector: [x, y, θ] */
+    /** State vector: [x, y, θ]. */
     private Matrix<N3, N1> m_x;
 
-    /** State covariance matrix */
-    private Matrix<N3, N3> m_P;
+    /** State covariance matrix. */
+    private Matrix<N3, N3> m_p;
 
-    /** Whether the filter has received its first measurement */
+    /** Whether the filter has received its first measurement. */
     private boolean m_initialized = false;
 
-    /** Number of measurements injected since last reset */
+    /** Number of measurements injected since last reset. */
     private int m_measurementCount = 0;
 
+    /** Dashboard to notify when filter state changes. */
+    private BasicInfoDashboard m_dashboard = null;
+
+    /** Sets the dashboard to notify whenever filter state changes. */
+    public void setDashboard(BasicInfoDashboard dashboard) {
+        m_dashboard = dashboard;
+    }
+
+    private void notifyDashboard() {
+        if (m_dashboard != null) {
+            m_dashboard.updateKalmanState(m_initialized, getEstimate(), hasConverged());
+        }
+    }
+
     /**
-     * Injects a vision measurement into the filter.
+     * Consumes a vision measurement into the filter.
      * Measurements with fewer than 2 tags are ignored.
-     *
-     * @param pose The measured robot pose from vision
-     * @param tagCount Number of AprilTags used in this measurement
      */
-    public void injectVisionMeasurement(Pose2d pose, int tagCount) {
+    @SuppressWarnings("VariableDeclarationUsageDistance")
+    @Override
+    public void accept(DrivetrainVisionPoseInfo info) {
+        Pose2d pose = info.pose();
+        int tagCount = info.tagCount();
+
         // Reject single-tag measurements (require MegaTag accuracy)
         if (tagCount < 2) {
             return;
@@ -64,9 +83,10 @@ public class VisionKalmanFilter {
             m_x.set(1, 0, pose.getY());
             m_x.set(2, 0, pose.getRotation().getRadians());
 
-            m_P = createInitialCovariance();
+            m_p = createInitialCovariance();
             m_initialized = true;
             m_measurementCount = 1;
+            notifyDashboard();
             return;
         }
 
@@ -77,7 +97,7 @@ public class VisionKalmanFilter {
         z.set(2, 0, pose.getRotation().getRadians());
 
         // Compute measurement noise R (scales inversely with tag count)
-        Matrix<N3, N3> R = computeMeasurementNoise(tagCount);
+        Matrix<N3, N3> r = computeMeasurementNoise(tagCount);
 
         // Kalman update equations (H = I for direct pose measurement)
         // Innovation: y = z - x
@@ -85,33 +105,42 @@ public class VisionKalmanFilter {
 
         // Handle angle wrapping for theta component
         double thetaError = y.get(2, 0);
-        while (thetaError > Math.PI) thetaError -= 2 * Math.PI;
-        while (thetaError < -Math.PI) thetaError += 2 * Math.PI;
+        while (thetaError > Math.PI) {
+            thetaError -= 2 * Math.PI;
+        }
+        while (thetaError < -Math.PI) {
+            thetaError += 2 * Math.PI;
+        }
         y.set(2, 0, thetaError);
 
         // Innovation covariance: S = P + R (since H = I)
-        Matrix<N3, N3> S = m_P.plus(R);
+        Matrix<N3, N3> s = m_p.plus(r);
 
         // Kalman gain: K = P * S^-1
-        Matrix<N3, N3> K = m_P.times(S.inv());
+        Matrix<N3, N3> k = m_p.times(s.inv());
 
         // State update: x = x + K * y
-        m_x = m_x.plus(K.times(y));
+        m_x = m_x.plus(k.times(y));
 
         // Normalize theta to [-π, π]
         double theta = m_x.get(2, 0);
-        while (theta > Math.PI) theta -= 2 * Math.PI;
-        while (theta < -Math.PI) theta += 2 * Math.PI;
+        while (theta > Math.PI) {
+            theta -= 2 * Math.PI;
+        }
+        while (theta < -Math.PI) {
+            theta += 2 * Math.PI;
+        }
         m_x.set(2, 0, theta);
 
         // Covariance update: P = (I - K) * P
-        Matrix<N3, N3> I = Matrix.eye(Nat.N3());
-        m_P = I.minus(K).times(m_P);
+        Matrix<N3, N3> i = Matrix.eye(Nat.N3());
+        m_p = i.minus(k).times(m_p);
 
         // Note: We don't add process noise Q here because the robot is assumed
         // to be truly motionless. Adding Q would prevent convergence.
 
         m_measurementCount++;
+        notifyDashboard();
     }
 
     /**
@@ -136,7 +165,7 @@ public class VisionKalmanFilter {
      * @return The 3x3 covariance matrix, or null if not initialized
      */
     public Matrix<N3, N3> getCovariance() {
-        return m_P;
+        return m_p;
     }
 
     /**
@@ -174,9 +203,9 @@ public class VisionKalmanFilter {
         double posVarThreshold = positionThresholdMeters * positionThresholdMeters;
         double angleVarThreshold = angleThresholdRadians * angleThresholdRadians;
 
-        return m_P.get(0, 0) < posVarThreshold
-            && m_P.get(1, 1) < posVarThreshold
-            && m_P.get(2, 2) < angleVarThreshold;
+        return m_p.get(0, 0) < posVarThreshold
+            && m_p.get(1, 1) < posVarThreshold
+            && m_p.get(2, 2) < angleVarThreshold;
     }
 
     /**
@@ -200,9 +229,9 @@ public class VisionKalmanFilter {
         if (!m_initialized) {
             return Double.MAX_VALUE;
         }
-        double xVar = m_P.get(0, 0);
-        double yVar = m_P.get(1, 1);
-        return Math.sqrt((xVar + yVar) / 2.0);
+        double varX = m_p.get(0, 0);
+        double varY = m_p.get(1, 1);
+        return Math.sqrt((varX + varY) / 2.0);
     }
 
     /**
@@ -214,7 +243,7 @@ public class VisionKalmanFilter {
         if (!m_initialized) {
             return Double.MAX_VALUE;
         }
-        return Math.toDegrees(Math.sqrt(m_P.get(2, 2)));
+        return Math.toDegrees(Math.sqrt(m_p.get(2, 2)));
     }
 
     /**
@@ -238,31 +267,20 @@ public class VisionKalmanFilter {
     public void reset() {
         m_initialized = false;
         m_x = null;
-        m_P = null;
+        m_p = null;
         m_measurementCount = 0;
+        notifyDashboard();
     }
 
     /**
      * Creates the initial covariance matrix with high uncertainty.
      */
     private Matrix<N3, N3> createInitialCovariance() {
-        Matrix<N3, N3> P = new Matrix<>(Nat.N3(), Nat.N3());
-        P.set(0, 0, VisionKalmanConstants.kInitialPositionVariance);
-        P.set(1, 1, VisionKalmanConstants.kInitialPositionVariance);
-        P.set(2, 2, VisionKalmanConstants.kInitialAngleVariance);
-        return P;
-    }
-
-    /**
-     * Creates the process noise matrix Q.
-     * Very small since we assume the robot is motionless.
-     */
-    private Matrix<N3, N3> createProcessNoise() {
-        Matrix<N3, N3> Q = new Matrix<>(Nat.N3(), Nat.N3());
-        Q.set(0, 0, VisionKalmanConstants.kProcessNoisePosition);
-        Q.set(1, 1, VisionKalmanConstants.kProcessNoisePosition);
-        Q.set(2, 2, VisionKalmanConstants.kProcessNoiseAngle);
-        return Q;
+        Matrix<N3, N3> p = new Matrix<>(Nat.N3(), Nat.N3());
+        p.set(0, 0, VisionKalmanConstants.kInitialPositionVariance);
+        p.set(1, 1, VisionKalmanConstants.kInitialPositionVariance);
+        p.set(2, 2, VisionKalmanConstants.kInitialAngleVariance);
+        return p;
     }
 
     /**
@@ -276,10 +294,10 @@ public class VisionKalmanFilter {
         double posNoise = VisionKalmanConstants.kBasePositionNoise / tagCount;
         double angleNoise = VisionKalmanConstants.kBaseAngleNoise / tagCount;
 
-        Matrix<N3, N3> R = new Matrix<>(Nat.N3(), Nat.N3());
-        R.set(0, 0, posNoise);
-        R.set(1, 1, posNoise);
-        R.set(2, 2, angleNoise);
-        return R;
+        Matrix<N3, N3> r = new Matrix<>(Nat.N3(), Nat.N3());
+        r.set(0, 0, posNoise);
+        r.set(1, 1, posNoise);
+        r.set(2, 2, angleNoise);
+        return r;
     }
 }

@@ -1,6 +1,7 @@
 package frc.robot.visutils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.controller.PIDController;
@@ -8,11 +9,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-
 import java.util.Optional;
 import java.util.OptionalDouble;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
-import org.junit.jupiter.api.*;
 
 class TestTurnToAngleHelper {
 
@@ -29,7 +30,8 @@ class TestTurnToAngleHelper {
         assertTrue(TurnToAngleHelper.getTag2dPose(-1).isEmpty());
     }
 
-    /** A valid tag ID that exists in the field layout should resolve to a non-empty Translation2d. */
+    /** A valid tag ID that exists in the field layout should resolve to
+     * a non-empty Translation2d. */
     @Test
     void getTag2dPose_validTagReturnsPosition() {
         // Tag 1 exists in every official FRC field layout
@@ -109,7 +111,8 @@ class TestTurnToAngleHelper {
         assertEquals(45.0, result.getDegrees(), 1e-6);
     }
 
-    /** On red alliance (operator forward = 180°), the operator frame is rotated 180° from field frame. */
+    /** On red alliance (operator forward = 180°), the operator frame is rotated 180°
+     * from field frame. */
     @Test
     void toOperatorFrame_redAlliance_subtacts180() {
         Rotation2d fieldAngle = Rotation2d.fromDegrees(45);
@@ -122,7 +125,8 @@ class TestTurnToAngleHelper {
 
     // ── bearingToPointInOperatorFrame ─────────────────────────────────
 
-    /** Combines bearingToPoint and toOperatorFrame; verify a known case matches doing them separately. */
+    /** Combines bearingToPoint and toOperatorFrame; verify a known case matches
+     * doing them separately. */
     @Test
     void bearingToPointInOperatorFrame_matchesManualComposition() {
         Pose2d robot = new Pose2d(1, 1, new Rotation2d());
@@ -140,7 +144,7 @@ class TestTurnToAngleHelper {
 
     /** The returned PID should have continuous input enabled across the ±π wrap. */
     @Test
-    void createAimPID_hasContinuousInput() {
+    void createAimPid_hasContinuousInput() {
         PIDController pid = TurnToAngleHelper.createAimPID();
         // Continuous input means the PID wraps errors across ±π.
         // Verify by checking that a setpoint jump from −170° to +170°
@@ -154,7 +158,7 @@ class TestTurnToAngleHelper {
 
     /** The PID should have non-zero P and D gains. */
     @Test
-    void createAimPID_hasNonZeroGains() {
+    void createAimPid_hasNonZeroGains() {
         PIDController pid = TurnToAngleHelper.createAimPID();
         assertTrue(pid.getP() > 0, "P gain should be positive");
         assertTrue(pid.getD() > 0, "D gain should be positive");
@@ -162,7 +166,8 @@ class TestTurnToAngleHelper {
 
     // ── aimFeedforward ───────────────────────────────────────────────
 
-    /** A stationary robot should produce zero feedforward regardless of target position. */
+    /** A stationary robot should produce zero feedforward regardless oftarget
+     * position. */
     @Test
     void aimFeedforward_stationaryRobot_returnsZero() {
         double ff = TurnToAngleHelper.aimFeedforward(
@@ -196,7 +201,8 @@ class TestTurnToAngleHelper {
         assertEquals(0.0, ff, 1e-9);
     }
 
-    /** When the robot is sitting on top of the target (dist < 0.1 m), feedforward should be zero to avoid divide-by-zero. */
+    /** When the robot is sitting on top of the target (dist < 0.1 m),
+     * feedforward should be zero to avoid divide-by-zero. */
     @Test
     void aimFeedforward_onTarget_returnsZero() {
         // Robot at (3, 4), target at (3, 4) — distance is 0.
@@ -310,7 +316,8 @@ class TestTurnToAngleHelper {
             "Rate must be clamped to maxOmega");
     }
 
-    /** With translational motion, the feedforward component should shift the output relative to a stationary call. */
+    /** With translational motion, the feedforward component should shift the output
+     * relative to a stationary call. */
     @Test
     void computeAimRate_withTranslation_includesFeedforward() {
         // Robot at origin facing the target at (5, 0). Already aligned,
@@ -346,7 +353,8 @@ class TestTurnToAngleHelper {
         assertTrue(result.isEmpty());
     }
 
-    /** On the first cycle with the button pressed, the PID should reset and return a rate for a valid tag. */
+    /** On the first cycle with the button pressed, the PID should reset and return a
+     * rate for a valid tag. */
     @Test
     void aimController_risingEdge_resetsPidAndReturnsRate() {
         AimController aim = new AimController(5.0);
@@ -361,7 +369,8 @@ class TestTurnToAngleHelper {
             "First aim cycle with valid tag should return a rate");
     }
 
-    /** When the target flickers away while the button is still held, update() returns empty but the PID is NOT reset on the next valid cycle. */
+    /** When the target flickers away while the button is still held, update() returns empty but the
+     * PID is NOT reset on the next valid cycle. */
     @Test
     void aimController_targetFlicker_pidNotReset() {
         AimController aim = new AimController(5.0);

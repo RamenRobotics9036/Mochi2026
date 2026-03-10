@@ -4,10 +4,8 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
-
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
@@ -17,36 +15,53 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.visutils.VisionKalmanFilter;
-
 import java.util.List;
-import java.util.Optional;
-import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
+import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
-/** Basic logging to dashboard. */
+
+/**
+ * Basic logging to dashboard.
+ * The pattern for dashboards is this: This dashboard doesn't know how to query anything out of
+ * the various subsystems, since it has no knowledge of them.  Instead, it just:
+ * 1) Creates a bunch of NetworkTable entries representing each control in the dashboard, during
+ *    construction.
+ * 2) Exposes public methods for updating each dashboard value
+ *
+ * The Dashboard-object is passed around to the various subsystems, each of which calls the
+ * relevent 'update' methods.
+ *
+ * Note that each update-method in this class only updates a local variable, and the actual
+ * NetworkTable entries are only updated in the 'update()' method at the end.  This is to avoid
+ * writing to NetworkTables more often than necessary.
+*/
 @SuppressWarnings("LineLength")
 public class BasicInfoDashboard {
-    private final Pigeon2 m_pigeon;
-    private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_drivetrain;
-
-    private final NetworkTableInstance inst = NetworkTableInstance.getDefault();
+    private final NetworkTableInstance m_inst = NetworkTableInstance.getDefault();
 
     /* Gyro state and robot heading. */
-    private final NetworkTable m_basicInfoTable = inst.getTable("BasicInfo");
+    private final NetworkTable m_basicInfoTable = m_inst.getTable("BasicInfo");
     private final DoublePublisher m_driveHeadingDegrees = m_basicInfoTable.getDoubleTopic("HeadingDegrees").publish();
     private final DoublePublisher m_gyroYawDegrees = m_basicInfoTable.getDoubleTopic("GyroYawDegrees").publish();
 
+    /* Vision Kalman filter outputs */
+    private final DoubleArrayPublisher m_visionKalmanPose = m_basicInfoTable.getDoubleArrayTopic("VisionKalmanPose").publish();
+    private final BooleanPublisher m_visionKalmanConverged = m_basicInfoTable.getBooleanTopic("VisionKalmanConverged").publish();
+    private final BooleanPublisher m_visionKalmanActive = m_basicInfoTable.getBooleanTopic("VisionKalmanActive").publish();
+    private final BooleanPublisher m_visionKalmanIsRobotStill = m_basicInfoTable.getBooleanTopic("VisionKalmanIsRobotStill").publish();
+    private final StringPublisher m_visionKalmanSecondsStill = m_basicInfoTable.getStringTopic("VisionKalmanSecondsStill").publish();
+
     /* Other basic info. */
-    private final StringPublisher AllianceWithBlueFallback = m_basicInfoTable.getStringTopic("AllianceWithBlueFallback").publish();
-    private final StringPublisher AllianceNT = m_basicInfoTable.getStringTopic("AllianceNT").publish();
-    private final BooleanPublisher IsDSAttached = m_basicInfoTable.getBooleanTopic("IsDSAttached").publish();
-    private final BooleanPublisher IsFMSAttached = m_basicInfoTable.getBooleanTopic("IsFMSAttached").publish();
-    private final StringPublisher OperatorForwardDirectionDegrees = m_basicInfoTable.getStringTopic("OperatorForwardDirectionDegrees").publish();
-    private final StringPublisher DebugCalculatedForwardDirection = m_basicInfoTable.getStringTopic("DebugCalculatedForwardDirection").publish();
+    private final StringPublisher m_allianceWithBlueFallback = m_basicInfoTable.getStringTopic("AllianceWithBlueFallback").publish();
+    private final StringPublisher m_allianceNt = m_basicInfoTable.getStringTopic("AllianceNT").publish();
+    private final BooleanPublisher m_isDsAttached = m_basicInfoTable.getBooleanTopic("IsDSAttached").publish();
+    private final BooleanPublisher m_isFmsAttached = m_basicInfoTable.getBooleanTopic("IsFMSAttached").publish();
+    private final StringPublisher m_operatorForwardDirectionDegrees = m_basicInfoTable.getStringTopic("OperatorForwardDirectionDegrees").publish();
+    private final StringPublisher m_debugCalculatedForwardDirection = m_basicInfoTable.getStringTopic("DebugCalculatedForwardDirection").publish();
     private final DoublePublisher m_visionConfidence = m_basicInfoTable.getDoubleTopic("VisionConfidence").publish();
     private final BooleanPublisher m_oneLocked = m_basicInfoTable.getBooleanTopic("OneLocked").publish();
     private final BooleanPublisher m_multiLocked = m_basicInfoTable.getBooleanTopic("MultiLocked").publish();
@@ -56,32 +71,26 @@ public class BasicInfoDashboard {
     private final DoublePublisher m_visErrorCentimeters = m_basicInfoTable.getDoubleTopic("VisErrorCentimeters").publish();
     private final DoublePublisher m_visErrorMultiTagCentimeters = m_basicInfoTable.getDoubleTopic("VisErrorMultiTagCentimeters").publish();
 
+    // Subsystems passed in
+    private final Pigeon2 m_pigeon;
+    private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_drivetrain;
+
     /** Bidirectional toggle for enabling/disabling vision measurement injection. */
     private final BooleanEntry m_visionEnabled;
     private final BotConfigInterface m_configInterface;
 
-    /* Vision Kalman filter outputs */
-    private final DoubleArrayPublisher m_visionKalmanPose =
-        m_basicInfoTable.getDoubleArrayTopic("VisionKalmanPose").publish();
-    private final BooleanPublisher m_visionKalmanConverged =
-        m_basicInfoTable.getBooleanTopic("VisionKalmanConverged").publish();
-    private final BooleanPublisher m_visionKalmanActive =
-        m_basicInfoTable.getBooleanTopic("VisionKalmanActive").publish();
-    private final BooleanPublisher m_visionKalmanIsRobotStill =
-        m_basicInfoTable.getBooleanTopic("VisionKalmanIsRobotStill").publish();
-    private final StringPublisher m_visionKalmanSecondsStill =
-        m_basicInfoTable.getStringTopic("VisionKalmanSecondsStill").publish();
-
-    private DoubleSupplier m_visionConfidenceSupplier = null;
-    private BooleanSupplier m_hasTargetLockSupplier = null;
-    private BooleanSupplier m_hasMultiTagLockSupplier = null;
-    private BooleanSupplier m_isLatestMt2Supplier = null;
-    private DoubleSupplier m_txSupplier = null;
-    private Supplier<List<Integer>> m_targetListSupplier = null;
-    private Supplier<VisionKalmanFilter> m_visionKalmanSupplier = null;
-    private BooleanSupplier m_isRobotMotionlessSupplier = null;
-    private DoubleSupplier m_secondsStillSupplier = null;
-    private Supplier<Optional<Transform2d>> m_visErrorAtSnapTimeSupplier = null;
+    private double m_cachedVisionConfidence = 0.0;
+    private boolean m_cachedHasTargetLock = false;
+    private boolean m_cachedHasMultiTagLock = false;
+    private boolean m_cachedIsLatestMt2 = false;
+    private double m_cachedTx = 0.0;
+    private List<Integer> m_cachedTargetList = List.of();
+    private OptionalDouble m_cachedVisionError = OptionalDouble.empty();
+    private boolean m_cachedIsMotionless = false;
+    private double m_cachedSecondsStill = 0.0;
+    private boolean m_cachedKalmanIsActive = false;
+    private Pose2d m_cachedKalmanPose = new Pose2d();
+    private boolean m_cachedKalmanConverged = false;
 
     /** When true, vision is forcibly disabled regardless of the dashboard toggle. */
     private boolean m_forceDisableVision = false;
@@ -115,13 +124,23 @@ public class BasicInfoDashboard {
     /**
      * Constructs a BasicInfoDashboard.
      *
-     * @param drivetrain      The swerve drivetrain to get info from
-     * @param cameraNames     Names of all Limelight cameras to monitor
-     * @param configInterface Bot configuration (vision defaults, etc.)
+     * @param robotName        Display name of the selected robot
+     * @param configInterface   Bot configuration (vision defaults, etc.)
+     * @param drivetrain        The swerve drivetrain to get info from
+     * @param glassField        Field2d for Glass visualization
+     * @param driveAccuracyTester Accuracy test workflow manager
+     * @param testSubsystemsCommand Command to test all subsystems
+     * @param simCycleResetCmd  Sim-only command to cycle the robot reset position, or null on real robot
+     * @param cameraNames       Names of all Limelight cameras to monitor
      */
     public BasicInfoDashboard(
+        String robotName,
         BotConfigInterface configInterface,
         SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
+        Field2d glassField,
+        DriveAccuracyTester driveAccuracyTester,
+        Command testSubsystemsCommand,
+        Command simCycleResetCmd,
         List<String> cameraNames) {
 
         m_drivetrain = drivetrain;
@@ -140,6 +159,16 @@ public class BasicInfoDashboard {
 
         // Publish the default value so the toggle appears in Elastic immediately.
         m_visionEnabled.set(m_configInterface.isVisionEnabledDefault());
+
+        // Init NetworkTables for some dashboard itemms
+        SmartDashboard.putString("MAC Address Name", robotName);
+        SmartDashboard.putString("Robot Config", configInterface.getConfigName());
+        SmartDashboard.putData("GlassField", glassField);
+        SmartDashboard.putData("Accuracy Drive Test", driveAccuracyTester.createTapeDropAutoCommand());
+        SmartDashboard.putData("Test Subsystems", testSubsystemsCommand);
+        if (simCycleResetCmd != null) {
+            SmartDashboard.putData("Sim/CycleResetPosition", simCycleResetCmd);
+        }
     }
 
     /**
@@ -166,62 +195,63 @@ public class BasicInfoDashboard {
         m_forceDisableVision = disable;
     }
 
-    /**
-     * Sets the suppliers for querying basic vision information.
-     *
-     * @param confidenceSupplier         A DoubleSupplier returning confidence 0-100
-     * @param hasTargetLockSupplier      A BooleanSupplier returning true if any camera has a target lock
-     * @param hasMultiTagLockSupplier    A BooleanSupplier returning true if any camera has 2+ targets locked
-     * @param isLatestMt2Supplier        A BooleanSupplier returning true if the best camera's latest estimate used MegaTag2
-     * @param txSupplier                 A DoubleSupplier returning tx in degrees
-     * @param targetListSupplier         A Supplier returning comma-separated tag IDs
-     * @param visErrorAtSnapTimeSupplier A Supplier returning the vision error at image-capture time
-     * @param isMotionlessSupplier       A BooleanSupplier returning true when robot is motionless
-     * @param secondsStillSupplier       A DoubleSupplier returning seconds the robot has been still
-     */
-    public void setVisionDependenciesOnDash(
-            DoubleSupplier confidenceSupplier,
-            BooleanSupplier hasTargetLockSupplier,
-            BooleanSupplier hasMultiTagLockSupplier,
-            BooleanSupplier isLatestMt2Supplier,
-            DoubleSupplier txSupplier,
-            Supplier<List<Integer>> targetListSupplier,
-            Supplier<Optional<Transform2d>> visErrorAtSnapTimeSupplier,
-            BooleanSupplier isMotionlessSupplier,
-            DoubleSupplier secondsStillSupplier) {
-        m_visionConfidenceSupplier = confidenceSupplier;
-        m_hasTargetLockSupplier = hasTargetLockSupplier;
-        m_hasMultiTagLockSupplier = hasMultiTagLockSupplier;
-        m_isLatestMt2Supplier = isLatestMt2Supplier;
-        m_txSupplier = txSupplier;
-        m_targetListSupplier = targetListSupplier;
-        m_visErrorAtSnapTimeSupplier = visErrorAtSnapTimeSupplier;
-        m_isRobotMotionlessSupplier = isMotionlessSupplier;
-        m_secondsStillSupplier = secondsStillSupplier;
+    /** Updates the vision confidence score for dashboard display. */
+    public void updateVisionConfidence(double score) {
+        m_cachedVisionConfidence = score;
+    }
+
+    /** Updates the single-tag target lock state for dashboard display. */
+    public void updateTargetLock(boolean hasLock) {
+        m_cachedHasTargetLock = hasLock;
+    }
+
+    /** Updates the multi-tag lock state for dashboard display. */
+    public void updateMultiTagLock(boolean hasMultiLock) {
+        m_cachedHasMultiTagLock = hasMultiLock;
+    }
+
+    /** Updates the MegaTag2 active state for dashboard display. */
+    public void updateIsLatestMt2(boolean isMt2) {
+        m_cachedIsLatestMt2 = isMt2;
+    }
+
+    /** Updates the primary tag horizontal offset (tx) for dashboard display. */
+    public void updatePrimaryTagTx(double tx) {
+        m_cachedTx = tx;
+    }
+
+    /** Updates the list of visible tag IDs for dashboard display. */
+    public void updateVisibleTagIds(List<Integer> ids) {
+        m_cachedTargetList = ids;
+    }
+
+    /** Updates the vision error at image-capture time for dashboard display. */
+    public void updateVisionErrorAtSnapTime(OptionalDouble error) {
+        m_cachedVisionError = error;
     }
 
     /**
-     * Sets the supplier for the vision Kalman filter.
+     * Updates the robot motionless state for dashboard display.
      *
-     * @param supplier A Supplier returning the VisionKalmanFilter instance
+     * @param isMotionless true when the robot is stationary
+     * @param secondsStill seconds the robot has been continuously still
      */
-    public void setVisionKalmanSupplier(Supplier<VisionKalmanFilter> supplier) {
-        m_visionKalmanSupplier = supplier;
+    public void updateMotionlessState(boolean isMotionless, double secondsStill) {
+        m_cachedIsMotionless = isMotionless;
+        m_cachedSecondsStill = secondsStill;
     }
 
-    private static double calcVisErrorMeters(Optional<Transform2d> error) {
-        if (error.isEmpty()) {
-            return 0.0;
-        }
-
-        double errorMeters = error.get().getTranslation().getNorm();
-
-        if (errorMeters > VisionInjectFilter.MAX_DISTANCE_METERS) {
-            // If the error is unreasonably large, likely due to a bad measurement, ignore it.
-            return 0.0;
-        }
-
-        return errorMeters;
+    /**
+     * Updates the vision Kalman filter state for dashboard display.
+     *
+     * @param isActive true if the filter has been initialized with at least one measurement
+     * @param pose the current pose estimate (only meaningful when isActive is true)
+     * @param hasConverged true if the filter has converged
+     */
+    public void updateKalmanState(boolean isActive, Pose2d pose, boolean hasConverged) {
+        m_cachedKalmanIsActive = isActive;
+        m_cachedKalmanPose = pose;
+        m_cachedKalmanConverged = hasConverged;
     }
 
     private static String targetListToString(List<Integer> targets) {
@@ -242,7 +272,8 @@ public class BasicInfoDashboard {
     private String getDebugCalculatedForwardString() {
         if (isRedAlliance()) {
             return "WEST";
-        } else {
+        }
+        else {
             return "EAST";
         }
     }
@@ -254,10 +285,10 @@ public class BasicInfoDashboard {
         m_gyroYawDegrees.set(m_pigeon.getYaw().getValueAsDouble());
 
         /* Publish other basic info */
-        AllianceWithBlueFallback.set(isRedAlliance() ? "Red" : "Blue");
-        AllianceNT.set(DriverStation.getAlliance().map(Object::toString).orElse("UNKNOWN"));
-        IsDSAttached.set(DriverStation.isDSAttached());
-        IsFMSAttached.set(DriverStation.isFMSAttached());
+        m_allianceWithBlueFallback.set(isRedAlliance() ? "Red" : "Blue");
+        m_allianceNt.set(DriverStation.getAlliance().map(Object::toString).orElse("UNKNOWN"));
+        m_isDsAttached.set(DriverStation.isDSAttached());
+        m_isFmsAttached.set(DriverStation.isFMSAttached());
 
         /* Publish operator forward direction
             If the operator is in the Blue Alliance Station, this should be 0 degrees (EAST).
@@ -265,76 +296,47 @@ public class BasicInfoDashboard {
         */
         double forwardDegrees = m_drivetrain.getOperatorForwardDirection().getDegrees();
         String screenDirection = (Math.abs(forwardDegrees) < 90) ? "EAST" : "WEST";
-        OperatorForwardDirectionDegrees.set(screenDirection);
+        m_operatorForwardDirectionDegrees.set(screenDirection);
 
-        DebugCalculatedForwardDirection.set(getDebugCalculatedForwardString());
+        m_debugCalculatedForwardDirection.set(getDebugCalculatedForwardString());
 
-        /* Publish vision confidence */
-        if (m_visionConfidenceSupplier != null) {
-            m_visionConfidence.set(m_visionConfidenceSupplier.getAsDouble());
-        }
+        /* Publish vision state */
+        m_visionConfidence.set(m_cachedVisionConfidence);
+        m_oneLocked.set(m_oneLockedDebouncer.calculate(m_cachedHasTargetLock));
+        m_multiLocked.set(m_multiLockedDebouncer.calculate(m_cachedHasMultiTagLock));
+        m_isMt2.set(m_isMt2Debouncer.calculate(m_cachedIsLatestMt2));
+        m_visionTx.set(m_cachedTx);
 
-        if (m_hasTargetLockSupplier != null) {
-            boolean hasTargetLock = m_hasTargetLockSupplier.getAsBoolean();
-            m_oneLocked.set(m_oneLockedDebouncer.calculate(hasTargetLock));
-        }
-        if (m_hasMultiTagLockSupplier != null) {
-            boolean hasMultiTagLock = m_hasMultiTagLockSupplier.getAsBoolean();
-            m_multiLocked.set(m_multiLockedDebouncer.calculate(hasMultiTagLock));
-        }
-        if (m_isLatestMt2Supplier != null) {
-            boolean isLatestMt2 = m_isLatestMt2Supplier.getAsBoolean();
-            m_isMt2.set(m_isMt2Debouncer.calculate(isLatestMt2));
-        }
-        if (m_txSupplier != null) {
-            m_visionTx.set(m_txSupplier.getAsDouble());
-        }
-        if (m_visErrorAtSnapTimeSupplier != null) {
-            double visErrorMeters = calcVisErrorMeters(m_visErrorAtSnapTimeSupplier.get());
-            m_visErrorCentimeters.set(100.0 * visErrorMeters);
-            boolean hasMultiTag = m_hasMultiTagLockSupplier != null && m_hasMultiTagLockSupplier.getAsBoolean();
-            m_visErrorMultiTagCentimeters.set(hasMultiTag ? 100.0 * visErrorMeters : 0.0);
-        }
+        double visErrorMeters = m_cachedVisionError.isPresent() ? m_cachedVisionError.getAsDouble() : 0.0;
+        m_visErrorCentimeters.set(100.0 * visErrorMeters);
+        m_visErrorMultiTagCentimeters.set(m_cachedHasMultiTagLock ? 100.0 * visErrorMeters : 0.0);
 
-        if (m_targetListSupplier != null) {
-            List<Integer> targets = m_targetListSupplier.get();
-            boolean hasTargets = !targets.isEmpty();
-            if (hasTargets) {
-                m_lastNonEmptyTargetList = targetListToString(targets);
-            }
-            // Debounce the "has targets" state - when it goes false, delay before showing empty
-            boolean showTargets = m_targetListDebouncer.calculate(hasTargets);
-            m_targetList.set(showTargets ? m_lastNonEmptyTargetList : "");
+        List<Integer> targets = m_cachedTargetList;
+        boolean hasTargets = !targets.isEmpty();
+        if (hasTargets) {
+            m_lastNonEmptyTargetList = targetListToString(targets);
         }
+        // Debounce the "has targets" state - when it goes false, delay before showing empty
+        boolean showTargets = m_targetListDebouncer.calculate(hasTargets);
+        m_targetList.set(showTargets ? m_lastNonEmptyTargetList : "");
 
         /* Publish vision Kalman filter state */
-        if (m_visionKalmanSupplier != null) {
-            VisionKalmanFilter filter = m_visionKalmanSupplier.get();
-            boolean isActive = filter.isInitialized();
-            m_visionKalmanActive.set(isActive);
-
-            if (isActive) {
-                Pose2d pose = filter.getEstimate();
-                m_visionKalmanPose.set(new double[] {
-                    pose.getX(),
-                    pose.getY(),
-                    pose.getRotation().getDegrees()
-                });
-                m_visionKalmanConverged.set(filter.hasConverged());
-            } else {
-                m_visionKalmanPose.set(new double[] {0, 0, 0});
-                m_visionKalmanConverged.set(false);
-            }
+        m_visionKalmanActive.set(m_cachedKalmanIsActive);
+        if (m_cachedKalmanIsActive) {
+            m_visionKalmanPose.set(new double[] {
+                m_cachedKalmanPose.getX(),
+                m_cachedKalmanPose.getY(),
+                m_cachedKalmanPose.getRotation().getDegrees()
+            });
         }
+        else {
+            m_visionKalmanPose.set(new double[] {0, 0, 0});
+        }
+        m_visionKalmanConverged.set(m_cachedKalmanConverged);
 
         /* Publish robot motionless state for Kalman filter */
-        if (m_isRobotMotionlessSupplier != null) {
-            m_visionKalmanIsRobotStill.set(m_isRobotMotionlessSupplier.getAsBoolean());
-        }
-        if (m_secondsStillSupplier != null) {
-            double seconds = m_secondsStillSupplier.getAsDouble();
-            m_visionKalmanSecondsStill.set(String.format("%.1f", seconds));
-        }
+        m_visionKalmanIsRobotStill.set(m_cachedIsMotionless);
+        m_visionKalmanSecondsStill.set(String.format("%.1f", m_cachedSecondsStill));
 
         /* Update and publish per-camera heartbeat status (only write NT when state may have changed) */
         for (CameraMonitor mon : m_cameraMonitors) {
@@ -343,4 +345,5 @@ public class BasicInfoDashboard {
             }
         }
     }
+
 }

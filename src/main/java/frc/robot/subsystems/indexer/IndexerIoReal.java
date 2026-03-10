@@ -7,7 +7,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import frc.robot.Constants.IndexerConstants;
-import frc.robot.sim.RollerSim.RollerIoInterface;
+import robotutils.pub.interfaces.RollerIoInterface;
 
 /**
  * Real-hardware implementation of {@link RollerIoInterface} for the indexer.
@@ -41,7 +41,7 @@ public class IndexerIoReal implements RollerIoInterface {
 
     @Override
     public void updateOutputs(DeviceOutputs outputs) {
-        outputs.velocityRPM = m_motor.getEncoder().getVelocity();
-        outputs.currentAmps = m_motor.getOutputCurrent();
+        outputs.m_velocityRpm = m_motor.getEncoder().getVelocity();
+        outputs.m_currentAmps = m_motor.getOutputCurrent();
     }
 }

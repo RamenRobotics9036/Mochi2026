@@ -1,6 +1,7 @@
 package frc.robot.visutils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.LimelightHelpers;
@@ -8,7 +9,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Test;
+
 
 class TestVisionHeartBeat {
 
@@ -44,7 +46,11 @@ class TestVisionHeartBeat {
     @Test
     void initialState_allFalse() {
         VisionHeartBeat vhb = new VisionHeartBeat(
-            () -> 0, () -> -1, TestVisionHeartBeat::invalidEstimate, TestVisionHeartBeat::invalidEstimate, 5);
+            () -> 0,
+            () -> -1,
+            TestVisionHeartBeat::invalidEstimate,
+            TestVisionHeartBeat::invalidEstimate,
+            5);
         assertFalse(vhb.isHeartbeating());
         assertFalse(vhb.hasSeenTid());
         assertFalse(vhb.hasSeenMt1Pose());
@@ -57,7 +63,11 @@ class TestVisionHeartBeat {
 
     @Test
     void heartbeat_notIncrementing_isFalse() {
-        VisionHeartBeat vhb = build(() -> 42.0, () -> -1, TestVisionHeartBeat::invalidEstimate, TestVisionHeartBeat::invalidEstimate);
+        VisionHeartBeat vhb = build(
+            () -> 42.0,
+            () -> -1,
+            TestVisionHeartBeat::invalidEstimate,
+            TestVisionHeartBeat::invalidEstimate);
         vhb.update(); // first check — NaN → 42, not yet incrementing
         vhb.update(); // second check — 42 == 42
         assertFalse(vhb.isHeartbeating());
@@ -66,7 +76,11 @@ class TestVisionHeartBeat {
     @Test
     void heartbeat_incrementing_isTrue() {
         AtomicLong counter = new AtomicLong(0);
-        VisionHeartBeat vhb = build(counter::getAndIncrement, () -> -1, TestVisionHeartBeat::invalidEstimate, TestVisionHeartBeat::invalidEstimate);
+        VisionHeartBeat vhb = build(
+            counter::getAndIncrement,
+            () -> -1,
+            TestVisionHeartBeat::invalidEstimate,
+            TestVisionHeartBeat::invalidEstimate);
         vhb.update(); // first check — NaN → 0
         vhb.update(); // second check — 0 → 1, incremented
         assertTrue(vhb.isHeartbeating());
@@ -78,7 +92,11 @@ class TestVisionHeartBeat {
         AtomicReference<java.util.function.DoubleSupplier> supplier =
             new AtomicReference<>(counter::getAndIncrement);
 
-        VisionHeartBeat vhb = build(() -> supplier.get().getAsDouble(), () -> -1, TestVisionHeartBeat::invalidEstimate, TestVisionHeartBeat::invalidEstimate);
+        VisionHeartBeat vhb = build(
+            () -> supplier.get().getAsDouble(),
+            () -> -1,
+            TestVisionHeartBeat::invalidEstimate,
+            TestVisionHeartBeat::invalidEstimate);
         vhb.update(); // NaN → 0
         vhb.update(); // 0 → 1, incrementing
         assertTrue(vhb.isHeartbeating());

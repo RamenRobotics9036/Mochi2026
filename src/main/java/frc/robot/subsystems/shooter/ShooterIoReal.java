@@ -7,11 +7,10 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
+import robotutils.pub.interfaces.TwoMotorRollerIoInterface;
 
 /**
  * Real-hardware implementation of {@link TwoMotorRollerIoInterface} for the shooter.
@@ -84,8 +83,8 @@ public class ShooterIoReal implements TwoMotorRollerIoInterface {
 
     @Override
     public void updateOutputs(DeviceOutputs outputs) {
-        outputs.velocityRPM = m_lMotor.getVelocity().getValueAsDouble() * 60.0;
-        outputs.leaderCurrentAmps = m_lMotor.getStatorCurrent().getValueAsDouble();
-        outputs.followerCurrentAmps = m_rMotor.getStatorCurrent().getValueAsDouble();
+        outputs.m_velocityRpm = m_lMotor.getVelocity().getValueAsDouble() * 60.0;
+        outputs.m_leaderCurrentAmps = m_lMotor.getStatorCurrent().getValueAsDouble();
+        outputs.m_followerCurrentAmps = m_rMotor.getStatorCurrent().getValueAsDouble();
     }
 }

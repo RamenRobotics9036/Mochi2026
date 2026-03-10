@@ -5,12 +5,11 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.generated.GeneratedPancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import java.util.List;
+import robotutils.pub.interfaces.CameraInfoList;
 
 /**
  * Interface for robot-specific tuner configuration.
@@ -18,23 +17,6 @@ import java.util.List;
  * for a specific robot.
  */
 public interface BotConfigInterface {
-    /** Camera name and robot-to-camera transform pair. */
-    final class CameraInfo {
-        public final String cameraName;
-        public final Transform3d robotToCam;
-
-        /** 
-         * Create a new CameraInfo object to store info about a camera.
-         * 
-         * @param cameraName The name of the active camera
-         * @param robotToCam The transform to get from the robot's position to the camera's
-         */
-        public CameraInfo(String cameraName, Transform3d robotToCam) {
-            this.cameraName = cameraName;
-            this.robotToCam = robotToCam;
-        }
-    }
-
     /*************************************************************************************
      *
      * SWERVEDRIVE GENERATED CONSTANTS
@@ -158,24 +140,9 @@ public interface BotConfigInterface {
     /** When true, vision pose estimates are automatically injected into the drivetrain pose estimator. */
     boolean isAutoVisionInjectionEnabled();
 
+    /** Name of the EvaluatePoses implementation to use (e.g. "MochiV1"). */
+    String getEvaluatePosesName();
+
     /** Camera configurations for the real robot. */
-    List<CameraInfo> getCameras();
-
-    /** Helper to just get the name of a camera. */
-    default String getCameraName(int cameraNum) {
-        List<CameraInfo> cameras = getCameras();
-        if (cameraNum < 0 || cameraNum >= cameras.size()) {
-            throw new IllegalArgumentException("Invalid camera number: " + cameraNum);
-        }
-        return cameras.get(cameraNum).cameraName;
-    }
-
-    /** Helper to just get the RobotToCam translation for camera. */
-    default Transform3d getRobotToCam(int cameraNum) {
-        List<CameraInfo> cameras = getCameras();
-        if (cameraNum < 0 || cameraNum >= cameras.size()) {
-            throw new IllegalArgumentException("Invalid camera number: " + cameraNum);
-        }
-        return cameras.get(cameraNum).robotToCam;
-    }
+    CameraInfoList getCameras();
 }
