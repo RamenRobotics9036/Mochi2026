@@ -1,7 +1,12 @@
 package frc.robot.visutils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -10,10 +15,17 @@ import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import frc.robot.visutils.evaluateposes.EvaluatePosesMochiV1;
 import java.util.List;
-import org.junit.jupiter.api.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
 
 /**
  * Unit tests for {@link SingleCamOdometry}.
@@ -72,24 +84,25 @@ class TestSingleCamOdometry {
         m_lastConsumedPose = null;
         m_consumeCallCount = 0;
 
-        VisionSimInterface.EstimateConsumer consumer =
-            (pose, ts, stdDevs) -> {
-                m_lastConsumedPose = pose;
+        Consumer<VisionSimInterface.DrivetrainVisionPoseInfo> consumer =
+            info -> {
+                m_lastConsumedPose = info.pose();
                 m_consumeCallCount++;
             };
 
         m_kalmanFilter = Mockito.mock(VisionKalmanFilter.class);
 
         // Identity transform — no rotation or translation from robot to camera.
-        // Default test camera has MT2 disabled (most tests don't need it).
+        // Default test camera has MT2 enabled; motionless supplier defaults to false so
+        // Kalman injection is not triggered unless the test explicitly requests it.
         m_cam = new SingleCamOdometry(
             CAM_NAME,
             new Transform3d(),
-            consumer,
-            null,
-            () -> 0.0,
-            true,
-            true);
+            new CamOutputs(
+                consumer,
+                m_kalmanFilter),
+            new CamInputs(() -> makeState(POSE_A), null, () -> false),
+            new CamConfig(true, true, new EvaluatePosesMochiV1()));
     }
 
     @AfterEach
@@ -130,28 +143,56 @@ class TestSingleCamOdometry {
     // 0. MegaTag preference/fallback
     // ------------------------------------------------------------------
 
-    /** Helper to create a camera with an explicit MT2 flag. */
+    /** Helper to create a camera with an explicit MT2 flag (defaults to POSE_A as current pose). */
     private SingleCamOdometry createCamWithMt2(boolean supportMegatag2) {
-        VisionSimInterface.EstimateConsumer consumer =
-            (pose, ts, stdDevs) -> {
-                m_lastConsumedPose = pose;
+        return createCamWithMt2(supportMegatag2, () -> POSE_A);
+    }
+
+    private SingleCamOdometry createCamWithMt2(
+        boolean supportMegatag2,
+        Supplier<Pose2d> currentRobotPoseSupplier) {
+
+        Consumer<VisionSimInterface.DrivetrainVisionPoseInfo> consumer =
+            info -> {
+                m_lastConsumedPose = info.pose();
                 m_consumeCallCount++;
             };
-        SingleCamOdometry result = new SingleCamOdometry(
+        return new SingleCamOdometry(
             CAM_NAME,
             new Transform3d(),
-            consumer,
-            null,
-            () -> 0.0,
-             supportMegatag2,
-             true);
+            new CamOutputs(
+                consumer,
+                info -> {}),
+            new CamInputs(() -> makeState(currentRobotPoseSupplier.get()), null, () -> false),
+            new CamConfig(supportMegatag2, true, new EvaluatePosesMochiV1()));
+    }
 
-        return result;
+    private static SwerveDriveState makeState(Pose2d pose) {
+        SwerveDriveState state = new SwerveDriveState();
+        state.Pose = pose;
+        return state;
+    }
+
+    /** Creates a camera wired to {@link #m_kalmanFilter} with the given motionless supplier. */
+    private SingleCamOdometry createCamWithKalman(java.util.function.BooleanSupplier isMotionless) {
+        Consumer<VisionSimInterface.DrivetrainVisionPoseInfo> consumer =
+            info -> {
+                m_lastConsumedPose = info.pose();
+                m_consumeCallCount++;
+            };
+        return new SingleCamOdometry(
+            CAM_NAME,
+            new Transform3d(),
+            new CamOutputs(
+                consumer,
+                m_kalmanFilter),
+            new CamInputs(() -> makeState(POSE_A), null, isMotionless),
+            new CamConfig(true, true, new EvaluatePosesMochiV1()));
     }
 
     @Test
     void periodic_megatag2Enabled_mt2MoreTags_prefersMt2() {
-        SingleCamOdometry cam = createCamWithMt2(true);
+        SingleCamOdometry cam = createCamWithMt2(true, () -> POSE_B);
         PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
         PoseEstimate mt2 = new PoseEstimate(
             POSE_B, 1.0, 0.0, 2, 0.0, 2.0, 0.0,
@@ -176,7 +217,7 @@ class TestSingleCamOdometry {
 
     @Test
     void periodic_megatag2Enabled_mt1MoreTags_prefersMt1() {
-        SingleCamOdometry cam = createCamWithMt2(true);
+        SingleCamOdometry cam = createCamWithMt2(true, () -> POSE_A);
         // MT1 sees 3 tags at 2m
         RawFiducial f1 = new RawFiducial(1, 0, 0, 0, 2.0, 2.0, 0.1);
         RawFiducial f2 = new RawFiducial(2, 0, 0, 0, 2.0, 2.0, 0.1);
@@ -205,7 +246,7 @@ class TestSingleCamOdometry {
 
     @Test
     void periodic_megatag2Enabled_sameTagCount_mt1MuchCloser_prefersMt1() {
-        SingleCamOdometry cam = createCamWithMt2(true);
+        SingleCamOdometry cam = createCamWithMt2(true, () -> POSE_A);
         // Both see 1 tag; MT1 at 2m, MT2 at 3.5m — gap exceeds the MT2 distance advantage
         PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
         PoseEstimate mt2 = new PoseEstimate(
@@ -226,7 +267,7 @@ class TestSingleCamOdometry {
 
     @Test
     void periodic_megatag2Enabled_sameTagCount_mt2SlightlyFarther_prefersMt2() {
-        SingleCamOdometry cam = createCamWithMt2(true);
+        SingleCamOdometry cam = createCamWithMt2(true, () -> POSE_B);
         // Both see 1 tag; MT1 at 2.0m, MT2 at 2.3m — within the 0.5m MT2 advantage
         PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
         PoseEstimate mt2 = new PoseEstimate(
@@ -472,7 +513,10 @@ class TestSingleCamOdometry {
         double farConfidence = m_cam.getConfidenceScore();
 
         assertTrue(farConfidence < nearConfidence,
-            "Confidence at 6 m (" + farConfidence + ") should be lower than at 1 m (" + nearConfidence + ")");
+            "Confidence at 6 m ("
+            + farConfidence
+            + ") should be lower than at 1 m ("
+            + nearConfidence + ")");
     }
 
     // ------------------------------------------------------------------
@@ -600,8 +644,8 @@ class TestSingleCamOdometry {
 
     /**
      * When the robot is motionless AND the estimate has ≥ 2 tags, the Kalman filter's
-     * {@code injectVisionMeasurement} must be called exactly once with the correct pose and
-     * tag count.
+        * Kalman measurement consumer must be called exactly once with the correct pose and
+        * tag count.
      */
     @Test
     void periodic_motionlessAndMultiTag_injectsKalman() {
@@ -609,16 +653,17 @@ class TestSingleCamOdometry {
             UnsupportedOperationException.class, () -> m_cam.enableVision(true));
         assertTrue(ex.getMessage().contains("SingleCamOdometry"),
             "Exception message should mention SingleCamOdometry, got: " + ex.getMessage());
-        m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> true);
+
+        SingleCamOdometry cam = createCamWithKalman(() -> true);
 
         PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
         m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
             .thenReturn(est);
 
-        m_cam.periodic();
+        cam.periodic();
 
         Mockito.verify(m_kalmanFilter, Mockito.times(1))
-            .injectVisionMeasurement(POSE_A, 2);
+            .accept(Mockito.argThat(info -> info.pose().equals(POSE_A) && info.tagCount() == 2));
     }
 
     /**
@@ -631,16 +676,17 @@ class TestSingleCamOdometry {
             UnsupportedOperationException.class, () -> m_cam.enableVision(true));
         assertTrue(ex.getMessage().contains("SingleCamOdometry"),
             "Exception message should mention SingleCamOdometry, got: " + ex.getMessage());
-        m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> false);
+
+        SingleCamOdometry cam = createCamWithKalman(() -> false);
 
         PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
         m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
             .thenReturn(est);
 
-        m_cam.periodic();
+        cam.periodic();
 
         Mockito.verify(m_kalmanFilter, Mockito.never())
-            .injectVisionMeasurement(Mockito.any(), Mockito.anyInt());
+            .accept(Mockito.any());
     }
 
     /**
@@ -653,24 +699,25 @@ class TestSingleCamOdometry {
             UnsupportedOperationException.class, () -> m_cam.enableVision(true));
         assertTrue(ex.getMessage().contains("SingleCamOdometry"),
             "Exception message should mention SingleCamOdometry, got: " + ex.getMessage());
-        m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> true);
+
+        SingleCamOdometry cam = createCamWithKalman(() -> true);
 
         PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
         m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
             .thenReturn(est);
 
-        m_cam.periodic();
+        cam.periodic();
 
         Mockito.verify(m_kalmanFilter, Mockito.never())
-            .injectVisionMeasurement(Mockito.any(), Mockito.anyInt());
+            .accept(Mockito.any());
     }
 
     /**
-     * When no Kalman filter has been wired via {@code setVisionDependencies}, calling
-     * {@code periodic()} with a valid multi-tag estimate must not throw.
+     * Verifies that calling {@code periodic()} with a valid multi-tag estimate does not throw,
+     * even when the motionless supplier returns false (Kalman injection is skipped).
      */
     @Test
-    void periodic_noKalmanFilterSet_doesNotThrow() {
+    void periodic_multiTag_doesNotThrow() {
         // No setVisionDependencies call — Kalman filter remains null.
         PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
         m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))

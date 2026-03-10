@@ -4,6 +4,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
@@ -13,6 +14,7 @@ import frc.robot.sim.visionproducers.VisionSimFactory;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
+import static edu.wpi.first.units.Units.*;
 import java.util.function.Consumer;
 
 
@@ -29,7 +31,6 @@ import java.util.function.Consumer;
 public class SimWrapper {
     private final BotConfigInterface m_configInterface;
 
-    private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_drivetrain;
     private final GroundTruthSimInterface m_groundTruthSim;
     private final VisionSimInterface m_visionSim;
 
@@ -57,8 +58,6 @@ public class SimWrapper {
 
         m_configInterface = configInterface;
 
-        m_drivetrain = drivetrain;
-
         // Create ground truth simulation
         m_groundTruthSim = GroundTruthSimFactory.create(drivetrain, poseResetConsumer);
 
@@ -82,8 +81,6 @@ public class SimWrapper {
      * Updates physics simulation and vision based on ground truth pose.
      */
     public void simulationPeriodic() {
-        var driveState = m_drivetrain.getState();
-
         // Update ground truth physics simulation
         m_groundTruthSim.simulationPeriodic();
 
@@ -106,9 +103,26 @@ public class SimWrapper {
 
     /**
      * Proxy call to ground truth sim to inject odometry drift.
+     *
+     * @param xOffsetFrontBack X translation offset in meters (+ = forward, - = backward)
+     * @param yOffsetLeftRight Y translation offset in meters (+ = left, - = right)
+     * @param rotationOffsetDegrees Rotation offset in degrees
      */
-    public void injectDrift(double translationOffsetMeters, double rotationOffsetDegrees) {
-        m_groundTruthSim.injectDrift(translationOffsetMeters, rotationOffsetDegrees);
+    public void injectDriftToPoseEstimate(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
+        m_groundTruthSim.injectDriftToPoseEstimate(xOffsetFrontBack, yOffsetLeftRight, rotationOffsetDegrees);
+    }
+
+    /**
+     * Proxy call to ground truth sim to offset the ground truth pose.
+     * Moves where the robot "actually is" (and thus where cameras see AprilTags)
+     * without touching the odometry estimate.
+     *
+     * @param xOffsetFrontBack X translation offset in meters (+ = forward, - = backward)
+     * @param yOffsetLeftRight Y translation offset in meters (+ = left, - = right)
+     * @param rotationOffsetDegrees Rotation offset in degrees
+     */
+    public void injectDriftToGroundTruth(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
+        m_groundTruthSim.injectDriftToGroundTruth(xOffsetFrontBack, yOffsetLeftRight, rotationOffsetDegrees);
     }
 
     /**
@@ -118,6 +132,19 @@ public class SimWrapper {
      */
     public void cycleResetPosition(Pose2d blueAlliancePose) {
         m_groundTruthSim.cycleResetPosition(blueAlliancePose);
+    }
+
+    /**
+     * Nudges the ground truth pose 12 inches to the right (robot-local -Y).
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     */
+    public static void nudgeRight12Inches(SimWrapper simWrapper) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.injectDriftToGroundTruth(0, Units.inchesToMeters(12), 0);
     }
 
     /**
@@ -132,7 +159,14 @@ public class SimWrapper {
             Trigger resetTrigger,
             CommandSwerveDrivetrain drivetrain) {
 
-        driftTrigger.onTrue(drivetrain.runOnce(() -> injectDrift(0.5, 15.0)));
+        driftTrigger.onTrue(drivetrain.runOnce(() -> {
+            // Random translation up to 0.5 m in a random direction, random rotation sign
+            double angle = Math.random() * 2 * Math.PI;
+            double xFrontBack = 0.5 * Math.cos(angle);
+            double yLeftRight = 0.5 * Math.sin(angle);
+            double dtheta = 15.0 * (Math.random() > 0.5 ? 1 : -1);
+            injectDriftToGroundTruth(xFrontBack, yLeftRight, dtheta);
+        }));
         resetTrigger.onTrue(drivetrain.runOnce(() ->
             cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
     }

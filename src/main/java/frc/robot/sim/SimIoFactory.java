@@ -1,14 +1,14 @@
 package frc.robot.sim;
 
 import frc.robot.Constants;
-import frc.robot.sim.RollerSim.RollerIoInterface;
-import frc.robot.sim.RollerSim.RollerIoSim;
-import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
-import frc.robot.sim.RollerSim.TwoMotorRollerIoSim;
 import frc.robot.sim.armsim.ArmIoInterface;
 import frc.robot.sim.armsim.ArmIoSim;
-import frc.robot.sim.elevatorSim.ElevatorIoInterface;
-import frc.robot.sim.elevatorSim.ElevatorIoSim;
+import frc.robot.sim.elevatorssim.ElevatorIoInterface;
+import frc.robot.sim.elevatorssim.ElevatorIoSim;
+import frc.robot.sim.rollerssim.RollerIoInterface;
+import frc.robot.sim.rollerssim.RollerIoSim;
+import frc.robot.sim.rollerssim.TwoMotorRollerIoInterface;
+import frc.robot.sim.rollerssim.TwoMotorRollerIoSim;
 
 /** Helps create specific IO Sim instances for our specific robot. */
 public class SimIoFactory {

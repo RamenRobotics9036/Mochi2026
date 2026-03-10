@@ -1,14 +1,11 @@
 package frc.robot.visutils;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.BotConfigInterface.CameraInfo;
-import frc.robot.sim.visionproducers.VisionSimInterface;
+import frc.robot.visutils.evaluateposes.EvaluatePosesFactory;
+import frc.robot.visutils.evaluateposes.EvaluatePosesInterface;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.DoubleSupplier;
-import java.util.function.Function;
 
 /** Factory for creating and wiring up a {@link MultiCamOdometry} instance. */
 public class MultiCamOdometryFactory {
@@ -17,68 +14,55 @@ public class MultiCamOdometryFactory {
     private MultiCamOdometryFactory() {}
 
     /**
-     * Creates a {@link MultiCamOdometry} and wires it to the dashboard and vision filter.
+     * Creates a {@link MultiCamOdometry} instance and wires it to the dashboard.
      *
      * @param configInterface    Bot configuration (cameras, speeds, etc.)
-     * @param poseSampler        Samples the drivetrain's historical pose at a given timestamp
-     *                           (e.g. {@code drivetrain::samplePoseAt})
-     * @param poseConsumer       Consumer for vision pose estimates
-     *                           (e.g. {@code drivetrain::addVisionMeasurement})
-     * @param yawDegreesSupplier Supplies the robot's current heading in degrees
-     *                           (WPILib blue-alliance frame) for MegaTag2 orientation updates
-     * @param basicInfoDashboard Dashboard to receive vision confidence/status updates
-     * @param visionKalmanFilter Kalman filter for stationary vision estimation
+     * @param outputs            Camera outputs: pose consumer and Kalman filter
+     * @param inputs             Camera inputs: drive state, pose sampler, and motionless supplier
+     * @param basicInfoDashboard Dashboard to push vision state updates to each cycle
      * @param motionlessTracker  Tracks whether the robot is motionless
-     * @return A fully configured {@link CamOdometryInterface} instance
+     * @param evaluatePosesName  Name of the {@link EvaluatePosesInterface} implementation
+     *                           to use (e.g. {@code "MochiV1"})
+     * @return A fully configured {@link MultiCamOdometryWrapper} instance
      */
-    public static CamOdometryInterface create(
+    public static MultiCamOdometryWrapper create(
             BotConfigInterface configInterface,
-            Function<Double, Optional<Pose2d>> poseSampler,
-            VisionSimInterface.EstimateConsumer poseConsumer,
-            DoubleSupplier yawDegreesSupplier,
+            CamOutputs outputs,
+            CamInputs inputs,
             BasicInfoDashboard basicInfoDashboard,
-            VisionKalmanFilter visionKalmanFilter,
-            MotionlessTracker motionlessTracker) {
+            MotionlessTracker motionlessTracker,
+            String evaluatePosesName) {
 
         boolean megaTag2Enabled = configInterface.isMegaTag2Supported();
         boolean autoVisionInjectionEnabled = configInterface.isAutoVisionInjectionEnabled();
+        EvaluatePosesInterface evaluatePoses = EvaluatePosesFactory.create(evaluatePosesName);
+        CamConfig config = new CamConfig(
+            megaTag2Enabled,
+            autoVisionInjectionEnabled,
+            evaluatePoses);
 
         List<CamOdometryInterface> cameras = new ArrayList<>();
         for (CameraInfo camInfo : configInterface.getCameras()) {
             cameras.add(new SingleCamOdometry(
                 camInfo.cameraName,
                 camInfo.robotToCam,
-                poseConsumer,
-                poseSampler,
-                yawDegreesSupplier,
-                megaTag2Enabled,
-                autoVisionInjectionEnabled));
+                outputs,
+                inputs,
+                config));
         }
 
         CamOdometryInterface multiCam = new MultiCamOdometry(
             cameras,
             megaTag2Enabled,
-            autoVisionInjectionEnabled);
+            autoVisionInjectionEnabled,
+            config.evaluatePoses());
 
         MultiCamOdometryWrapper wrapper =
-                new MultiCamOdometryWrapper(multiCam, configInterface.isVisionEnabledDefault());
-
-        wrapper.setVisionDependenciesOnCamera(
-            visionKalmanFilter,
-            motionlessTracker::isMotionless);
-
-        basicInfoDashboard.setVisionDependenciesOnDash(
-            wrapper::getConfidenceScore,
-            wrapper::hasTargetLock,
-            wrapper::hasMultiTagLock,
-            wrapper::isLatestMt2,
-            wrapper::getPrimaryTagTx,
-            wrapper::getVisibleTagIds,
-            wrapper::getVisionErrorAtSnapTime,
-            motionlessTracker::isMotionless,
-            motionlessTracker::getSecondsStill);
-
-        basicInfoDashboard.setVisionKalmanSupplier(() -> visionKalmanFilter);
+                new MultiCamOdometryWrapper(
+                    multiCam,
+                    configInterface.isVisionEnabledDefault(),
+                    basicInfoDashboard,
+                    motionlessTracker);
 
         return wrapper;
     }

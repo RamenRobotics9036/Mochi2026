@@ -18,12 +18,12 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 import frc.robot.visutils.AllianceCalc;
 import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 
@@ -45,9 +45,6 @@ public class GroundTruthSim implements GroundTruthSimInterface {
 
     /** Consumer to notify RobotContainer when pose is reset. */
     private final Consumer<Pose2d> m_poseResetConsumer;
-
-    /** Source of randomness for drift injection (injectable for testing). */
-    private final DoubleSupplier m_randomSource;
 
     /** The ground truth pose tracks where the robot actually is in simulation physics. */
     private Pose2d m_groundTruthPose = new Pose2d();
@@ -85,8 +82,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
             () -> drivetrain.getState().Speeds,
             () -> drivetrain.getState().Pose,
             drivetrain::resetPose,
-            poseResetConsumer,
-            Math::random);
+            poseResetConsumer);
     }
 
     /**
@@ -98,15 +94,13 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * @param estimatedPoseSupplier Supplies the current estimated pose from the pose estimator
      * @param drivetrainResetPose Consumer to reset the drivetrain's pose estimator
      * @param poseResetConsumer Consumer to be called when pose is reset (e.g. for vision)
-     * @param randomSource Supplies values in [0, 1) for drift injection
      * @throws IllegalStateException if called outside of simulation mode
      */
     GroundTruthSim(
         Supplier<ChassisSpeeds> speedsSupplier,
         Supplier<Pose2d> estimatedPoseSupplier,
         Consumer<Pose2d> drivetrainResetPose,
-        Consumer<Pose2d> poseResetConsumer,
-        DoubleSupplier randomSource) {
+        Consumer<Pose2d> poseResetConsumer) {
 
         if (!Robot.isSimulation()) {
             throw new IllegalStateException("GroundTruthSim only instantiated in simulation mode");
@@ -115,7 +109,6 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         this.m_estimatedPoseSupplier = estimatedPoseSupplier;
         this.m_drivetrainResetPose = drivetrainResetPose;
         this.m_poseResetConsumer = poseResetConsumer;
-        this.m_randomSource = randomSource;
         this.m_lastUpdateTime = Utils.getCurrentTimeSeconds();
     }
 
@@ -248,28 +241,36 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * @param rotationOffsetDegrees How far to offset the estimated heading (degrees)
      */
     @Override
-    public void injectDrift(double translationOffsetMeters, double rotationOffsetDegrees) {
+    public void injectDriftToPoseEstimate(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
         // Get current estimated pose
         Pose2d currentPose = m_estimatedPoseSupplier.get();
 
-        // Create offset - add random direction for translation
-        double angle = m_randomSource.getAsDouble() * 2 * Math.PI;
-        double dx = translationOffsetMeters * Math.cos(angle);
-        double dy = translationOffsetMeters * Math.sin(angle);
-
-        // Apply random sign to rotation
-        double dtheta = rotationOffsetDegrees * (m_randomSource.getAsDouble() > 0.5 ? 1 : -1);
-
-        // Create the drifted pose
-        Pose2d driftedPose = new Pose2d(
-            currentPose.getX() + dx,
-            currentPose.getY() + dy,
-            currentPose.getRotation().plus(Rotation2d.fromDegrees(dtheta))
+        // Apply offsets in the robot's local frame (x = forward, y = left)
+        Pose2d driftedPose = currentPose.transformBy(
+            new Transform2d(xOffsetFrontBack, yOffsetLeftRight, Rotation2d.fromDegrees(rotationOffsetDegrees))
         );
 
         // Reset the pose estimator to the drifted position
         // The ground truth pose remains at the actual position
         m_drivetrainResetPose.accept(driftedPose);
+    }
+
+    /**
+     * Offsets the ground truth pose while leaving the pose estimator unchanged.
+     * This moves where the robot "actually is" in simulation (and thus where
+     * cameras see AprilTags), without touching the odometry estimate.
+     *
+     * @param xOffsetFrontBack Forward/back offset in the robot's local frame (meters)
+     * @param yOffsetLeftRight Left/right offset in the robot's local frame (meters)
+     * @param rotationOffsetDegrees Heading offset (degrees)
+     */
+    @Override
+    public void injectDriftToGroundTruth(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
+        // Apply offsets in the robot's local frame (x = forward, y = left)
+        m_groundTruthPose = m_groundTruthPose.transformBy(
+            new Transform2d(xOffsetFrontBack, yOffsetLeftRight, Rotation2d.fromDegrees(rotationOffsetDegrees))
+        );
+        // The pose estimator is left untouched
     }
 
     /**

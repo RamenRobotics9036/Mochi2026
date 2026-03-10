@@ -12,6 +12,7 @@ public class DriveSmooth {
     private final SlewRateLimiter m_yLimiter;
     private final SlewRateLimiter m_rotLimiter;
 
+    /** Constructor. */
     public DriveSmooth() {
         m_xLimiter = new SlewRateLimiter(DriveConstants.kTranslationSlewRate);
         m_yLimiter = new SlewRateLimiter(DriveConstants.kTranslationSlewRate);

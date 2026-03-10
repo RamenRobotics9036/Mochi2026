@@ -14,19 +14,13 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 public interface VisionSimInterface {
 
     /**
-     * Functional interface for consuming pose estimates from the vision system.
+     * Immutable payload for drivetrain vision measurement injection.
      */
-    @FunctionalInterface
-    public static interface EstimateConsumer {
-        /**
-         * Accept a pose estimate from the vision system.
-         *
-         * @param pose The estimated robot pose
-         * @param timestamp The timestamp of the estimate
-         * @param estimationStdDevs The standard deviations of the estimation
-         */
-        void accept(Pose2d pose, double timestamp, Matrix<N3, N1> estimationStdDevs);
-    }
+    public static record DrivetrainVisionPoseInfo(
+            Pose2d pose,
+            double timestamp,
+            Matrix<N3, N1> estimationStdDevs,
+            int tagCount) {}
 
     /**
      * Process vision data. Should be called periodically (e.g., from robotPeriodic).

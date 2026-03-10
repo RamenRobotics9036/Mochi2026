@@ -7,7 +7,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.sim.RollerSim.RollerIoInterface;
+import frc.robot.sim.rollerssim.RollerIoInterface;
 
 /**
  * Real-hardware implementation of {@link RollerIoInterface}.
@@ -43,7 +43,7 @@ public class IntakeIoReal implements RollerIoInterface {
 
     @Override
     public void updateOutputs(DeviceOutputs outputs) {
-        outputs.velocityRPM = m_intakeMotor.getEncoder().getVelocity();
-        outputs.currentAmps = m_intakeMotor.getOutputCurrent();
+        outputs.m_velocityRpm = m_intakeMotor.getEncoder().getVelocity();
+        outputs.m_currentAmps = m_intakeMotor.getOutputCurrent();
     }
 }

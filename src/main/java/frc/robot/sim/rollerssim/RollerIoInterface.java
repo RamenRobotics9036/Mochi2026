@@ -1,4 +1,4 @@
-package frc.robot.sim.RollerSim;
+package frc.robot.sim.rollerssim;
 
 /**
  * IO interface for a single motor Roller mechanism.
@@ -11,9 +11,9 @@ public interface RollerIoInterface {
     /** Mutable container for roller sensor readings. */
     class DeviceOutputs {
         /** Motor velocity in RPM. */
-        public double velocityRPM;
+        public double m_velocityRpm;
         /** Motor output current in amps. */
-        public double currentAmps;
+        public double m_currentAmps;
     }
 
     /** Set the motor speed as a percentage (-1.0 to 1.0). */

@@ -1,6 +1,7 @@
 package frc.robot;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
@@ -9,7 +10,10 @@ import frc.robot.visutils.DriveSmooth;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link JoystickInput}.
@@ -68,13 +72,13 @@ class TestJoystickInput {
 
     /** Creates a non-sim JoystickInput with supplier-based axes. */
     private static JoystickInput createInput(
-            DoubleSupplier xSup,
-            DoubleSupplier ySup,
+            DoubleSupplier supX,
+            DoubleSupplier supY,
             DoubleSupplier rotSup,
             BooleanSupplier fineModeSup) {
         return new JoystickInput(
             new DriveSmooth(),
-            xSup, ySup, rotSup,
+            supX, supY, rotSup,
             fineModeSup,
             TELEOP_SPEED, MAX_ANGULAR,
             false, () -> 0.0);

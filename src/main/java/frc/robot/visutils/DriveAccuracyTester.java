@@ -33,17 +33,15 @@ public class DriveAccuracyTester {
     private final VisionKalmanFilter m_visionKalmanFilter;
 
     /** Callback to force-disable or re-enable vision injection into odometry. */
-    private final Consumer<Boolean> m_forceDisableVision;
+    private Consumer<Boolean> m_forceDisableVision;
 
     /**
      * @param driveSubsystem The drive subsystem
      * @param visionKalmanFilter The Kalman filter used to get converged pose estimates
-     * @param forceDisableVision Callback to force-disable (true) or re-enable (false) vision
      */
     public DriveAccuracyTester(
         CommandSwerveDrivetrain driveSubsystem,
-        VisionKalmanFilter visionKalmanFilter,
-        Consumer<Boolean> forceDisableVision) {
+        VisionKalmanFilter visionKalmanFilter) {
 
         if (driveSubsystem == null) {
             throw new IllegalArgumentException("driveSubsystem cannot be null");
@@ -51,6 +49,13 @@ public class DriveAccuracyTester {
 
         m_driveSubsystem = driveSubsystem;
         m_visionKalmanFilter = visionKalmanFilter;
+    }
+
+    /**
+     * Sets the callback used to force-disable (true) or re-enable (false) vision.
+     * Must be called before any accuracy test is run.
+     */
+    public void setForceDisableVision(Consumer<Boolean> forceDisableVision) {
         m_forceDisableVision = forceDisableVision;
     }
 
@@ -91,6 +96,10 @@ public class DriveAccuracyTester {
     }
 
     private void initializeTest() {
+        if (m_forceDisableVision == null) {
+            throw new IllegalStateException("forceDisableVision was not properly wired up");
+        }
+
         // Disable vision injection into driveTrain.  We want the path to drive PURELY based on
         // odometry, so we can see how far off it is at the end of the path.
         m_forceDisableVision.accept(true);

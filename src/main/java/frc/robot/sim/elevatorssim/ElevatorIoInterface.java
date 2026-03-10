@@ -1,4 +1,4 @@
-package frc.robot.sim.elevatorSim;
+package frc.robot.sim.elevatorssim;
 
 /**
  * IO interface for a single-motor elevator (linear lift) mechanism.
@@ -11,9 +11,9 @@ public interface ElevatorIoInterface {
     /** Mutable container for elevator sensor readings. */
     class DeviceOutputs {
         /** Carriage position in meters. */
-        public double positionMeters;
+        public double m_positionMeters;
         /** Motor output current in amps. */
-        public double currentAmps;
+        public double m_currentAmps;
     }
 
     /** Set the motor speed as a percentage (-1.0 to 1.0). */

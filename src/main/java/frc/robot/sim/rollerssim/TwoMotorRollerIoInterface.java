@@ -1,4 +1,5 @@
-package frc.robot.sim.RollerSim;
+package frc.robot.sim.rollerssim;
+
 
 /**
  * IO interface for a two-motor Roller mechanism (leader + opposed follower).
@@ -11,11 +12,11 @@ public interface TwoMotorRollerIoInterface {
     /** Mutable container for two-motor roller sensor readings. */
     class DeviceOutputs {
         /** Flywheel velocity in RPM (as seen from the leader motor). */
-        public double velocityRPM;
+        public double m_velocityRpm;
         /** Leader motor output current in amps. */
-        public double leaderCurrentAmps;
+        public double m_leaderCurrentAmps;
         /** Follower motor output current in amps. */
-        public double followerCurrentAmps;
+        public double m_followerCurrentAmps;
     }
 
     /** Set the motor speed as a percentage (-1.0 to 1.0). */

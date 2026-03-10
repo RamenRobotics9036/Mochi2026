@@ -223,6 +223,7 @@ public final class Constants {
          * MT2 is preferred over MT1 if its avgTagDist is within this margin of MT1's,
          * because gyro-fused rotation makes the estimate more reliable at similar range.
          */
+        // $TODO2 - Related to Megatag2
         public static final double kMt2DistanceAdvantageMeter = 0.5;
     }
 

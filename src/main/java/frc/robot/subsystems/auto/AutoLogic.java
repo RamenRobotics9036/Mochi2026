@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-
+import frc.robot.Robot;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.DriveForwardNow;
 
@@ -100,6 +100,10 @@ public final class  AutoLogic {
         autoPicker.addOption("R Bump_Shoot_Move_Back", "R Bump_Shoot_Move_Back");
         autoPicker.addOption("L Bump_Shoot_Climb", "L Bump_Shoot_Climb");
         autoPicker.addOption("R Bump_Shoot_Climb", "R Bump_Shoot_Climb");
+
+        if (Robot.isSimulation()) {
+            autoPicker.addOption("SIM: Nudges", "Sim Nudges");
+        }
 
         // Pathplanner Autos
         // autoPicker.addOption("Idos Backward then Forward", "Idos Backward then Forward");

@@ -42,8 +42,20 @@ public interface GroundTruthSimInterface {
      * The ground truth pose remains unchanged, but the pose estimator
      * is reset to a drifted position. Vision should then correct this drift.
      *
-     * @param translationOffsetMeters How far to offset the estimated position (meters)
-     * @param rotationOffsetDegrees How far to offset the estimated heading (degrees)
+     * @param xOffsetFrontBack Forward/back offset in the robot's local frame (meters)
+     * @param yOffsetLeftRight Left/right offset in the robot's local frame (meters)
+     * @param rotationOffsetDegrees Heading offset (degrees)
      */
-    void injectDrift(double translationOffsetMeters, double rotationOffsetDegrees);
+    void injectDriftToPoseEstimate(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees);
+
+    /**
+     * Offsets the ground truth pose while leaving the pose estimator unchanged.
+     * This moves where the robot "actually is" in simulation (and thus where
+     * cameras see AprilTags), without touching the odometry estimate.
+     *
+     * @param xOffsetFrontBack Forward/back offset in the robot's local frame (meters)
+     * @param yOffsetLeftRight Left/right offset in the robot's local frame (meters)
+     * @param rotationOffsetDegrees Heading offset (degrees)
+     */
+    void injectDriftToGroundTruth(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees);
 }
