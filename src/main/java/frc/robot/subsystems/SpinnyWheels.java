@@ -3,7 +3,8 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SpinnyWheelsConstants;
-import frc.robot.sim.RollerSim.RollerIoInterface;
+import robotutils.pub.interfaces.simio.RollerIoInterface;
+
 
 /** Subsystem for the agitator, which we call spinny. */
 public class SpinnyWheels extends SubsystemBase {
@@ -12,7 +13,7 @@ public class SpinnyWheels extends SubsystemBase {
         new RollerIoInterface.DeviceOutputs();
 
     /** Constructor. */
-    public SpinnyWheels(frc.robot.sim.RollerSim.RollerIoInterface io) {
+    public SpinnyWheels(RollerIoInterface io) {
         m_spinnyIO = io;
     }
 
@@ -40,6 +41,6 @@ public class SpinnyWheels extends SubsystemBase {
         m_spinnyIO.updateOutputs(m_spinnyOutputs);
 
         // Monitors to ensure the motor is actually spinning
-        SmartDashboard.putNumber("Spinny/VelocityRPM", m_spinnyOutputs.velocityRPM);
+        SmartDashboard.putNumber("Spinny/VelocityRPM", m_spinnyOutputs.m_velocityRpm);
     }
 }

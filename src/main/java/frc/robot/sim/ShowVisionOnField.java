@@ -11,10 +11,12 @@ import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.visutils.ShowIcon;
 import frc.robot.visutils.VisionKalmanFilter.DisplayInfo;
+import robotutils.pub.interfaces.dashboard.DashboardConstants;
 
 import java.util.List;
 import java.util.Optional;
 
+// $TODO4 - This class should go away now that we use custom Field2d renderers instead.
 /**
  * Class to show vision targets on the field.
  */
@@ -30,12 +32,6 @@ public class ShowVisionOnField {
     /** Icon for displaying the Kalman-filtered vision pose (converged vs not). */
     private final ShowIcon m_kalmanIcon = new ShowIcon(
         List.of("ZKalmanVisionPoseConverged", "ZKalmanVisionPoseNotConverged"));
-
-    /** Icon for displaying the blue tape location. */
-    private final ShowIcon m_blueTape = new ShowIcon(List.of("AAABlueTape"));
-
-    /** Icon for displaying the red tape location. */
-    private final ShowIcon m_redTape = new ShowIcon(List.of("AAARedTape"));
 
     /**
      * Creates a new ShowVisionOnField.
@@ -74,24 +70,18 @@ public class ShowVisionOnField {
     public void updateFieldDisplay(
         Optional<Pose2d> showVisPose,
         DisplayInfo kalmanDisplay,
-        Optional<Pose2d> blueTapePose,
-        Optional<Pose2d> redTapePose,
         SwerveDriveState driveState) {
 
-        // Show estimate pose for vision, if we currently see AprilTag.
-        showPointInTimeVisionEstimate(showVisPose);
+        // // Show estimate pose for vision, if we currently see AprilTag.
+        // showPointInTimeVisionEstimate(showVisPose);
 
-        // Show VisionKalmanFilter converged pose (offset forward for visibility)
-        showKalmanVisionPose(
-            kalmanDisplay.pose(),
-            kalmanDisplay.hasConverged() ? 0 : 1);
+        // // Show VisionKalmanFilter converged pose (offset forward for visibility)
+        // showKalmanVisionPose(
+        //     kalmanDisplay.pose(),
+        //     kalmanDisplay.hasConverged() ? 0 : 1);
 
-        // Show tape locations on field
-        showBlueTape(blueTapePose);
-        showRedTape(redTapePose);
-
-        // Show robot pose and wheel positions on field
-        showEstimatedPoseAndWheels(driveState);
+        // // Show robot pose and wheel positions on field
+        // showEstimatedPoseAndWheels(driveState);
     }
 
     /**
@@ -102,19 +92,19 @@ public class ShowVisionOnField {
     private void showEstimatedPoseAndWheels(
         SwerveDrivetrain.SwerveDriveState driveState) {
 
-        // Always show robot pose and wheels on real/glass field
-        m_realGlassField.ifPresent(f -> {
-            f.getObject("EstimatedRobot").setPose(driveState.Pose);
-            f.getObject("EstimatedRobotModules").setPoses(getModulePoses(driveState));
-        });
+        // // Always show robot pose and wheels on real/glass field
+        // m_realGlassField.ifPresent(f -> {
+        //     f.getObject(DashboardConstants.kEstimatedPoseItemName).setPose(driveState.Pose);
+        //     f.getObject(DashboardConstants.kEstimatedPoseModules).setPoses(getModulePoses(driveState));
+        // });
 
-        // Only show on debug field if simulation is running in debug mode
-        if (Robot.isSimulation()) {
-            m_simulationField.ifPresent(f -> {
-                f.getObject("EstimatedRobot").setPose(driveState.Pose);
-                f.getObject("EstimatedRobotModules").setPoses(getModulePoses(driveState));
-            });
-        }
+        // // Only show on debug field if simulation is running in debug mode
+        // if (Robot.isSimulation()) {
+        //     m_simulationField.ifPresent(f -> {
+        //         f.getObject(DashboardConstants.kEstimatedPoseItemName).setPose(driveState.Pose);
+        //         f.getObject(DashboardConstants.kEstimatedPoseModules).setPoses(getModulePoses(driveState));
+        //     });
+        // }
     }
 
     /**
@@ -123,20 +113,20 @@ public class ShowVisionOnField {
      * @param groundTruthPose The ground truth pose (where the robot actually is in simulation)
      */
     public void showGroundTruthPoseOnField(Pose2d groundTruthPose) {
-        // Only show ground truth pose on glass field when we're in simulation mode
-        if (Robot.isSimulation()) {
-            m_realGlassField.ifPresent(f -> f.getObject("GroundTruthRobot").setPose(groundTruthPose));
+        // // Only show ground truth pose on glass field when we're in simulation mode
+        // if (Robot.isSimulation()) {
+        //     m_realGlassField.ifPresent(f -> f.getObject(DashboardConstants.kGroundTruthPoseItemName).setPose(groundTruthPose));
 
-            // Also, the default "Robot" object on the glass field shows same thing.  This is confusing,
-            // but PhotonVisions sim is updating Robot based on where the cameras are.  And then I'm
-            // adding another object called GroundTruthRobot that shows the same pose.
-            m_realGlassField.ifPresent(f -> f.getObject("Robot").setPose(groundTruthPose));
-        }
+        //     // Also, the default "Robot" object on the glass field shows same thing.  This is confusing,
+        //     // but PhotonVisions sim is updating Robot based on where the cameras are.  And then I'm
+        //     // adding another object called GroundTruthRobot that shows the same pose.
+        //     m_realGlassField.ifPresent(f -> f.getObject("Robot").setPose(groundTruthPose));
+        // }
 
-        // Only show on debug field if simulation is running in debug mode
-        if (Robot.isSimulation()) {
-            m_simulationField.ifPresent(f -> f.getObject("GroundTruthRobot").setPose(groundTruthPose));
-        }
+        // // Only show on debug field if simulation is running in debug mode
+        // if (Robot.isSimulation()) {
+        //     m_simulationField.ifPresent(f -> f.getObject(DashboardConstants.kGroundTruthPoseItemName).setPose(groundTruthPose));
+        // }
     }
 
     /**
@@ -148,8 +138,8 @@ public class ShowVisionOnField {
         // Always show point in time vision pose on real/glass field
         m_realGlassField.ifPresent(f -> {
             visionPose.ifPresentOrElse(
-                pose -> f.getObject("VisionEstimation").setPose(pose),
-                () -> f.getObject("VisionEstimation").setPoses()
+                pose -> f.getObject(DashboardConstants.kPointInTimeVisionPose).setPose(pose),
+                () -> f.getObject(DashboardConstants.kPointInTimeVisionPose).setPoses()
             );
         });
 
@@ -157,8 +147,8 @@ public class ShowVisionOnField {
         if (Robot.isSimulation()) {
             m_simulationField.ifPresent(f -> {
                 visionPose.ifPresentOrElse(
-                    pose -> f.getObject("VisionEstimation").setPose(pose),
-                    () -> f.getObject("VisionEstimation").setPoses()
+                    pose -> f.getObject(DashboardConstants.kPointInTimeVisionPose).setPose(pose),
+                    () -> f.getObject(DashboardConstants.kPointInTimeVisionPose).setPoses()
                 );
             });
         }
@@ -174,24 +164,6 @@ public class ShowVisionOnField {
      */
     private void showKalmanVisionPose(Optional<Pose2d> kalmanPose, int showIndex) {
         showIcon(m_kalmanIcon, kalmanPose, showIndex);
-    }
-
-    /**
-     * Shows or hides the blue tape location on the field.
-     *
-     * @param pose The pose to display, or empty to hide
-     */
-    private void showBlueTape(Optional<Pose2d> pose) {
-        showIcon(m_blueTape, pose, 0);
-    }
-
-    /**
-     * Shows or hides the red tape location on the field.
-     *
-     * @param pose The pose to display, or empty to hide
-     */
-    private void showRedTape(Optional<Pose2d> pose) {
-        showIcon(m_redTape, pose, 0);
     }
 
     /**

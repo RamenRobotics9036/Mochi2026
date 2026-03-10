@@ -2,10 +2,13 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.Pigeon2;
+import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -33,7 +36,7 @@ import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.commands.AlignToTagCommand;
 import frc.robot.generated.TunerSwerveDrivetrain;
-import frc.robot.visutils.VisionInjectFilter;
+import frc.robot.visutils.StaleVisionFilter;
 import frc.robot.LimelightHelpers;
 
 /**
@@ -44,6 +47,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+    /** Tracks the accumulated simulated gyro angle (degrees) across high-freq notifier ticks.
+     *  Using a field avoids reading back the stale Java StatusSignal cache (refreshed at 50 Hz)
+     *  on every 250 Hz notifier tick. */
+    private double m_simGyroAngleDeg = 0.0;
+    /** True after the first setRawYaw write; ensures the very first write seeds from the
+     *  actual Pigeon2 value rather than 0.0. */
+    private boolean m_simGyroInitialized = false;
 
     /** Swerve request to apply during robot-centric path following */
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
@@ -56,8 +66,25 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private boolean m_hasAppliedOperatorPerspective = false;
 
     /** Filter for ignoring stale vision measurements around pose resets. */
-    // $VISIONSIM - Inject Filter
-    private final VisionInjectFilter m_visionFilter;
+    private final StaleVisionFilter m_staleVisionFilter;
+
+    /** Optional callback run inside the high-frequency sim notifier (same rate as updateSimState). */
+    private DoubleSupplier m_highFreqSimCallback = null;
+
+    /**
+     * Registers a callback to be invoked on every tick of the high-frequency
+     * simulation notifier, at the same rate as {@link #updateSimState}.
+     * The callback returns a {@code double} that is passed to
+     * {@link com.ctre.phoenix6.sim.Pigeon2SimState#setRawYaw} to keep the
+     * simulated gyro in sync with the ground-truth robot angle.
+     * Must be called after the drivetrain is constructed and before the sim loop starts
+     * (or it will take effect on the next notifier tick).
+     *
+     * @param callback the supplier to invoke; pass {@code null} to clear
+     */
+    public void setHighFreqSimCallback(DoubleSupplier callback) {
+        m_highFreqSimCallback = callback;
+    }
 
 
 
@@ -101,6 +128,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                  new PPHolonomicDriveController(
                      // PID constants for translation
                      new PIDConstants(10, 0, 0),
+                     // $TODO2 - Less aggressive values: new PIDConstants(5, 0, 0.5),
                      // PID constants for rotation
                      new PIDConstants(7, 0, 0)
                  ),
@@ -181,8 +209,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
-        // $VISIONSIM - Inject Filter
-        m_visionFilter = new VisionInjectFilter();
+        m_staleVisionFilter = new StaleVisionFilter();
 
         // configure PathPlanner AutoBuilder
         configureAutoBuilder();
@@ -211,8 +238,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
-        // $VISIONSIM - Inject Filter
-        m_visionFilter = new VisionInjectFilter();
+        m_staleVisionFilter = new StaleVisionFilter();
     }
 
     /**
@@ -246,8 +272,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
-        // $VISIONSIM - Inject Filter
-        m_visionFilter = new VisionInjectFilter();
+        m_staleVisionFilter = new StaleVisionFilter();
     }
 
     /**
@@ -325,8 +350,30 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             double deltaTime = currentTime - m_lastSimTime;
             m_lastSimTime = currentTime;
 
+            if (m_highFreqSimCallback != null && !m_simGyroInitialized) {
+                // Seed BEFORE updateSimState so we capture the clean initial Pigeon2 angle.
+                // If we seeded after, updateSimState would have already moved the gyro by
+                // one delta and the callback would add that same delta again (double-count).
+                m_simGyroAngleDeg = getPigeon2().getYaw().getValueAsDouble();
+                m_simGyroInitialized = true;
+            }
+
             /* use the measured time delta, get battery voltage from WPILib */
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
+
+            if (m_highFreqSimCallback != null) {
+                // Accumulate the ground-truth dtheta into our own field so we never read
+                // back through the Java StatusSignal cache (which is only refreshed at 50 Hz
+                // and would return a stale value on ticks 2-5 between robot loop updates).
+                double dthetaRadians = m_highFreqSimCallback.getAsDouble();
+                m_simGyroAngleDeg += Math.toDegrees(dthetaRadians);
+
+                // System.out.println("dtheta_deg=" + Math.toDegrees(dthetaRadians)
+                //     + "  m_simGyroAngleDeg=" + m_simGyroAngleDeg
+                //     + "  pigeon_yaw=" + getPigeon2().getYaw().getValueAsDouble());
+
+                getPigeon2().getSimState().setRawYaw(m_simGyroAngleDeg);
+            }
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }
@@ -341,7 +388,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     @Override
     public void resetPose(Pose2d pose) {
         // $VISIONSIM - Inject Filter
-        m_visionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
+        m_staleVisionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
+
+        // After a pose reset, let the notifier re-seed m_simGyroAngleDeg from the
+        // Pigeon2 yaw that super.resetPose will have just written, rather than
+        // maintaining a parallel copy here.
+        if (Robot.isSimulation()) {
+            m_simGyroInitialized = false;
+        }
 
         super.resetPose(pose);
     }
@@ -353,23 +407,16 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      * @param visionRobotPoseMeters The pose of the robot as measured by the vision camera.
      * @param timestampSeconds The timestamp of the vision measurement in seconds.
      */
-    // A wrapper that calls InjectFilter to determine whether to ignore this vision measurement or not
     private boolean shouldIgnoreVisionMeas(
-        Pose2d newVisionRobotPose,
-        Pose2d currentRobotPose,
         double timestampSeconds) {
 
-        return m_visionFilter.shouldIgnore(
-                newVisionRobotPose,
-                currentRobotPose,
+        return m_staleVisionFilter.shouldIgnore(
                 timestampSeconds);
     }
 
     @Override
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
         if (shouldIgnoreVisionMeas(
-            visionRobotPoseMeters,
-            getState().Pose,
             timestampSeconds)) {
 
             return;
@@ -398,8 +445,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         Matrix<N3, N1> visionMeasurementStdDevs) {
 
         if (shouldIgnoreVisionMeas(
-            visionRobotPoseMeters,
-            getState().Pose,
             timestampSeconds)) {
 
             return;

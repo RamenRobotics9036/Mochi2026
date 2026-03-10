@@ -1,11 +1,9 @@
 package frc.robot.visutils;
 
+import frc.robot.LimelightHelpers;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import frc.robot.LimelightHelpers;
-import frc.robot.LimelightHelpers.PoseEstimate;
 
 /**
  * Lightweight diagnostic that polls a single Limelight camera every N periodic cycles
@@ -128,22 +126,25 @@ public class VisionHeartBeat {
         return true;
     }
 
-    /** @return True if the Limelight heartbeat counter is incrementing. */
+    /** True if the Limelight heartbeat counter is incrementing. */
     public boolean isHeartbeating() {
         return m_isHeartbeating;
     }
 
-    /** @return True if a fiducial target has ever been seen (tid != -1) since last heartbeat. Latches true. */
+    /**
+     * True if a fiducial target has ever been seen (tid != -1) since last heartbeat.
+     * Latches true.
+     */
     public boolean hasSeenTid() {
         return m_hasSeenTid;
     }
 
-    /** @return True if MegaTag1 has ever returned a valid pose since last heartbeat. Latches true. */
+    /** True if MegaTag1 has ever returned a valid pose since last heartbeat. Latches true. */
     public boolean hasSeenMt1Pose() {
         return m_hasSeenMt1Pose;
     }
 
-    /** @return True if MegaTag2 has ever returned a valid pose since last heartbeat. Latches true. */
+    /** True if MegaTag2 has ever returned a valid pose since last heartbeat. Latches true. */
     public boolean hasSeenMt2Pose() {
         return m_hasSeenMt2Pose;
     }

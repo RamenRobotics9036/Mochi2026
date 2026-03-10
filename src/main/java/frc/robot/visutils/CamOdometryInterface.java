@@ -1,11 +1,12 @@
 package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
+import java.util.OptionalDouble;
 
+
+/** Interface used by camera processors. */
 public interface CamOdometryInterface {
     /**
      * Get pose estimate from the camera with highest confidence score.
@@ -18,7 +19,7 @@ public interface CamOdometryInterface {
      * Empty if no pose sampler is wired up, the pose buffer is too short,
      * or no camera had a lock this cycle.
      */
-    Optional<Transform2d> getVisionErrorAtSnapTime();
+    OptionalDouble getVisionErrorAtSnapTime();
 
     /**
      * Get confidence score of the camera with highest confidence score.
@@ -66,7 +67,7 @@ public interface CamOdometryInterface {
     /**
      * Pushes the robot's current heading to the Limelight for MegaTag2 without flushing.
      */
-    void setRobotOrientation_NoFlush();
+    void setRobotOrientationNoFlush();
 
     /**
      * Periodic update; should be called from robot periodic.
@@ -77,14 +78,4 @@ public interface CamOdometryInterface {
      * Enable/Disable vision processing.
      */
     void enableVision(boolean enabled);
-
-    /**
-     * Sets the dependencies needed for vision processing.
-     *
-     * @param filter The VisionKalmanFilter instance to inject measurements into
-     * @param isMotionlessSupplier Supplier that returns true when robot is motionless
-     */
-    void setVisionDependenciesOnCamera(
-            VisionKalmanFilter filter,
-            BooleanSupplier isMotionlessSupplier);
 }

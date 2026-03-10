@@ -84,10 +84,6 @@ public class Robot extends TimedRobot {
 
     DisplayInfo kalmanDisplay = m_robotContainer.m_visionKalmanFilter.getFieldDisplayInfo(0.4);
 
-    // Show tape locations on field
-    Optional<Pose2d> blueTapePose = m_robotContainer.m_driveAccuracyTester.getBlueTapePose();
-    Optional<Pose2d> redTapePose = m_robotContainer.m_driveAccuracyTester.getRedTapePose();
-
     CommandScheduler.getInstance().run();
 
     SwerveDriveState driveState = m_robotContainer.drivetrain.getState();
@@ -96,8 +92,6 @@ public class Robot extends TimedRobot {
     m_robotContainer.m_showVisionOnField.updateFieldDisplay(
         showVisPose,
         kalmanDisplay,
-        blueTapePose,
-        redTapePose,
         driveState);
 
     // We update logging after CommandScheduler.run(), so that any commands that
@@ -105,6 +99,7 @@ public class Robot extends TimedRobot {
     if (m_robotContainer.basicInfoDashboard != null) {
         m_robotContainer.basicInfoDashboard.update();
     }
+    m_robotContainer.m_dashboardManager.update();
   }
 
   @Override

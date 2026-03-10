@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
+import robotutils.pub.interfaces.simio.TwoMotorRollerIoInterface;
 
 public class ShooterSubsystem extends SubsystemBase {
     private final BotConfigInterface m_configInterface;
@@ -36,6 +36,6 @@ public class ShooterSubsystem extends SubsystemBase {
     public void periodic() {
         m_shooterIO.updateOutputs(m_shooterOutputs);
 
-        SmartDashboard.putNumber("Shooter/VelocityRPM", m_shooterOutputs.velocityRPM);
+        SmartDashboard.putNumber("Shooter/VelocityRPM", m_shooterOutputs.m_velocityRpm);
     }
 }

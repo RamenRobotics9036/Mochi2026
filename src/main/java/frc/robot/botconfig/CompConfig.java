@@ -11,9 +11,11 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.Robot;
-import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import robotutils.pub.interfaces.CameraInfo;
+import robotutils.pub.interfaces.CameraInfoList;
+
 import java.util.List;
 
 /**
@@ -145,12 +147,12 @@ public class CompConfig implements BotConfigInterface {
 
     @Override
     public boolean isVisionEnabledDefault() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isMegaTag2Supported() {
-        return false; // $TODO2 - Enable after testing
+        return true; // $TODO2 - Enable after testing
     }
 
     @Override
@@ -158,8 +160,13 @@ public class CompConfig implements BotConfigInterface {
         return true;
     }
 
+    @Override
+    public String getEvaluatePosesName() {
+        return "MochiV2";
+    }
+
     /** The configurations for each camera mounted on the competition bot. */
-    private final List<CameraInfo> m_cameras = List.of(
+    private final CameraInfoList m_cameras = new CameraInfoList(List.of(
         new CameraInfo("limelight", new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(-1.0),  // 1/2 inch back
@@ -176,10 +183,10 @@ public class CompConfig implements BotConfigInterface {
             ),
             new Rotation3d(0, Math.toRadians(-25), Math.toRadians(180))  // x degrees up, backwards
         ))
-    );
+    ));
 
     @Override
-    public List<CameraInfo> getCameras() {
+    public CameraInfoList getCameras() {
         return m_cameras;
     }
 }

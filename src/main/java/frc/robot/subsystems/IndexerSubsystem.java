@@ -2,7 +2,7 @@ package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.sim.RollerSim.RollerIoInterface;
+import robotutils.pub.interfaces.simio.RollerIoInterface;
 
 
 /** Indexer subsystem. */
@@ -30,6 +30,6 @@ public class IndexerSubsystem extends SubsystemBase {
     public void periodic() {
         m_indexerIO.updateOutputs(m_indexerOutputs);
 
-        SmartDashboard.putNumber("Indexer/VelocityRPM", m_indexerOutputs.velocityRPM);
+        SmartDashboard.putNumber("Indexer/VelocityRPM", m_indexerOutputs.m_velocityRpm);
     }
 }
