@@ -439,6 +439,27 @@
               "true_icon": "None",
               "false_icon": "None"
             }
+          },
+          {
+            "title": "GlassField",
+            "x": 896.0,
+            "y": 256.0,
+            "width": 640.0,
+            "height": 384.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/SmartDashboard/GlassField",
+              "period": 0.06,
+              "field_game": "Rebuilt",
+              "robot_width": 0.85,
+              "robot_length": 0.85,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": 0.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295,
+              "show_robot_outside_widget": true
+            }
           }
         ]
       }
