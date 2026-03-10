@@ -30,7 +30,7 @@ public class ShootCommand {
             },
             // Dependencies:
             shooter, indexer)
-            .withTimeout(8.0)
+            .withTimeout(8.0 - Constants.IndexerConstants.kIndexDelay)
         )
         
         // finallyDo ensures motors are stopped even if command is
