@@ -35,6 +35,10 @@ public class ClimberSubsystem extends SubsystemBase {
         return m_outputs.positionMeters;
     }
 
+    public void resetEncoder() {
+        m_io.resetEncoder();
+    }
+
     public void stop() {
         m_io.stop();
     }

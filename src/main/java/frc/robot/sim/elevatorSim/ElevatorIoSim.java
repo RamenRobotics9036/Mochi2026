@@ -80,4 +80,9 @@ public class ElevatorIoSim implements ElevatorIoInterface {
         m_simPosition.set(outputs.positionMeters);
         m_simCurrent.set(outputs.currentAmps);
     }
+
+    @Override
+    public void resetEncoder() {
+        return; //TODO: worry about this later, elevator sim has more pressing concerns.
+    }
 }
