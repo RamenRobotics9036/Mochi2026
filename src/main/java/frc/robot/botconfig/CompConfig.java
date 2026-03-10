@@ -145,17 +145,22 @@ public class CompConfig implements BotConfigInterface {
 
     @Override
     public boolean isVisionEnabledDefault() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean isMegaTag2Supported() {
-        return false; // $TODO2 - Enable after testing
+        return true; // $TODO2 - Enable after testing
     }
 
     @Override
     public boolean isAutoVisionInjectionEnabled() {
         return true;
+    }
+
+    @Override
+    public String getEvaluatePosesName() {
+        return "MochiV2";
     }
 
     /** The configurations for each camera mounted on the competition bot. */

@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.function.BooleanSupplier;
 
 /**
@@ -40,7 +41,7 @@ public class MultiCamOdometryWrapper implements CamOdometryInterface {
     }
 
     @Override
-    public Optional<Transform2d> getVisionErrorAtSnapTime() {
+    public OptionalDouble getVisionErrorAtSnapTime() {
         return active().getVisionErrorAtSnapTime();
     }
 

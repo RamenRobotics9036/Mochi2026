@@ -22,6 +22,7 @@ import frc.robot.visutils.VisionKalmanFilter;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -81,7 +82,7 @@ public class BasicInfoDashboard {
     private Supplier<VisionKalmanFilter> m_visionKalmanSupplier = null;
     private BooleanSupplier m_isRobotMotionlessSupplier = null;
     private DoubleSupplier m_secondsStillSupplier = null;
-    private Supplier<Optional<Transform2d>> m_visErrorAtSnapTimeSupplier = null;
+    private Supplier<OptionalDouble> m_visErrorAtSnapTimeSupplier = null;
 
     /** When true, vision is forcibly disabled regardless of the dashboard toggle. */
     private boolean m_forceDisableVision = false;
@@ -186,7 +187,7 @@ public class BasicInfoDashboard {
             BooleanSupplier isLatestMt2Supplier,
             DoubleSupplier txSupplier,
             Supplier<List<Integer>> targetListSupplier,
-            Supplier<Optional<Transform2d>> visErrorAtSnapTimeSupplier,
+            Supplier<OptionalDouble> visErrorAtSnapTimeSupplier,
             BooleanSupplier isMotionlessSupplier,
             DoubleSupplier secondsStillSupplier) {
         m_visionConfidenceSupplier = confidenceSupplier;
@@ -207,21 +208,6 @@ public class BasicInfoDashboard {
      */
     public void setVisionKalmanSupplier(Supplier<VisionKalmanFilter> supplier) {
         m_visionKalmanSupplier = supplier;
-    }
-
-    private static double calcVisErrorMeters(Optional<Transform2d> error) {
-        if (error.isEmpty()) {
-            return 0.0;
-        }
-
-        double errorMeters = error.get().getTranslation().getNorm();
-
-        if (errorMeters > VisionInjectFilter.MAX_DISTANCE_METERS) {
-            // If the error is unreasonably large, likely due to a bad measurement, ignore it.
-            return 0.0;
-        }
-
-        return errorMeters;
     }
 
     private static String targetListToString(List<Integer> targets) {
@@ -290,7 +276,8 @@ public class BasicInfoDashboard {
             m_visionTx.set(m_txSupplier.getAsDouble());
         }
         if (m_visErrorAtSnapTimeSupplier != null) {
-            double visErrorMeters = calcVisErrorMeters(m_visErrorAtSnapTimeSupplier.get());
+            OptionalDouble errorAtSnapTime = m_visErrorAtSnapTimeSupplier.get();
+            double visErrorMeters = errorAtSnapTime.isPresent() ? errorAtSnapTime.getAsDouble() : 0.0;
             m_visErrorCentimeters.set(100.0 * visErrorMeters);
             boolean hasMultiTag = m_hasMultiTagLockSupplier != null && m_hasMultiTagLockSupplier.getAsBoolean();
             m_visErrorMultiTagCentimeters.set(hasMultiTag ? 100.0 * visErrorMeters : 0.0);

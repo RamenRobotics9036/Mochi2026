@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.function.BooleanSupplier;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
@@ -48,7 +49,7 @@ class TestMultiCamOdometryWrapper {
     private static CamOdometryInterface newRealMock() {
         CamOdometryInterface mock = Mockito.mock(CamOdometryInterface.class);
         Mockito.when(mock.getEstimatedPose()).thenReturn(Optional.of(POSE_A));
-        Mockito.when(mock.getVisionErrorAtSnapTime()).thenReturn(Optional.of(TRANSFORM_A));
+        Mockito.when(mock.getVisionErrorAtSnapTime()).thenReturn(OptionalDouble.of(1.0));
         Mockito.when(mock.getConfidenceScore()).thenReturn(0.85);
         Mockito.when(mock.getVisibleTagIds()).thenReturn(List.of(1, 2, 3));
         Mockito.when(mock.hasTargetLock()).thenReturn(true);
@@ -77,7 +78,7 @@ class TestMultiCamOdometryWrapper {
         CamOdometryInterface real = newRealMock();
         MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, true);
 
-        assertEquals(Optional.of(TRANSFORM_A), wrapper.getVisionErrorAtSnapTime());
+        assertEquals(OptionalDouble.of(1.0), wrapper.getVisionErrorAtSnapTime());
         Mockito.verify(real).getVisionErrorAtSnapTime();
     }
 
@@ -192,7 +193,7 @@ class TestMultiCamOdometryWrapper {
         CamOdometryInterface real = newRealMock();
         MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, false);
 
-        assertEquals(Optional.empty(), wrapper.getVisionErrorAtSnapTime());
+        assertEquals(OptionalDouble.empty(), wrapper.getVisionErrorAtSnapTime());
         Mockito.verify(real, Mockito.never()).getVisionErrorAtSnapTime();
     }
 
@@ -381,7 +382,7 @@ class TestMultiCamOdometryWrapper {
     @Test
     void noOp_getVisionErrorAtSnapTime_returnsEmpty() {
         NoOpCamOdometry noop = new NoOpCamOdometry();
-        assertEquals(Optional.empty(), noop.getVisionErrorAtSnapTime());
+        assertEquals(OptionalDouble.empty(), noop.getVisionErrorAtSnapTime());
     }
 
     @Test

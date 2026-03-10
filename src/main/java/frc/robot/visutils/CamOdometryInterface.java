@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.function.BooleanSupplier;
 
 public interface CamOdometryInterface {
@@ -18,7 +19,7 @@ public interface CamOdometryInterface {
      * Empty if no pose sampler is wired up, the pose buffer is too short,
      * or no camera had a lock this cycle.
      */
-    Optional<Transform2d> getVisionErrorAtSnapTime();
+    OptionalDouble getVisionErrorAtSnapTime();
 
     /**
      * Get confidence score of the camera with highest confidence score.

@@ -16,9 +16,9 @@ public class RobotIdentity {
         /** The name of the current robot. */
         private final String name;
 
-        /** 
+        /**
          * Create a new IdentityResult object to store information about the robot.
-         * 
+         *
          * @param config The config for the current robot
          * @param name The name of the current robot
          */
@@ -75,7 +75,7 @@ public class RobotIdentity {
         }
         else if (Robot.isSimulation()) {
             System.out.println(">>> Detected: SIMULATION");
-            m_identityResult = new IdentityResult(new PancakeConfig(), "Simulation");
+            m_identityResult = new IdentityResult(new CompConfig(), "Simulation");
         }
         else {
             DriverStation.reportError("UNKNOWN RIO MAC! Defaulting to COMPETITION.", false);

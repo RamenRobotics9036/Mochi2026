@@ -158,6 +158,9 @@ public interface BotConfigInterface {
     /** When true, vision pose estimates are automatically injected into the drivetrain pose estimator. */
     boolean isAutoVisionInjectionEnabled();
 
+    /** Name of the EvaluatePoses implementation to use (e.g. "MochiV1"). */
+    String getEvaluatePosesName();
+
     /** Camera configurations for the real robot. */
     List<CameraInfo> getCameras();
 
