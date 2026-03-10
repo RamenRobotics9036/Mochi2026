@@ -169,11 +169,11 @@ public class CompConfig implements BotConfigInterface {
         )),
         new CameraInfo("limelight-back", new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(-11.75),         // + is forward
-                Units.inchesToMeters(1.75),   // + is left
-                Units.inchesToMeters(8.75)    // x" deck + 4" mount
+                Units.inchesToMeters(-12.75),         // + is forward
+                Units.inchesToMeters(4.0),   // + is left
+                Units.inchesToMeters(7.5)    // x" deck + 4" mount
             ),
-            new Rotation3d(0, Math.toRadians(-30), Math.toRadians(180))  // x degrees up, backwards
+            new Rotation3d(0, Math.toRadians(-25), Math.toRadians(180))  // x degrees up, backwards
         ))
     );
 
