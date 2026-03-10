@@ -149,6 +149,8 @@ public final class Constants {
         public static final int kIndexerCurrentLimit = 40; //TODO: filler value
 
         public static final double kIndexerGearRatio = 1.0;
+        /** The shooter spin-up time before indexer activation, in seconds */
+        public static final double kIndexDelay = 0.3;
     }
 
     /**
