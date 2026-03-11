@@ -2,32 +2,24 @@ package frc.robot.visutils;
 
 import com.ctre.phoenix6.Utils;
 
-import edu.wpi.first.math.geometry.Pose2d;
-
 /**
- * Filters vision measurements around pose resets to prevent stale data from
- * corrupting a freshly reset pose.
- * <p>
- * <b>Why we filter vision measurements around pose resets:</b>
- * <p>
- * There is a timing issue where vision measurements captured BEFORE a pose reset can be
- * processed and injected AFTER the reset occurs. Here's the sequence that causes problems:
- * <ol>
- *   <li>Camera captures frame at time T=1.0s, sees AprilTags, calculates robot is at (5, 3)</li>
- *   <li>User presses reset button at T=1.05s during CommandScheduler.run()</li>
- *   <li>drivetrain.resetPose() is called, setting pose to (0, 0) and clearing Kalman filter state</li>
- *   <li>Vision.periodic() runs AFTER CommandScheduler.run() in the same robot loop</li>
- *   <li>Vision processes the camera frame from T=1.0s (captured BEFORE reset)</li>
- *   <li>addVisionMeasurement() is called with pose=(5,3) and timestamp=1.0s</li>
- *   <li>The pose estimator applies latency compensation: "At T=1.0s you were at (5,3)"</li>
- *   <li>This "correction" pulls the freshly reset pose back toward (5, 3) - the jump!</li>
- * </ol>
- * <p>
- * The fix: Ignore any vision measurements with timestamps within a window around the last
- * reset time. This allows stale frames in the camera pipeline to be discarded, and gives
- * the pose estimator time to stabilize before vision corrections resume.
+ * Rejects vision measurements whose timestamps fall within a window around the
+ * most recent pose reset, preventing stale camera frames from corrupting the
+ * freshly reset pose.
+ *
+ * <p><b>Why stale frames are a problem:</b><br>
+ * Camera frames are captured asynchronously. A frame snapped at T=1.0s may still
+ * be in the pipeline when the pose is reset at T=1.05s. If that frame is processed
+ * after the reset, the pose estimator's backward latency-compensation will pull the
+ * new pose back toward where the robot was before the reset.
+ *
+ * <p><b>The fix:</b><br>
+ * Any measurement whose (converted) timestamp falls within
+ * {@code [resetTime - 2 s, resetTime + 0 s]} is discarded. This covers frames that
+ * were already in-flight when the reset occurred and gives the pose estimator time
+ * to stabilize before vision corrections resume.
  */
-public class VisionInjectFilter {
+public class StaleVisionFilter {
     /** Sentinel value indicating no pose reset has occurred yet, allowing vision to work immediately on startup */
     private static final double RESET_INIT_CONSTANT = -1.0;
 
@@ -50,7 +42,6 @@ public class VisionInjectFilter {
         m_lastResetTimestamp = currentTimeSeconds;
     }
 
-    // $TODO2 - Ignore stale timestamps around pose reset
     private boolean shouldIgnoreOldTimestamps(double timestampSeconds) {
         if (m_lastResetTimestamp == RESET_INIT_CONSTANT) {
             return false;

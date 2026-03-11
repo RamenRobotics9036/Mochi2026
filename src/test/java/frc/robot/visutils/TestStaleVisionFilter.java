@@ -9,7 +9,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 /**
- * Unit tests for {@link VisionInjectFilter}.
+ * Unit tests for {@link StaleVisionFilter}.
  *
  * <p>The filter rejects measurements whose (converted) timestamp falls within
  * [resetTime − 2 s, resetTime + 0 s].
@@ -17,18 +17,18 @@ import org.mockito.Mockito;
  * <p>{@code Utils.fpgaToCurrentTime} is mocked so we can supply deterministic
  * converted timestamps without depending on real FPGA ↔ wall-clock offsets.
  */
-class TestVisionInjectFilter {
+class TestStaleVisionFilter {
 
     @BeforeAll
     static void initHal() {
         assertTrue(HAL.initialize(500, 0));
     }
 
-    private VisionInjectFilter m_filter;
+    private StaleVisionFilter m_filter;
 
     @BeforeEach
     void setUp() {
-        m_filter = new VisionInjectFilter();
+        m_filter = new StaleVisionFilter();
     }
 
     // -----------------------------------------------------------------------

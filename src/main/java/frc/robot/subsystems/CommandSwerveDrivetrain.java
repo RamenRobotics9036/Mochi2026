@@ -33,7 +33,7 @@ import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.commands.AlignToTagCommand;
 import frc.robot.generated.TunerSwerveDrivetrain;
-import frc.robot.visutils.VisionInjectFilter;
+import frc.robot.visutils.StaleVisionFilter;
 import frc.robot.LimelightHelpers;
 
 /**
@@ -56,8 +56,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private boolean m_hasAppliedOperatorPerspective = false;
 
     /** Filter for ignoring stale vision measurements around pose resets. */
-    // $VISIONSIM - Inject Filter
-    private final VisionInjectFilter m_visionFilter;
+    private final StaleVisionFilter m_staleVisionFilter;
 
 
 
@@ -181,8 +180,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
-        // $VISIONSIM - Inject Filter
-        m_visionFilter = new VisionInjectFilter();
+        m_staleVisionFilter = new StaleVisionFilter();
 
         // configure PathPlanner AutoBuilder
         configureAutoBuilder();
@@ -211,8 +209,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
-        // $VISIONSIM - Inject Filter
-        m_visionFilter = new VisionInjectFilter();
+        m_staleVisionFilter = new StaleVisionFilter();
     }
 
     /**
@@ -246,8 +243,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             startSimThread();
         }
 
-        // $VISIONSIM - Inject Filter
-        m_visionFilter = new VisionInjectFilter();
+        m_staleVisionFilter = new StaleVisionFilter();
     }
 
     /**
@@ -341,7 +337,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     @Override
     public void resetPose(Pose2d pose) {
         // $VISIONSIM - Inject Filter
-        m_visionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
+        m_staleVisionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
 
         super.resetPose(pose);
     }
@@ -356,7 +352,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private boolean shouldIgnoreVisionMeas(
         double timestampSeconds) {
 
-        return m_visionFilter.shouldIgnore(
+        return m_staleVisionFilter.shouldIgnore(
                 timestampSeconds);
     }
 
