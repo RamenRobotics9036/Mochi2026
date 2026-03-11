@@ -170,6 +170,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
         m_isLatestMt2 = false;
         m_tx = 0.0;
         m_targetList = Collections.emptyList();
+        m_lastTarget = -1;
         m_errorAtSnapTime = OptionalDouble.empty();
     }
 
@@ -201,6 +202,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
         else {
             m_targetList = Collections.emptyList();
+            m_lastTarget = -1;
         }
     }
 
