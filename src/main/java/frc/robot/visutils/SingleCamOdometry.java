@@ -254,7 +254,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
         // Update std devs based on tag count and distance.  And confidence score.
         Matrix<N3, N1> curStdDevs = m_evaluatePoses.calcVisionPoseStdDev(poseEstimate);
-        m_curConfidenceScore = getConfidenceScore(curStdDevs);
+        m_curConfidenceScore = m_evaluatePoses.calcVisionPoseScore(curStdDevs);
 
         // Ambiguity only matters for MegaTag1 (pure visual PnP); MT2 resolves ambiguity
         // using the gyro heading, so this check must not apply to MT2 estimates.
@@ -298,30 +298,6 @@ public class SingleCamOdometry implements CamOdometryInterface {
             return null;
         }
         return poseEstimate;
-    }
-
-    /**
-     * Converts std devs to a 0-100 confidence score.
-     *
-     * @param stdDevs The (x, y, theta) standard deviations matrix
-     * @return Confidence from 0 (no confidence) to 100 (highest)
-     */
-    // $TODO2 - Calculate confidence scores
-    private double getConfidenceScore(Matrix<N3, N1> stdDevs) {
-        // Handle rejection case
-        if (stdDevs.get(0, 0) >= Double.MAX_VALUE) {
-            return 0.0;
-        }
-
-        // Combine position uncertainties (Euclidean norm of x,y)
-        double posUncertainty = Math.hypot(stdDevs.get(0, 0), stdDevs.get(1, 0));
-
-        // Map to 0-100 using exponential decay
-        // At ~0.7m combined uncertainty → ~100% confidence
-        // At ~5m combined uncertainty → ~0% confidence
-        double confidence = 100.0 * Math.exp(-posUncertainty / 2.0);
-
-        return Math.max(0, Math.min(100, confidence));
     }
 
     @Override

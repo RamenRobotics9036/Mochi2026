@@ -87,9 +87,28 @@ public class EvaluatePosesMochiV1 implements EvaluatePosesInterface {
         return result;
     }
 
+    /**
+     * Converts std devs to a 0-100 confidence score.
+     *
+     * @param stdDevs The (x, y, theta) standard deviations matrix
+     * @return Confidence from 0 (no confidence) to 100 (highest)
+     */
     @Override
     public double calcVisionPoseScore(Matrix<N3, N1> stdDevs) {
-        throw new UnsupportedOperationException("Not yet implemented");
+        // Handle rejection case
+        if (stdDevs.get(0, 0) >= Double.MAX_VALUE) {
+            return 0.0;
+        }
+
+        // Combine position uncertainties (Euclidean norm of x,y)
+        double posUncertainty = Math.hypot(stdDevs.get(0, 0), stdDevs.get(1, 0));
+
+        // Map to 0-100 using exponential decay
+        // At ~0.7m combined uncertainty → ~100% confidence
+        // At ~5m combined uncertainty → ~0% confidence
+        double confidence = 100.0 * Math.exp(-posUncertainty / 2.0);
+
+        return Math.max(0, Math.min(100, confidence));
     }
 
     /**
