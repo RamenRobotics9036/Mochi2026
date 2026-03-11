@@ -23,9 +23,21 @@ public class ShooterDefaultCommand extends Command{
     /** Whether the indexer should be running */
     private boolean indexerEnabled = false;
 
+    /**
+     * Gets controller input and handles the shooter and indexer accordingly.
+     * Designed to be set as the default command for the {@link ShooterSubsystem}
+     * and the {@link IndexerSubsystem}.
+     * 
+     * @param shooter
+     * @param indexer
+     * @param controller
+     */
     public ShooterDefaultCommand(ShooterSubsystem shooter, IndexerSubsystem indexer, CommandXboxController controller){
+        /** The subsystem for the motors that shoot fuel into the Alliance Hub. */
         m_shooter = shooter;
+        /** The subsystem for the motors that feed fuel into the shooter. */
         m_indexer = indexer;
+        /** The operator's Xbox controller. */
         m_controller = controller;
 
         addRequirements(m_shooter, m_indexer);
@@ -37,18 +49,27 @@ public class ShooterDefaultCommand extends Command{
     }
 
     /** 
-     * Spins up the shooter for 0.25 seconds, then activates the indexer to feed it.
+     * Spins up the shooter for a period of time defined by {@link IndexerConstants.kIndexDelay},
+     * then activates the indexer to feed it fuel.
      * 
      * Right bumper makes the indexer spin backwards in case balls get stuck.
      */
     @Override
     public void execute() {
+        // Check controller input to determine whether to move the indexer forward,
+        // backward, or not at all. In all but the last case, the shooter should
+        // be commanded to spin as well.
         if (m_controller.y().getAsBoolean()) indexerDirection = 1.0;
         else if (m_controller.rightBumper().getAsBoolean()) indexerDirection = -1.0;
         else indexerDirection = 0.0;
 
+        // Determines whether to actually spin the indexer.
+        // Is false for a short delay so the shooter can spin up.
         indexerEnabled = m_debouncer.calculate(indexerDirection != 0.0);
 
+        // So long as the indexer is theoretically meant to be running,
+        // the shooter is as well, regardless of whether or not the
+        // indexer is on delay.
         if (indexerDirection != 0.0) {
             m_shooter.setSpeed(ShooterConstants.kShootSpeed);
             
@@ -62,11 +83,16 @@ public class ShooterDefaultCommand extends Command{
         }
     }
 
+    /** 
+     * Default commands are not designed to end on their own.
+     * Must be interrupted.
+     */
     @Override
     public boolean isFinished() {
         return false;
     }
 
+    /** Stops the shooter and indexer if the command is interrupted. */
     @Override
     public void end(boolean interrupted) {
         m_shooter.stop();

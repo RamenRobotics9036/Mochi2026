@@ -158,6 +158,7 @@ public class CompConfig implements BotConfigInterface {
         return true;
     }
 
+    /** The configurations for each camera mounted on the competition bot. */
     private final List<CameraInfo> m_cameras = List.of(
         new CameraInfo("limelight", new Transform3d(
             new Translation3d(

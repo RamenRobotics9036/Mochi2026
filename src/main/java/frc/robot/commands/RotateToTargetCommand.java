@@ -19,8 +19,9 @@ import java.util.function.Supplier;
  * X/Y velocity is kept at zero so the robot only rotates.
  */
 public class RotateToTargetCommand extends Command {
-
+    /** The subsystem for the swerve drivetrain. */
     private final CommandSwerveDrivetrain m_drivetrain;
+    /** The position on the field to rotate towards. */
     private final Supplier<Optional<Translation2d>> m_pointSupplier;
 
     /** The CTRE request that drives the robot to face a target angle. */
@@ -44,6 +45,7 @@ public class RotateToTargetCommand extends Command {
         addRequirements(drivetrain);
     }
 
+    /** Gets the rotation target, ensures it's valid, and then logs its result. */
     @Override
     public void initialize() {
         m_target = m_pointSupplier.get();
@@ -55,6 +57,7 @@ public class RotateToTargetCommand extends Command {
         }
     }
 
+    /** Checks the relative rotation of the target and handles the rotation of the robot accordingly. */
     @Override
     public void execute() {
         if (m_target.isEmpty()) {
@@ -79,18 +82,20 @@ public class RotateToTargetCommand extends Command {
         );
     }
 
+    /** Stop all rotation when the command ends. */
     @Override
     public void end(boolean interrupted) {
-        // Stop all motion when the command ends
         m_drivetrain.setControl(new SwerveRequest.Idle());
 
         System.out.println("Stopped rotating.");
     }
 
+    /**
+     *  End immediately if there was no valid target;
+     *  otherwise run as long as the button is held (whileTrue binding)
+     */
     @Override
     public boolean isFinished() {
-        // End immediately if there was no valid target;
-        // otherwise run as long as the button is held (whileTrue binding)
         return m_target.isEmpty();
     }
 }
