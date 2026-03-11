@@ -157,6 +157,7 @@ public class PancakeConfig implements BotConfigInterface {
         return true;
     }
 
+    /** The configurations for each camera mounted on the Pancake. */
     private final List<CameraInfo> m_cameras = List.of(
         new CameraInfo("limelight-fixedii", new Transform3d(
             new Translation3d(

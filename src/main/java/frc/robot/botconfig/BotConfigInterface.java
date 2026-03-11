@@ -23,6 +23,12 @@ public interface BotConfigInterface {
         public final String cameraName;
         public final Transform3d robotToCam;
 
+        /** 
+         * An object that stores info about a camera.
+         * 
+         * @param cameraName The name of the active camera
+         * @param robotToCam The transform to get from the robot's position to the camera's
+         */
         public CameraInfo(String cameraName, Transform3d robotToCam) {
             this.cameraName = cameraName;
             this.robotToCam = robotToCam;

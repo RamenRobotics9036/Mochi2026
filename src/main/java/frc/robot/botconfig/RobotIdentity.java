@@ -11,15 +11,25 @@ public class RobotIdentity {
 
     /** Holds the detected robot's config and name together. */
     public static class IdentityResult {
+        /** The config for the current robot. */
         private final BotConfigInterface config;
+        /** The name of the current robot. */
         private final String name;
 
+        /** 
+         * An object that stores information about the robot.
+         * 
+         * @param config The config for the current robot
+         * @param name The name of the current robot
+         */
         public IdentityResult(BotConfigInterface config, String name) {
             this.config = config;
             this.name = name;
         }
 
+        /** Returns the config for the current robot. */
         public BotConfigInterface getConfig() { return config; }
+        /** Returns the name of the current robot. */
         public String getName() { return name; }
     }
 
@@ -32,6 +42,7 @@ public class RobotIdentity {
     // Pancake RIO: 00-80-2F-38-D9-80
     private static final int[] PANCAKE_MAC  = {0x38, 0xD9, 0x80};
 
+    //** The identity of the current robot. null until getIdentityResult is run. */
     private static IdentityResult m_identityResult = null;
 
     /** Returns the config for the current robot. */
@@ -39,6 +50,7 @@ public class RobotIdentity {
         return getIdentityResult().getConfig();
     }
 
+    /** Returns the name of the current robot. */
     public static String getBotName() {
         return getIdentityResult().getName();
     }
@@ -51,6 +63,7 @@ public class RobotIdentity {
         return m_identityResult;
     }
 
+    /** Uses the MAC address of the current robot to figure out which bot the code is running on. */
     private static void detectRobot() {
         if (MACAddress.isRobot(COMP_BOT_MAC)) {
             System.out.println(">>> Detected: COMPETITION ROBOT");
