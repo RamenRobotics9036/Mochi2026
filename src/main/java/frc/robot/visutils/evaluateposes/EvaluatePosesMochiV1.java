@@ -11,6 +11,7 @@ import frc.robot.util.MathUtils;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 /** Mochi 2026 implementation of {@link EvaluatePosesInterface}. */
 public class EvaluatePosesMochiV1 implements EvaluatePosesInterface {
@@ -22,12 +23,35 @@ public class EvaluatePosesMochiV1 implements EvaluatePosesInterface {
     public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
 
     @Override
-    public boolean isVisionPoseBad(PoseEstimate poseEstimate, Pose2d currentRobotPose) {
+    public boolean isVisionPoseBad(
+        PoseEstimate poseEstimate,
+        Matrix<N3, N1> curStdDevs,
+        double curConfidenceScore,
+        OptionalDouble errorAtSnapTime,
+        Pose2d currentRobotPose) {
+
         if (poseEstimate == null || poseEstimate.tagCount == 0) {
             return true;
         }
 
-        return shouldIgnoreFarError(poseEstimate.pose, currentRobotPose);
+        if (shouldIgnoreFarError(poseEstimate.pose, currentRobotPose)) {
+            return true;
+        }
+
+        // Ambiguity only matters for MegaTag1 (pure visual PnP); MT2 resolves ambiguity
+        // using the gyro heading, so this check must not apply to MT2 estimates.
+        if (!poseEstimate.isMegaTag2 && poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) {
+            if (poseEstimate.rawFiducials[0].ambiguity > 0.7) {
+                return false;
+            }
+        }
+
+        // Check if std devs indicate rejection
+        if (curStdDevs.get(0, 0) == Double.MAX_VALUE) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override

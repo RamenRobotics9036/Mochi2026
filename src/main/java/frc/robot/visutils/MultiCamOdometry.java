@@ -8,6 +8,7 @@ import frc.robot.visutils.evaluateposes.EvaluatePosesInterface;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.TreeSet;
 import java.util.function.BooleanSupplier;
 
@@ -117,11 +118,11 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public Optional<Transform2d> getVisionErrorAtSnapTime() {
+    public OptionalDouble getVisionErrorAtSnapTime() {
         if (m_perCycleState.bestLockedCam.isPresent()) {
             return m_perCycleState.bestLockedCam.get().getVisionErrorAtSnapTime();
         }
-        return Optional.empty();
+        return OptionalDouble.empty();
     }
 
     @Override

@@ -25,6 +25,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 
 
@@ -40,7 +41,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
     private double m_lastTimestamp = 0;
 
     private Optional<Pose2d> m_latestVisPose = Optional.empty();
-    private Optional<Transform2d> m_latestVisionError = Optional.empty();
+    private OptionalDouble m_errorAtSnapTime = OptionalDouble.empty();
     private double m_curConfidenceScore = 0.0;
     // Booleans mirror the CamOdometryInterface contract directly;
     // no consumer needs the raw tag count.
@@ -116,27 +117,29 @@ public class SingleCamOdometry implements CamOdometryInterface {
      * @return The Transform2d offset, or empty if no sampler is set or the
      *         pose buffer has no entry for that timestamp
      */
-    // $TODO2 - Get vision error at SnapTime
-    private Optional<Transform2d> calcVisionErrorAtSnapTime(
-            Pose2d visionPose, double fpgaTimestampSeconds) {
+    private OptionalDouble calcVisionErrorAtSnapTime(
+        Pose2d visionPose,
+        double fpgaTimestampSeconds) {
+
         if (m_poseSampler == null) {
-            return Optional.empty();
+            return OptionalDouble.empty();
         }
 
         // samplePoseAt requires getCurrentTimeSeconds epoch, not FPGA epoch
         double currentTimeEpoch = Utils.fpgaToCurrentTime(fpgaTimestampSeconds);
         Optional<Pose2d> sampledPose = m_poseSampler.apply(currentTimeEpoch);
         if (sampledPose.isEmpty()) {
-            return Optional.empty();
+            return OptionalDouble.empty();
         }
 
         // Transform2d from sampledPose → visionPose (translation + rotation offset)
         Optional<Transform2d> result = Optional.of(visionPose.minus(sampledPose.get()));
 
-        // System.out.println(String.format("Vision offset at snap time: (x=%.2f m, y=%.2f m, rot=%.1f°)",
-        //     result.get().getX(), result.get().getY(), result.get().getRotation().getDegrees()));
+        if (result.isEmpty()) {
+            return OptionalDouble.empty();
+        }
 
-        return result;
+        return OptionalDouble.of(result.get().getTranslation().getNorm());
     }
 
     /**
@@ -164,21 +167,31 @@ public class SingleCamOdometry implements CamOdometryInterface {
     }
 
     private void clearResults() {
+        m_latestVisPose = Optional.empty();
         m_curConfidenceScore = 0.0;
         m_hasTargetLock = false;
         m_hasMultiTagLock = false;
         m_isLatestMt2 = false;
         m_tx = 0.0;
         m_targetList = Collections.emptyList();
-        m_latestVisionError = Optional.empty();
+        m_errorAtSnapTime = OptionalDouble.empty();
     }
 
-    private void setResults(double confidenceScore, int numLockedTags,
-                            LimelightHelpers.RawFiducial[] rawFiducials, boolean isMegaTag2) {
+    private void setResults(
+        Optional<Pose2d> latestVisPose,
+        double confidenceScore,
+        int numLockedTags,
+        LimelightHelpers.RawFiducial[] rawFiducials,
+        boolean isMegaTag2,
+        OptionalDouble errorAtSnapTime) {
+
+        m_latestVisPose = latestVisPose;
         m_curConfidenceScore = confidenceScore;
         m_hasTargetLock = numLockedTags > 0;
         m_hasMultiTagLock = numLockedTags > 1;
         m_isLatestMt2 = isMegaTag2 && numLockedTags > 0;
+
+        m_errorAtSnapTime = errorAtSnapTime;
 
         // Horizontal offset to primary target (degrees)
         m_tx = LimelightHelpers.getTX(m_limelightName);
@@ -223,7 +236,6 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
     }
 
-    // $TODO2 - Code that checks whether to discard bad estimates
     private void addVisionMeasurementV1() {
         PoseEstimate mt1 = sanitizePoseEstimate(
             LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName));
@@ -234,44 +246,48 @@ public class SingleCamOdometry implements CamOdometryInterface {
         PoseEstimate poseEstimate = m_evaluatePoses.pickMegatag1vsMegatag2(mt1, mt2);
 
         // Save the latest vision estimate so that it can be queried
-        m_latestVisPose = Optional.ofNullable(poseEstimate).map(est -> est.pose);
+        Optional<Pose2d> latestVisPose = Optional.ofNullable(poseEstimate).map(est -> est.pose);
 
-        if (m_evaluatePoses.isVisionPoseBad(poseEstimate, m_currentRobotPoseSupplier.get())) {
+        // No vision pose to process?
+        if (poseEstimate == null || poseEstimate.tagCount == 0) {
             clearResults();
             return;
         }
 
         // Skip if this is the same data we already processed
         if (poseEstimate.timestampSeconds == m_lastTimestamp) {
+            // Dont modify the data we already have
             return;
         }
         m_lastTimestamp = poseEstimate.timestampSeconds;
 
-        // We track how far-off this vision estimate is, using the ACTUAL pose in the past
-        // of where the robot was when the camera image was snapped.
-        m_latestVisionError =
-            calcVisionErrorAtSnapTime(poseEstimate.pose, poseEstimate.timestampSeconds);
-
         // Update std devs based on tag count and distance.  And confidence score.
         Matrix<N3, N1> curStdDevs = m_evaluatePoses.calcVisionPoseStdDev(poseEstimate);
-        m_curConfidenceScore = m_evaluatePoses.calcVisionPoseScore(curStdDevs);
+        double curConfidenceScore = m_evaluatePoses.calcVisionPoseScore(curStdDevs);
 
-        // Ambiguity only matters for MegaTag1 (pure visual PnP); MT2 resolves ambiguity
-        // using the gyro heading, so this check must not apply to MT2 estimates.
-        if (!poseEstimate.isMegaTag2 && poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) {
-            if (poseEstimate.rawFiducials[0].ambiguity > 0.7) {
-                setResults(m_curConfidenceScore, 0, null, false);
-                return;
-            }
-        }
+        // We track how far-off this vision estimate is, using the ACTUAL pose in the past
+        // of where the robot was when the camera image was snapped.
+        OptionalDouble errorAtSnapTime =
+            calcVisionErrorAtSnapTime(poseEstimate.pose, poseEstimate.timestampSeconds);
 
-        // Check if std devs indicate rejection
-        if (curStdDevs.get(0, 0) == Double.MAX_VALUE) {
-            setResults(m_curConfidenceScore, 0, null, false);
+        if (m_evaluatePoses.isVisionPoseBad(
+            poseEstimate,
+            curStdDevs,
+            curConfidenceScore,
+            errorAtSnapTime,
+            m_currentRobotPoseSupplier.get())) {
+
+            clearResults();
             return;
         }
 
-        setResults(m_curConfidenceScore, poseEstimate.tagCount, poseEstimate.rawFiducials, poseEstimate.isMegaTag2);
+        setResults(
+            latestVisPose,
+            curConfidenceScore,
+            poseEstimate.tagCount,
+            poseEstimate.rawFiducials,
+            poseEstimate.isMegaTag2,
+            errorAtSnapTime);
 
         // Inject into vision Kalman filter if robot is motionless and we have multi-tag
         if (m_visionKalmanFilter != null && m_isMotionlessSupplier != null) {
@@ -281,7 +297,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
             }
         }
 
-        // $We should ONLY inject vision measurements in AUTO.
+        // We should ONLY inject vision measurements in AUTO.
         if (m_autoVisionInjectionEnabled && !DriverStation.isTeleopEnabled()) {
 
             if (m_estConsumer != null) {
@@ -301,8 +317,8 @@ public class SingleCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public Optional<Transform2d> getVisionErrorAtSnapTime() {
-        return m_latestVisionError;
+    public OptionalDouble getVisionErrorAtSnapTime() {
+        return m_errorAtSnapTime;
     }
 
     @Override

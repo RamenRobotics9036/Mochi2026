@@ -7,6 +7,7 @@ import edu.wpi.first.math.numbers.N3;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 
 /**
@@ -17,7 +18,12 @@ public interface EvaluatePosesInterface {
     /**
      * Should pose be rejected.
      */
-    boolean isVisionPoseBad(PoseEstimate poseEstimate, Pose2d currentRobotPose);
+    boolean isVisionPoseBad(
+        PoseEstimate poseEstimate,
+        Matrix<N3, N1> curStdDevs,
+        double curConfidenceScore,
+        OptionalDouble errorAtSnapTime,
+        Pose2d currentRobotPose);
 
     /**
      * Pick best pose for single camera (either MT1 or MT2).
