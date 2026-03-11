@@ -17,7 +17,7 @@ public class RobotIdentity {
         private final String name;
 
         /** 
-         * An object that stores information about the robot.
+         * Create a new IdentityResult object to store information about the robot.
          * 
          * @param config The config for the current robot
          * @param name The name of the current robot

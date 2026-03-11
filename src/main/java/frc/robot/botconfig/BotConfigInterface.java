@@ -24,7 +24,7 @@ public interface BotConfigInterface {
         public final Transform3d robotToCam;
 
         /** 
-         * An object that stores info about a camera.
+         * Create a new CameraInfo object to store info about a camera.
          * 
          * @param cameraName The name of the active camera
          * @param robotToCam The transform to get from the robot's position to the camera's
