@@ -241,21 +241,26 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
         PoseEstimate poseEstimate = m_evaluatePoses.pickMegatag1vsMegatag2(mt1, mt2);
 
-        // Save the latest vision estimate so that it can be queried
-        Optional<Pose2d> latestVisPose = Optional.ofNullable(poseEstimate).map(est -> est.pose);
-
-        // No vision pose to process?
-        if (poseEstimate == null || poseEstimate.tagCount == 0) {
-            clearResults();
+        // Protect against any cases where vision is not setup yet
+        if (poseEstimate == null || poseEstimate.pose == null) {
             return;
         }
 
         // Skip if this is the same data we already processed
         if (poseEstimate.timestampSeconds == m_lastTimestamp) {
-            // Dont modify the data we already have
+            // IF CAMERA FREEZES, WE DONT WANT TO SEND NEW DATA REPEATEDLY,
+            // SINCE THAT CAN CAUSE ROBOT TO KEEP RE-ADJUSTING TO THE SAME
+            // STALE VISION POSE.  So we clear the vision pose
+            // always here.
+            clearResults();
             return;
         }
-        m_lastTimestamp = poseEstimate.timestampSeconds;
+
+        // No vision pose to process?
+        if (poseEstimate.tagCount == 0) {
+            clearResults();
+            return;
+        }
 
         // Update std devs based on tag count and distance.  And confidence score.
         Matrix<N3, N1> curStdDevs = m_evaluatePoses.calcVisionPoseStdDev(poseEstimate);
@@ -278,12 +283,15 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
 
         setResults(
-            latestVisPose,
+            Optional.ofNullable(poseEstimate.pose),
             curConfidenceScore,
             poseEstimate.tagCount,
             poseEstimate.rawFiducials,
             poseEstimate.isMegaTag2,
             errorAtSnapTime);
+
+        // Finally, update timestamp of last good vision data
+        m_lastTimestamp = poseEstimate.timestampSeconds;
 
         // Inject into vision Kalman filter if robot is motionless and we have multi-tag
         if (m_visionKalmanFilter != null && m_isMotionlessSupplier != null) {
