@@ -33,8 +33,7 @@ public class ShootCommand {
             .withTimeout(8.0 - Constants.IndexerConstants.kIndexDelay)
         )
         
-        // finallyDo ensures motors are stopped even if command is
-        // cancelled.
+        // finallyDo ensures motors are stopped even if command is cancelled.
         .finallyDo(() -> {
             shooter.stop();
             indexer.stop();
