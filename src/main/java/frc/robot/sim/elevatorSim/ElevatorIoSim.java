@@ -83,6 +83,8 @@ public class ElevatorIoSim implements ElevatorIoInterface {
 
     @Override
     public void resetEncoder() {
-        return; //TODO: worry about this later, elevator sim has more pressing concerns.
+        // $TODO: if a non-zero home/reference height is used, plumb that value
+        // through to this method so the sim can match the real encoder behavior.
+        m_elevatorSim.setState(0.0, 0.0);
     }
 }
