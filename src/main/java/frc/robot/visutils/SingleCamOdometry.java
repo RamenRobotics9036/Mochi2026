@@ -132,14 +132,10 @@ public class SingleCamOdometry implements CamOdometryInterface {
             return OptionalDouble.empty();
         }
 
-        // Transform2d from sampledPose → visionPose (translation + rotation offset)
-        Optional<Transform2d> result = Optional.of(visionPose.minus(sampledPose.get()));
-
-        if (result.isEmpty()) {
-            return OptionalDouble.empty();
-        }
-
-        return OptionalDouble.of(result.get().getTranslation().getNorm());
+        return OptionalDouble.of(visionPose
+            .minus(sampledPose.get())
+            .getTranslation()
+            .getNorm());
     }
 
     /**

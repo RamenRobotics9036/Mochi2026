@@ -42,7 +42,7 @@ public class EvaluatePosesMochiV1 implements EvaluatePosesInterface {
         // using the gyro heading, so this check must not apply to MT2 estimates.
         if (!poseEstimate.isMegaTag2 && poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) {
             if (poseEstimate.rawFiducials[0].ambiguity > 0.7) {
-                return false;
+                return true;
             }
         }
 
