@@ -42,6 +42,11 @@ public interface CamOdometryInterface {
     boolean hasMultiTagLock();
 
     /**
+     * Returns true if the latest pose estimate from the best-locked camera used MegaTag2.
+     */
+    boolean isLatestMt2();
+
+    /**
      * Gets the AprilTag ID locked onto by the PRIMARY camera, or -1 if none.
      * Used to determine which tag the robot is aligned to for turning.
      */
@@ -54,19 +59,32 @@ public interface CamOdometryInterface {
     double getPrimaryTagTx();
 
     /**
+     * Pushes the robot's current heading to the Limelight for MegaTag2 and flushes.
+     */
+    void setRobotOrientation();
+
+    /**
+     * Pushes the robot's current heading to the Limelight for MegaTag2 without flushing.
+     */
+    void setRobotOrientation_NoFlush();
+
+    /**
      * Periodic update; should be called from robot periodic.
      */
     void periodic();
 
     /**
+     * Enable/Disable vision processing.
+     */
+    void enableVision(boolean enabled);
+
+    /**
      * Sets the dependencies needed for vision processing.
      *
-     * @param visionEnabledSupplier A BooleanSupplier returning true when vision is enabled
      * @param filter The VisionKalmanFilter instance to inject measurements into
      * @param isMotionlessSupplier Supplier that returns true when robot is motionless
      */
-    void setVisionDependencies(
-            BooleanSupplier visionEnabledSupplier,
+    void setVisionDependenciesOnCamera(
             VisionKalmanFilter filter,
             BooleanSupplier isMotionlessSupplier);
 }

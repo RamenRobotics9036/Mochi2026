@@ -94,23 +94,24 @@ public final class  AutoLogic {
 
     /** Adds both PathPlanner routines and hard-coded manual routines to the chooser. */
     private static void addAutoOptions() {
-        // Manual Autos
-        autoPicker.addOption("Manual: Drive 2m Forward", K_MANUAL_DRIVE_NAME);
+        // Default
+        autoPicker.setDefaultOption("L Bump_Shoot_Move_Back", "L Bump_Shoot_Move_Back");
 
-        // DEFAULT pathplanner auto
-        autoPicker.setDefaultOption("testing shoot", "testing shoot");
+        autoPicker.addOption("R Bump_Shoot_Move_Back", "R Bump_Shoot_Move_Back");
+        autoPicker.addOption("L Bump_Shoot_Climb", "L Bump_Shoot_Climb");
+        autoPicker.addOption("R Bump_Shoot_Climb", "R Bump_Shoot_Climb");
 
-        // Rest of pathplanner Autos
-        autoPicker.addOption("Idos Backward then Forward", "Idos Backward then Forward");
-        autoPicker.addOption("Cross", "Cross");
-        autoPicker.addOption("testing intake fuel", "testing intake fuel");
-        autoPicker.addOption("testing jiggle", "testing jiggle");
-        autoPicker.addOption("R_Zone_Shoot_Home", "R_Zone_Shoot_Home");
-        autoPicker.addOption("L_Zone_Shoot_Home", "L_Zone_Shoot_Home");
-        autoPicker.addOption("C_ClimbShoot", "C_ClimbShoot");
-        autoPicker.addOption("C_Back_Spot_Shoot", "C_Back_Spot_Shoot");
-        autoPicker.addOption("R_Still_Shoot", "R_Still_Shoot");
-        autoPicker.addOption("L_Still_Shoot", "L_Still_Shoot");
+        // Pathplanner Autos
+        // autoPicker.addOption("Idos Backward then Forward", "Idos Backward then Forward");
+        // autoPicker.addOption("Cross", "Cross");
+        // autoPicker.addOption("testing intake fuel", "testing intake fuel");
+        // autoPicker.addOption("testing jiggle", "testing jiggle");
+        // autoPicker.addOption("R_Zone_Shoot_Home", "R_Zone_Shoot_Home");
+        // autoPicker.addOption("L_Zone_Shoot_Home", "L_Zone_Shoot_Home");
+        // autoPicker.addOption("C_ClimbShoot", "C_ClimbShoot");
+        // autoPicker.addOption("C_Back_Spot_Shoot", "C_Back_Spot_Shoot");
+        // autoPicker.addOption("R_Still_Shoot", "R_Still_Shoot");
+        // autoPicker.addOption("L_Still_Shoot", "L_Still_Shoot");
     }
 
     /**
@@ -154,7 +155,11 @@ public final class  AutoLogic {
 
     /** Returns the string currently selected in the dashboard chooser. */
     public static String getSelectedName() {
-        return autoPicker.getSelected();
+        String selected = autoPicker.getSelected();
+
+        // In-case the AutoLogic removes an option that is currently selected, getSeelected()
+        // returns null.  So we return an empty string instead to avoid null pointer exceptions.
+        return selected != null ? selected : "";
     }
 
     /** Retrieves the command for the currently selected dashboard option. */

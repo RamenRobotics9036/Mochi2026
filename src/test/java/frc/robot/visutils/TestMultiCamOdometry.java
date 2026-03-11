@@ -73,17 +73,19 @@ class TestMultiCamOdometry {
     void setVisionDependencies_propagatesToAllCameras() {
         CamOdometryInterface cam0 = newMockCam();
         CamOdometryInterface cam1 = newMockCam();
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(
+            List.of(cam0, cam1),
+            true,
+            true);
 
-        BooleanSupplier visionEnabled = () -> true;
         VisionKalmanFilter filter = Mockito.mock(VisionKalmanFilter.class);
         BooleanSupplier isMotionless = () -> false;
 
-        multiCam.setVisionDependencies(visionEnabled, filter, isMotionless);
+        multiCam.setVisionDependenciesOnCamera(filter, isMotionless);
 
         // Verify that both cameras received the exact same dependency references.
-        Mockito.verify(cam0).setVisionDependencies(visionEnabled, filter, isMotionless);
-        Mockito.verify(cam1).setVisionDependencies(visionEnabled, filter, isMotionless);
+        Mockito.verify(cam0).setVisionDependenciesOnCamera(filter, isMotionless);
+        Mockito.verify(cam1).setVisionDependenciesOnCamera(filter, isMotionless);
     }
 
     // ------------------------------------------------------------------
@@ -98,7 +100,10 @@ class TestMultiCamOdometry {
     void periodic_callsPeriodicOnAllCameras() {
         CamOdometryInterface cam0 = newMockCam();
         CamOdometryInterface cam1 = newMockCam();
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(
+            List.of(cam0, cam1),
+            true,
+            true);
 
         multiCam.periodic();
 
@@ -116,7 +121,10 @@ class TestMultiCamOdometry {
     @Test
     void periodic_stateResetsEachCycle() {
         CamOdometryInterface cam0 = newMockCam();
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0));
+        MultiCamOdometry multiCam = new MultiCamOdometry(
+            List.of(cam0),
+            true,
+            true);
 
         // Cycle N: cam0 has a strong lock.
         Mockito.when(cam0.getConfidenceScore()).thenReturn(5.0);
@@ -149,7 +157,7 @@ class TestMultiCamOdometry {
         CamOdometryInterface cam0 = newMockCam();
         CamOdometryInterface cam1 = newMockCam();
         // Both mocks default to score 0.0 — no lock.
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -165,7 +173,7 @@ class TestMultiCamOdometry {
         CamOdometryInterface cam0 = newMockCam();
         Mockito.when(cam0.getConfidenceScore()).thenReturn(3.0);
         Mockito.when(cam0.getEstimatedPose()).thenReturn(Optional.of(POSE_A));
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0), true, true);
 
         multiCam.periodic();
 
@@ -185,7 +193,7 @@ class TestMultiCamOdometry {
         Mockito.when(cam0.getEstimatedPose()).thenReturn(Optional.of(POSE_A));
         Mockito.when(cam1.getConfidenceScore()).thenReturn(5.0);
         Mockito.when(cam1.getEstimatedPose()).thenReturn(Optional.of(POSE_B));
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -208,7 +216,7 @@ class TestMultiCamOdometry {
         // Even though they nominally return a pose, the score disqualifies selection.
         Mockito.when(cam0.getEstimatedPose()).thenReturn(Optional.of(POSE_A));
         Mockito.when(cam1.getEstimatedPose()).thenReturn(Optional.of(POSE_B));
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -228,7 +236,7 @@ class TestMultiCamOdometry {
         Mockito.when(cam0.getEstimatedPose()).thenReturn(Optional.of(POSE_A));
         Mockito.when(cam1.getConfidenceScore()).thenReturn(2.0);
         Mockito.when(cam1.getEstimatedPose()).thenReturn(Optional.of(POSE_B));
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -248,7 +256,7 @@ class TestMultiCamOdometry {
         CamOdometryInterface cam0 = newMockCam();
         CamOdometryInterface cam1 = newMockCam();
         // Both mocks default to score 0.0.
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -265,7 +273,7 @@ class TestMultiCamOdometry {
         CamOdometryInterface cam1 = newMockCam();
         Mockito.when(cam0.getConfidenceScore()).thenReturn(3.0);
         Mockito.when(cam1.getConfidenceScore()).thenReturn(7.0);
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -285,7 +293,7 @@ class TestMultiCamOdometry {
         CamOdometryInterface cam0 = newMockCam();
         CamOdometryInterface cam1 = newMockCam();
         // Both mocks default to hasTargetLock() == false.
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -302,7 +310,7 @@ class TestMultiCamOdometry {
         CamOdometryInterface cam1 = newMockCam();
         // cam0 has no lock; cam1 does — OR should yield true.
         Mockito.when(cam1.hasTargetLock()).thenReturn(true);
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -322,7 +330,7 @@ class TestMultiCamOdometry {
         CamOdometryInterface cam0 = newMockCam();
         CamOdometryInterface cam1 = newMockCam();
         // Both mocks default to hasMultiTagLock() == false.
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -339,7 +347,7 @@ class TestMultiCamOdometry {
         CamOdometryInterface cam1 = newMockCam();
         // cam0 has no multi-tag lock; cam1 does.
         Mockito.when(cam1.hasMultiTagLock()).thenReturn(true);
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -361,7 +369,7 @@ class TestMultiCamOdometry {
         // cam0 sees tags 5 and 2; cam1 sees tags 7 and 1 — no overlap.
         Mockito.when(cam0.getVisibleTagIds()).thenReturn(List.of(5, 2));
         Mockito.when(cam1.getVisibleTagIds()).thenReturn(List.of(7, 1));
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         // getVisibleTagIds() does not need periodic(); it reads live from cams.
         List<Integer> result = multiCam.getVisibleTagIds();
@@ -380,7 +388,7 @@ class TestMultiCamOdometry {
         // Both cameras see tag 3; cam1 also sees tag 6.
         Mockito.when(cam0.getVisibleTagIds()).thenReturn(List.of(3));
         Mockito.when(cam1.getVisibleTagIds()).thenReturn(List.of(3, 6));
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         List<Integer> result = multiCam.getVisibleTagIds();
 
@@ -396,7 +404,7 @@ class TestMultiCamOdometry {
         CamOdometryInterface cam0 = newMockCam();
         CamOdometryInterface cam1 = newMockCam();
         // Both mocks default to returning an empty list.
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         List<Integer> result = multiCam.getVisibleTagIds();
 
@@ -420,7 +428,7 @@ class TestMultiCamOdometry {
         Mockito.when(cam0.getPrimaryTagTx()).thenReturn(-4.5);
         Mockito.when(cam1.getConfidenceScore()).thenReturn(9.0);
         Mockito.when(cam1.getPrimaryTagTx()).thenReturn(12.0);
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -439,7 +447,7 @@ class TestMultiCamOdometry {
         Mockito.when(cam0.getPrimaryTagId()).thenReturn(4);
         Mockito.when(cam1.getConfidenceScore()).thenReturn(9.0);
         Mockito.when(cam1.getPrimaryTagId()).thenReturn(11);
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1));
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(cam0, cam1), true, true);
 
         multiCam.periodic();
 
@@ -457,7 +465,7 @@ class TestMultiCamOdometry {
      */
     @Test
     void getPrimaryTagTx_noCamera_throwsIllegalStateException() {
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of());
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(), true, true);
 
         IllegalStateException ex = assertThrows(
             IllegalStateException.class, multiCam::getPrimaryTagTx);
@@ -470,7 +478,7 @@ class TestMultiCamOdometry {
      */
     @Test
     void getPrimaryTagId_noCamera_throwsIllegalStateException() {
-        MultiCamOdometry multiCam = new MultiCamOdometry(List.of());
+        MultiCamOdometry multiCam = new MultiCamOdometry(List.of(), true, true);
 
         IllegalStateException ex = assertThrows(
             IllegalStateException.class, multiCam::getPrimaryTagId);

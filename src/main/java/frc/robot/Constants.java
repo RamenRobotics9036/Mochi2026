@@ -46,8 +46,8 @@ public final class Constants {
         public static final int kLeftArmMotorID = 20;
         public static final int kRightArmMotorID = 21;
 
-        /** Max angle (degrees) — lowered/deployed position. 
-         * Measured on hardware: 2/23/2026 
+        /** Max angle (degrees) — lowered/deployed position.
+         * Measured on hardware: 2/23/2026
         */
         public static final double kMaxArmAngle = 160;
 
@@ -149,6 +149,8 @@ public final class Constants {
         public static final int kIndexerCurrentLimit = 40; //TODO: filler value
 
         public static final double kIndexerGearRatio = 1.0;
+        /** The shooter spin-up time before indexer activation, in seconds */
+        public static final double kIndexDelay = 0.3;
     }
 
     /**
@@ -217,8 +219,12 @@ public final class Constants {
     // To upload fmap:
     // curl -X POST http://10.90.36.15:5807/upload-fieldmap -H "Content-Type: application/json" --data-binary @FRC2026_ANDYMARK.fmap
     public static final class VisionConstants {
-        /** Default value for the VisionEnabled toggle (true = vision on). */
-        public static final boolean kVisionEnabledDefault = true;
+        /**
+         * Distance advantage (meters) given to MegaTag2 when comparing estimates.
+         * MT2 is preferred over MT1 if its avgTagDist is within this margin of MT1's,
+         * because gyro-fused rotation makes the estimate more reliable at similar range.
+         */
+        public static final double kMt2DistanceAdvantageMeter = 0.5;
     }
 
     /**

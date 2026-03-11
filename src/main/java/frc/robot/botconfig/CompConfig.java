@@ -94,6 +94,48 @@ public class CompConfig implements BotConfigInterface {
         return GeneratedCompConstants.createDrivetrain();
     }
 
+    /*************************************************************************************
+     *
+     * FORCE DISABLE SUBSYSTEMS (e.g. Pancake is missing several)
+     *
+     ************************************************************************************/
+
+    /** Force disable shooter. */
+    @Override
+    public boolean shouldForceDisableShooter() {
+        return false;
+    }
+
+    /** Force disable indexer. */
+    @Override
+    public boolean shouldForceDisableIndexer() {
+        return false;
+    }
+
+    /** Force disable spinny. */
+    @Override
+    public boolean shouldForceDisableSpinny() {
+        return false;
+    }
+
+    /** Force disable climber. */
+    @Override
+    public boolean shouldForceDisableClimber() {
+        return false;
+    }
+
+    /** Force disable intake. */
+    @Override
+    public boolean shouldForceDisableIntake() {
+        return false;
+    }
+
+    /** Force disable intake arm. */
+    @Override
+    public boolean shouldForceDisableIntakeArm() {
+        return false;
+    }
+
 
     /*************************************************************************************
      *
@@ -101,38 +143,42 @@ public class CompConfig implements BotConfigInterface {
      *
      ************************************************************************************/
 
-    private final List<CameraInfo> m_cameras = List.of(
-        new CameraInfo("limelight-fixed", new Transform3d(
-            new Translation3d(
-                Units.inchesToMeters(-0.5),  // 1/2 inch back
-                Units.inchesToMeters(4.0),   // 4 inches left of center
-                Units.inchesToMeters(16.5)   // 12.5" deck + 4" mount
-            ),
-            new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
-        ))
-    );
+    @Override
+    public boolean isVisionEnabledDefault() {
+        return false;
+    }
 
-    // $TODO - Eventually get rid of this when we have second camera installed on bot
-    private final List<CameraInfo> m_cameras_sim = List.of(
-        new CameraInfo("limelight-fixed", new Transform3d(
+    @Override
+    public boolean isMegaTag2Supported() {
+        return false; // $TODO2 - Enable after testing
+    }
+
+    @Override
+    public boolean isAutoVisionInjectionEnabled() {
+        return true;
+    }
+
+    private final List<CameraInfo> m_cameras = List.of(
+        new CameraInfo("limelight", new Transform3d(
             new Translation3d(
-                Units.inchesToMeters(-0.5),  // 1/2 inch back
-                Units.inchesToMeters(4.0),   // 4 inches left of center
-                Units.inchesToMeters(16.5)   // 12.5" deck + 4" mount
+                Units.inchesToMeters(-1.0),  // 1/2 inch back
+                Units.inchesToMeters(4.5),   // 4 inches left of center
+                Units.inchesToMeters(17.625)   // 12.5" deck + 4" mount
             ),
             new Rotation3d(0, Math.toRadians(-23), 0)  // 23 degrees up
         )),
-        new CameraInfo("limelight-fixed2", new Transform3d(
-            new Translation3d(-0.5, 0.0, 0.5),
-            new Rotation3d(0, 0, Math.PI)
+        new CameraInfo("limelight-back", new Transform3d(
+            new Translation3d(
+                Units.inchesToMeters(-12.75),         // + is forward
+                Units.inchesToMeters(4.0),   // + is left
+                Units.inchesToMeters(7.5)    // x" deck + 4" mount
+            ),
+            new Rotation3d(0, Math.toRadians(-25), Math.toRadians(180))  // x degrees up, backwards
         ))
     );
 
     @Override
     public List<CameraInfo> getCameras() {
-        if (Robot.isSimulation()) {
-            return m_cameras_sim;
-        }
         return m_cameras;
     }
 }

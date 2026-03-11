@@ -26,8 +26,8 @@ public class RobotIdentity {
     // To find a new MAC: Connect to robot, run 'arp -a' in terminal.
     // Look for 10.90.36.2 and copy the last 3 hex pairs.
 
-    // Comp Bot RIO: 00-80-2F-34-4C-2D
-    private static final int[] COMP_BOT_MAC = {0x34, 0x4C, 0x2D};
+    // Comp Bot RIO: 00-80-2F-38-D2-58
+    private static final int[] COMP_BOT_MAC = {0x38, 0xD2, 0x58};
 
     // Pancake RIO: 00-80-2F-38-D9-80
     private static final int[] PANCAKE_MAC  = {0x38, 0xD9, 0x80};

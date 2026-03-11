@@ -81,7 +81,15 @@ class TestSingleCamOdometry {
         m_kalmanFilter = Mockito.mock(VisionKalmanFilter.class);
 
         // Identity transform — no rotation or translation from robot to camera.
-        m_cam = new SingleCamOdometry(CAM_NAME, new Transform3d(), consumer, null);
+        // Default test camera has MT2 disabled (most tests don't need it).
+        m_cam = new SingleCamOdometry(
+            CAM_NAME,
+            new Transform3d(),
+            consumer,
+            null,
+            () -> 0.0,
+            true,
+            true);
     }
 
     @AfterEach
@@ -116,6 +124,170 @@ class TestSingleCamOdometry {
 
     /** Representative pose used across several tests. */
     private static final Pose2d POSE_A = new Pose2d(3.0, 2.0, Rotation2d.kZero);
+    private static final Pose2d POSE_B = new Pose2d(6.0, 1.0, Rotation2d.kPi);
+
+    // ------------------------------------------------------------------
+    // 0. MegaTag preference/fallback
+    // ------------------------------------------------------------------
+
+    /** Helper to create a camera with an explicit MT2 flag. */
+    private SingleCamOdometry createCamWithMt2(boolean supportMegatag2) {
+        VisionSimInterface.EstimateConsumer consumer =
+            (pose, ts, stdDevs) -> {
+                m_lastConsumedPose = pose;
+                m_consumeCallCount++;
+            };
+        SingleCamOdometry result = new SingleCamOdometry(
+            CAM_NAME,
+            new Transform3d(),
+            consumer,
+            null,
+            () -> 0.0,
+             supportMegatag2,
+             true);
+
+        return result;
+    }
+
+    @Test
+    void periodic_megatag2Enabled_mt2MoreTags_prefersMt2() {
+        SingleCamOdometry cam = createCamWithMt2(true);
+        PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        PoseEstimate mt2 = new PoseEstimate(
+            POSE_B, 1.0, 0.0, 2, 0.0, 2.0, 0.0,
+            new RawFiducial[]{
+                new RawFiducial(1, 0, 0, 0, 2.0, 2.0, 0.1),
+                new RawFiducial(2, 0, 0, 0, 2.0, 2.0, 0.1)
+            },
+            true);
+
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(mt1);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(CAM_NAME))
+            .thenReturn(mt2);
+
+        cam.periodic();
+
+        assertEquals(POSE_B, cam.getEstimatedPose().orElseThrow());
+        assertEquals(POSE_B, m_lastConsumedPose);
+        assertTrue(cam.hasMultiTagLock());
+        assertTrue(cam.isLatestMt2());
+    }
+
+    @Test
+    void periodic_megatag2Enabled_mt1MoreTags_prefersMt1() {
+        SingleCamOdometry cam = createCamWithMt2(true);
+        // MT1 sees 3 tags at 2m
+        RawFiducial f1 = new RawFiducial(1, 0, 0, 0, 2.0, 2.0, 0.1);
+        RawFiducial f2 = new RawFiducial(2, 0, 0, 0, 2.0, 2.0, 0.1);
+        RawFiducial f3 = new RawFiducial(3, 0, 0, 0, 2.0, 2.0, 0.1);
+        PoseEstimate mt1 = new PoseEstimate(
+            POSE_A, 1.0, 0.0, 3, 0.0, 2.0, 0.0,
+            new RawFiducial[]{f1, f2, f3}, false);
+        // MT2 sees 1 tag at 5m
+        PoseEstimate mt2 = new PoseEstimate(
+            POSE_B, 1.0, 0.0, 1, 0.0, 5.0, 0.0,
+            new RawFiducial[]{ new RawFiducial(4, 0, 0, 0, 5.0, 5.0, 0.0) },
+            true);
+
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(mt1);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(CAM_NAME))
+            .thenReturn(mt2);
+
+        cam.periodic();
+
+        assertEquals(POSE_A, cam.getEstimatedPose().orElseThrow());
+        assertEquals(POSE_A, m_lastConsumedPose);
+        assertTrue(cam.hasMultiTagLock());
+        assertFalse(cam.isLatestMt2());
+    }
+
+    @Test
+    void periodic_megatag2Enabled_sameTagCount_mt1MuchCloser_prefersMt1() {
+        SingleCamOdometry cam = createCamWithMt2(true);
+        // Both see 1 tag; MT1 at 2m, MT2 at 3.5m — gap exceeds the MT2 distance advantage
+        PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        PoseEstimate mt2 = new PoseEstimate(
+            POSE_B, 1.0, 0.0, 1, 0.0, 3.5, 0.0,
+            new RawFiducial[]{ new RawFiducial(7, 0, 0, 0, 3.5, 3.5, 0.0) },
+            true);
+
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(mt1);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(CAM_NAME))
+            .thenReturn(mt2);
+
+        cam.periodic();
+
+        assertEquals(POSE_A, cam.getEstimatedPose().orElseThrow());
+        assertFalse(cam.isLatestMt2());
+    }
+
+    @Test
+    void periodic_megatag2Enabled_sameTagCount_mt2SlightlyFarther_prefersMt2() {
+        SingleCamOdometry cam = createCamWithMt2(true);
+        // Both see 1 tag; MT1 at 2.0m, MT2 at 2.3m — within the 0.5m MT2 advantage
+        PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        PoseEstimate mt2 = new PoseEstimate(
+            POSE_B, 1.0, 0.0, 1, 0.0, 2.3, 0.0,
+            new RawFiducial[]{ new RawFiducial(7, 0, 0, 0, 2.3, 2.3, 0.0) },
+            true);
+
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(mt1);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(CAM_NAME))
+            .thenReturn(mt2);
+
+        cam.periodic();
+
+        assertEquals(POSE_B, cam.getEstimatedPose().orElseThrow());
+        assertTrue(cam.isLatestMt2());
+    }
+
+    @Test
+    void periodic_megatag2Disabled_ignoresMegaTag2_usesMegaTag1() {
+        SingleCamOdometry cam = createCamWithMt2(false);
+        PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        PoseEstimate mt2 = new PoseEstimate(
+            POSE_B, 1.0, 0.0, 2, 0.0, 2.0, 0.0,
+            new RawFiducial[]{
+                new RawFiducial(1, 0, 0, 0, 2.0, 2.0, 0.1),
+                new RawFiducial(2, 0, 0, 0, 2.0, 2.0, 0.1)
+            },
+            true);
+
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(mt1);
+        // MT2 is available but flag is off — should never be queried.
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(CAM_NAME))
+            .thenReturn(mt2);
+
+        cam.periodic();
+
+        assertEquals(POSE_A, cam.getEstimatedPose().orElseThrow());
+        assertEquals(POSE_A, m_lastConsumedPose);
+        assertTrue(cam.hasTargetLock());
+        assertFalse(cam.isLatestMt2());
+    }
+
+    @Test
+    void periodic_megatag2Enabled_noMt2Available_fallsBackToMegaTag1() {
+        SingleCamOdometry cam = createCamWithMt2(true);
+        PoseEstimate mt1 = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(CAM_NAME))
+            .thenReturn(null);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(mt1);
+
+        cam.periodic();
+
+        assertEquals(POSE_A, cam.getEstimatedPose().orElseThrow());
+        assertEquals(POSE_A, m_lastConsumedPose);
+        assertTrue(cam.hasTargetLock());
+        assertFalse(cam.isLatestMt2());
+    }
 
     // ------------------------------------------------------------------
     // 1. No-target path
@@ -215,6 +387,28 @@ class TestSingleCamOdometry {
 
         assertFalse(m_cam.hasTargetLock());
         assertEquals(0.0, m_cam.getConfidenceScore());
+    }
+
+    /**
+     * MT2 single-tag beyond 4 m must also be rejected — gyro fusion only resolves
+     * rotational ambiguity, not translational accuracy at long range.
+     */
+    @Test
+    void periodic_mt2SingleTag_beyondFourMeters_isRejected() {
+        SingleCamOdometry cam = createCamWithMt2(true);
+        PoseEstimate mt2 = new PoseEstimate(
+            POSE_A, 1.0, 0.0, 1, 0.0, 5.0, 0.0,
+            new RawFiducial[]{ new RawFiducial(7, 0, 0, 0, 5.0, 5.0, 0.0) },
+            true);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(null);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(CAM_NAME))
+            .thenReturn(mt2);
+
+        cam.periodic();
+
+        assertFalse(cam.hasTargetLock());
+        assertEquals(0.0, cam.getConfidenceScore());
     }
 
     /**
@@ -388,44 +582,16 @@ class TestSingleCamOdometry {
     // ------------------------------------------------------------------
 
     /**
-     * When the vision-enabled supplier returns {@code false}, the estimate consumer must
-     * <em>not</em> be called even though the pose estimate is valid.  The internal state
-     * ({@code hasTargetLock}, {@code getEstimatedPose}) must still be updated.
-     */
-    @Test
-    void periodic_visionDisabled_consumerNotCalled() {
-        // Wire a disabled vision supplier.
-        m_cam.setVisionDependencies(() -> false, null, null);
-
-        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
-        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
-            .thenReturn(est);
-
-        m_cam.periodic();
-
-        // Consumer must NOT have been called.
-        assertEquals(0, m_consumeCallCount);
-        // But internal state must still reflect a lock.
-        assertTrue(m_cam.hasTargetLock());
-        assertTrue(m_cam.getEstimatedPose().isPresent());
-    }
-
-    /**
      * When the vision-enabled supplier returns {@code true} the consumer must be called
      * with the correct pose.
      */
     @Test
     void periodic_visionEnabled_consumerIsCalled() {
-        m_cam.setVisionDependencies(() -> true, null, null);
-
-        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
-        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
-            .thenReturn(est);
-
-        m_cam.periodic();
-
-        assertEquals(1, m_consumeCallCount);
-        assertEquals(POSE_A, m_lastConsumedPose);
+        // enableVision is not supported at the SingleCamOdometry level; verify it throws.
+        UnsupportedOperationException ex = assertThrows(
+            UnsupportedOperationException.class, () -> m_cam.enableVision(true));
+        assertTrue(ex.getMessage().contains("SingleCamOdometry"),
+            "Exception message should mention SingleCamOdometry, got: " + ex.getMessage());
     }
 
     // ------------------------------------------------------------------
@@ -439,7 +605,11 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_motionlessAndMultiTag_injectsKalman() {
-        m_cam.setVisionDependencies(() -> true, m_kalmanFilter, () -> true);
+        UnsupportedOperationException ex = assertThrows(
+            UnsupportedOperationException.class, () -> m_cam.enableVision(true));
+        assertTrue(ex.getMessage().contains("SingleCamOdometry"),
+            "Exception message should mention SingleCamOdometry, got: " + ex.getMessage());
+        m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> true);
 
         PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
         m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
@@ -457,7 +627,11 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_movingAndMultiTag_doesNotInjectKalman() {
-        m_cam.setVisionDependencies(() -> true, m_kalmanFilter, () -> false);
+        UnsupportedOperationException ex = assertThrows(
+            UnsupportedOperationException.class, () -> m_cam.enableVision(true));
+        assertTrue(ex.getMessage().contains("SingleCamOdometry"),
+            "Exception message should mention SingleCamOdometry, got: " + ex.getMessage());
+        m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> false);
 
         PoseEstimate est = multiTagEstimate(POSE_A, 2.0, 1.0);
         m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
@@ -475,7 +649,11 @@ class TestSingleCamOdometry {
      */
     @Test
     void periodic_motionlessAndSingleTag_doesNotInjectKalman() {
-        m_cam.setVisionDependencies(() -> true, m_kalmanFilter, () -> true);
+        UnsupportedOperationException ex = assertThrows(
+            UnsupportedOperationException.class, () -> m_cam.enableVision(true));
+        assertTrue(ex.getMessage().contains("SingleCamOdometry"),
+            "Exception message should mention SingleCamOdometry, got: " + ex.getMessage());
+        m_cam.setVisionDependenciesOnCamera(m_kalmanFilter, () -> true);
 
         PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
         m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))

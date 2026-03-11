@@ -2,6 +2,8 @@ package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -11,30 +13,36 @@ import java.util.function.BooleanSupplier;
 
 /** Reads from multiple limelight cameras. */
 public class MultiCamOdometry implements CamOdometryInterface {
+    private final boolean m_megaTag2Enabled;
+    private final boolean m_autoVisionInjectionEnabled;
+
     private final List<CamOdometryInterface> m_cameras;
     private final PerCycleState m_perCycleState = new PerCycleState();
 
     /** Constructor. */
-    public MultiCamOdometry(List<CamOdometryInterface> cameras) {
+    public MultiCamOdometry(
+        List<CamOdometryInterface> cameras,
+        boolean megaTag2Enabled,
+        boolean autoVisionInjectionEnabled) {
+
         m_cameras = new ArrayList<>(cameras);
+        m_megaTag2Enabled = megaTag2Enabled;
+        m_autoVisionInjectionEnabled = autoVisionInjectionEnabled;
     }
 
     /**
      * Sets the dependencies needed for vision processing.
      *
-     * @param visionEnabledSupplier A BooleanSupplier returning true when vision is enabled
      * @param filter The VisionKalmanFilter instance to inject measurements into
      * @param isMotionlessSupplier Supplier that returns true when robot is motionless
      */
     @Override
-    public void setVisionDependencies(
-            BooleanSupplier visionEnabledSupplier,
+    public void setVisionDependenciesOnCamera(
             VisionKalmanFilter filter,
             BooleanSupplier isMotionlessSupplier) {
 
         for (CamOdometryInterface cam : m_cameras) {
-            cam.setVisionDependencies(
-                visionEnabledSupplier,
+            cam.setVisionDependenciesOnCamera(
                 filter,
                 isMotionlessSupplier);
         }
@@ -47,9 +55,36 @@ public class MultiCamOdometry implements CamOdometryInterface {
      *   (in order) that has a target lock.
      */
     @Override
-    public void periodic() {
-        m_perCycleState.reset();
+    public void setRobotOrientation() {
+        if (isMegaTag2Enabled()) {
+            for (CamOdometryInterface cam : m_cameras) {
+                cam.setRobotOrientation_NoFlush();
+            }
+            LimelightHelpers.Flush();
+        }
+    }
 
+    @Override
+    public void setRobotOrientation_NoFlush() {
+        if (isMegaTag2Enabled()) {
+            for (CamOdometryInterface cam : m_cameras) {
+                cam.setRobotOrientation_NoFlush();
+            }
+        }
+    }
+
+    @Override
+    public void periodic() {
+        // For Megatag2 support, we need to push the robot's current heading to the
+        // Limelight every cycle.
+        if (isMegaTag2Enabled()) {
+            // This is expensive since it flushes NetworkTables on each call,
+            // but we need to do it every cycle to keep the Limelight updated with
+            // the robot's heading.  So we dont call it if vision or megatag2 is disabled.
+            setRobotOrientation();
+        }
+
+        m_perCycleState.reset();
         for (CamOdometryInterface cam : m_cameras) {
             cam.periodic();
 
@@ -69,6 +104,11 @@ public class MultiCamOdometry implements CamOdometryInterface {
                 m_perCycleState.hasMultiTagLock = true;
             }
         }
+    }
+
+    @Override
+    public void enableVision(boolean enabled) {
+        throw new UnsupportedOperationException("Vision enabling/disabling is not supported at the MultiCamOdometry level; enable/disable the entire wrapper instead.");
     }
 
     @Override
@@ -121,6 +161,14 @@ public class MultiCamOdometry implements CamOdometryInterface {
     }
 
     @Override
+    public boolean isLatestMt2() {
+        if (m_perCycleState.bestLockedCam.isPresent()) {
+            return m_perCycleState.bestLockedCam.get().isLatestMt2();
+        }
+        return false;
+    }
+
+    @Override
     public double getPrimaryTagTx() {
         // NOTE: Always returns Camera 0 forward-facing camera result, since
         // we use this to align robot rotationally to a target.
@@ -141,5 +189,9 @@ public class MultiCamOdometry implements CamOdometryInterface {
             throw new IllegalStateException("No cameras configured — at least one camera must be provided.");
         }
         return m_cameras.get(0);
+    }
+
+    private boolean isMegaTag2Enabled() {
+        return m_megaTag2Enabled;
     }
 }

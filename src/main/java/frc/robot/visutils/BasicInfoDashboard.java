@@ -17,8 +17,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import frc.robot.Constants;
-import frc.robot.Constants.VisionConstants;
+import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.visutils.VisionKalmanFilter;
 
 import java.util.List;
@@ -51,14 +50,15 @@ public class BasicInfoDashboard {
     private final DoublePublisher m_visionConfidence = m_basicInfoTable.getDoubleTopic("VisionConfidence").publish();
     private final BooleanPublisher m_oneLocked = m_basicInfoTable.getBooleanTopic("OneLocked").publish();
     private final BooleanPublisher m_multiLocked = m_basicInfoTable.getBooleanTopic("MultiLocked").publish();
+    private final BooleanPublisher m_isMt2 = m_basicInfoTable.getBooleanTopic("IsMt2").publish();
     private final DoublePublisher m_visionTx = m_basicInfoTable.getDoubleTopic("VisionTx").publish();
     private final StringPublisher m_targetList = m_basicInfoTable.getStringTopic("TargetList").publish();
     private final DoublePublisher m_visErrorCentimeters = m_basicInfoTable.getDoubleTopic("VisErrorCentimeters").publish();
     private final DoublePublisher m_visErrorMultiTagCentimeters = m_basicInfoTable.getDoubleTopic("VisErrorMultiTagCentimeters").publish();
 
     /** Bidirectional toggle for enabling/disabling vision measurement injection. */
-    private final BooleanEntry m_visionEnabled =
-        m_basicInfoTable.getBooleanTopic("VisionEnabled").getEntry(Constants.VisionConstants.kVisionEnabledDefault);
+    private final BooleanEntry m_visionEnabled;
+    private final BotConfigInterface m_configInterface;
 
     /* Vision Kalman filter outputs */
     private final DoubleArrayPublisher m_visionKalmanPose =
@@ -75,6 +75,7 @@ public class BasicInfoDashboard {
     private DoubleSupplier m_visionConfidenceSupplier = null;
     private BooleanSupplier m_hasTargetLockSupplier = null;
     private BooleanSupplier m_hasMultiTagLockSupplier = null;
+    private BooleanSupplier m_isLatestMt2Supplier = null;
     private DoubleSupplier m_txSupplier = null;
     private Supplier<List<Integer>> m_targetListSupplier = null;
     private Supplier<VisionKalmanFilter> m_visionKalmanSupplier = null;
@@ -85,11 +86,27 @@ public class BasicInfoDashboard {
     /** When true, vision is forcibly disabled regardless of the dashboard toggle. */
     private boolean m_forceDisableVision = false;
 
+    /** Bundles a VisionHeartBeat with its NT publisher for one camera. */
+    private static class CameraMonitor {
+        final VisionHeartBeat heartbeat;
+        final StringPublisher status;
+
+        CameraMonitor(String cameraName, String networkTableKeyName, NetworkTable parent) {
+            heartbeat = new VisionHeartBeat(cameraName);
+            status = parent.getSubTable(networkTableKeyName).getStringTopic("Status").publish();
+        }
+    }
+
+    /** Per-camera heartbeat monitors. */
+    private final List<CameraMonitor> m_cameraMonitors;
+
     // Debouncers for locked indicators (prevents flickering)
     private static final double kLockedDebounceSeconds = 0.25;
     private final Debouncer m_oneLockedDebouncer =
         new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
     private final Debouncer m_multiLockedDebouncer =
+        new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
+    private final Debouncer m_isMt2Debouncer =
         new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
     private final Debouncer m_targetListDebouncer =
         new Debouncer(kLockedDebounceSeconds, Debouncer.DebounceType.kFalling);
@@ -98,14 +115,31 @@ public class BasicInfoDashboard {
     /**
      * Constructs a BasicInfoDashboard.
      *
-     * @param drivetrain The swerve drivetrain to get info from
+     * @param drivetrain      The swerve drivetrain to get info from
+     * @param cameraNames     Names of all Limelight cameras to monitor
+     * @param configInterface Bot configuration (vision defaults, etc.)
      */
-    public BasicInfoDashboard(SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain) {
+    public BasicInfoDashboard(
+        BotConfigInterface configInterface,
+        SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
+        List<String> cameraNames) {
+
         m_drivetrain = drivetrain;
         m_pigeon = drivetrain.getPigeon2();
+        m_configInterface = configInterface;
+        m_visionEnabled = m_basicInfoTable.getBooleanTopic("VisionEnabled").getEntry(m_configInterface.isVisionEnabledDefault());
+
+        NetworkTable cameraTable = m_basicInfoTable.getSubTable("Camera");
+        m_cameraMonitors = new java.util.ArrayList<>();
+        for (int i = 0; i < cameraNames.size(); i++) {
+            m_cameraMonitors.add(new CameraMonitor(
+                cameraNames.get(i),
+                "Camera" + (i + 1),
+                cameraTable));
+        }
 
         // Publish the default value so the toggle appears in Elastic immediately.
-        m_visionEnabled.set(Constants.VisionConstants.kVisionEnabledDefault);
+        m_visionEnabled.set(m_configInterface.isVisionEnabledDefault());
     }
 
     /**
@@ -118,7 +152,7 @@ public class BasicInfoDashboard {
         if (m_forceDisableVision) {
             return false;
         }
-        return m_visionEnabled.get(Constants.VisionConstants.kVisionEnabledDefault);
+        return m_visionEnabled.get(m_configInterface.isVisionEnabledDefault());
     }
 
     /**
@@ -138,16 +172,18 @@ public class BasicInfoDashboard {
      * @param confidenceSupplier         A DoubleSupplier returning confidence 0-100
      * @param hasTargetLockSupplier      A BooleanSupplier returning true if any camera has a target lock
      * @param hasMultiTagLockSupplier    A BooleanSupplier returning true if any camera has 2+ targets locked
+     * @param isLatestMt2Supplier        A BooleanSupplier returning true if the best camera's latest estimate used MegaTag2
      * @param txSupplier                 A DoubleSupplier returning tx in degrees
      * @param targetListSupplier         A Supplier returning comma-separated tag IDs
      * @param visErrorAtSnapTimeSupplier A Supplier returning the vision error at image-capture time
      * @param isMotionlessSupplier       A BooleanSupplier returning true when robot is motionless
      * @param secondsStillSupplier       A DoubleSupplier returning seconds the robot has been still
      */
-    public void setVisionDependencies(
+    public void setVisionDependenciesOnDash(
             DoubleSupplier confidenceSupplier,
             BooleanSupplier hasTargetLockSupplier,
             BooleanSupplier hasMultiTagLockSupplier,
+            BooleanSupplier isLatestMt2Supplier,
             DoubleSupplier txSupplier,
             Supplier<List<Integer>> targetListSupplier,
             Supplier<Optional<Transform2d>> visErrorAtSnapTimeSupplier,
@@ -156,6 +192,7 @@ public class BasicInfoDashboard {
         m_visionConfidenceSupplier = confidenceSupplier;
         m_hasTargetLockSupplier = hasTargetLockSupplier;
         m_hasMultiTagLockSupplier = hasMultiTagLockSupplier;
+        m_isLatestMt2Supplier = isLatestMt2Supplier;
         m_txSupplier = txSupplier;
         m_targetListSupplier = targetListSupplier;
         m_visErrorAtSnapTimeSupplier = visErrorAtSnapTimeSupplier;
@@ -245,6 +282,10 @@ public class BasicInfoDashboard {
             boolean hasMultiTagLock = m_hasMultiTagLockSupplier.getAsBoolean();
             m_multiLocked.set(m_multiLockedDebouncer.calculate(hasMultiTagLock));
         }
+        if (m_isLatestMt2Supplier != null) {
+            boolean isLatestMt2 = m_isLatestMt2Supplier.getAsBoolean();
+            m_isMt2.set(m_isMt2Debouncer.calculate(isLatestMt2));
+        }
         if (m_txSupplier != null) {
             m_visionTx.set(m_txSupplier.getAsDouble());
         }
@@ -293,6 +334,13 @@ public class BasicInfoDashboard {
         if (m_secondsStillSupplier != null) {
             double seconds = m_secondsStillSupplier.getAsDouble();
             m_visionKalmanSecondsStill.set(String.format("%.1f", seconds));
+        }
+
+        /* Update and publish per-camera heartbeat status (only write NT when state may have changed) */
+        for (CameraMonitor mon : m_cameraMonitors) {
+            if (mon.heartbeat.update()) {
+                mon.status.set(mon.heartbeat.getCameraStatus());
+            }
         }
     }
 }
