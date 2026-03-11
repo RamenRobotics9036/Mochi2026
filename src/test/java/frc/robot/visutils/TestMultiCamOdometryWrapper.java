@@ -78,7 +78,7 @@ class TestMultiCamOdometryWrapper {
         CamOdometryInterface real = newRealMock();
         MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, true);
 
-        assertEquals(Optional.of(TRANSFORM_A), wrapper.getVisionErrorAtSnapTime());
+        assertEquals(OptionalDouble.of(1.0), wrapper.getVisionErrorAtSnapTime());
         Mockito.verify(real).getVisionErrorAtSnapTime();
     }
 
@@ -193,7 +193,7 @@ class TestMultiCamOdometryWrapper {
         CamOdometryInterface real = newRealMock();
         MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, false);
 
-        assertEquals(Optional.empty(), wrapper.getVisionErrorAtSnapTime());
+        assertEquals(OptionalDouble.empty(), wrapper.getVisionErrorAtSnapTime());
         Mockito.verify(real, Mockito.never()).getVisionErrorAtSnapTime();
     }
 
@@ -382,7 +382,7 @@ class TestMultiCamOdometryWrapper {
     @Test
     void noOp_getVisionErrorAtSnapTime_returnsEmpty() {
         NoOpCamOdometry noop = new NoOpCamOdometry();
-        assertEquals(Optional.empty(), noop.getVisionErrorAtSnapTime());
+        assertEquals(OptionalDouble.empty(), noop.getVisionErrorAtSnapTime());
     }
 
     @Test
