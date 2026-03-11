@@ -26,11 +26,6 @@ public class VisionSimConstants {
         public static final AprilTagFieldLayout kTagLayout =
             AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
-        // The standard deviations of our vision estimated poses, which affect correction rate
-        // (Fake values. Experiment and determine estimation noise on an actual robot.)
-        public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(4, 4, 8);
-        public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
-
         // Camera simulation properties
         public static final int kCameraResWidth = 960;
         public static final int kCameraResHeight = 720;
