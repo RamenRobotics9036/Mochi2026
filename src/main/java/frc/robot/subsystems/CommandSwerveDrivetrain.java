@@ -18,6 +18,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -33,6 +34,7 @@ import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.commands.AlignToTagCommand;
 import frc.robot.generated.TunerSwerveDrivetrain;
+import frc.robot.util.ApplyModuleStates;
 import frc.robot.visutils.VisionInjectFilter;
 import frc.robot.LimelightHelpers;
 
@@ -65,6 +67,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
     private final SwerveRequest.SysIdSwerveSteerGains m_steerCharacterization = new SwerveRequest.SysIdSwerveSteerGains();
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
+
+    private ApplyModuleStates m_xBrakeRequest = new ApplyModuleStates();
 
     /* SysId routine for characterizing translation. This is used to find PID gains for the drive motors. */
     private final SysIdRoutine m_sysIdRoutineTranslation = new SysIdRoutine(
@@ -186,6 +190,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         // configure PathPlanner AutoBuilder
         configureAutoBuilder();
+
+        prepXBrake();
     }
 
     /**
@@ -213,6 +219,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         // $VISIONSIM - Inject Filter
         m_visionFilter = new VisionInjectFilter();
+
+        prepXBrake();
     }
 
     /**
@@ -248,6 +256,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         // $VISIONSIM - Inject Filter
         m_visionFilter = new VisionInjectFilter();
+
+        prepXBrake();
+    }
+
+    private void prepXBrake(){
+        m_xBrakeRequest.setModuleStates(new SwerveModuleState[]{
+            new SwerveModuleState(0, Rotation2d.fromDegrees(45)),
+            new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
+            new SwerveModuleState(0, Rotation2d.fromDegrees(-45)),
+            new SwerveModuleState(0, Rotation2d.fromDegrees(45))
+        });
     }
 
     /**
@@ -293,6 +312,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      */
     public Command sysIdDynamic(SysIdRoutine.Direction direction) {
         return m_sysIdRoutineToApply.dynamic(direction);
+    }
+
+    public void xBrake(){
+        
+
     }
 
     @Override
