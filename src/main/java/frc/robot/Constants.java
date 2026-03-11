@@ -180,7 +180,7 @@ public final class Constants {
 
         public static final double kGearRatio = 20;
         /** Maximum extension limit (motor rotations). */
-        public static final double kMaxHeight = 4.1 * kGearRatio;
+        public static final double kMaxHeight = 4.0 * kGearRatio;
         /** Minimum retraction limit. (in Meters for Height variables) */
         public static final double kMinHeight = 0.1 * kGearRatio;
 
