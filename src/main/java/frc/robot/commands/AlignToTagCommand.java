@@ -22,10 +22,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import java.util.function.DoubleSupplier;
 
-/**
- * Command for vision testing in sim
- * It is designed to be set as the default command for the {@link VisionSubsystem}.
- */
+/** Aligns the robot to the faced AprilTag. */
 @SuppressWarnings({"all"}) // suppress CheckStyle warnings in this file
 public class AlignToTagCommand extends Command {
     /** Information about the current robot. */
