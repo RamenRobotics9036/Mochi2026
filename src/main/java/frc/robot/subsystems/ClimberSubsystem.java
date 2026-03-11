@@ -15,17 +15,29 @@ public class ClimberSubsystem extends SubsystemBase {
     /** Constructor. */
     public ClimberSubsystem(ElevatorIoInterface io) {
         m_io = io;
+        m_io.resetEncoder();
     }
 
     /**
      * Sets climber speed with software limit checks.
      */
     public void setClimbSpeed(double request) {
-        m_io.setSpeed(request);
+        double height = getEncoderValue();
+        if(request > 0 && height <= ClimberConstants.kMaxHeight){
+            m_io.setSpeed(request);
+        } else if(request < 0 && height >= ClimberConstants.kMinHeight){
+            m_io.setSpeed(request);
+        } else{
+            m_io.setSpeed(0.0);
+        }
     }
 
     public double getEncoderValue() {
         return m_outputs.positionMeters;
+    }
+
+    public void resetEncoder() {
+        m_io.resetEncoder();
     }
 
     public void stop() {
