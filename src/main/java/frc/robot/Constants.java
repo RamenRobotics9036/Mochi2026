@@ -127,7 +127,7 @@ public final class Constants {
 
         /** SmartCurrentLimit in amps*/
         public static final int kCurrentSupplyLimit = 50; //TODO: filler value
-        public static final int kCurrentStatorLimit = 40; //TODO: filler value
+        public static final int kCurrentStatorLimit = 50; //TODO: filler value
 
         /** PWM channer for the linear actuator servo. */
         public static final int kHoodPwmChannel = 0; //TODO: filler value
