@@ -329,6 +329,11 @@ public class RobotContainer {
 
         //driveController.y().whileTrue(new JiggleCommand(drivetrain, armSubsystem));
         driveController.y().whileTrue(new JiggleCommand(drivetrain));
+
+        driveController.x().whileTrue(new RunCommand(
+                () -> drivetrain.xBrake(),
+                drivetrain)
+            );
     }
 
     /**
