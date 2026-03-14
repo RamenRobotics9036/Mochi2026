@@ -5,7 +5,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.function.BooleanSupplier;
+
 
 public interface CamOdometryInterface {
     /**
@@ -78,14 +78,4 @@ public interface CamOdometryInterface {
      * Enable/Disable vision processing.
      */
     void enableVision(boolean enabled);
-
-    /**
-     * Sets the dependencies needed for vision processing.
-     *
-     * @param filter The VisionKalmanFilter instance to inject measurements into
-     * @param isMotionlessSupplier Supplier that returns true when robot is motionless
-     */
-    void setVisionDependenciesOnCamera(
-            VisionKalmanFilter filter,
-            BooleanSupplier isMotionlessSupplier);
 }

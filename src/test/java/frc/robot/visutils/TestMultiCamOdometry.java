@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BooleanSupplier;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import frc.robot.visutils.evaluateposes.EvaluatePosesMochiV1;
@@ -60,34 +59,6 @@ class TestMultiCamOdometry {
         Mockito.when(mock.getPrimaryTagId()).thenReturn(-1);
         Mockito.when(mock.getPrimaryTagTx()).thenReturn(0.0);
         return mock;
-    }
-
-    // ------------------------------------------------------------------
-    // 1. setVisionDependencies — wiring propagation
-    // ------------------------------------------------------------------
-
-    /**
-     * {@code setVisionDependencies} must be forwarded to every camera in the list;
-     * the same supplier and filter references should reach cam0 and cam1.
-     */
-    @Test
-    void setVisionDependencies_propagatesToAllCameras() {
-        CamOdometryInterface cam0 = newMockCam();
-        CamOdometryInterface cam1 = newMockCam();
-        MultiCamOdometry multiCam = new MultiCamOdometry(
-            List.of(cam0, cam1),
-            true,
-            true,
-            new EvaluatePosesMochiV1());
-
-        VisionKalmanFilter filter = Mockito.mock(VisionKalmanFilter.class);
-        BooleanSupplier isMotionless = () -> false;
-
-        multiCam.setVisionDependenciesOnCamera(filter, isMotionless);
-
-        // Verify that both cameras received the exact same dependency references.
-        Mockito.verify(cam0).setVisionDependenciesOnCamera(filter, isMotionless);
-        Mockito.verify(cam1).setVisionDependenciesOnCamera(filter, isMotionless);
     }
 
     // ------------------------------------------------------------------

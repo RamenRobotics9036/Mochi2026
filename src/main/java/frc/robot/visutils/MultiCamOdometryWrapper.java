@@ -5,7 +5,6 @@ import edu.wpi.first.math.geometry.Transform2d;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.function.BooleanSupplier;
 
 /**
  * Wrapper around a real {@link CamOdometryInterface} that supports enable/disable.
@@ -102,15 +101,5 @@ public class MultiCamOdometryWrapper implements CamOdometryInterface {
     @Override
     public void enableVision(boolean enabled) {
         m_enabled = enabled;
-    }
-
-    /**
-     * Always forwarded to the real camera — dependencies must be wired regardless of enable state.
-     */
-    @Override
-    public void setVisionDependenciesOnCamera(
-            VisionKalmanFilter filter,
-            BooleanSupplier isMotionlessSupplier) {
-        m_multiCamReal.setVisionDependenciesOnCamera(filter, isMotionlessSupplier);
     }
 }

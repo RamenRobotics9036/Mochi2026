@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.function.BooleanSupplier;
+
 
 /** No-op implementation of {@link CamOdometryInterface} that returns safe default values. */
 class NoOpCamOdometry implements CamOdometryInterface {
@@ -67,9 +67,4 @@ class NoOpCamOdometry implements CamOdometryInterface {
 
     @Override
     public void enableVision(boolean enabled) {}
-
-    @Override
-    public void setVisionDependenciesOnCamera(
-            VisionKalmanFilter filter,
-            BooleanSupplier isMotionlessSupplier) {}
 }

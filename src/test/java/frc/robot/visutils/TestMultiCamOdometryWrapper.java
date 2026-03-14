@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import java.util.function.BooleanSupplier;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 
@@ -25,8 +24,8 @@ import org.mockito.Mockito;
  *       are silent; the real camera is never called.
  *   <li><b>enableVision toggle</b> — switching between enabled and disabled mid-session works
  *       correctly.
- *   <li><b>Config methods bypass</b> — {@code setVisionDependenciesOnCamera} and {@code
- *       enableMegatag2} always reach the real camera regardless of enable state.
+ *   <li><b>Config methods bypass</b> — {@code enableMegatag2} always reaches the real camera
+ *       regardless of enable state.
  *   <li><b>NoOpCamOdometry</b> — returns documented safe defaults and never throws.
  * </ul>
  */
@@ -342,34 +341,6 @@ class TestMultiCamOdometryWrapper {
     }
 
     // ------------------------------------------------------------------
-    // 4. Config methods always reach the real camera (bypass enable gate)
-    // ------------------------------------------------------------------
-
-    @Test
-    void setVisionDependenciesOnCamera_alwaysForwardedToReal_whenEnabled() {
-        CamOdometryInterface real = newRealMock();
-        MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, true);
-        VisionKalmanFilter filter = Mockito.mock(VisionKalmanFilter.class);
-        BooleanSupplier motionless = () -> true;
-
-        wrapper.setVisionDependenciesOnCamera(filter, motionless);
-
-        Mockito.verify(real).setVisionDependenciesOnCamera(filter, motionless);
-    }
-
-    @Test
-    void setVisionDependenciesOnCamera_alwaysForwardedToReal_whenDisabled() {
-        CamOdometryInterface real = newRealMock();
-        MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, false);
-        VisionKalmanFilter filter = Mockito.mock(VisionKalmanFilter.class);
-        BooleanSupplier motionless = () -> true;
-
-        wrapper.setVisionDependenciesOnCamera(filter, motionless);
-
-        Mockito.verify(real).setVisionDependenciesOnCamera(filter, motionless);
-    }
-
-    // ------------------------------------------------------------------
     // 5. NoOpCamOdometry — safe defaults, no throws
     // ------------------------------------------------------------------
 
@@ -436,7 +407,6 @@ class TestMultiCamOdometryWrapper {
             noop.setRobotOrientation_NoFlush();
             noop.enableVision(true);
             noop.enableVision(false);
-            noop.setVisionDependenciesOnCamera(null, null);
         });
     }
 }

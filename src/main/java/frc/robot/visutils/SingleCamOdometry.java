@@ -37,7 +37,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
     private final boolean m_autoVisionInjectionEnabled;
 
     private final String m_limelightName;
-    private VisionSimInterface.EstimateConsumer m_estConsumer;
+    private final VisionSimInterface.EstimateConsumer m_estConsumer;
     private double m_lastTimestamp = 0;
 
     private Optional<Pose2d> m_latestVisPose = Optional.empty();
@@ -52,8 +52,8 @@ public class SingleCamOdometry implements CamOdometryInterface {
     private List<Integer> m_targetList = Collections.emptyList();
     private int m_lastTarget = -1;
 
-    private VisionKalmanFilter m_visionKalmanFilter = null;
-    private BooleanSupplier m_isMotionlessSupplier = null;
+    private final VisionKalmanFilter m_visionKalmanFilter;
+    private final BooleanSupplier m_isMotionlessSupplier;
 
     private final EvaluatePosesInterface m_evaluatePoses;
 
@@ -66,20 +66,17 @@ public class SingleCamOdometry implements CamOdometryInterface {
     public SingleCamOdometry(
         String limelightName,
         Transform3d robotToCam,
-        VisionSimInterface.EstimateConsumer poseConsumer,
-        Supplier<SwerveDriveState> driveStateSupplier,
-        Function<Double, Optional<Pose2d>> poseSampler,
-        boolean megaTag2Enabled,
-        boolean autoVisionInjectionEnabled,
-        EvaluatePosesInterface evaluatePoses) {
+        CamOdometryDeps deps) {
 
-        m_estConsumer = poseConsumer;
         m_limelightName = limelightName;
-        m_poseSampler = poseSampler;
-        m_driveStateSupplier = driveStateSupplier;
-        m_megaTag2Enabled = megaTag2Enabled;
-        m_autoVisionInjectionEnabled = autoVisionInjectionEnabled;
-        m_evaluatePoses = evaluatePoses;
+        m_estConsumer = deps.poseConsumer();
+        m_poseSampler = deps.poseSampler();
+        m_driveStateSupplier = deps.driveStateSupplier();
+        m_megaTag2Enabled = deps.megaTag2Enabled();
+        m_autoVisionInjectionEnabled = deps.autoVisionInjectionEnabled();
+        m_evaluatePoses = deps.evaluatePoses();
+        m_visionKalmanFilter = deps.visionKalmanFilter();
+        m_isMotionlessSupplier = deps.isMotionlessSupplier();
 
         setCameraPoseRobotSpace(m_limelightName, robotToCam);
     }
@@ -130,20 +127,6 @@ public class SingleCamOdometry implements CamOdometryInterface {
             .minus(sampledPose.get())
             .getTranslation()
             .getNorm());
-    }
-
-    /**
-     * Sets the dependencies needed for vision processing.
-     *
-     * @param filter The VisionKalmanFilter instance to inject measurements into
-     * @param isMotionlessSupplier Supplier that returns true when robot is motionless
-     */
-    @Override
-    public void setVisionDependenciesOnCamera(
-            VisionKalmanFilter filter,
-            BooleanSupplier isMotionlessSupplier) {
-        m_visionKalmanFilter = filter;
-        m_isMotionlessSupplier = isMotionlessSupplier;
     }
 
     @Override
@@ -290,11 +273,9 @@ public class SingleCamOdometry implements CamOdometryInterface {
         m_lastTimestamp = poseEstimate.timestampSeconds;
 
         // Inject into vision Kalman filter if robot is motionless and we have multi-tag
-        if (m_visionKalmanFilter != null && m_isMotionlessSupplier != null) {
-            if (m_isMotionlessSupplier.getAsBoolean() && poseEstimate.tagCount >= 2) {
-                m_visionKalmanFilter.injectVisionMeasurement(
-                    poseEstimate.pose, poseEstimate.tagCount);
-            }
+        if (m_isMotionlessSupplier.getAsBoolean() && poseEstimate.tagCount >= 2) {
+            m_visionKalmanFilter.injectVisionMeasurement(
+                poseEstimate.pose, poseEstimate.tagCount);
         }
 
         // We should ONLY inject vision measurements in AUTO.

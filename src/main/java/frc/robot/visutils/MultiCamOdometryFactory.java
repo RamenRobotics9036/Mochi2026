@@ -50,17 +50,22 @@ public class MultiCamOdometryFactory {
         boolean autoVisionInjectionEnabled = configInterface.isAutoVisionInjectionEnabled();
         EvaluatePosesInterface evaluatePoses = EvaluatePosesFactory.create(evaluatePosesName);
 
+        CamOdometryDeps deps = new CamOdometryDeps(
+            poseConsumer,
+            driveStateSupplier,
+            poseSampler,
+            megaTag2Enabled,
+            autoVisionInjectionEnabled,
+            evaluatePoses,
+            visionKalmanFilter,
+            motionlessTracker::isMotionless);
+
         List<CamOdometryInterface> cameras = new ArrayList<>();
         for (CameraInfo camInfo : configInterface.getCameras()) {
             cameras.add(new SingleCamOdometry(
                 camInfo.cameraName,
                 camInfo.robotToCam,
-                poseConsumer,
-                driveStateSupplier,
-                poseSampler,
-                megaTag2Enabled,
-                autoVisionInjectionEnabled,
-                evaluatePoses));
+                deps));
         }
 
         CamOdometryInterface multiCam = new MultiCamOdometry(
@@ -71,10 +76,6 @@ public class MultiCamOdometryFactory {
 
         MultiCamOdometryWrapper wrapper =
                 new MultiCamOdometryWrapper(multiCam, configInterface.isVisionEnabledDefault());
-
-        wrapper.setVisionDependenciesOnCamera(
-            visionKalmanFilter,
-            motionlessTracker::isMotionless);
 
         basicInfoDashboard.setVisionDependenciesOnDash(
             wrapper::getConfidenceScore,

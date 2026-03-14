@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.TreeSet;
-import java.util.function.BooleanSupplier;
 
 
 /** Reads from multiple limelight cameras. */
@@ -33,24 +32,6 @@ public class MultiCamOdometry implements CamOdometryInterface {
         m_megaTag2Enabled = megaTag2Enabled;
         m_autoVisionInjectionEnabled = autoVisionInjectionEnabled;
         m_evaluatePoses = evaluatePoses;
-    }
-
-    /**
-     * Sets the dependencies needed for vision processing.
-     *
-     * @param filter The VisionKalmanFilter instance to inject measurements into
-     * @param isMotionlessSupplier Supplier that returns true when robot is motionless
-     */
-    @Override
-    public void setVisionDependenciesOnCamera(
-            VisionKalmanFilter filter,
-            BooleanSupplier isMotionlessSupplier) {
-
-        for (CamOdometryInterface cam : m_cameras) {
-            cam.setVisionDependenciesOnCamera(
-                filter,
-                isMotionlessSupplier);
-        }
     }
 
     /**
