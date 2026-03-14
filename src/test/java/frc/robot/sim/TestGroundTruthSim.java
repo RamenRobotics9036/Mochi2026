@@ -1,7 +1,15 @@
 package frc.robot.sim;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.hal.HAL;
@@ -14,9 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
+
 
 class TestGroundTruthSim {
 
@@ -609,6 +621,7 @@ class TestGroundTruthSim {
 
     // ── simulationPeriodic tests ─────────────────────────────────────
 
+    @SuppressWarnings("VariableDeclarationUsageDistance")
     @Test
     void simulationPeriodic_updatesGroundTruthAndPublishes() {
         GroundTruthSim sim = createSim();

@@ -6,8 +6,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.sim.RollerSim.RollerIoInterface;
 import frc.robot.sim.armsim.ArmIoInterface;
+import frc.robot.sim.rollerssim.RollerIoInterface;
 
 /**
  * Subsystem responsible for the robot's game piece intake mechanism.
@@ -56,14 +56,14 @@ public class IntakeSubsystem extends SubsystemBase {
         // smartCurrentLimit on the motor is also set to 40 Amps.  This means that
         // it is unlikely that isStalled will ever be true.
         // return true if the current draw is above the stall limit
-        return m_intakeOutputs.currentAmps >= Constants.IntakeConstants.kIntakeRollerStallLimit;
+        return m_intakeOutputs.m_currentAmps >= Constants.IntakeConstants.kIntakeRollerStallLimit;
     }
 
     /**
      * @return The current draw of the intake motor in Amperes.
      */
     public double getCurrent() {
-        return m_intakeOutputs.currentAmps;
+        return m_intakeOutputs.m_currentAmps;
     }
 
     /**
@@ -74,7 +74,7 @@ public class IntakeSubsystem extends SubsystemBase {
         m_intakeIO.updateOutputs(m_intakeOutputs);
 
         // Publish intake telemetry
-        SmartDashboard.putNumber("Intake/VelocityRPM", m_intakeOutputs.velocityRPM);
+        SmartDashboard.putNumber("Intake/VelocityRPM", m_intakeOutputs.m_velocityRpm);
         SmartDashboard.putNumber("Intake/Current", getCurrent());
         SmartDashboard.putBoolean("Intake/Is Stalled", isStalled());
     }

@@ -9,14 +9,12 @@ import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.util.MathUtils;
-
-import java.util.List;
-import java.util.Optional;
 import java.util.OptionalDouble;
+
 
 /** Mochi 2026 implementation of {@link EvaluatePosesInterface}. */
 public class EvaluatePosesMochiV1 implements EvaluatePosesInterface {
-    /** Maximum allowed ERROR (meters) between vision pose and current pose */
+    /** Maximum allowed ERROR (meters) between vision pose and current pose. */
     private static final double MAX_ERROR_METERS = 1.0;
 
     // The standard deviations of our vision estimated poses, which affect correction rate
@@ -41,7 +39,9 @@ public class EvaluatePosesMochiV1 implements EvaluatePosesInterface {
 
         // Ambiguity only matters for MegaTag1 (pure visual PnP); MT2 resolves ambiguity
         // using the gyro heading, so this check must not apply to MT2 estimates.
-        if (!poseEstimate.isMegaTag2 && poseEstimate.tagCount == 1 && poseEstimate.rawFiducials.length == 1) {
+        if (!poseEstimate.isMegaTag2
+            && poseEstimate.tagCount == 1
+            && poseEstimate.rawFiducials.length == 1) {
             if (poseEstimate.rawFiducials[0].ambiguity > 0.7) {
                 return true;
             }
@@ -58,16 +58,6 @@ public class EvaluatePosesMochiV1 implements EvaluatePosesInterface {
     @Override
     public PoseEstimate pickMegatag1vsMegatag2(PoseEstimate mt1, PoseEstimate mt2) {
         return pickBestEstimate(mt1, mt2);
-    }
-
-    @Override
-    public Optional<PoseEstimate> multiCamPickBestPose(List<PoseEstimate> poseEstimateList) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Override
-    public List<PoseEstimate> multiCamPickAllPosesToInject(List<PoseEstimate> poseEstimateList) {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     /**
@@ -113,30 +103,6 @@ public class EvaluatePosesMochiV1 implements EvaluatePosesInterface {
     }
 
     /**
-     * Converts std devs to a 0-100 confidence score.
-     *
-     * @param stdDevs The (x, y, theta) standard deviations matrix
-     * @return Confidence from 0 (no confidence) to 100 (highest)
-     */
-    @Override
-    public double calcVisionPoseScore(Matrix<N3, N1> stdDevs) {
-        // Handle rejection case
-        if (stdDevs.get(0, 0) >= Double.MAX_VALUE) {
-            return 0.0;
-        }
-
-        // Combine position uncertainties (Euclidean norm of x,y)
-        double posUncertainty = Math.hypot(stdDevs.get(0, 0), stdDevs.get(1, 0));
-
-        // Map to 0-100 using exponential decay
-        // At ~0.7m combined uncertainty → ~100% confidence
-        // At ~5m combined uncertainty → ~0% confidence
-        double confidence = 100.0 * Math.exp(-posUncertainty / 2.0);
-
-        return Math.max(0, Math.min(100, confidence));
-    }
-
-    /**
      * Picks the better of two pose estimates. More tags wins; on a tie, closer
      * average tag distance wins (with MT2 getting a distance advantage since its
      * gyro-fused rotation is more reliable at similar range); if still tied,
@@ -146,14 +112,22 @@ public class EvaluatePosesMochiV1 implements EvaluatePosesInterface {
         PoseEstimate a,
         PoseEstimate b) {
 
-        if (a == null) return b;
-        if (b == null) return a;
+        if (a == null) {
+            return b;
+        }
+        if (b == null) {
+            return a;
+        }
         if (a.tagCount != b.tagCount) {
             return a.tagCount > b.tagCount ? a : b;
         }
-        // Give MT2 a distance advantage by penalizing non-MT2 estimates, so values never go negative.
-        double distA = a.avgTagDist + (a.isMegaTag2 ? 0.0 : VisionConstants.kMt2DistanceAdvantageMeter);
-        double distB = b.avgTagDist + (b.isMegaTag2 ? 0.0 : VisionConstants.kMt2DistanceAdvantageMeter);
+        // Give MT2 a distance advantage by penalizing non-MT2 estimates,
+        // so values never go negative.
+        double distA = a.avgTagDist
+            + (a.isMegaTag2 ? 0.0 : VisionConstants.kMt2DistanceAdvantageMeter);
+        double distB = b.avgTagDist
+            + (b.isMegaTag2 ? 0.0 : VisionConstants.kMt2DistanceAdvantageMeter);
+
         if (!MathUtils.approxEqual(distA, distB)) {
             return distA < distB ? a : b;
         }

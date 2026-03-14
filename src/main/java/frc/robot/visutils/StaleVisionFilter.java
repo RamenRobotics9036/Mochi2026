@@ -20,16 +20,19 @@ import com.ctre.phoenix6.Utils;
  * to stabilize before vision corrections resume.
  */
 public class StaleVisionFilter {
-    /** Sentinel value indicating no pose reset has occurred yet, allowing vision to work immediately on startup */
+    // Sentinel value indicating no pose reset has occurred yet,
+    // allowing vision to work immediately on startup.
     private static final double RESET_INIT_CONSTANT = -1.0;
 
-    /** How far back in time (seconds) before reset to start ignoring vision measurements */
+    // How far back in time (seconds) before reset to start ignoring
+    // vision measurements.
     private static final double IGNORE_WINDOW_START_OFFSET = 2.0;
 
-    /** How far forward in time (seconds) after reset to stop ignoring vision measurements */
+    // How far forward in time (seconds) after reset to stop ignoring
+    // vision measurements.
     private static final double IGNORE_WINDOW_END_OFFSET = 0.0;
 
-    /** Track the last time the pose was reset to filter stale vision measurements. */
+    // Track the last time the pose was reset to filter stale vision measurements.
     private double m_lastResetTimestamp = RESET_INIT_CONSTANT;
 
     /**

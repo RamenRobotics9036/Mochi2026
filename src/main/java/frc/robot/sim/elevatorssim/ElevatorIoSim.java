@@ -1,4 +1,4 @@
-package frc.robot.sim.elevatorSim;
+package frc.robot.sim.elevatorssim;
 
 import edu.wpi.first.hal.SimDevice;
 import edu.wpi.first.hal.SimDevice.Direction;
@@ -74,10 +74,10 @@ public class ElevatorIoSim implements ElevatorIoInterface {
     public void updateOutputs(DeviceOutputs outputs) {
         m_elevatorSim.update(kLoopSeconds);
 
-        outputs.positionMeters = m_elevatorSim.getPositionMeters();
-        outputs.currentAmps = m_elevatorSim.getCurrentDrawAmps();
+        outputs.m_positionMeters = m_elevatorSim.getPositionMeters();
+        outputs.m_currentAmps = m_elevatorSim.getCurrentDrawAmps();
 
-        m_simPosition.set(outputs.positionMeters);
-        m_simCurrent.set(outputs.currentAmps);
+        m_simPosition.set(outputs.m_positionMeters);
+        m_simCurrent.set(outputs.m_currentAmps);
     }
 }

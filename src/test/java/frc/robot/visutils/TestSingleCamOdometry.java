@@ -1,6 +1,10 @@
 package frc.robot.visutils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.hal.HAL;
@@ -13,11 +17,15 @@ import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import frc.robot.visutils.evaluateposes.EvaluatePosesMochiV1;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
 
 /**
  * Unit tests for {@link SingleCamOdometry}.
@@ -76,9 +84,9 @@ class TestSingleCamOdometry {
         m_lastConsumedPose = null;
         m_consumeCallCount = 0;
 
-        VisionSimInterface.EstimateConsumer consumer =
-            (pose, ts, stdDevs) -> {
-                m_lastConsumedPose = pose;
+        Consumer<VisionSimInterface.DrivetrainVisionPoseInfo> consumer =
+            info -> {
+                m_lastConsumedPose = info.pose();
                 m_consumeCallCount++;
             };
 
@@ -90,15 +98,11 @@ class TestSingleCamOdometry {
         m_cam = new SingleCamOdometry(
             CAM_NAME,
             new Transform3d(),
-            new CamOdometryDeps(
+            new CamOutputs(
                 consumer,
-                () -> makeState(POSE_A),
-                null,
-                true,
-                true,
-                new EvaluatePosesMochiV1(),
-                m_kalmanFilter,
-                () -> false));
+                m_kalmanFilter),
+            new CamInputs(() -> makeState(POSE_A), null, () -> false),
+            new CamConfig(true, true, new EvaluatePosesMochiV1()));
     }
 
     @AfterEach
@@ -144,24 +148,23 @@ class TestSingleCamOdometry {
         return createCamWithMt2(supportMegatag2, () -> POSE_A);
     }
 
-    private SingleCamOdometry createCamWithMt2(boolean supportMegatag2, Supplier<Pose2d> currentRobotPoseSupplier) {
-        VisionSimInterface.EstimateConsumer consumer =
-            (pose, ts, stdDevs) -> {
-                m_lastConsumedPose = pose;
+    private SingleCamOdometry createCamWithMt2(
+        boolean supportMegatag2,
+        Supplier<Pose2d> currentRobotPoseSupplier) {
+
+        Consumer<VisionSimInterface.DrivetrainVisionPoseInfo> consumer =
+            info -> {
+                m_lastConsumedPose = info.pose();
                 m_consumeCallCount++;
             };
         return new SingleCamOdometry(
             CAM_NAME,
             new Transform3d(),
-            new CamOdometryDeps(
+            new CamOutputs(
                 consumer,
-                () -> makeState(currentRobotPoseSupplier.get()),
-                null,
-                supportMegatag2,
-                true,
-                new EvaluatePosesMochiV1(),
-                Mockito.mock(VisionKalmanFilter.class),
-                () -> false));
+                info -> {}),
+            new CamInputs(() -> makeState(currentRobotPoseSupplier.get()), null, () -> false),
+            new CamConfig(supportMegatag2, true, new EvaluatePosesMochiV1()));
     }
 
     private static SwerveDriveState makeState(Pose2d pose) {
@@ -172,23 +175,19 @@ class TestSingleCamOdometry {
 
     /** Creates a camera wired to {@link #m_kalmanFilter} with the given motionless supplier. */
     private SingleCamOdometry createCamWithKalman(java.util.function.BooleanSupplier isMotionless) {
-        VisionSimInterface.EstimateConsumer consumer =
-            (pose, ts, stdDevs) -> {
-                m_lastConsumedPose = pose;
+        Consumer<VisionSimInterface.DrivetrainVisionPoseInfo> consumer =
+            info -> {
+                m_lastConsumedPose = info.pose();
                 m_consumeCallCount++;
             };
         return new SingleCamOdometry(
             CAM_NAME,
             new Transform3d(),
-            new CamOdometryDeps(
+            new CamOutputs(
                 consumer,
-                () -> makeState(POSE_A),
-                null,
-                true,
-                true,
-                new EvaluatePosesMochiV1(),
-                m_kalmanFilter,
-                isMotionless));
+                m_kalmanFilter),
+            new CamInputs(() -> makeState(POSE_A), null, isMotionless),
+            new CamConfig(true, true, new EvaluatePosesMochiV1()));
     }
 
     @Test
@@ -515,7 +514,10 @@ class TestSingleCamOdometry {
         double farConfidence = m_cam.getConfidenceScore();
 
         assertTrue(farConfidence < nearConfidence,
-            "Confidence at 6 m (" + farConfidence + ") should be lower than at 1 m (" + nearConfidence + ")");
+            "Confidence at 6 m ("
+            + farConfidence
+            + ") should be lower than at 1 m ("
+            + nearConfidence + ")");
     }
 
     // ------------------------------------------------------------------
@@ -643,8 +645,8 @@ class TestSingleCamOdometry {
 
     /**
      * When the robot is motionless AND the estimate has ≥ 2 tags, the Kalman filter's
-     * {@code injectVisionMeasurement} must be called exactly once with the correct pose and
-     * tag count.
+        * Kalman measurement consumer must be called exactly once with the correct pose and
+        * tag count.
      */
     @Test
     void periodic_motionlessAndMultiTag_injectsKalman() {
@@ -662,7 +664,7 @@ class TestSingleCamOdometry {
         cam.periodic();
 
         Mockito.verify(m_kalmanFilter, Mockito.times(1))
-            .injectVisionMeasurement(POSE_A, 2);
+            .accept(Mockito.argThat(info -> info.pose().equals(POSE_A) && info.tagCount() == 2));
     }
 
     /**
@@ -685,7 +687,7 @@ class TestSingleCamOdometry {
         cam.periodic();
 
         Mockito.verify(m_kalmanFilter, Mockito.never())
-            .injectVisionMeasurement(Mockito.any(), Mockito.anyInt());
+            .accept(Mockito.any());
     }
 
     /**
@@ -708,7 +710,7 @@ class TestSingleCamOdometry {
         cam.periodic();
 
         Mockito.verify(m_kalmanFilter, Mockito.never())
-            .injectVisionMeasurement(Mockito.any(), Mockito.anyInt());
+            .accept(Mockito.any());
     }
 
     /**

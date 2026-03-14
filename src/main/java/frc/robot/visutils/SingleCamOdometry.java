@@ -1,28 +1,18 @@
 package frc.robot.visutils;
 
 import com.ctre.phoenix6.Utils;
-import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.Constants;
-import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.sim.visionproducers.VisionSimInterface;
-import frc.robot.util.MathUtils;
-import frc.robot.visutils.evaluateposes.EvaluatePosesInterface;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.function.BooleanSupplier;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -33,16 +23,17 @@ import java.util.stream.Collectors;
  * Limelight-based odometry measurement source.
  */
 public class SingleCamOdometry implements CamOdometryInterface {
-    private final boolean m_megaTag2Enabled;
-    private final boolean m_autoVisionInjectionEnabled;
-
     private final String m_limelightName;
-    private final VisionSimInterface.EstimateConsumer m_estConsumer;
+    private final CamOutputs m_outputs;
+    private final CamInputs m_inputs;
+    private final CamConfig m_config;
+
     private double m_lastTimestamp = 0;
 
     private Optional<Pose2d> m_latestVisPose = Optional.empty();
     private OptionalDouble m_errorAtSnapTime = OptionalDouble.empty();
     private double m_curConfidenceScore = 0.0;
+
     // Booleans mirror the CamOdometryInterface contract directly;
     // no consumer needs the raw tag count.
     private boolean m_hasTargetLock = false;
@@ -52,31 +43,18 @@ public class SingleCamOdometry implements CamOdometryInterface {
     private List<Integer> m_targetList = Collections.emptyList();
     private int m_lastTarget = -1;
 
-    private final VisionKalmanFilter m_visionKalmanFilter;
-    private final BooleanSupplier m_isMotionlessSupplier;
-
-    private final EvaluatePosesInterface m_evaluatePoses;
-
-    private final Supplier<SwerveDriveState> m_driveStateSupplier;
-
-    // Samples the drivetrain's historical pose at a given FPGA timestamp (seconds)
-    private final Function<Double, Optional<Pose2d>> m_poseSampler;
-
     /** Constructor. */
     public SingleCamOdometry(
         String limelightName,
         Transform3d robotToCam,
-        CamOdometryDeps deps) {
+        CamOutputs outputs,
+        CamInputs inputs,
+        CamConfig config) {
 
         m_limelightName = limelightName;
-        m_estConsumer = deps.poseConsumer();
-        m_poseSampler = deps.poseSampler();
-        m_driveStateSupplier = deps.driveStateSupplier();
-        m_megaTag2Enabled = deps.megaTag2Enabled();
-        m_autoVisionInjectionEnabled = deps.autoVisionInjectionEnabled();
-        m_evaluatePoses = deps.evaluatePoses();
-        m_visionKalmanFilter = deps.visionKalmanFilter();
-        m_isMotionlessSupplier = deps.isMotionlessSupplier();
+        m_outputs = outputs;
+        m_inputs = inputs;
+        m_config = config;
 
         setCameraPoseRobotSpace(m_limelightName, robotToCam);
     }
@@ -112,13 +90,13 @@ public class SingleCamOdometry implements CamOdometryInterface {
         Pose2d visionPose,
         double fpgaTimestampSeconds) {
 
-        if (m_poseSampler == null) {
+        if (m_inputs.robotPoseAtTimeSupplier() == null) {
             return OptionalDouble.empty();
         }
 
         // samplePoseAt requires getCurrentTimeSeconds epoch, not FPGA epoch
         double currentTimeEpoch = Utils.fpgaToCurrentTime(fpgaTimestampSeconds);
-        Optional<Pose2d> sampledPose = m_poseSampler.apply(currentTimeEpoch);
+        Optional<Pose2d> sampledPose = m_inputs.robotPoseAtTimeSupplier().apply(currentTimeEpoch);
         if (sampledPose.isEmpty()) {
             return OptionalDouble.empty();
         }
@@ -136,7 +114,8 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
     @Override
     public void enableVision(boolean enabled) {
-        throw new UnsupportedOperationException("Vision enabling/disabling is not supported at the SingleCamOdometry level; enable/disable the entire wrapper instead.");
+        throw new UnsupportedOperationException(
+            "Vision enabling/disabling is not supported at the SingleCamOdometry level.");
     }
 
     private void clearResults() {
@@ -188,7 +167,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
         if (isMegaTag2Enabled()) {
             LimelightHelpers.SetRobotOrientation(
                 m_limelightName,
-                m_driveStateSupplier.get().Pose.getRotation().getDegrees(),
+                m_inputs.driveStateSupplier().get().Pose.getRotation().getDegrees(),
                 0,
                 0,
                 0,
@@ -198,11 +177,11 @@ public class SingleCamOdometry implements CamOdometryInterface {
     }
 
     @Override
-    public void setRobotOrientation_NoFlush() {
+    public void setRobotOrientationNoFlush() {
         if (isMegaTag2Enabled()) {
             LimelightHelpers.SetRobotOrientation_NoFlush(
                 m_limelightName,
-                m_driveStateSupplier.get().Pose.getRotation().getDegrees(),
+                m_inputs.driveStateSupplier().get().Pose.getRotation().getDegrees(),
                 0,
                 0,
                 0,
@@ -215,10 +194,11 @@ public class SingleCamOdometry implements CamOdometryInterface {
         PoseEstimate mt1 = sanitizePoseEstimate(
             LimelightHelpers.getBotPoseEstimate_wpiBlue(m_limelightName));
         PoseEstimate mt2 = isMegaTag2Enabled()
-            ? sanitizePoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(m_limelightName))
+            ? sanitizePoseEstimate(LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(
+                m_limelightName))
             : null;
 
-        PoseEstimate poseEstimate = m_evaluatePoses.pickMegatag1vsMegatag2(mt1, mt2);
+        PoseEstimate poseEstimate = m_config.evaluatePoses().pickMegatag1vsMegatag2(mt1, mt2);
 
         // Protect against any cases where vision is not setup yet
         if (poseEstimate == null || poseEstimate.pose == null) {
@@ -242,20 +222,20 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
 
         // Update std devs based on tag count and distance.  And confidence score.
-        Matrix<N3, N1> curStdDevs = m_evaluatePoses.calcVisionPoseStdDev(poseEstimate);
-        double curConfidenceScore = m_evaluatePoses.calcVisionPoseScore(curStdDevs);
+        Matrix<N3, N1> curStdDevs = m_config.evaluatePoses().calcVisionPoseStdDev(poseEstimate);
+        double curConfidenceScore = calcVisionPoseScore(curStdDevs);
 
         // We track how far-off this vision estimate is, using the ACTUAL pose in the past
         // of where the robot was when the camera image was snapped.
         OptionalDouble errorAtSnapTime =
             calcVisionErrorAtSnapTime(poseEstimate.pose, poseEstimate.timestampSeconds);
 
-        if (m_evaluatePoses.isVisionPoseBad(
+        if (m_config.evaluatePoses().isVisionPoseBad(
             poseEstimate,
             curStdDevs,
             curConfidenceScore,
             errorAtSnapTime,
-            m_driveStateSupplier.get())) {
+            m_inputs.driveStateSupplier().get())) {
 
             clearResults();
             return;
@@ -272,18 +252,25 @@ public class SingleCamOdometry implements CamOdometryInterface {
         // Finally, update timestamp of last good vision data
         m_lastTimestamp = poseEstimate.timestampSeconds;
 
+        VisionSimInterface.DrivetrainVisionPoseInfo visionPoseInfo =
+            new VisionSimInterface.DrivetrainVisionPoseInfo(
+                poseEstimate.pose,
+                poseEstimate.timestampSeconds,
+                curStdDevs,
+                poseEstimate.tagCount);
+
         // Inject into vision Kalman filter if robot is motionless and we have multi-tag
-        if (m_isMotionlessSupplier.getAsBoolean() && poseEstimate.tagCount >= 2) {
-            m_visionKalmanFilter.injectVisionMeasurement(
-                poseEstimate.pose, poseEstimate.tagCount);
+        if (m_inputs.isMotionlessSupplier().getAsBoolean() && poseEstimate.tagCount >= 2) {
+            if (m_outputs.visionKalmanMeasurementConsumer() != null) {
+                m_outputs.visionKalmanMeasurementConsumer().accept(visionPoseInfo);
+            }
         }
 
         // We should ONLY inject vision measurements in AUTO.
-        if (m_autoVisionInjectionEnabled && !DriverStation.isTeleopEnabled()) {
+        if (m_config.autoVisionInjectionEnabled() && !DriverStation.isTeleopEnabled()) {
 
-            if (m_estConsumer != null) {
-                m_estConsumer.accept(
-                    poseEstimate.pose, poseEstimate.timestampSeconds, curStdDevs);
+            if (m_outputs.drivetrainVisionPoseConsumer() != null) {
+                m_outputs.drivetrainVisionPoseConsumer().accept(visionPoseInfo);
             }
         }
     }
@@ -344,6 +331,29 @@ public class SingleCamOdometry implements CamOdometryInterface {
     }
 
     private boolean isMegaTag2Enabled() {
-        return m_megaTag2Enabled;
+        return m_config.megaTag2Enabled();
+    }
+
+    /**
+     * Converts std devs to a 0-100 confidence score.
+     *
+     * @param stdDevs The (x, y, theta) standard deviations matrix
+     * @return Confidence from 0 (no confidence) to 100 (highest)
+     */
+    private static double calcVisionPoseScore(Matrix<N3, N1> stdDevs) {
+        // Handle rejection case
+        if (stdDevs.get(0, 0) >= Double.MAX_VALUE) {
+            return 0.0;
+        }
+
+        // Combine position uncertainties (Euclidean norm of x,y)
+        double posUncertainty = Math.hypot(stdDevs.get(0, 0), stdDevs.get(1, 0));
+
+        // Map to 0-100 using exponential decay
+        // At ~0.7m combined uncertainty → ~100% confidence
+        // At ~5m combined uncertainty → ~0% confidence
+        double confidence = 100.0 * Math.exp(-posUncertainty / 2.0);
+
+        return Math.max(0, Math.min(100, confidence));
     }
 }

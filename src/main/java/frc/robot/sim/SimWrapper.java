@@ -29,7 +29,6 @@ import java.util.function.Consumer;
 public class SimWrapper {
     private final BotConfigInterface m_configInterface;
 
-    private final SwerveDrivetrain<TalonFX, TalonFX, CANcoder> m_drivetrain;
     private final GroundTruthSimInterface m_groundTruthSim;
     private final VisionSimInterface m_visionSim;
 
@@ -57,8 +56,6 @@ public class SimWrapper {
 
         m_configInterface = configInterface;
 
-        m_drivetrain = drivetrain;
-
         // Create ground truth simulation
         m_groundTruthSim = GroundTruthSimFactory.create(drivetrain, poseResetConsumer);
 
@@ -82,8 +79,6 @@ public class SimWrapper {
      * Updates physics simulation and vision based on ground truth pose.
      */
     public void simulationPeriodic() {
-        var driveState = m_drivetrain.getState();
-
         // Update ground truth physics simulation
         m_groundTruthSim.simulationPeriodic();
 

@@ -1,12 +1,12 @@
-package frc.robot.sim.RollerSim;
+package frc.robot.sim.rollerssim;
 
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import frc.robot.Constants;
 import edu.wpi.first.hal.SimDevice;
 import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.hal.SimDouble;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+
 
 /**
  * Simulated implementation of {@link RollerIoInterface} using a {@link FlywheelSim}.
@@ -57,11 +57,11 @@ public class RollerIoSim implements RollerIoInterface {
         // Step the physics simulation forward by one robot loop period
         m_flyWheelSim.update(0.02);
 
-        outputs.velocityRPM = m_flyWheelSim.getAngularVelocityRPM();
-        outputs.currentAmps = m_flyWheelSim.getCurrentDrawAmps();
+        outputs.m_velocityRpm = m_flyWheelSim.getAngularVelocityRPM();
+        outputs.m_currentAmps = m_flyWheelSim.getCurrentDrawAmps();
 
         // Push values into the sim GUI
-        m_simVelocity.set(outputs.velocityRPM);
-        m_simCurrent.set(outputs.currentAmps);
+        m_simVelocity.set(outputs.m_velocityRpm);
+        m_simCurrent.set(outputs.m_currentAmps);
     }
 }

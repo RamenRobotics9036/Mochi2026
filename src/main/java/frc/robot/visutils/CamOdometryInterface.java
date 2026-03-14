@@ -1,12 +1,12 @@
 package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 
 
+/** Interface used by camera processors. */
 public interface CamOdometryInterface {
     /**
      * Get pose estimate from the camera with highest confidence score.
@@ -67,7 +67,7 @@ public interface CamOdometryInterface {
     /**
      * Pushes the robot's current heading to the Limelight for MegaTag2 without flushing.
      */
-    void setRobotOrientation_NoFlush();
+    void setRobotOrientationNoFlush();
 
     /**
      * Periodic update; should be called from robot periodic.

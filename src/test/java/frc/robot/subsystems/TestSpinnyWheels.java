@@ -1,12 +1,16 @@
 package frc.robot.subsystems;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.SpinnyWheelsConstants;
-import frc.robot.sim.RollerSim.RollerIoInterface;
-import org.junit.jupiter.api.*;
+import frc.robot.sim.rollerssim.RollerIoInterface;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 
 /**
  * Unit tests for {@link SpinnyWheels}.
@@ -22,25 +26,34 @@ class TestSpinnyWheels {
     }
 
     /** Minimal in-test fake that records the last speed set (0.0 after stop). */
-    private static class FakeSpinnyIO implements RollerIoInterface {
-        double lastSpeed = 0.0;
-        int updateOutputsCallCount = 0;
+    private static class FakeSpinnyIo implements RollerIoInterface {
+        double m_lastSpeed = 0.0;
+        int m_updateOutputsCallCount = 0;
 
-        @Override public void setSpeed(double speed) { lastSpeed = speed; }
-        @Override public void stop() { lastSpeed = 0.0; }
-        @Override public void updateOutputs(DeviceOutputs outputs) {
-            updateOutputsCallCount++;
-            outputs.currentAmps = (lastSpeed != 0.0) ? 0.1 : 0.0;
-            outputs.velocityRPM = (lastSpeed != 0.0) ? 100.0 : 0.0;
+        @Override
+        public void setSpeed(double speed) {
+            m_lastSpeed = speed;
+        }
+
+        @Override
+        public void stop() {
+            m_lastSpeed = 0.0;
+        }
+
+        @Override
+        public void updateOutputs(DeviceOutputs outputs) {
+            m_updateOutputsCallCount++;
+            outputs.m_currentAmps = (m_lastSpeed != 0.0) ? 0.1 : 0.0;
+            outputs.m_velocityRpm = (m_lastSpeed != 0.0) ? 100.0 : 0.0;
         }
     }
 
-    private FakeSpinnyIO m_io;
+    private FakeSpinnyIo m_io;
     private SpinnyWheels m_spinny;
 
     @BeforeEach
     void setUp() {
-        m_io = new FakeSpinnyIO();
+        m_io = new FakeSpinnyIo();
         m_spinny = new SpinnyWheels(m_io);
     }
 
@@ -52,7 +65,7 @@ class TestSpinnyWheels {
     void spin_callsSetSpeedWithConstant() {
         // Calling spin() should forward the configured kSpinSpeed constant to the IO layer.
         m_spinny.spinCounterclockwise();
-        assertEquals(SpinnyWheelsConstants.kSpinSpeed, m_io.lastSpeed, 1e-9);
+        assertEquals(SpinnyWheelsConstants.kSpinSpeed, m_io.m_lastSpeed, 1e-9);
     }
 
     @Test
@@ -61,7 +74,7 @@ class TestSpinnyWheels {
         // confirming no internal state drift occurs.
         for (int i = 0; i < 5; i++) {
             m_spinny.spinCounterclockwise();
-            assertEquals(SpinnyWheelsConstants.kSpinSpeed, m_io.lastSpeed, 1e-9,
+            assertEquals(SpinnyWheelsConstants.kSpinSpeed, m_io.m_lastSpeed, 1e-9,
                 "Speed should equal kSpinSpeed on call " + (i + 1));
         }
     }
@@ -76,7 +89,7 @@ class TestSpinnyWheels {
         // not the running state.
         m_spinny.spinCounterclockwise();
         m_spinny.stop();
-        assertEquals(0.0, m_io.lastSpeed, 1e-9);
+        assertEquals(0.0, m_io.m_lastSpeed, 1e-9);
     }
 
     // -----------------------------------------------------------------------
@@ -88,9 +101,9 @@ class TestSpinnyWheels {
         // Each call to periodic() should invoke updateOutputs() on the IO layer
         // so sensor readings are refreshed every robot loop.
         m_spinny.periodic();
-        assertEquals(1, m_io.updateOutputsCallCount);
+        assertEquals(1, m_io.m_updateOutputsCallCount);
         m_spinny.periodic();
-        assertEquals(2, m_io.updateOutputsCallCount);
+        assertEquals(2, m_io.m_updateOutputsCallCount);
     }
 
     @Test

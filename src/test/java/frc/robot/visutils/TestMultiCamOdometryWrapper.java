@@ -1,17 +1,21 @@
 package frc.robot.visutils;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 
 /**
  * Unit tests for {@link MultiCamOdometryWrapper} and {@link NoOpCamOdometry}.
@@ -41,8 +45,6 @@ class TestMultiCamOdometryWrapper {
     // ------------------------------------------------------------------
 
     private static final Pose2d POSE_A = new Pose2d(3.0, 2.0, Rotation2d.kZero);
-    private static final Transform2d TRANSFORM_A =
-            new Transform2d(1.0, 0.5, Rotation2d.kZero);
 
     /** Create a mock real camera pre-configured with non-default return values. */
     private static CamOdometryInterface newRealMock() {
@@ -169,9 +171,9 @@ class TestMultiCamOdometryWrapper {
         CamOdometryInterface real = newRealMock();
         MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, true);
 
-        wrapper.setRobotOrientation_NoFlush();
+        wrapper.setRobotOrientationNoFlush();
 
-        Mockito.verify(real).setRobotOrientation_NoFlush();
+        Mockito.verify(real).setRobotOrientationNoFlush();
     }
 
     // ------------------------------------------------------------------
@@ -284,9 +286,9 @@ class TestMultiCamOdometryWrapper {
         CamOdometryInterface real = newRealMock();
         MultiCamOdometryWrapper wrapper = new MultiCamOdometryWrapper(real, false);
 
-        wrapper.setRobotOrientation_NoFlush();
+        wrapper.setRobotOrientationNoFlush();
 
-        Mockito.verify(real, Mockito.never()).setRobotOrientation_NoFlush();
+        Mockito.verify(real, Mockito.never()).setRobotOrientationNoFlush();
     }
 
     // ------------------------------------------------------------------
@@ -404,7 +406,7 @@ class TestMultiCamOdometryWrapper {
         assertDoesNotThrow(() -> {
             noop.periodic();
             noop.setRobotOrientation();
-            noop.setRobotOrientation_NoFlush();
+            noop.setRobotOrientationNoFlush();
             noop.enableVision(true);
             noop.enableVision(false);
         });

@@ -2,11 +2,9 @@ package frc.robot.sim.visionproducers;
 
 import static frc.robot.sim.visionproducers.VisionSimConstants.Vision.*;
 
-import java.util.Optional;
-
 import edu.wpi.first.math.geometry.Transform3d;
 import frc.robot.Robot;
-import frc.robot.sim.visionproducers.VisionSimConstants.Vision;
+import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;

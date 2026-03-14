@@ -11,7 +11,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import frc.robot.Constants.ClimberConstants;
-import frc.robot.sim.elevatorSim.ElevatorIoInterface;
+import frc.robot.sim.elevatorssim.ElevatorIoInterface;
 
 /**
  * Real-hardware implementation of {@link ElevatorIoInterface} for the climber.
@@ -75,8 +75,8 @@ public class ClimberIoReal implements ElevatorIoInterface {
 
     @Override
     public void updateOutputs(ElevatorIoInterface.DeviceOutputs outputs) {
-        outputs.positionMeters = m_encoder.getPosition();
-        outputs.currentAmps = m_motor.getOutputCurrent();
+        outputs.m_positionMeters = m_encoder.getPosition();
+        outputs.m_currentAmps = m_motor.getOutputCurrent();
     }
 
     private double getEncoderValue() {

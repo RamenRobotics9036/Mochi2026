@@ -7,17 +7,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
-import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers.PoseEstimate;
-import frc.robot.util.MathUtils;
-
-import java.util.List;
-import java.util.Optional;
 import java.util.OptionalDouble;
+
 
 /** Mochi 2026 implementation of {@link EvaluatePosesInterface}. */
 public class EvaluatePosesMochiV2 implements EvaluatePosesInterface {
-    /** Maximum allowed ERROR (meters) between vision pose and current pose */
+    /** Maximum allowed ERROR (meters) between vision pose and current pose.*/
     private static final double MAX_ERROR_METERS = 1.0;
 
     // MT1 is configured to be effectively ignored for X/Y position (very large
@@ -52,7 +48,8 @@ public class EvaluatePosesMochiV2 implements EvaluatePosesInterface {
         if (poseEstimate.isMegaTag2) {
             // If we see >0 tags and robot rotates <2 rotations per second
             if (poseEstimate.tagCount > 0
-                && Math.abs(Units.radiansToRotations(driveState.Speeds.omegaRadiansPerSecond)) < 2) {
+                && Math.abs(Units.radiansToRotations(
+                    driveState.Speeds.omegaRadiansPerSecond)) < 2) {
 
                 // Add it to the pose estimator.
                 return false;
@@ -66,16 +63,6 @@ public class EvaluatePosesMochiV2 implements EvaluatePosesInterface {
     @Override
     public PoseEstimate pickMegatag1vsMegatag2(PoseEstimate mt1, PoseEstimate mt2) {
         return pickBestEstimate(mt1, mt2);
-    }
-
-    @Override
-    public Optional<PoseEstimate> multiCamPickBestPose(List<PoseEstimate> poseEstimateList) {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    @Override
-    public List<PoseEstimate> multiCamPickAllPosesToInject(List<PoseEstimate> poseEstimateList) {
-        throw new UnsupportedOperationException("Not yet implemented");
     }
 
     /**
@@ -93,38 +80,39 @@ public class EvaluatePosesMochiV2 implements EvaluatePosesInterface {
         }
 
         if (poseEstimate.isMegaTag2) {
-            return getEstimationStdDevsLimelightMT2(poseEstimate, false);
+            return getEstimationStdDevsLimelightMt2(poseEstimate, false);
         }
         else {
-            return getEstimationStdDevsLimelightMT1(poseEstimate, false);
+            return getEstimationStdDevsLimelightMt1(poseEstimate, false);
         }
     }
 
     /**
-     * Retrieve estimated standard deviations for a Megatag 1 estimate
+     * Retrieve estimated standard deviations for a Megatag 1 estimate.
      * Leveraging code from:
      * https://github.com/PaisWillie/FRC-Rebuilt-2026/blob/f796a5feee722fe42ebfac3586a9ce2336e4bc12/src/main/java/frc/robot/utils/LimelightWrapper.java#L39
      *
      * @param poseEstimate the pose estimate from the limelight
      * @return the estimated standard deviations
      */
-    private Matrix<N3, N1> getEstimationStdDevsLimelightMT1(
+    private Matrix<N3, N1> getEstimationStdDevsLimelightMt1(
         PoseEstimate poseEstimate,
-        boolean isLL4) {
+        boolean isLl4) {
 
         // Reject all limelight MT1
         return VecBuilder.fill(1e6, 1e6, 1e6);
     }
 
     /**
-     * Retrieve estimated standard deviations for a Megatag 2 estimate
+     * Retrieve estimated standard deviations for a Megatag 2 estimate.
      *
      * @param poseEstimate the pose estimate from the limelight
      * @return the estimated standard deviations
      */
-    private Matrix<N3, N1> getEstimationStdDevsLimelightMT2(
+    @SuppressWarnings("VariableDeclarationUsageDistance")
+    private Matrix<N3, N1> getEstimationStdDevsLimelightMt2(
         PoseEstimate poseEstimate,
-        boolean isLL4) {
+        boolean isLl4) {
 
         var estStdDevs = MT2_STDDEV;
         double stddevScalar = 1;
@@ -149,14 +137,15 @@ public class EvaluatePosesMochiV2 implements EvaluatePosesInterface {
         }
 
         // Decrease std devs if limelight is LL4
-        if (isLL4) {
+        if (isLl4) {
             stddevScalar *= (.8);
         }
 
         // Increase std devs based on (average) distance
         if (numTags == 1 && avgDist > 5) {
             estStdDevs = VecBuilder.fill(1e6, 1e6, 1e6);
-        } else {
+        }
+        else {
             stddevScalar *= (1 + (avgDist * avgDist * .2));
         }
 
@@ -164,30 +153,6 @@ public class EvaluatePosesMochiV2 implements EvaluatePosesInterface {
         estStdDevs = estStdDevs.times(stddevScalar);
 
         return estStdDevs;
-    }
-
-    /**
-     * Converts std devs to a 0-100 confidence score.
-     *
-     * @param stdDevs The (x, y, theta) standard deviations matrix
-     * @return Confidence from 0 (no confidence) to 100 (highest)
-     */
-    @Override
-    public double calcVisionPoseScore(Matrix<N3, N1> stdDevs) {
-        // Handle rejection case
-        if (stdDevs.get(0, 0) >= Double.MAX_VALUE) {
-            return 0.0;
-        }
-
-        // Combine position uncertainties (Euclidean norm of x,y)
-        double posUncertainty = Math.hypot(stdDevs.get(0, 0), stdDevs.get(1, 0));
-
-        // Map to 0-100 using exponential decay
-        // At ~0.7m combined uncertainty → ~100% confidence
-        // At ~5m combined uncertainty → ~0% confidence
-        double confidence = 100.0 * Math.exp(-posUncertainty / 2.0);
-
-        return Math.max(0, Math.min(100, confidence));
     }
 
     /**
@@ -200,8 +165,12 @@ public class EvaluatePosesMochiV2 implements EvaluatePosesInterface {
         PoseEstimate a,
         PoseEstimate b) {
 
-        if (a == null) return b;
-        if (b == null) return a;
+        if (a == null) {
+            return b;
+        }
+        if (b == null) {
+            return a;
+        }
 
         // All else equal, prefer MT2 for gyro-fused rotation stability.
         return b.isMegaTag2 ? b : a;

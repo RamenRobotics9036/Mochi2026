@@ -1,6 +1,9 @@
 package frc.robot.sim.visionproducers;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -17,6 +20,7 @@ import org.photonvision.targeting.PhotonPipelineMetadata;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
+
 
 /**
  * Unit tests for {@link PhotonToLimelightConverter}.
@@ -202,6 +206,7 @@ class TestPhotonToLimelightConverter {
         assertEquals(0, data.rawFiducials.length);
     }
 
+    @SuppressWarnings("VariableDeclarationUsageDistance")
     @Test
     void convertRawFiducials_singleTarget_producesSevenElements() {
         LimelightData data = new LimelightData();
@@ -499,7 +504,7 @@ class TestPhotonToLimelightConverter {
     }
 
     @Test
-    void convertBotpose_redMirroring_mirrorsXYAndYaw() {
+    void convertBotpose_redMirroring_mirrorsXyAndYaw() {
         double yawDeg = 30.0;
         Pose3d robotPose =
                 new Pose3d(2.0, 3.0, 0.0, new Rotation3d(0, 0, Math.toRadians(yawDeg)));

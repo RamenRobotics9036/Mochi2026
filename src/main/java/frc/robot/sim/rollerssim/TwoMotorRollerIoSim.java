@@ -1,11 +1,12 @@
-package frc.robot.sim.RollerSim;
+package frc.robot.sim.rollerssim;
 
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.hal.SimDevice;
 import edu.wpi.first.hal.SimDevice.Direction;
 import edu.wpi.first.hal.SimDouble;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+
 
 /**
  * Simulated implementation of {@link TwoMotorRollerIoInterface} using a
@@ -67,15 +68,15 @@ public class TwoMotorRollerIoSim implements TwoMotorRollerIoInterface {
     public void updateOutputs(DeviceOutputs outputs) {
         m_flyWheelSim.update(0.02);
 
-        outputs.velocityRPM = m_flyWheelSim.getAngularVelocityRPM();
+        outputs.m_velocityRpm = m_flyWheelSim.getAngularVelocityRPM();
 
         // Total current is shared equally between the two motors
         double totalCurrent = m_flyWheelSim.getCurrentDrawAmps();
-        outputs.leaderCurrentAmps = totalCurrent / 2.0;
-        outputs.followerCurrentAmps = totalCurrent / 2.0;
+        outputs.m_leaderCurrentAmps = totalCurrent / 2.0;
+        outputs.m_followerCurrentAmps = totalCurrent / 2.0;
 
-        m_simVelocity.set(outputs.velocityRPM);
-        m_simLeaderCurrent.set(outputs.leaderCurrentAmps);
-        m_simFollowerCurrent.set(outputs.followerCurrentAmps);
+        m_simVelocity.set(outputs.m_velocityRpm);
+        m_simLeaderCurrent.set(outputs.m_leaderCurrentAmps);
+        m_simFollowerCurrent.set(outputs.m_followerCurrentAmps);
     }
 }

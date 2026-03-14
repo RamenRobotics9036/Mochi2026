@@ -1,8 +1,6 @@
 package frc.robot.visutils;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
 import frc.robot.visutils.evaluateposes.EvaluatePosesInterface;
 import java.util.ArrayList;
@@ -15,11 +13,8 @@ import java.util.TreeSet;
 /** Reads from multiple limelight cameras. */
 public class MultiCamOdometry implements CamOdometryInterface {
     private final boolean m_megaTag2Enabled;
-    private final boolean m_autoVisionInjectionEnabled;
-
     private final List<CamOdometryInterface> m_cameras;
     private final PerCycleState m_perCycleState = new PerCycleState();
-    private final EvaluatePosesInterface m_evaluatePoses;
 
     /** Constructor. */
     public MultiCamOdometry(
@@ -30,8 +25,6 @@ public class MultiCamOdometry implements CamOdometryInterface {
 
         m_cameras = new ArrayList<>(cameras);
         m_megaTag2Enabled = megaTag2Enabled;
-        m_autoVisionInjectionEnabled = autoVisionInjectionEnabled;
-        m_evaluatePoses = evaluatePoses;
     }
 
     /**
@@ -44,17 +37,17 @@ public class MultiCamOdometry implements CamOdometryInterface {
     public void setRobotOrientation() {
         if (isMegaTag2Enabled()) {
             for (CamOdometryInterface cam : m_cameras) {
-                cam.setRobotOrientation_NoFlush();
+                cam.setRobotOrientationNoFlush();
             }
             LimelightHelpers.Flush();
         }
     }
 
     @Override
-    public void setRobotOrientation_NoFlush() {
+    public void setRobotOrientationNoFlush() {
         if (isMegaTag2Enabled()) {
             for (CamOdometryInterface cam : m_cameras) {
-                cam.setRobotOrientation_NoFlush();
+                cam.setRobotOrientationNoFlush();
             }
         }
     }
@@ -119,7 +112,8 @@ public class MultiCamOdometry implements CamOdometryInterface {
 
     @Override
     public double getConfidenceScore() {
-        // NOTE: We return the confidence score from the camera with the strongest lock, if it exists.
+        // NOTE: We return the confidence score from the camera with the strongest
+        // lock, if it exists.
         if (m_perCycleState.bestLockedCam.isPresent()) {
             return m_perCycleState.bestLockedCam.get().getConfidenceScore();
         }
@@ -173,7 +167,8 @@ public class MultiCamOdometry implements CamOdometryInterface {
         // Return the first cam in the list (the forward-facing cam).
         // Precondition: at least one camera must be provided.
         if (m_cameras.isEmpty()) {
-            throw new IllegalStateException("No cameras configured — at least one camera must be provided.");
+            throw new IllegalStateException(
+                "No cameras configured — at least one camera must be provided.");
         }
         return m_cameras.get(0);
     }

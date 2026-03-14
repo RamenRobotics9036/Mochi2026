@@ -2,18 +2,13 @@ package frc.robot.sim.visionproducers;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 
+/** Constants for vision simulation. */
 public class VisionSimConstants {
+    /** Constants. */
     public static class Vision {
-        // Whether to force simWrapper OFF in simulation.  This is useful for debugging the real robot running
-        // with simulated subsystems.
+        // Whether to force simWrapper OFF in simulation.  This is useful for
+        // debugging the real robot running with simulated subsystems.
         public static final boolean kForceSimWrapperOff = false;
 
         // Whether to also publish MegaTag2 pose entries (botpose_orb_wpiblue / botpose_orb_wpired).
