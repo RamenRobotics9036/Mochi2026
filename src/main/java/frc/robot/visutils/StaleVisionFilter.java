@@ -50,7 +50,6 @@ public class StaleVisionFilter {
             return false;
         }
 
-        // $TODO2 - Is this completely wrong?  Are we supposed to also take the LATENCY into account here?
         double convertedTimestamp = Utils.fpgaToCurrentTime(timestampSeconds);
         double ignoreWindowStart = m_lastResetTimestamp - IGNORE_WINDOW_START_OFFSET;
         double ignoreWindowEnd = m_lastResetTimestamp + IGNORE_WINDOW_END_OFFSET;

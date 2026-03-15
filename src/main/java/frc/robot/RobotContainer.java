@@ -228,7 +228,8 @@ public class RobotContainer {
 
         m_simWrapper = SimWrapper.create(m_configInterface, drivetrain, this::resetRobotPose);
         Command cycleResetCmd = (m_simWrapper != null)
-            ? drivetrain.runOnce(() -> m_simWrapper.cycleResetPosition(AutoLogic.getSelectedAutoStartingPose()))
+            ? drivetrain.runOnce(() -> m_simWrapper.cycleResetPosition(
+                AutoLogic.getSelectedAutoStartingPose()))
             : null;
 
         // $TODO2 - Can I consolidate all the basicInfoDashboard config
