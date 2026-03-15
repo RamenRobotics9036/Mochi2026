@@ -35,6 +35,6 @@ public interface EvaluatePosesInterface {
      * {@code [Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE]} signals that the
      * estimate should be fully rejected by the pose estimator.
      */
-    Matrix<N3, N1> calcVisionPoseStdDev(PoseEstimate poseEstimate);
+    Matrix<N3, N1> calcVisionPoseStdDev(EnhancedPoseEstimate enhancedPoseEstimate);
 
 }

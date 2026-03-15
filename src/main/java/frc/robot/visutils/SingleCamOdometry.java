@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.sim.visionproducers.VisionSimInterface;
+import frc.robot.visutils.evaluateposes.EnhancedPoseEstimate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -224,7 +225,11 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
 
         // Update std devs based on tag count and distance.  And confidence score.
-        Matrix<N3, N1> curStdDevs = m_config.evaluatePoses().calcVisionPoseStdDev(poseEstimate);
+        EnhancedPoseEstimate enhancedPoseEstimate = new EnhancedPoseEstimate(
+            poseEstimate,
+            m_inputs.driveStateSupplier().get(),
+            Optional.empty());
+        Matrix<N3, N1> curStdDevs = m_config.evaluatePoses().calcVisionPoseStdDev(enhancedPoseEstimate);
         double curConfidenceScore = calcVisionPoseScore(curStdDevs);
 
         // We track how far-off this vision estimate is, using the ACTUAL pose in the past

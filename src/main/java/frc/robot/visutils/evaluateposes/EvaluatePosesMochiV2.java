@@ -69,11 +69,12 @@ public class EvaluatePosesMochiV2 implements EvaluatePosesInterface {
      * Calculates new standard deviations. This algorithm is a heuristic that creates dynamic std
      * deviations based on number of tags and distance from the tags.
      *
-     * @param poseEstimate The Limelight pose estimate to evaluate
+     * @param enhancedPoseEstimate The enhanced pose estimate to evaluate
      * @return The calculated standard deviations matrix
      */
     @Override
-    public Matrix<N3, N1> calcVisionPoseStdDev(PoseEstimate poseEstimate) {
+    public Matrix<N3, N1> calcVisionPoseStdDev(EnhancedPoseEstimate enhancedPoseEstimate) {
+        PoseEstimate poseEstimate = enhancedPoseEstimate.getVisionPoseEstimate();
         if (poseEstimate == null || poseEstimate.tagCount == 0) {
             // Return very high std devs to indicate rejection of the pose estimate
             return VecBuilder.fill(1e6, 1e6, 1e6);
