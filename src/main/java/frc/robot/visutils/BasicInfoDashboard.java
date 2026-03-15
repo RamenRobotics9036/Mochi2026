@@ -22,7 +22,6 @@ import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import java.util.List;
 import java.util.OptionalDouble;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 
@@ -90,7 +89,9 @@ public class BasicInfoDashboard {
     private OptionalDouble m_cachedVisionError = OptionalDouble.empty();
     private boolean m_cachedIsMotionless = false;
     private double m_cachedSecondsStill = 0.0;
-    private Supplier<VisionKalmanFilter> m_visionKalmanSupplier = null;
+    private boolean m_cachedKalmanIsActive = false;
+    private Pose2d m_cachedKalmanPose = new Pose2d();
+    private boolean m_cachedKalmanConverged = false;
 
     /** When true, vision is forcibly disabled regardless of the dashboard toggle. */
     private boolean m_forceDisableVision = false;
@@ -240,13 +241,16 @@ public class BasicInfoDashboard {
     }
 
     /**
-     * Sets the supplier for the vision Kalman filter.
+     * Updates the vision Kalman filter state for dashboard display.
      *
-     * @param supplier A Supplier returning the VisionKalmanFilter instance
+     * @param isActive true if the filter has been initialized with at least one measurement
+     * @param pose the current pose estimate (only meaningful when isActive is true)
+     * @param hasConverged true if the filter has converged
      */
-    // $TODO2 - This seems wrong
-    public void setVisionKalmanSupplier(Supplier<VisionKalmanFilter> supplier) {
-        m_visionKalmanSupplier = supplier;
+    public void updateKalmanState(boolean isActive, Pose2d pose, boolean hasConverged) {
+        m_cachedKalmanIsActive = isActive;
+        m_cachedKalmanPose = pose;
+        m_cachedKalmanConverged = hasConverged;
     }
 
     private static String targetListToString(List<Integer> targets) {
@@ -316,25 +320,18 @@ public class BasicInfoDashboard {
         m_targetList.set(showTargets ? m_lastNonEmptyTargetList : "");
 
         /* Publish vision Kalman filter state */
-        if (m_visionKalmanSupplier != null) {
-            VisionKalmanFilter filter = m_visionKalmanSupplier.get();
-            boolean isActive = filter.isInitialized();
-            m_visionKalmanActive.set(isActive);
-
-            if (isActive) {
-                Pose2d pose = filter.getEstimate();
-                m_visionKalmanPose.set(new double[] {
-                    pose.getX(),
-                    pose.getY(),
-                    pose.getRotation().getDegrees()
-                });
-                m_visionKalmanConverged.set(filter.hasConverged());
-            }
-            else {
-                m_visionKalmanPose.set(new double[] {0, 0, 0});
-                m_visionKalmanConverged.set(false);
-            }
+        m_visionKalmanActive.set(m_cachedKalmanIsActive);
+        if (m_cachedKalmanIsActive) {
+            m_visionKalmanPose.set(new double[] {
+                m_cachedKalmanPose.getX(),
+                m_cachedKalmanPose.getY(),
+                m_cachedKalmanPose.getRotation().getDegrees()
+            });
         }
+        else {
+            m_visionKalmanPose.set(new double[] {0, 0, 0});
+        }
+        m_visionKalmanConverged.set(m_cachedKalmanConverged);
 
         /* Publish robot motionless state for Kalman filter */
         m_visionKalmanIsRobotStill.set(m_cachedIsMotionless);

@@ -245,6 +245,7 @@ public class RobotContainer {
 
         // Wire this up to avoid circular dependency
         m_driveAccuracyTester.setForceDisableVision(basicInfoDashboard::forceDisableVision);
+        m_visionKalmanFilter.setDashboard(basicInfoDashboard);
 
         m_showVisionOnField = new ShowVisionOnField(
             m_configInterface,
@@ -262,8 +263,6 @@ public class RobotContainer {
         m_motionlessTracker = MotionlessTracker.create(
             () -> drivetrain.getState().Speeds,
             m_visionKalmanFilter::reset);
-
-        basicInfoDashboard.setVisionKalmanSupplier(() -> m_visionKalmanFilter);
 
         m_multiCamlimelight = MultiCamOdometryFactory.create(
             m_configInterface,

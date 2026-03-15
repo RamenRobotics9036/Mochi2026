@@ -46,6 +46,20 @@ public class VisionKalmanFilter implements Consumer<DrivetrainVisionPoseInfo> {
     /** Number of measurements injected since last reset. */
     private int m_measurementCount = 0;
 
+    /** Dashboard to notify when filter state changes. */
+    private BasicInfoDashboard m_dashboard = null;
+
+    /** Sets the dashboard to notify whenever filter state changes. */
+    public void setDashboard(BasicInfoDashboard dashboard) {
+        m_dashboard = dashboard;
+    }
+
+    private void notifyDashboard() {
+        if (m_dashboard != null) {
+            m_dashboard.updateKalmanState(m_initialized, getEstimate(), hasConverged());
+        }
+    }
+
     /**
      * Consumes a vision measurement into the filter.
      * Measurements with fewer than 2 tags are ignored.
@@ -71,6 +85,7 @@ public class VisionKalmanFilter implements Consumer<DrivetrainVisionPoseInfo> {
             m_p = createInitialCovariance();
             m_initialized = true;
             m_measurementCount = 1;
+            notifyDashboard();
             return;
         }
 
@@ -124,6 +139,7 @@ public class VisionKalmanFilter implements Consumer<DrivetrainVisionPoseInfo> {
         // to be truly motionless. Adding Q would prevent convergence.
 
         m_measurementCount++;
+        notifyDashboard();
     }
 
     /**
@@ -252,6 +268,7 @@ public class VisionKalmanFilter implements Consumer<DrivetrainVisionPoseInfo> {
         m_x = null;
         m_p = null;
         m_measurementCount = 0;
+        notifyDashboard();
     }
 
     /**
