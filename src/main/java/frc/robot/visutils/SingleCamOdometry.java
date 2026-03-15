@@ -86,6 +86,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
      * @return The Transform2d offset, or empty if no sampler is set or the
      *         pose buffer has no entry for that timestamp
      */
+    //* $TODO2 - This should move into EnhancedVisionPoseEstimate */
     private OptionalDouble calcVisionErrorAtSnapTime(
         Pose2d visionPose,
         double fpgaTimestampSeconds) {
@@ -228,6 +229,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
         // We track how far-off this vision estimate is, using the ACTUAL pose in the past
         // of where the robot was when the camera image was snapped.
+        // $TODO - Moving into EnhangedPoseEstimate
         OptionalDouble errorAtSnapTime =
             calcVisionErrorAtSnapTime(poseEstimate.pose, poseEstimate.timestampSeconds);
 
