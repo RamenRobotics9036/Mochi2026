@@ -202,6 +202,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
 
         // Protect against any cases where vision is not setup yet
         if (poseEstimate == null || poseEstimate.pose == null) {
+            clearResults();
             return;
         }
 

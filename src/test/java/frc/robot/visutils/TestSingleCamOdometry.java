@@ -374,25 +374,24 @@ class TestSingleCamOdometry {
      * ({@code hasTargetLock}, {@code getEstimatedPose}, {@code getConfidenceScore}) must return
      * to their cleared / default values.
      */
-    // $TODO2 - Fix this
-    // @Test
-    // void periodic_lockThenNoTarget_clearsState() {
-    //     // Establish a lock first.
-    //     PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
-    //     m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
-    //         .thenReturn(est);
-    //     m_cam.periodic();
-    //     assertTrue(m_cam.hasTargetLock());
+    @Test
+    void periodic_lockThenNoTarget_clearsState() {
+        // Establish a lock first.
+        PoseEstimate est = singleTagEstimate(POSE_A, 2.0, 1.0, 0.0);
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(est);
+        m_cam.periodic();
+        assertTrue(m_cam.hasTargetLock());
 
-    //     // Next cycle: no targets.
-    //     m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
-    //         .thenReturn(null);
-    //     m_cam.periodic();
+        // Next cycle: no targets.
+        m_limelightMock.when(() -> LimelightHelpers.getBotPoseEstimate_wpiBlue(CAM_NAME))
+            .thenReturn(null);
+        m_cam.periodic();
 
-    //     assertFalse(m_cam.hasTargetLock());
-    //     assertTrue(m_cam.getEstimatedPose().isEmpty());
-    //     assertEquals(0.0, m_cam.getConfidenceScore());
-    // }
+        assertFalse(m_cam.hasTargetLock());
+        assertTrue(m_cam.getEstimatedPose().isEmpty());
+        assertEquals(0.0, m_cam.getConfidenceScore());
+    }
 
     // ------------------------------------------------------------------
     // 2. Single-tag std-dev heuristic
