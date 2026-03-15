@@ -364,6 +364,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             return;
         }
 
+        // $TODO2 - Is this completely wrong?  Are we supposed to also take the LATENCY into account here?
         super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
     }
 

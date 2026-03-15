@@ -95,6 +95,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
         }
 
         // samplePoseAt requires getCurrentTimeSeconds epoch, not FPGA epoch
+        // $TODO2 - Is this completely wrong?  Are we supposed to also take the LATENCY into account here?
         double currentTimeEpoch = Utils.fpgaToCurrentTime(fpgaTimestampSeconds);
         Optional<Pose2d> sampledPose = m_inputs.robotPoseAtTimeSupplier().apply(currentTimeEpoch);
         if (sampledPose.isEmpty()) {
