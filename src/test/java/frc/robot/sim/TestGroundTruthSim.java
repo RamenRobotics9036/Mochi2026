@@ -18,10 +18,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.visutils.AllianceCalc;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,24 +82,13 @@ class TestGroundTruthSim {
         return mock(Consumer.class);
     }
 
-    /** Creates a GroundTruthSim with default (Math::random) randomness. */
+    /** Creates a GroundTruthSim with default randomness. */
     private GroundTruthSim createSim() {
         return new GroundTruthSim(
             () -> m_speeds,
             () -> m_estimatedPose,
             m_mockDrivetrainResetPose,
-            m_mockPoseResetConsumer,
-            Math::random);
-    }
-
-    /** Creates a GroundTruthSim with an injectable random source. */
-    private GroundTruthSim createSim(DoubleSupplier randomSource) {
-        return new GroundTruthSim(
-            () -> m_speeds,
-            () -> m_estimatedPose,
-            m_mockDrivetrainResetPose,
-            m_mockPoseResetConsumer,
-            randomSource);
+            m_mockPoseResetConsumer);
     }
 
     // ── Constructor tests ────────────────────────────────────────────
@@ -478,27 +465,26 @@ class TestGroundTruthSim {
         }
     }
 
-    // ── injectDrift tests (deterministic via DI) ─────────────────────
+    // ── injectDrift tests ────────────────────────────────────────────
 
     @Test
     void injectDrift_callsResetPoseOnDrivetrain() {
-        GroundTruthSim sim = createSim(() -> 0.0);
+        GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(5, 5, new Rotation2d());
-        sim.injectDrift(1.0, 10.0);
+        sim.injectDrift(1.0, 0.0, 10.0);
 
         verify(m_mockDrivetrainResetPose).accept(any(Pose2d.class));
     }
 
     @Test
     void injectDrift_translationDistanceMatchesOffset() {
-        // random=0 → angle = 0 → dx=offset, dy=0
-        GroundTruthSim sim = createSim(() -> 0.0);
+        GroundTruthSim sim = createSim();
 
         Pose2d startPose = new Pose2d(5, 5, new Rotation2d());
         m_estimatedPose = startPose;
 
-        sim.injectDrift(2.0, 0.0);
+        sim.injectDrift(2.0, 0.0, 0.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());
@@ -510,77 +496,73 @@ class TestGroundTruthSim {
     }
 
     @Test
-    void injectDrift_angleZero_driftsAlongPositiveX() {
-        // random=0 → angle=0 → cos(0)=1, sin(0)=0 → drift is purely in X
-        GroundTruthSim sim = createSim(() -> 0.0);
+    void injectDrift_robotHeadingZero_xDriftAlongFieldX() {
+        // Robot facing field +X (heading=0): local x offset → field +X
+        GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(3, 4, Rotation2d.fromDegrees(0));
-        sim.injectDrift(1.5, 0.0);
+        sim.injectDrift(1.5, 0.0, 0.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());
 
         Pose2d drifted = captor.getValue();
-        assertEquals(3.0 + 1.5, drifted.getX(), 1e-6, "Drift at angle=0 → +X");
-        assertEquals(4.0, drifted.getY(), 1e-6, "No Y change at angle=0");
+        assertEquals(3.0 + 1.5, drifted.getX(), 1e-6, "Heading=0, x-drift → +field X");
+        assertEquals(4.0, drifted.getY(), 1e-6, "No field Y change");
     }
 
     @Test
-    void injectDrift_angleQuarterTurn_driftsAlongPositiveY() {
-        // random=0.25 → angle = 0.25 * 2π = π/2 → cos(π/2)≈0, sin(π/2)=1 → drift in +Y
-        GroundTruthSim sim = createSim(() -> 0.25);
+    void injectDrift_robotHeadingNinety_xDriftAlongFieldY() {
+        // Robot facing field +Y (heading=90°): local x offset → field +Y
+        GroundTruthSim sim = createSim();
 
-        m_estimatedPose = new Pose2d(3, 4, Rotation2d.fromDegrees(0));
-        sim.injectDrift(1.0, 0.0);
+        m_estimatedPose = new Pose2d(3, 4, Rotation2d.fromDegrees(90));
+        sim.injectDrift(1.0, 0.0, 0.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());
 
         Pose2d drifted = captor.getValue();
-        assertEquals(3.0, drifted.getX(), 1e-6, "cos(π/2) ≈ 0 → no X shift");
-        assertEquals(5.0, drifted.getY(), 1e-6, "sin(π/2) = 1 → +1 Y shift");
+        assertEquals(3.0, drifted.getX(), 1e-6, "Heading=90°, x-drift → no field X change");
+        assertEquals(5.0, drifted.getY(), 1e-6, "Heading=90°, x-drift → +field Y");
     }
 
     @Test
-    void injectDrift_rotationNegativeWhenRandomBelowHalf() {
-        // First call: 0.0 for angle, second call: 0.3 (< 0.5) → negative rotation
-        List<Double> randomValues = new ArrayList<>(List.of(0.0, 0.3));
-        GroundTruthSim sim = createSim(() -> randomValues.remove(0));
+    void injectDrift_negativeRotation() {
+        GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
-        sim.injectDrift(0.0, 15.0);
+        sim.injectDrift(0.0, 0.0, -15.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());
 
         assertEquals(-15.0, captor.getValue().getRotation().getDegrees(), 1e-6,
-            "random < 0.5 → negative rotation offset");
+            "Negative rotation offset applied directly");
     }
 
     @Test
-    void injectDrift_rotationPositiveWhenRandomAboveHalf() {
-        // First call: 0.0 for angle, second call: 0.8 (> 0.5) → positive rotation
-        List<Double> randomValues = new ArrayList<>(List.of(0.0, 0.8));
-        GroundTruthSim sim = createSim(() -> randomValues.remove(0));
+    void injectDrift_positiveRotation() {
+        GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
-        sim.injectDrift(0.0, 20.0);
+        sim.injectDrift(0.0, 0.0, 20.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());
 
         assertEquals(20.0, captor.getValue().getRotation().getDegrees(), 1e-6,
-            "random > 0.5 → positive rotation offset");
+            "Positive rotation offset applied directly");
     }
 
     @Test
     void injectDrift_doesNotChangeGroundTruth() {
-        GroundTruthSim sim = createSim(() -> 0.5);
+        GroundTruthSim sim = createSim();
 
         Pose2d groundTruthBefore = sim.getGroundTruthPose();
         m_estimatedPose = new Pose2d(5, 5, new Rotation2d());
 
-        sim.injectDrift(3.0, 30.0);
+        sim.injectDrift(3.0, 0.0, 30.0);
 
         Pose2d groundTruthAfter = sim.getGroundTruthPose();
         assertEquals(groundTruthBefore.getX(), groundTruthAfter.getX(), 1e-6,
@@ -591,20 +573,19 @@ class TestGroundTruthSim {
 
     @Test
     void injectDrift_combinedTranslationAndRotation() {
-        // random=0.0 for angle, random=0.8 for rotation sign → positive
-        List<Double> randomValues = new ArrayList<>(List.of(0.0, 0.8));
-        GroundTruthSim sim = createSim(() -> randomValues.remove(0));
+        // Robot at heading=10°, local x=2, rotation=+15° → field offsets via transformBy
+        GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(1, 2, Rotation2d.fromDegrees(10));
-        sim.injectDrift(2.0, 15.0);
+        sim.injectDrift(2.0, 0.0, 15.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());
 
         Pose2d drifted = captor.getValue();
-        // angle=0 → dx=2, dy=0
-        assertEquals(3.0, drifted.getX(), 1e-6);
-        assertEquals(2.0, drifted.getY(), 1e-6);
+        // local x=2 along heading=10° → field dx=2*cos(10°), dy=2*sin(10°)
+        assertEquals(1 + 2 * Math.cos(Math.toRadians(10)), drifted.getX(), 1e-6);
+        assertEquals(2 + 2 * Math.sin(Math.toRadians(10)), drifted.getY(), 1e-6);
         // rotation = 10 + 15 = 25
         assertEquals(25.0, drifted.getRotation().getDegrees(), 1e-6);
     }

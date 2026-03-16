@@ -101,9 +101,13 @@ public class SimWrapper {
 
     /**
      * Proxy call to ground truth sim to inject odometry drift.
+     *
+     * @param xOffsetMeters X translation offset in meters
+     * @param yOffsetMeters Y translation offset in meters
+     * @param rotationOffsetDegrees Rotation offset in degrees
      */
-    public void injectDrift(double translationOffsetMeters, double rotationOffsetDegrees) {
-        m_groundTruthSim.injectDrift(translationOffsetMeters, rotationOffsetDegrees);
+    public void injectDrift(double xOffsetMeters, double yOffsetMeters, double rotationOffsetDegrees) {
+        m_groundTruthSim.injectDrift(xOffsetMeters, yOffsetMeters, rotationOffsetDegrees);
     }
 
     /**
@@ -127,7 +131,14 @@ public class SimWrapper {
             Trigger resetTrigger,
             CommandSwerveDrivetrain drivetrain) {
 
-        driftTrigger.onTrue(drivetrain.runOnce(() -> injectDrift(0.5, 15.0)));
+        driftTrigger.onTrue(drivetrain.runOnce(() -> {
+            // Random translation up to 0.5 m in a random direction, random rotation sign
+            double angle = Math.random() * 2 * Math.PI;
+            double dx = 0.5 * Math.cos(angle);
+            double dy = 0.5 * Math.sin(angle);
+            double dtheta = 15.0 * (Math.random() > 0.5 ? 1 : -1);
+            injectDrift(dx, dy, dtheta);
+        }));
         resetTrigger.onTrue(drivetrain.runOnce(() ->
             cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
     }
