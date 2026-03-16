@@ -23,11 +23,13 @@ public class EvaluatePosesMochiV1 implements EvaluatePosesInterface {
 
     @Override
     public boolean isVisionPoseBad(
-        PoseEstimate poseEstimate,
+        EnhancedPoseEstimate enhancedPoseEstimate,
         Matrix<N3, N1> curStdDevs,
         double curConfidenceScore,
         OptionalDouble errorAtSnapTime,
         SwerveDriveState driveState) {
+
+        PoseEstimate poseEstimate = enhancedPoseEstimate.getVisionPoseEstimate();
 
         if (poseEstimate == null || poseEstimate.tagCount == 0) {
             return true;
@@ -70,6 +72,7 @@ public class EvaluatePosesMochiV1 implements EvaluatePosesInterface {
     @Override
     public Matrix<N3, N1> calcVisionPoseStdDev(EnhancedPoseEstimate enhancedPoseEstimate) {
         PoseEstimate poseEstimate = enhancedPoseEstimate.getVisionPoseEstimate();
+
         if (poseEstimate == null || poseEstimate.tagCount == 0) {
             // No pose input. Default to single-tag std devs
             return kSingleTagStdDevs;

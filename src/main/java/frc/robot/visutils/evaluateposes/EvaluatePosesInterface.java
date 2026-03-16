@@ -17,7 +17,7 @@ public interface EvaluatePosesInterface {
      * Should pose be rejected.
      */
     boolean isVisionPoseBad(
-        PoseEstimate poseEstimate,
+        EnhancedPoseEstimate enhancedPoseEstimate,
         Matrix<N3, N1> curStdDevs,
         double curConfidenceScore,
         OptionalDouble errorAtSnapTime,

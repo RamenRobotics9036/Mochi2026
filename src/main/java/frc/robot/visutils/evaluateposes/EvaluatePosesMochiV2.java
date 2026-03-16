@@ -30,11 +30,13 @@ public class EvaluatePosesMochiV2 implements EvaluatePosesInterface {
 
     @Override
     public boolean isVisionPoseBad(
-        PoseEstimate poseEstimate,
+        EnhancedPoseEstimate enhancedPoseEstimate,
         Matrix<N3, N1> curStdDevs,
         double curConfidenceScore,
         OptionalDouble errorAtSnapTime,
         SwerveDriveState driveState) {
+
+        PoseEstimate poseEstimate = enhancedPoseEstimate.getVisionPoseEstimate();
 
         if (poseEstimate == null || poseEstimate.tagCount == 0) {
             return true;

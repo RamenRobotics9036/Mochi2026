@@ -87,6 +87,21 @@ public class SingleCamOdometry implements CamOdometryInterface {
      * @return The Transform2d offset, or empty if no sampler is set or the
      *         pose buffer has no entry for that timestamp
      */
+    private Optional<Pose2d> calcVisionPoseAtSnapTime(double fpgaTimestampSeconds) {
+        if (m_inputs.robotPoseAtTimeSupplier() == null) {
+            return Optional.empty();
+        }
+
+        // samplePoseAt requires getCurrentTimeSeconds epoch, not FPGA epoch
+        double currentTimeEpoch = Utils.fpgaToCurrentTime(fpgaTimestampSeconds);
+        Optional<Pose2d> sampledPose = m_inputs.robotPoseAtTimeSupplier().apply(currentTimeEpoch);
+        if (sampledPose.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return Optional.of(sampledPose.get());
+    }
+
     //* $TODO2 - This should move into EnhancedVisionPoseEstimate */
     private OptionalDouble calcVisionErrorAtSnapTime(
         Pose2d visionPose,
@@ -228,7 +243,8 @@ public class SingleCamOdometry implements CamOdometryInterface {
         EnhancedPoseEstimate enhancedPoseEstimate = new EnhancedPoseEstimate(
             poseEstimate,
             m_inputs.driveStateSupplier().get(),
-            Optional.empty());
+            calcVisionPoseAtSnapTime(poseEstimate.timestampSeconds));
+
         Matrix<N3, N1> curStdDevs = m_config.evaluatePoses().calcVisionPoseStdDev(enhancedPoseEstimate);
         double curConfidenceScore = calcVisionPoseScore(curStdDevs);
 
@@ -239,7 +255,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
             calcVisionErrorAtSnapTime(poseEstimate.pose, poseEstimate.timestampSeconds);
 
         if (m_config.evaluatePoses().isVisionPoseBad(
-            poseEstimate,
+            enhancedPoseEstimate,
             curStdDevs,
             curConfidenceScore,
             errorAtSnapTime,
