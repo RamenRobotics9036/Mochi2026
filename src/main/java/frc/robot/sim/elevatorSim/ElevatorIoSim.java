@@ -80,4 +80,11 @@ public class ElevatorIoSim implements ElevatorIoInterface {
         m_simPosition.set(outputs.positionMeters);
         m_simCurrent.set(outputs.currentAmps);
     }
+
+    @Override
+    public void resetEncoder() {
+        // $TODO: if a non-zero home/reference height is used, plumb that value
+        // through to this method so the sim can match the real encoder behavior.
+        m_elevatorSim.setState(0.0, 0.0);
+    }
 }

@@ -24,4 +24,7 @@ public interface ElevatorIoInterface {
 
     /** Read latest sensor data into the given outputs container. */
     void updateOutputs(DeviceOutputs outputs);
+   
+    /** Reset the encoder position to zero. */
+    void resetEncoder();
 }
