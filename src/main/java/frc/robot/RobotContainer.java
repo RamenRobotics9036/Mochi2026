@@ -296,14 +296,8 @@ public class RobotContainer {
         // named commands in parallel with FollowPathCommand, which already holds the drivetrain
         // subsystem. Taking a drivetrain requirement here would cause a subsystem conflict and
         // silently prevent the command from running.
-        NamedCommands.registerCommand("nudge-right", Commands.runOnce(() -> {
-            if (m_simWrapper != null) {
-                m_simWrapper.injectDriftToGroundTruth(
-                    0,
-                    -Units.inchesToMeters(12), // negative y = right in robot frame
-                    0);
-            }
-        }));
+        NamedCommands.registerCommand("nudge-right", Commands.runOnce(() ->
+            SimWrapper.nudgeRight12Inches(m_simWrapper)));
     }
 
     /**

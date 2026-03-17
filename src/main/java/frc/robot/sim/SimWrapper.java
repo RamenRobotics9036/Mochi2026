@@ -4,6 +4,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
@@ -13,6 +14,7 @@ import frc.robot.sim.visionproducers.VisionSimFactory;
 import frc.robot.sim.visionproducers.VisionSimInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
+import static edu.wpi.first.units.Units.*;
 import java.util.function.Consumer;
 
 
@@ -130,6 +132,19 @@ public class SimWrapper {
      */
     public void cycleResetPosition(Pose2d blueAlliancePose) {
         m_groundTruthSim.cycleResetPosition(blueAlliancePose);
+    }
+
+    /**
+     * Nudges the ground truth pose 12 inches to the right (robot-local -Y).
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     */
+    public static void nudgeRight12Inches(SimWrapper simWrapper) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.injectDriftToGroundTruth(0, Units.inchesToMeters(12), 0);
     }
 
     /**
