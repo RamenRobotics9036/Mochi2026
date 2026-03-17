@@ -11,6 +11,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -290,6 +291,15 @@ public class RobotContainer {
         NamedCommands.registerCommand("set intake bottom", SetIntakeBottomCommand.create(armSubsystem, intakeSubsystem));
 
         NamedCommands.registerCommand("set intake top", SetIntakeTopCommand.create(armSubsystem, intakeSubsystem));
+
+        NamedCommands.registerCommand("nudge-right", drivetrain.runOnce(() -> {
+            if (m_simWrapper != null) {
+                m_simWrapper.injectDrift(
+                    Units.inchesToMeters(-12), // 12 inches to the right in robot frame
+                    Units.inchesToMeters(0),
+                    0);
+            }
+        }));
     }
 
     /**
