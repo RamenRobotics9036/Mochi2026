@@ -13,10 +13,10 @@ public class FullAutoClimbCommand {
         return Commands.sequence(
                 new RunCommand(
                     () -> climber.setClimbSpeed(Constants.ClimberConstants.kClimbUpSpeed),
-                    climber).withTimeout(4.0),
+                    climber).withTimeout(Constants.AutoConstants.k_raiseClimbDuration),
                 new RunCommand(
                     () -> climber.setClimbSpeed(Constants.ClimberConstants.kClimbDownSpeed),
-                    climber).withTimeout(4.0))
+                    climber).withTimeout(Constants.AutoConstants.k_lowerClimbDuration))
             .finallyDo(climber::stop);
     }
 }

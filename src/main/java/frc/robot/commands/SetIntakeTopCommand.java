@@ -14,7 +14,7 @@ public class SetIntakeTopCommand {
                 () -> arm.setArmPosition(Constants.ArmConstants.kMinArmAngle),
                 // Dependencies:
                 arm, intake)
-            .withTimeout(2.0)
+            .withTimeout(Constants.AutoConstants.k_intakeTopDuration)
             .finallyDo(arm::stop);
     }
 }

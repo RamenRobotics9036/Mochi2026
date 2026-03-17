@@ -16,7 +16,7 @@ public class GetFuelCommand {
             },
             // Dependencies:
             arm, intake)
-            .withTimeout(3.0)
+            .withTimeout(Constants.AutoConstants.k_getFuelDuration)
             .finallyDo(() -> {
                 arm.stop();
                 intake.stop();

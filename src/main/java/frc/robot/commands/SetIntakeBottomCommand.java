@@ -16,7 +16,7 @@ public class SetIntakeBottomCommand {
                 // Dependencies:
                 arm, intake)
             .until(arm::isArmDeployed)
-            .withTimeout(3.5)
+            .withTimeout(Constants.AutoConstants.k_intakeBottomDuration)
             .finallyDo(arm::stop);
     }
 }
