@@ -295,8 +295,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("nudge-right", drivetrain.runOnce(() -> {
             if (m_simWrapper != null) {
                 m_simWrapper.injectDrift(
-                    Units.inchesToMeters(-12), // 12 inches to the right in robot frame
-                    Units.inchesToMeters(0),
+                    0,
+                    -Units.inchesToMeters(12), // negative y = right in robot frame
                     0);
             }
         }));

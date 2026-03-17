@@ -241,13 +241,13 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * @param rotationOffsetDegrees How far to offset the estimated heading (degrees)
      */
     @Override
-    public void injectDrift(double xOffsetMeters, double yOffsetMeters, double rotationOffsetDegrees) {
+    public void injectDrift(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
         // Get current estimated pose
         Pose2d currentPose = m_estimatedPoseSupplier.get();
 
         // Apply offsets in the robot's local frame (x = forward, y = left)
         Pose2d driftedPose = currentPose.transformBy(
-            new Transform2d(xOffsetMeters, yOffsetMeters, Rotation2d.fromDegrees(rotationOffsetDegrees))
+            new Transform2d(xOffsetFrontBack, yOffsetLeftRight, Rotation2d.fromDegrees(rotationOffsetDegrees))
         );
 
         // Reset the pose estimator to the drifted position
