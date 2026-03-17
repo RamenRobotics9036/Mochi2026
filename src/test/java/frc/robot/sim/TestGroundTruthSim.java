@@ -465,10 +465,10 @@ class TestGroundTruthSim {
         }
     }
 
-    // ── injectDrift tests ────────────────────────────────────────────
+    // ── injectDriftToPoseEstimate tests ─────────────────────────────
 
     @Test
-    void injectDrift_callsResetPoseOnDrivetrain() {
+    void injectDriftToPoseEstimate_callsResetPoseOnDrivetrain() {
         GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(5, 5, new Rotation2d());
@@ -478,7 +478,7 @@ class TestGroundTruthSim {
     }
 
     @Test
-    void injectDrift_translationDistanceMatchesOffset() {
+    void injectDriftToPoseEstimate_translationDistanceMatchesOffset() {
         GroundTruthSim sim = createSim();
 
         Pose2d startPose = new Pose2d(5, 5, new Rotation2d());
@@ -496,7 +496,7 @@ class TestGroundTruthSim {
     }
 
     @Test
-    void injectDrift_robotHeadingZero_xDriftAlongFieldX() {
+    void injectDriftToPoseEstimate_robotHeadingZero_xDriftAlongFieldX() {
         // Robot facing field +X (heading=0): local x offset → field +X
         GroundTruthSim sim = createSim();
 
@@ -512,7 +512,7 @@ class TestGroundTruthSim {
     }
 
     @Test
-    void injectDrift_robotHeadingNinety_xDriftAlongFieldY() {
+    void injectDriftToPoseEstimate_robotHeadingNinety_xDriftAlongFieldY() {
         // Robot facing field +Y (heading=90°): local x offset → field +Y
         GroundTruthSim sim = createSim();
 
@@ -528,7 +528,7 @@ class TestGroundTruthSim {
     }
 
     @Test
-    void injectDrift_negativeRotation() {
+    void injectDriftToPoseEstimate_negativeRotation() {
         GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
@@ -542,7 +542,7 @@ class TestGroundTruthSim {
     }
 
     @Test
-    void injectDrift_positiveRotation() {
+    void injectDriftToPoseEstimate_positiveRotation() {
         GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
@@ -556,7 +556,7 @@ class TestGroundTruthSim {
     }
 
     @Test
-    void injectDrift_doesNotChangeGroundTruth() {
+    void injectDriftToPoseEstimate_doesNotChangeGroundTruth() {
         GroundTruthSim sim = createSim();
 
         Pose2d groundTruthBefore = sim.getGroundTruthPose();
@@ -572,7 +572,7 @@ class TestGroundTruthSim {
     }
 
     @Test
-    void injectDrift_combinedTranslationAndRotation() {
+    void injectDriftToPoseEstimate_combinedTranslationAndRotation() {
         // Robot at heading=10°, local x=2, rotation=+15° → field offsets via transformBy
         GroundTruthSim sim = createSim();
 
@@ -588,6 +588,101 @@ class TestGroundTruthSim {
         assertEquals(2 + 2 * Math.sin(Math.toRadians(10)), drifted.getY(), 1e-6);
         // rotation = 10 + 15 = 25
         assertEquals(25.0, drifted.getRotation().getDegrees(), 1e-6);
+    }
+
+    // ── injectDriftToGroundTruth tests ──────────────────────────────
+
+    @Test
+    void injectDriftToGroundTruth_doesNotCallDrivetrainResetPose() {
+        GroundTruthSim sim = createSim();
+
+        sim.injectDriftToGroundTruth(1.0, 0.0, 10.0);
+
+        verify(m_mockDrivetrainResetPose, never()).accept(any(Pose2d.class));
+    }
+
+    @Test
+    void injectDriftToGroundTruth_translationDistanceMatchesOffset() {
+        GroundTruthSim sim = createSim();
+
+        Pose2d before = sim.getGroundTruthPose();
+        sim.injectDriftToGroundTruth(2.0, 0.0, 0.0);
+
+        double distance = before.getTranslation().getDistance(sim.getGroundTruthPose().getTranslation());
+        assertEquals(2.0, distance, 1e-6,
+            "Ground truth translation drift distance should equal the offset parameter");
+    }
+
+    @Test
+    void injectDriftToGroundTruth_headingZero_xDriftAlongFieldX() {
+        GroundTruthSim sim = createSim();
+        sim.resetGroundTruthPoseForSim(new Pose2d(3, 4, Rotation2d.fromDegrees(0)));
+
+        sim.injectDriftToGroundTruth(1.5, 0.0, 0.0);
+
+        Pose2d after = sim.getGroundTruthPose();
+        assertEquals(3.0 + 1.5, after.getX(), 1e-6, "Heading=0, x-drift → +field X");
+        assertEquals(4.0, after.getY(), 1e-6, "No field Y change");
+    }
+
+    @Test
+    void injectDriftToGroundTruth_headingNinety_xDriftAlongFieldY() {
+        GroundTruthSim sim = createSim();
+        sim.resetGroundTruthPoseForSim(new Pose2d(3, 4, Rotation2d.fromDegrees(90)));
+
+        sim.injectDriftToGroundTruth(1.0, 0.0, 0.0);
+
+        Pose2d after = sim.getGroundTruthPose();
+        assertEquals(3.0, after.getX(), 1e-6, "Heading=90°, x-drift → no field X change");
+        assertEquals(5.0, after.getY(), 1e-6, "Heading=90°, x-drift → +field Y");
+    }
+
+    @Test
+    void injectDriftToGroundTruth_negativeRotation() {
+        GroundTruthSim sim = createSim();
+        sim.resetGroundTruthPoseForSim(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
+
+        sim.injectDriftToGroundTruth(0.0, 0.0, -15.0);
+
+        assertEquals(-15.0, sim.getGroundTruthPose().getRotation().getDegrees(), 1e-6,
+            "Negative rotation offset applied to ground truth");
+    }
+
+    @Test
+    void injectDriftToGroundTruth_positiveRotation() {
+        GroundTruthSim sim = createSim();
+        sim.resetGroundTruthPoseForSim(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
+
+        sim.injectDriftToGroundTruth(0.0, 0.0, 20.0);
+
+        assertEquals(20.0, sim.getGroundTruthPose().getRotation().getDegrees(), 1e-6,
+            "Positive rotation offset applied to ground truth");
+    }
+
+    @Test
+    void injectDriftToGroundTruth_doesNotChangePoseEstimate() {
+        GroundTruthSim sim = createSim();
+        m_estimatedPose = new Pose2d(5, 5, new Rotation2d());
+
+        sim.injectDriftToGroundTruth(3.0, 0.0, 30.0);
+
+        // The pose estimator (drivetrain) must never be touched
+        verify(m_mockDrivetrainResetPose, never()).accept(any(Pose2d.class));
+    }
+
+    @Test
+    void injectDriftToGroundTruth_combinedTranslationAndRotation() {
+        GroundTruthSim sim = createSim();
+        sim.resetGroundTruthPoseForSim(new Pose2d(1, 2, Rotation2d.fromDegrees(10)));
+
+        sim.injectDriftToGroundTruth(2.0, 0.0, 15.0);
+
+        Pose2d after = sim.getGroundTruthPose();
+        // local x=2 along heading=10° → field dx=2*cos(10°), dy=2*sin(10°)
+        assertEquals(1 + 2 * Math.cos(Math.toRadians(10)), after.getX(), 1e-6);
+        assertEquals(2 + 2 * Math.sin(Math.toRadians(10)), after.getY(), 1e-6);
+        // rotation = 10 + 15 = 25
+        assertEquals(25.0, after.getRotation().getDegrees(), 1e-6);
     }
 
     // ── publishTelemetry tests ───────────────────────────────────────
