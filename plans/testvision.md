@@ -1,4 +1,4 @@
-# Vision Correction Test Plan
+# Vision Improvement Plan
 
 Tests use `injectDriftToGroundTruth` to physically displace the simulated robot while leaving
 odometry untouched. Vision (cameras tied to ground truth) should detect the error and correct
@@ -6,7 +6,9 @@ the pose estimate back toward ground truth over time.
 
 ---
 
-## Case 1 — Translation drift only, injected twice
+## Sim Test Cases
+
+### Case 1 — Translation drift only, injected twice
 
 Run a PathPlanner path in simulation with ground truth enabled.
 
@@ -19,7 +21,7 @@ estimate back toward ground truth before the path ends.
 
 ---
 
-## Case 2 — Translation drift + rotation drift, injected at start and mid
+### Case 2 — Translation drift + rotation drift, injected at start and mid
 
 Run a PathPlanner path in simulation with ground truth enabled.
 
@@ -35,3 +37,13 @@ start, and then handles the second translation nudge mid-path.
 ---
 
 <!-- Add more cases below -->
+
+## Diagnostic Changes Needed
+
+- **Per-camera error arrows on robot** — For each camera, display the XY error between the
+  vision pose snapshot and the robot's odometry position *at the time of that snapshot* as an
+  arrow overlaid on the robot graphic. Arrow length encodes magnitude; arrow direction encodes
+  direction of the discrepancy.
+
+- **Vision injection rate display** — Show the number of vision pose injections fed into the
+  drivetrain per second, computed as a per-second average over a 5-second rolling window.
