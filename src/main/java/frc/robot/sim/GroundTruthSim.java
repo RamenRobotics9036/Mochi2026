@@ -256,6 +256,24 @@ public class GroundTruthSim implements GroundTruthSimInterface {
     }
 
     /**
+     * Offsets the ground truth pose while leaving the pose estimator unchanged.
+     * This moves where the robot "actually is" in simulation (and thus where
+     * cameras see AprilTags), without touching the odometry estimate.
+     *
+     * @param xOffsetFrontBack Forward/back offset in the robot's local frame (meters)
+     * @param yOffsetLeftRight Left/right offset in the robot's local frame (meters)
+     * @param rotationOffsetDegrees Heading offset (degrees)
+     */
+    @Override
+    public void injectDriftToGroundTruth(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
+        // Apply offsets in the robot's local frame (x = forward, y = left)
+        m_groundTruthPose = m_groundTruthPose.transformBy(
+            new Transform2d(xOffsetFrontBack, yOffsetLeftRight, Rotation2d.fromDegrees(rotationOffsetDegrees))
+        );
+        // The pose estimator is left untouched
+    }
+
+    /**
      * Publishes simulation telemetry to SmartDashboard.
      * Call this from Robot.simulationPeriodic().
      */

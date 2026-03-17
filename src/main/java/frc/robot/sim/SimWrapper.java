@@ -111,6 +111,19 @@ public class SimWrapper {
     }
 
     /**
+     * Proxy call to ground truth sim to offset the ground truth pose.
+     * Moves where the robot "actually is" (and thus where cameras see AprilTags)
+     * without touching the odometry estimate.
+     *
+     * @param xOffsetFrontBack X translation offset in meters (+ = forward, - = backward)
+     * @param yOffsetLeftRight Y translation offset in meters (+ = left, - = right)
+     * @param rotationOffsetDegrees Rotation offset in degrees
+     */
+    public void injectDriftToGroundTruth(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
+        m_groundTruthSim.injectDriftToGroundTruth(xOffsetFrontBack, yOffsetLeftRight, rotationOffsetDegrees);
+    }
+
+    /**
      * Proxy call to ground truth sim to cycle reset position.
      *
      * @param blueAlliancePose The pose to reset to if on blue alliance
@@ -137,7 +150,7 @@ public class SimWrapper {
             double xFrontBack = 0.5 * Math.cos(angle);
             double yLeftRight = 0.5 * Math.sin(angle);
             double dtheta = 15.0 * (Math.random() > 0.5 ? 1 : -1);
-            injectDriftToPoseEstimate(xFrontBack, yLeftRight, dtheta);
+            injectDriftToGroundTruth(xFrontBack, yLeftRight, dtheta);
         }));
         resetTrigger.onTrue(drivetrain.runOnce(() ->
             cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));
