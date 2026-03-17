@@ -45,5 +45,5 @@ public interface GroundTruthSimInterface {
      * @param translationOffsetMeters How far to offset the estimated position (meters)
      * @param rotationOffsetDegrees How far to offset the estimated heading (degrees)
      */
-    void injectDrift(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees);
+    void injectDriftToPoseEstimate(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees);
 }

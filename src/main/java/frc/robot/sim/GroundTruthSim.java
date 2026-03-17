@@ -241,7 +241,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * @param rotationOffsetDegrees How far to offset the estimated heading (degrees)
      */
     @Override
-    public void injectDrift(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
+    public void injectDriftToPoseEstimate(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
         // Get current estimated pose
         Pose2d currentPose = m_estimatedPoseSupplier.get();
 

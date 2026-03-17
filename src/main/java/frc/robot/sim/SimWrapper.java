@@ -106,8 +106,8 @@ public class SimWrapper {
      * @param yOffsetLeftRight Y translation offset in meters (+ = left, - = right)
      * @param rotationOffsetDegrees Rotation offset in degrees
      */
-    public void injectDrift(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
-        m_groundTruthSim.injectDrift(xOffsetFrontBack, yOffsetLeftRight, rotationOffsetDegrees);
+    public void injectDriftToPoseEstimate(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
+        m_groundTruthSim.injectDriftToPoseEstimate(xOffsetFrontBack, yOffsetLeftRight, rotationOffsetDegrees);
     }
 
     /**
@@ -137,7 +137,7 @@ public class SimWrapper {
             double xFrontBack = 0.5 * Math.cos(angle);
             double yLeftRight = 0.5 * Math.sin(angle);
             double dtheta = 15.0 * (Math.random() > 0.5 ? 1 : -1);
-            injectDrift(xFrontBack, yLeftRight, dtheta);
+            injectDriftToPoseEstimate(xFrontBack, yLeftRight, dtheta);
         }));
         resetTrigger.onTrue(drivetrain.runOnce(() ->
             cycleResetPosition(AutoLogic.getSelectedAutoStartingPose())));

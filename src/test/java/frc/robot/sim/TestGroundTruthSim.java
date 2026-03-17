@@ -472,7 +472,7 @@ class TestGroundTruthSim {
         GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(5, 5, new Rotation2d());
-        sim.injectDrift(1.0, 0.0, 10.0);
+        sim.injectDriftToPoseEstimate(1.0, 0.0, 10.0);
 
         verify(m_mockDrivetrainResetPose).accept(any(Pose2d.class));
     }
@@ -484,7 +484,7 @@ class TestGroundTruthSim {
         Pose2d startPose = new Pose2d(5, 5, new Rotation2d());
         m_estimatedPose = startPose;
 
-        sim.injectDrift(2.0, 0.0, 0.0);
+        sim.injectDriftToPoseEstimate(2.0, 0.0, 0.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());
@@ -501,7 +501,7 @@ class TestGroundTruthSim {
         GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(3, 4, Rotation2d.fromDegrees(0));
-        sim.injectDrift(1.5, 0.0, 0.0);
+        sim.injectDriftToPoseEstimate(1.5, 0.0, 0.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());
@@ -517,7 +517,7 @@ class TestGroundTruthSim {
         GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(3, 4, Rotation2d.fromDegrees(90));
-        sim.injectDrift(1.0, 0.0, 0.0);
+        sim.injectDriftToPoseEstimate(1.0, 0.0, 0.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());
@@ -532,7 +532,7 @@ class TestGroundTruthSim {
         GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
-        sim.injectDrift(0.0, 0.0, -15.0);
+        sim.injectDriftToPoseEstimate(0.0, 0.0, -15.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());
@@ -546,7 +546,7 @@ class TestGroundTruthSim {
         GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
-        sim.injectDrift(0.0, 0.0, 20.0);
+        sim.injectDriftToPoseEstimate(0.0, 0.0, 20.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());
@@ -562,7 +562,7 @@ class TestGroundTruthSim {
         Pose2d groundTruthBefore = sim.getGroundTruthPose();
         m_estimatedPose = new Pose2d(5, 5, new Rotation2d());
 
-        sim.injectDrift(3.0, 0.0, 30.0);
+        sim.injectDriftToPoseEstimate(3.0, 0.0, 30.0);
 
         Pose2d groundTruthAfter = sim.getGroundTruthPose();
         assertEquals(groundTruthBefore.getX(), groundTruthAfter.getX(), 1e-6,
@@ -577,7 +577,7 @@ class TestGroundTruthSim {
         GroundTruthSim sim = createSim();
 
         m_estimatedPose = new Pose2d(1, 2, Rotation2d.fromDegrees(10));
-        sim.injectDrift(2.0, 0.0, 15.0);
+        sim.injectDriftToPoseEstimate(2.0, 0.0, 15.0);
 
         ArgumentCaptor<Pose2d> captor = ArgumentCaptor.forClass(Pose2d.class);
         verify(m_mockDrivetrainResetPose).accept(captor.capture());

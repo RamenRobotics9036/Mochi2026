@@ -298,7 +298,7 @@ public class RobotContainer {
         // silently prevent the command from running.
         NamedCommands.registerCommand("nudge-right", Commands.runOnce(() -> {
             if (m_simWrapper != null) {
-                m_simWrapper.injectDrift(
+                m_simWrapper.injectDriftToPoseEstimate(
                     0,
                     -Units.inchesToMeters(12), // negative y = right in robot frame
                     0);
