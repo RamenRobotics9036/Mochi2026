@@ -33,7 +33,6 @@ public class EvaluatePosesMochiV2 implements EvaluatePosesInterface {
         EnhancedPoseEstimate enhancedPoseEstimate,
         Matrix<N3, N1> curStdDevs,
         double curConfidenceScore,
-        OptionalDouble errorAtSnapTime,
         SwerveDriveState driveState) {
 
         PoseEstimate poseEstimate = enhancedPoseEstimate.getVisionPoseEstimate();

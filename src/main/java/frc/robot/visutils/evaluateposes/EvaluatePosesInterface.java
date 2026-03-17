@@ -20,7 +20,6 @@ public interface EvaluatePosesInterface {
         EnhancedPoseEstimate enhancedPoseEstimate,
         Matrix<N3, N1> curStdDevs,
         double curConfidenceScore,
-        OptionalDouble errorAtSnapTime,
         SwerveDriveState driveState);
 
     /**

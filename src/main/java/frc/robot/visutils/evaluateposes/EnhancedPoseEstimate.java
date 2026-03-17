@@ -65,7 +65,12 @@ public class EnhancedPoseEstimate {
     // of this vision pose).
     //
 
-    /** Returns the translation error between the vision pose and robot pose at snap time. */
+    /**
+     * Returns the translation error between the vision pose and robot pose at snap time.
+     * NOTE: This uses the robot pose from the PAST, specifically from when the snapshot
+     * was taken by limelight camera.  So if the robot is moving, this is a much more
+     * accurate way of measuring how far off the vision pose is.
+     */
     public Optional<Translation2d> getVisionPoseErrorAtSnapTime() {
         if (m_robotPoseAtSnapTime.isEmpty()) {
             return Optional.empty();

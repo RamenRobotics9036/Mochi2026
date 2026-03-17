@@ -102,28 +102,6 @@ public class SingleCamOdometry implements CamOdometryInterface {
         return Optional.of(sampledPose.get());
     }
 
-    //* $TODO2 - This should move into EnhancedVisionPoseEstimate */
-    private OptionalDouble calcVisionErrorAtSnapTime(
-        Pose2d visionPose,
-        double fpgaTimestampSeconds) {
-
-        if (m_inputs.robotPoseAtTimeSupplier() == null) {
-            return OptionalDouble.empty();
-        }
-
-        // samplePoseAt requires getCurrentTimeSeconds epoch, not FPGA epoch
-        double currentTimeEpoch = Utils.fpgaToCurrentTime(fpgaTimestampSeconds);
-        Optional<Pose2d> sampledPose = m_inputs.robotPoseAtTimeSupplier().apply(currentTimeEpoch);
-        if (sampledPose.isEmpty()) {
-            return OptionalDouble.empty();
-        }
-
-        return OptionalDouble.of(visionPose
-            .minus(sampledPose.get())
-            .getTranslation()
-            .getNorm());
-    }
-
     @Override
     public void periodic() {
         addVisionMeasurementV1();
@@ -248,17 +226,11 @@ public class SingleCamOdometry implements CamOdometryInterface {
         Matrix<N3, N1> curStdDevs = m_config.evaluatePoses().calcVisionPoseStdDev(enhancedPoseEstimate);
         double curConfidenceScore = calcVisionPoseScore(curStdDevs);
 
-        // We track how far-off this vision estimate is, using the ACTUAL pose in the past
-        // of where the robot was when the camera image was snapped.
-        // $TODO - Moving into EnhangedPoseEstimate
-        OptionalDouble errorAtSnapTime =
-            calcVisionErrorAtSnapTime(poseEstimate.pose, poseEstimate.timestampSeconds);
 
         if (m_config.evaluatePoses().isVisionPoseBad(
             enhancedPoseEstimate,
             curStdDevs,
             curConfidenceScore,
-            errorAtSnapTime,
             m_inputs.driveStateSupplier().get())) {
 
             clearResults();
@@ -271,7 +243,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
             poseEstimate.tagCount,
             poseEstimate.rawFiducials,
             poseEstimate.isMegaTag2,
-            errorAtSnapTime);
+            enhancedPoseEstimate.getVisionPoseErrorAtSnapTimeInMeters());
 
         // Finally, update timestamp of last good vision data
         m_lastTimestamp = poseEstimate.timestampSeconds;
