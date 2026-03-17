@@ -2,8 +2,10 @@ package frc.robot.visutils.evaluateposes;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import java.util.Optional;
+import java.util.OptionalDouble;
 
 
 /** Simple helpers to calculate extra info on the pose. */
@@ -32,14 +34,17 @@ public class EnhancedPoseEstimate {
         m_robotPoseAtSnapTime = robotPoseAtSnapTime;
     }
 
+    /** Returns the raw vision pose estimate. */
     public PoseEstimate getVisionPoseEstimate() {
         return m_visionPoseEstimate;
     }
 
+    /** Returns the estimated vision pose as a {@link Pose2d}. */
     public Pose2d getVisionPose2d() {
         return m_visionPoseEstimate.pose;
     }
 
+    /** Returns whether this estimate came from MegaTag2. */
     public boolean isMegatag2() {
         return m_visionPoseEstimate.isMegaTag2;
     }
@@ -47,6 +52,8 @@ public class EnhancedPoseEstimate {
     //
     // Some helpers to compare pose to the CURRENT robot pose.
     //
+
+    /** Returns the XY distance from the vision pose to the current robot pose. */
     public double getXyDistanceToCurrentRobotPose() {
         return m_visionPoseEstimate.pose
         .getTranslation()
@@ -58,10 +65,30 @@ public class EnhancedPoseEstimate {
     // of this vision pose).
     //
 
+    /** Returns the translation error between the vision pose and robot pose at snap time. */
+    public Optional<Translation2d> getVisionPoseErrorAtSnapTime() {
+        if (m_robotPoseAtSnapTime.isEmpty()) {
+            return Optional.empty();
+        }
 
+        return Optional.of(
+            m_visionPoseEstimate.pose
+                .minus(m_robotPoseAtSnapTime.get())
+                .getTranslation());
+    }
 
+    /** Returns the snap-time vision pose error magnitude in meters. */
+    public OptionalDouble getVisionPoseErrorAtSnapTimeInMeters() {
+        Optional<Translation2d> visionPoseErrorAtSnapTime = getVisionPoseErrorAtSnapTime();
+        if (visionPoseErrorAtSnapTime.isEmpty()) {
+            return OptionalDouble.empty();
+        }
+
+        return OptionalDouble.of(visionPoseErrorAtSnapTime.get().getNorm());
+    }
 
     //
     // Helpers to analyze Fiducials (i.e. per-april-tag info).
     //
+    // $TODO
 }
