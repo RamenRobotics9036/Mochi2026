@@ -101,6 +101,8 @@ public final class  AutoLogic {
         autoPicker.addOption("L Bump_Shoot_Climb", "L Bump_Shoot_Climb");
         autoPicker.addOption("R Bump_Shoot_Climb", "R Bump_Shoot_Climb");
 
+        autoPicker.addOption("Ido Test Vision", "Ido Test Vision");
+
         // Pathplanner Autos
         // autoPicker.addOption("Idos Backward then Forward", "Idos Backward then Forward");
         // autoPicker.addOption("Cross", "Cross");

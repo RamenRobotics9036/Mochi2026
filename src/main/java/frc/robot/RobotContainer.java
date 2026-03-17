@@ -292,7 +292,11 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("set intake top", SetIntakeTopCommand.create(armSubsystem, intakeSubsystem));
 
-        NamedCommands.registerCommand("nudge-right", drivetrain.runOnce(() -> {
+        // NOTE: Uses Commands.runOnce (NOT drivetrain.runOnce) intentionally — PathPlanner runs
+        // named commands in parallel with FollowPathCommand, which already holds the drivetrain
+        // subsystem. Taking a drivetrain requirement here would cause a subsystem conflict and
+        // silently prevent the command from running.
+        NamedCommands.registerCommand("nudge-right", Commands.runOnce(() -> {
             if (m_simWrapper != null) {
                 m_simWrapper.injectDrift(
                     0,
