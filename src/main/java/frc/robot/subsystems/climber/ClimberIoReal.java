@@ -82,4 +82,9 @@ public class ClimberIoReal implements ElevatorIoInterface {
     private double getEncoderValue() {
         return m_encoder.getPosition();
     }
+
+    @Override
+    public void resetEncoder() {
+        m_encoder.setPosition(0);
+    }
 }
