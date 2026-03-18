@@ -7,6 +7,12 @@
         {
           "type": "named",
           "data": {
+            "name": "Set Hood to Trench Angle"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "shoot"
           }
         },
@@ -14,12 +20,6 @@
           "type": "path",
           "data": {
             "pathName": "R_Zone"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "get fuel"
           }
         }
       ]
