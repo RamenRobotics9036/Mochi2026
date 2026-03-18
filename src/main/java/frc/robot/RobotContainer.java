@@ -440,6 +440,12 @@ public class RobotContainer {
      * @return The command to execute during the autonomous period.
      */
     public Command getAutonomousCommand() {
+        if (Robot.isSimulation()) {
+            return AutoLogic.getSelectedAutoCommand()
+                .andThen(Commands.runOnce(() -> SimWrapper.resetAllAutoSimFaults(m_simWrapper)));
+        }
+
+        // Non-sim case:
         return AutoLogic.getSelectedAutoCommand();
     }
 
