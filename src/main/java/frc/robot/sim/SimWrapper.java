@@ -148,6 +148,19 @@ public class SimWrapper {
     }
 
     /**
+     * Nudges the ground truth pose 20 degrees clockwise (negative rotation).
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     */
+    public static void nudgeRotate20Degrees(SimWrapper simWrapper) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.injectDriftToGroundTruth(0, 0, -20);
+    }
+
+    /**
      * Binds simulation-only POV button actions to the drivetrain.
      *
      * @param driftTrigger    Trigger that injects odometry drift (e.g. povRight)

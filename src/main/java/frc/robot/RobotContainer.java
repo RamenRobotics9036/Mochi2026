@@ -298,6 +298,9 @@ public class RobotContainer {
         // silently prevent the command from running.
         NamedCommands.registerCommand("nudge-right", Commands.runOnce(() ->
             SimWrapper.nudgeRight12Inches(m_simWrapper)));
+
+        NamedCommands.registerCommand("nudge-rotate", Commands.runOnce(() ->
+            SimWrapper.nudgeRotate20Degrees(m_simWrapper)));
     }
 
     /**
