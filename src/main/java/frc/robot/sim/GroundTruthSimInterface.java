@@ -58,4 +58,13 @@ public interface GroundTruthSimInterface {
      * @param rotationOffsetDegrees Heading offset (degrees)
      */
     void injectDriftToGroundTruth(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees);
+
+    /**
+     * Enables or disables simulated rightward pull during forward motion.
+     * When enabled, the ground truth pose drifts right proportional to forward travel,
+     * simulating real-world drivetrain asymmetry.
+     *
+     * @param enabled true to enable pull-right, false to disable
+     */
+    void enablePullRight(boolean enabled);
 }

@@ -33,6 +33,7 @@ public class SimWrapper {
 
     private final GroundTruthSimInterface m_groundTruthSim;
     private final VisionSimInterface m_visionSim;
+    public final FaultyAutoSim m_faultyAutoSim;
 
     /**
      * Creates a new SimWrapper.
@@ -60,6 +61,9 @@ public class SimWrapper {
 
         // Create ground truth simulation
         m_groundTruthSim = GroundTruthSimFactory.create(drivetrain, poseResetConsumer);
+
+        // Create faulty auto sim (fault injection for testing)
+        m_faultyAutoSim = new FaultyAutoSim(m_groundTruthSim);
 
         // Create vision simulation
         m_visionSim = VisionSimFactory.create(m_configInterface);

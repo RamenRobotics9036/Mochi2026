@@ -12,6 +12,9 @@
 
 package frc.robot.sim;
 
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
+
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -60,6 +63,15 @@ public class GroundTruthSim implements GroundTruthSimInterface {
 
     /** Timeout in seconds before cycle resets to beginning. */
     private static final double CYCLE_TIMEOUT_SECONDS = 2.0;
+
+    /**
+     * Simulated rightward pull: how far right (meters) the robot drifts
+     * for each meter of forward travel. Models real-world drivetrain asymmetry.
+     */
+    private static final double kRightDriftMetersPerMeterForward = Inches.of(6).in(Meters);
+
+    /** Whether the simulated rightward pull is currently active. */
+    private boolean m_pullRightEnabled = false;
     private double m_lastCycleTime = 0.0;
 
     /** Current position in the reset cycle (0-N). */
@@ -127,6 +139,12 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         double dx = speeds.vxMetersPerSecond * deltaTime;
         double dy = speeds.vyMetersPerSecond * deltaTime;
         double dtheta = speeds.omegaRadiansPerSecond * deltaTime;
+
+        // Simulate rightward pull: robot drifts right proportional to forward movement only.
+        // (in robot frame, right = negative Y; no effect when driving backwards)
+        if (m_pullRightEnabled) {
+            dy -= Math.max(dx, 0) * kRightDriftMetersPerMeterForward;
+        }
 
         double distanceThisStep = Math.hypot(dx, dy);
         double rotationThisStep = Math.abs(dtheta);
@@ -271,6 +289,16 @@ public class GroundTruthSim implements GroundTruthSimInterface {
             new Transform2d(xOffsetFrontBack, yOffsetLeftRight, Rotation2d.fromDegrees(rotationOffsetDegrees))
         );
         // The pose estimator is left untouched
+    }
+
+    /**
+     * Enables or disables simulated rightward pull during forward motion.
+     *
+     * @param enabled true to enable pull-right, false to disable
+     */
+    @Override
+    public void enablePullRight(boolean enabled) {
+        m_pullRightEnabled = enabled;
     }
 
     /**
