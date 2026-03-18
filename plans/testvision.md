@@ -36,6 +36,29 @@ start, and then handles the second translation nudge mid-path.
 
 ---
 
+### Case 3 — Single camera with miscalibrated robot-to-camera transform
+
+Run with only one camera active. The robot-to-camera transform reported to the vision system
+is offset by **1 foot** from its true physical position on the robot.
+
+**Expected**: The pose estimates are consistently biased by an amount corresponding to the
+transform error. The bias is stable (not oscillating) and its magnitude/direction matches the
+1-foot offset in the miscalibrated transform.
+
+---
+
+### Case 4 — Two cameras with conflicting robot-to-camera transforms
+
+Run with two cameras active. One camera's reported position is correct; the other's reported
+position is offset by **1 foot** from the robot center (miscalibrated transform).
+
+**Expected**: The two cameras produce conflicting pose measurements. Observe how the pose
+estimator handles the disagreement — ideally the well-calibrated camera's measurements
+dominate, and the injected bias from the miscalibrated camera is visible in the per-camera
+error diagnostics.
+
+---
+
 <!-- Add more cases below -->
 
 ## Diagnostic Changes Needed
