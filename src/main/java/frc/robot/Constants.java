@@ -186,12 +186,10 @@ public final class Constants {
         /** Minimum retraction limit. (motor rotations) */
         public static final double kMinHeight = 0.1 * kGearRatio;
 
-        /** Max power (0.5 = 50% power). */
-        public static final double kMaxOutputPercent = 0.40;
         /** Amps limit (higher for single motor lifting full weight). */
         public static final int kCurrentLimit = 80;
-        public static final double kClimbUpSpeed = 0.9;   // Positive usually extends
-        public static final double kClimbDownSpeed = -0.9; // Negative usually retracts
+        public static final double kClimbUpSpeed = 0.4;   // Positive usually extends
+        public static final double kClimbDownSpeed = -0.4; // Negative usually retracts
         public static final double kClimbSlewRate = 2.0;
     }
 
@@ -262,5 +260,18 @@ public final class Constants {
         public static final double kMotionlessGyroThreshold = 2.0;
         /** Linear velocity threshold for "motionless" detection (m/s). */
         public static final double kMotionlessLinearThreshold = 0.05;
+    }
+
+    /** Constants for auto commands. */
+    public static final class AutoConstants {
+        public static final double k_raiseClimbDuration = 4.0;
+        public static final double k_lowerClimbDuration = 4.0;
+
+        public static final double k_getFuelDuration = 3.0;
+
+        public static final double k_intakeBottomDuration = 3.5;
+        public static final double k_intakeTopDuration = 2.0;
+
+        public static final double k_shootCommandTotalDuration = 8.0;
     }
 }
