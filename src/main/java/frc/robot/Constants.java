@@ -263,4 +263,17 @@ public final class Constants {
         /** Linear velocity threshold for "motionless" detection (m/s). */
         public static final double kMotionlessLinearThreshold = 0.05;
     }
+
+    /** Constants for auto commands. */
+    public static final class AutoConstants {
+        public static final double k_raiseClimbDuration = 4.0;
+        public static final double k_lowerClimbDuration = 4.0;
+
+        public static final double k_getFuelDuration = 3.0;
+
+        public static final double k_intakeBottomDuration = 3.5;
+        public static final double k_intakeTopDuration = 2.0;
+
+        public static final double k_shootCommandTotalDuration = 8.0;
+    }
 }
