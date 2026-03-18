@@ -2,6 +2,10 @@ package frc.robot.sim.visionproducers;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import static edu.wpi.first.units.Units.*;
 
 /** Constants for vision simulation. */
 public class VisionSimConstants {

@@ -28,6 +28,7 @@ import static frc.robot.sim.visionproducers.VisionSimConstants.Vision.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
@@ -87,8 +88,11 @@ public class VisionSim implements VisionSimInterface {
             cameraProp.setLatencyStdDevMs(kLatencyStdDevMs);
 
             // Add the simulated camera to view the targets on this simulated field.
-            for (VisionSimSingleCam cam : m_camHelperList) {
-                cam.addToVisionSystem(m_visionSystemSim, cameraProp);
+            // The primary camera (index 0) gets an additional mounting offset applied
+            // to model real-world miscalibration without affecting the pose estimator.
+            for (int i = 0; i < m_camHelperList.size(); i++) {
+                Transform3d extraOffset = (i == 0) ? kPrimaryCamSimMountingOffset : new Transform3d();
+                m_camHelperList.get(i).addToVisionSystem(m_visionSystemSim, cameraProp, extraOffset);
             }
         }
     }
@@ -128,5 +132,12 @@ public class VisionSim implements VisionSimInterface {
                 "getSimDebugField should only be called in simulation");
         }
         return m_visionSystemSim.getDebugField();
+    }
+
+    @Override
+    public void enablePrimaryCameraMisplaced(Transform3d offset) {
+        if (!m_camHelperList.isEmpty()) {
+            m_camHelperList.get(0).adjustSimCamTransform(offset);
+        }
     }
 }

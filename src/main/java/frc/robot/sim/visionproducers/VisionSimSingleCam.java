@@ -25,6 +25,11 @@ public class VisionSimSingleCam {
     // Limelight NetworkTables publisher
     private final LimelightTablePublisher m_limelightPublisher;
 
+    // Stored after addToVisionSystem() for dynamic camera adjustment
+    private PhotonCameraSim m_cameraSim;
+    private VisionSystemSim m_visionSystemSim;
+    private Transform3d m_baseSimTransform;
+
     /** Constructor. */
     public VisionSimSingleCam(
         String photonCamName,
@@ -46,7 +51,7 @@ public class VisionSimSingleCam {
     }
 
     /** Create a simulated camera and return it. */
-    public void addToVisionSystem(VisionSystemSim visionSystemSim, SimCameraProperties cameraProp) {
+    public void addToVisionSystem(VisionSystemSim visionSystemSim, SimCameraProperties cameraProp, Transform3d simMountingOffset) {
         PhotonCameraSim cameraSim;
 
         if (!Robot.isSimulation()) {
@@ -61,10 +66,27 @@ public class VisionSimSingleCam {
         cameraSim.setMinTargetAreaPixels(kMinTargetAreaPixels);
         cameraSim.setMaxSightRange(kMaxSightRangeMeters);
 
-        visionSystemSim.addCamera(cameraSim, m_robotToCam);
+        visionSystemSim.addCamera(cameraSim, m_robotToCam.plus(simMountingOffset));
 
         // $TODO - Double check that both wireframes should be drawn
         cameraSim.enableDrawWireframe(true);
+
+        m_cameraSim = cameraSim;
+        m_visionSystemSim = visionSystemSim;
+        m_baseSimTransform = m_robotToCam.plus(simMountingOffset);
+    }
+
+    /**
+     * Dynamically repositions the simulated camera by applying an additional offset
+     * on top of the static mounting offset. The pose estimator is unaffected.
+     *
+     * @param additionalOffset Extra transform to apply (zero = back to static position)
+     */
+    public void adjustSimCamTransform(Transform3d additionalOffset) {
+        if (m_cameraSim == null || m_visionSystemSim == null) {
+            return;
+        }
+        m_visionSystemSim.adjustCamera(m_cameraSim, m_baseSimTransform.plus(additionalOffset));
     }
 
     /**

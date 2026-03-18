@@ -4,6 +4,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -62,14 +63,14 @@ public class SimWrapper {
         // Create ground truth simulation
         m_groundTruthSim = GroundTruthSimFactory.create(drivetrain, poseResetConsumer);
 
-        // Create faulty auto sim (fault injection for testing)
-        m_faultyAutoSim = new FaultyAutoSim(m_groundTruthSim);
-
         // Create vision simulation
         m_visionSim = VisionSimFactory.create(m_configInterface);
         if (m_visionSim == null) {
             throw new IllegalStateException("VisionSimInterface creation failed");
         }
+
+        // Create faulty auto sim (fault injection for testing)
+        m_faultyAutoSim = new FaultyAutoSim(m_groundTruthSim, m_visionSim);
     }
 
     /**
@@ -241,6 +242,20 @@ public class SimWrapper {
             return;
         }
         simWrapper.m_faultyAutoSim.enablePullRight(enabled);
+    }
+
+    /**
+     * Offsets the primary camera's simulated physical position to model miscalibration.
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     * @param offset Additional transform on top of the static mounting offset (zero = reset)
+     */
+    public static void enableCameraMisplaced(SimWrapper simWrapper, Transform3d offset) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.m_faultyAutoSim.enableCameraMisplaced(offset);
     }
 
     /**
