@@ -193,6 +193,9 @@ public final class Constants {
         public static final double kClimbUpSpeed = 0.9;   // Positive usually extends
         public static final double kClimbDownSpeed = -0.9; // Negative usually retracts
         public static final double kClimbSlewRate = 2.0;
+
+        public static final double kStallVelocity = 5;
+        public static final double kStallMotorSpeed = 0.3;
     }
 
     /**

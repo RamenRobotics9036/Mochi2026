@@ -63,8 +63,11 @@ public class ClimberIoReal implements ElevatorIoInterface {
         //} else if (clampedSpeed < 0 && currentPos <= ClimberConstants.kMinHeight) {
           //  clampedSpeed = 0;
         //}
-
-        m_motor.set(clampedSpeed);
+        if (m_encoder.getVelocity()<=ClimberConstants.kStallVelocity && m_motor.get()>=ClimberConstants.kStallMotorSpeed) {
+            m_motor.stopMotor();
+        } else{
+            m_motor.set(filteredSpeed);
+        }
     }
 
     @Override
