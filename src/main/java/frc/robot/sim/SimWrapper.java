@@ -229,6 +229,33 @@ public class SimWrapper {
         return new SimWrapper(configInterface, drivetrain, poseResetConsumer);
     }
 
+    /**
+     * Enables or disables simulated rightward pull during forward motion.
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     * @param enabled true to enable pull-right, false to disable
+     */
+    public static void enablePullRight(SimWrapper simWrapper, boolean enabled) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.m_faultyAutoSim.enablePullRight(enabled);
+    }
+
+    /**
+     * Resets all simulated auto faults to their default (disabled) state.
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     */
+    public static void resetAllAutoSimFaults(SimWrapper simWrapper) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.m_faultyAutoSim.resetAllAutoSimFaults();
+    }
+
     /**  Gets the ground truth pose from the simulation. */
     public Pose2d getGroundTruthPose() {
         return m_groundTruthSim.getGroundTruthPose();

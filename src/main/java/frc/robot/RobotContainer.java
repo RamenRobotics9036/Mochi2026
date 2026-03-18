@@ -301,6 +301,12 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("nudge-rotate", Commands.runOnce(() ->
             SimWrapper.nudgeRotate45Degrees(m_simWrapper)));
+
+        NamedCommands.registerCommand("faulty-pull-right", Commands.runOnce(() ->
+            SimWrapper.enablePullRight(m_simWrapper, true)));
+
+        NamedCommands.registerCommand("reset-all-faults", Commands.runOnce(() ->
+            SimWrapper.resetAllAutoSimFaults(m_simWrapper)));
     }
 
     /**
