@@ -285,6 +285,8 @@ public class RobotContainer {
         NamedCommands.registerCommand("set intake top", SetIntakeTopCommand.create(armSubsystem, intakeSubsystem));
         
         NamedCommands.registerCommand("Jiggle", new JiggleCommand(drivetrain).withTimeout(20.0));
+
+        NamedCommands.registerCommand("Set Hood to Trench Angle", hoodSubsystem.runOnce(() -> hoodSubsystem.setAngle(120)));
     }
 
     /**
