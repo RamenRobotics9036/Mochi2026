@@ -102,7 +102,7 @@ public final class  AutoLogic {
         autoPicker.addOption("R Bump_Shoot_Climb", "R Bump_Shoot_Climb");
 
         if (Robot.isSimulation()) {
-            autoPicker.addOption("SIM: Nudges", "Sim Nudges");
+            autoPicker.addOption("SIM: Nudge Right", "Sim Nudge Right");
         }
 
         // Pathplanner Autos
