@@ -104,11 +104,6 @@ public class ArmSubsystem extends SubsystemBase{
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
     }
 
-    /** Returns the current position of the arm in degrees. */
-    public double getArmPosition() {
-        return m_armOutputs.position;
-    }
-
     /** Manually resets the arm encoder to zero. */
     public void setArmZero() {
         m_armIO.resetEncoderValue();
