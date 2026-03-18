@@ -300,7 +300,7 @@ public class RobotContainer {
             SimWrapper.nudgeRight12Inches(m_simWrapper)));
 
         NamedCommands.registerCommand("nudge-rotate", Commands.runOnce(() ->
-            SimWrapper.nudgeRotate20Degrees(m_simWrapper)));
+            SimWrapper.nudgeRotate45Degrees(m_simWrapper)));
     }
 
     /**

@@ -153,11 +153,11 @@ public class SimWrapper {
      *
      * @param simWrapper The SimWrapper instance, or null when not in simulation
      */
-    public static void nudgeRotate20Degrees(SimWrapper simWrapper) {
+    public static void nudgeRotate45Degrees(SimWrapper simWrapper) {
         if (simWrapper == null) {
             return;
         }
-        simWrapper.injectDriftToGroundTruth(0, 0, -20);
+        simWrapper.injectDriftToGroundTruth(0, 0, -45);
     }
 
     /**

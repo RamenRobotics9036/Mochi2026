@@ -11,6 +11,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "nudge-rotate"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "Sim Nudge Rotate"
