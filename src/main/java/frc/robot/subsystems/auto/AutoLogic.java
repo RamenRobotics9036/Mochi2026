@@ -103,6 +103,7 @@ public final class  AutoLogic {
 
         if (Robot.isSimulation()) {
             autoPicker.addOption("SIM: Nudge Right", "Sim Nudge Right");
+            autoPicker.addOption("SIM: Nudge Rotate", "Sim Nudge Rotate");
         }
 
         // Pathplanner Autos
