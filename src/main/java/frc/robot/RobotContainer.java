@@ -11,6 +11,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -306,6 +308,12 @@ public class RobotContainer {
 
             NamedCommands.registerCommand("faulty-pull-right", Commands.runOnce(() ->
                 SimWrapper.enablePullRight(m_simWrapper, true)));
+
+            NamedCommands.registerCommand("faulty-rotate-clockwise", Commands.runOnce(() ->
+                SimWrapper.enableRotateClockwise(m_simWrapper, true)));
+
+            NamedCommands.registerCommand("faulty-camera-misplaced", Commands.runOnce(() ->
+                SimWrapper.enableCameraMisplaced(m_simWrapper, new Transform3d(0, -1.0, 0, new Rotation3d()))));
         }
     }
 

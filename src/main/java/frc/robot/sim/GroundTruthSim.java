@@ -12,8 +12,10 @@
 
 package frc.robot.sim;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.Radians;
 
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -69,6 +71,12 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * for each meter of forward travel. Models real-world drivetrain asymmetry.
      */
     private static final double kRightDriftMetersPerMeterForward = Inches.of(6).in(Meters);
+
+    /**
+     * Simulated clockwise rotation: how many radians the robot drifts clockwise
+     * for each meter of forward travel. Models real-world drivetrain turn asymmetry.
+     */
+    private static final double kClockwiseRotationRadiansPerMeterForward = Degrees.of(5).in(Radians);
 
     /** Whether the simulated rightward pull is currently active. */
     private boolean m_pullRightEnabled = false;
@@ -150,8 +158,11 @@ public class GroundTruthSim implements GroundTruthSimInterface {
             dy -= Math.max(dx, 0) * kRightDriftMetersPerMeterForward;
         }
 
-        // Simulate the robot slowing turning clockwise (negative omega)
-        // $TODO
+        // Simulate clockwise rotation drift: robot turns CW proportional to forward movement only.
+        // (clockwise = negative dtheta; no effect when driving backwards)
+        if (m_rotateClockwiseEnabled) {
+            dtheta -= Math.max(dx, 0) * kClockwiseRotationRadiansPerMeterForward;
+        }
 
         double distanceThisStep = Math.hypot(dx, dy);
         double rotationThisStep = Math.abs(dtheta);
