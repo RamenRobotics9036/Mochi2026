@@ -69,9 +69,9 @@ public interface GroundTruthSimInterface {
     void enablePullRight(boolean enabled);
 
     /**
-     * Enables or disables simulated rightward pull during turning.
+     * Enables or disables simulated clockwise rotation drift during turning.
      *
-     * @param enabled true to enable pull-right-turning, false to disable
+     * @param enabled true to enable clockwise rotation drift, false to disable
      */
-    void enablePullRightTurning(boolean enabled);
+    void enableRotateClockwise(boolean enabled);
 }

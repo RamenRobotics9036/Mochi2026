@@ -34,12 +34,12 @@ public class FaultyAutoSim {
     }
 
     /**
-     * Enables or disables simulated rightward pull during turning.
+     * Enables or disables simulated clockwise rotation drift during turning.
      *
-     * @param enabled true to enable pull-right-turning, false to disable
+     * @param enabled true to enable clockwise rotation drift, false to disable
      */
-    public void enablePullRightTurning(boolean enabled) {
-        m_groundTruthSim.enablePullRightTurning(enabled);
+    public void enableRotateClockwise(boolean enabled) {
+        m_groundTruthSim.enableRotateClockwise(enabled);
     }
 
     /**
@@ -57,7 +57,7 @@ public class FaultyAutoSim {
      */
     public void resetAllAutoSimFaults() {
         enablePullRight(false);
-        enablePullRightTurning(false);
+        enableRotateClockwise(false);
         enableCameraMisplaced(new Transform3d());
     }
 }

@@ -245,17 +245,17 @@ public class SimWrapper {
     }
 
     /**
-     * Enables or disables simulated rightward pull during turning.
+     * Enables or disables simulated clockwise rotation drift during turning.
      * Safe to call unconditionally — no-op when {@code simWrapper} is null.
      *
      * @param simWrapper The SimWrapper instance, or null when not in simulation
-     * @param enabled true to enable pull-right-turning, false to disable
+     * @param enabled true to enable clockwise rotation drift, false to disable
      */
-    public static void enablePullRightTurning(SimWrapper simWrapper, boolean enabled) {
+    public static void enableRotateClockwise(SimWrapper simWrapper, boolean enabled) {
         if (simWrapper == null) {
             return;
         }
-        simWrapper.m_faultyAutoSim.enablePullRightTurning(enabled);
+        simWrapper.m_faultyAutoSim.enableRotateClockwise(enabled);
     }
 
     /**

@@ -73,8 +73,8 @@ public class GroundTruthSim implements GroundTruthSimInterface {
     /** Whether the simulated rightward pull is currently active. */
     private boolean m_pullRightEnabled = false;
 
-    /** Whether the simulated rightward pull during turning is currently active. */
-    private boolean m_pullRightTurningEnabled = false;
+    /** Whether the simulated clockwise rotation drift is currently active. */
+    private boolean m_rotateClockwiseEnabled = false;
 
     private double m_lastCycleTime = 0.0;
 
@@ -149,6 +149,9 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         if (m_pullRightEnabled) {
             dy -= Math.max(dx, 0) * kRightDriftMetersPerMeterForward;
         }
+
+        // Simulate the robot slowing turning clockwise (negative omega)
+        // $TODO
 
         double distanceThisStep = Math.hypot(dx, dy);
         double rotationThisStep = Math.abs(dtheta);
@@ -306,13 +309,13 @@ public class GroundTruthSim implements GroundTruthSimInterface {
     }
 
     /**
-     * Enables or disables simulated rightward pull during turning.
+     * Enables or disables simulated clockwise rotation drift during turning.
      *
-     * @param enabled true to enable pull-right-turning, false to disable
+     * @param enabled true to enable clockwise rotation drift, false to disable
      */
     @Override
-    public void enablePullRightTurning(boolean enabled) {
-        m_pullRightTurningEnabled = enabled;
+    public void enableRotateClockwise(boolean enabled) {
+        m_rotateClockwiseEnabled = enabled;
     }
 
     /**
