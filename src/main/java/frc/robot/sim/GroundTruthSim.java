@@ -76,7 +76,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * Simulated clockwise rotation: how many radians the robot drifts clockwise
      * for each meter of forward travel. Models real-world drivetrain turn asymmetry.
      */
-    private static final double kClockwiseRotationRadiansPerMeterForward = Degrees.of(5).in(Radians);
+    private static final double kClockwiseRotationRadiansPerMeterForward = Degrees.of(1).in(Radians);
 
     /** Whether the simulated rightward pull is currently active. */
     private boolean m_pullRightEnabled = false;

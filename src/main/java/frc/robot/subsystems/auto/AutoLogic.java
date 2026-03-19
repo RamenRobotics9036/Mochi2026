@@ -105,6 +105,8 @@ public final class  AutoLogic {
             autoPicker.addOption("SIM: Nudge Right", "Sim Nudge Right");
             autoPicker.addOption("SIM: Nudge Rotate", "Sim Nudge Rotate");
             autoPicker.addOption("SIM: Drive Across Field (pull right)", "Sim Drive Accross Field Pull Right");
+            autoPicker.addOption("SIM: Drive Across Field (rotate clockwise)", "Sim Drive Accross Field Rotate Clockwise");
+            autoPicker.addOption("SIM: Drive Across Field (camera misplaced)", "Sim Drive Accross Field Camera Misplaced");
         }
 
         // Pathplanner Autos
