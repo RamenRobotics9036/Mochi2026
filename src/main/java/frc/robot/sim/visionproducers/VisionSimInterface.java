@@ -2,6 +2,7 @@ package frc.robot.sim.visionproducers;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -48,4 +49,12 @@ public interface VisionSimInterface {
      * @return The debug Field2d, or null if not in simulation
      */
     Field2d getSimDebugField();
+
+    /**
+     * Dynamically offsets the primary camera's simulated physical position.
+     * Does not affect what the pose estimator believes — models miscalibration.
+     *
+     * @param offset Additional transform on top of the static mounting offset (zero = reset)
+     */
+    void enablePrimaryCameraMisplaced(Transform3d offset);
 }

@@ -25,6 +25,11 @@ public class VisionSimSingleCam {
     // Limelight NetworkTables publisher
     private final LimelightTablePublisher m_limelightPublisher;
 
+    // Stored after addToVisionSystem() for dynamic camera adjustment
+    private PhotonCameraSim m_cameraSim;
+    private VisionSystemSim m_visionSystemSim;
+    private Transform3d m_initialBaseSimTransform;
+
     /** Constructor. */
     public VisionSimSingleCam(
         String photonCamName,
@@ -65,6 +70,23 @@ public class VisionSimSingleCam {
 
         // $TODO - Double check that both wireframes should be drawn
         cameraSim.enableDrawWireframe(true);
+
+        m_cameraSim = cameraSim;
+        m_visionSystemSim = visionSystemSim;
+        m_initialBaseSimTransform = m_robotToCam;
+    }
+
+    /**
+     * Dynamically repositions the simulated camera by applying an additional offset
+     * on top of the static mounting offset. The pose estimator is unaffected.
+     *
+     * @param additionalOffset Extra transform to apply (zero = back to static position)
+     */
+    public void adjustSimCamTransform(Transform3d additionalOffset) {
+        if (m_cameraSim == null || m_visionSystemSim == null) {
+            return;
+        }
+        m_visionSystemSim.adjustCamera(m_cameraSim, m_initialBaseSimTransform.plus(additionalOffset));
     }
 
     /**
