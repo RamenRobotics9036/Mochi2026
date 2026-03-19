@@ -292,18 +292,21 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("set intake top", SetIntakeTopCommand.create(armSubsystem, intakeSubsystem));
 
-        // NOTE: Uses Commands.runOnce (NOT drivetrain.runOnce) intentionally — PathPlanner runs
-        // named commands in parallel with FollowPathCommand, which already holds the drivetrain
-        // subsystem. Taking a drivetrain requirement here would cause a subsystem conflict and
-        // silently prevent the command from running.
-        NamedCommands.registerCommand("nudge-right", Commands.runOnce(() ->
-            SimWrapper.nudgeRight12Inches(m_simWrapper)));
+        if (Robot.isSimulation()) {
 
-        NamedCommands.registerCommand("nudge-rotate", Commands.runOnce(() ->
-            SimWrapper.nudgeRotate45Degrees(m_simWrapper)));
+            // NOTE: Uses Commands.runOnce (NOT drivetrain.runOnce) intentionally — PathPlanner runs
+            // named commands in parallel with FollowPathCommand, which already holds the drivetrain
+            // subsystem. Taking a drivetrain requirement here would cause a subsystem conflict and
+            // silently prevent the command from running.
+            NamedCommands.registerCommand("nudge-right", Commands.runOnce(() ->
+                SimWrapper.nudgeRight12Inches(m_simWrapper)));
 
-        NamedCommands.registerCommand("faulty-pull-right", Commands.runOnce(() ->
-            SimWrapper.enablePullRight(m_simWrapper, true)));
+            NamedCommands.registerCommand("nudge-rotate", Commands.runOnce(() ->
+                SimWrapper.nudgeRotate45Degrees(m_simWrapper)));
+
+            NamedCommands.registerCommand("faulty-pull-right", Commands.runOnce(() ->
+                SimWrapper.enablePullRight(m_simWrapper, true)));
+        }
     }
 
     /**

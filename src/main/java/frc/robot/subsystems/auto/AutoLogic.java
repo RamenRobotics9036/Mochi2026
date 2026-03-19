@@ -104,7 +104,7 @@ public final class  AutoLogic {
         if (Robot.isSimulation()) {
             autoPicker.addOption("SIM: Nudge Right", "Sim Nudge Right");
             autoPicker.addOption("SIM: Nudge Rotate", "Sim Nudge Rotate");
-            autoPicker.addOption("SIM: Drive Across Field", "Sim Drive Accross Field");
+            autoPicker.addOption("SIM: Drive Across Field (pull right)", "Sim Drive Accross Field Pull Right");
         }
 
         // Pathplanner Autos
