@@ -304,9 +304,6 @@ public class RobotContainer {
 
         NamedCommands.registerCommand("faulty-pull-right", Commands.runOnce(() ->
             SimWrapper.enablePullRight(m_simWrapper, true)));
-
-        NamedCommands.registerCommand("reset-all-faults", Commands.runOnce(() ->
-            SimWrapper.resetAllAutoSimFaults(m_simWrapper)));
     }
 
     /**
