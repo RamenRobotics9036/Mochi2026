@@ -72,6 +72,10 @@ public class GroundTruthSim implements GroundTruthSimInterface {
 
     /** Whether the simulated rightward pull is currently active. */
     private boolean m_pullRightEnabled = false;
+
+    /** Whether the simulated rightward pull during turning is currently active. */
+    private boolean m_pullRightTurningEnabled = false;
+
     private double m_lastCycleTime = 0.0;
 
     /** Current position in the reset cycle (0-N). */
@@ -299,6 +303,16 @@ public class GroundTruthSim implements GroundTruthSimInterface {
     @Override
     public void enablePullRight(boolean enabled) {
         m_pullRightEnabled = enabled;
+    }
+
+    /**
+     * Enables or disables simulated rightward pull during turning.
+     *
+     * @param enabled true to enable pull-right-turning, false to disable
+     */
+    @Override
+    public void enablePullRightTurning(boolean enabled) {
+        m_pullRightTurningEnabled = enabled;
     }
 
     /**

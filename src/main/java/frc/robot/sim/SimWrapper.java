@@ -245,6 +245,20 @@ public class SimWrapper {
     }
 
     /**
+     * Enables or disables simulated rightward pull during turning.
+     * Safe to call unconditionally — no-op when {@code simWrapper} is null.
+     *
+     * @param simWrapper The SimWrapper instance, or null when not in simulation
+     * @param enabled true to enable pull-right-turning, false to disable
+     */
+    public static void enablePullRightTurning(SimWrapper simWrapper, boolean enabled) {
+        if (simWrapper == null) {
+            return;
+        }
+        simWrapper.m_faultyAutoSim.enablePullRightTurning(enabled);
+    }
+
+    /**
      * Offsets the primary camera's simulated physical position to model miscalibration.
      * Safe to call unconditionally — no-op when {@code simWrapper} is null.
      *

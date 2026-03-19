@@ -34,6 +34,15 @@ public class FaultyAutoSim {
     }
 
     /**
+     * Enables or disables simulated rightward pull during turning.
+     *
+     * @param enabled true to enable pull-right-turning, false to disable
+     */
+    public void enablePullRightTurning(boolean enabled) {
+        m_groundTruthSim.enablePullRightTurning(enabled);
+    }
+
+    /**
      * Offsets the primary camera's simulated physical position to model miscalibration.
      * The pose estimator is unaffected — only where the sim places the camera changes.
      *
@@ -48,6 +57,7 @@ public class FaultyAutoSim {
      */
     public void resetAllAutoSimFaults() {
         enablePullRight(false);
+        enablePullRightTurning(false);
         enableCameraMisplaced(new Transform3d());
     }
 }

@@ -67,4 +67,11 @@ public interface GroundTruthSimInterface {
      * @param enabled true to enable pull-right, false to disable
      */
     void enablePullRight(boolean enabled);
+
+    /**
+     * Enables or disables simulated rightward pull during turning.
+     *
+     * @param enabled true to enable pull-right-turning, false to disable
+     */
+    void enablePullRightTurning(boolean enabled);
 }
