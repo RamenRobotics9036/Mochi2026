@@ -10,8 +10,16 @@ import edu.wpi.first.math.geometry.Pose2d;
 public interface GroundTruthSimInterface {
 
     /**
-     * Updates ground truth pose and publishes telemetry.
-     * Call this from Robot.simulationPeriodic().
+     * Integrates chassis speeds into the ground truth pose for one time step.
+     * Must be called at a high frequency (e.g. 250 Hz) — register this as the
+     * high-frequency sim callback on {@code CommandSwerveDrivetrain}.
+     */
+    void updateGroundTruthPose();
+
+    /**
+     * Publishes telemetry for the current simulation state.
+     * Called from {@link #simulationPeriodic()} at the standard 50 Hz robot loop rate.
+     * Ground truth pose integration is handled separately via {@link #updateGroundTruthPose()}.
      */
     void simulationPeriodic();
 

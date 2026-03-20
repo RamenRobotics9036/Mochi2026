@@ -58,6 +58,21 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /** Filter for ignoring stale vision measurements around pose resets. */
     private final StaleVisionFilter m_staleVisionFilter;
 
+    /** Optional callback run inside the high-frequency sim notifier (same rate as updateSimState). */
+    private Runnable m_highFreqSimCallback = null;
+
+    /**
+     * Registers a callback to be invoked on every tick of the high-frequency
+     * simulation notifier, at the same rate as {@link #updateSimState}.
+     * Must be called after the drivetrain is constructed and before the sim loop starts
+     * (or it will take effect on the next notifier tick).
+     *
+     * @param callback the runnable to invoke; pass {@code null} to clear
+     */
+    public void setHighFreqSimCallback(Runnable callback) {
+        m_highFreqSimCallback = callback;
+    }
+
 
 
     /* Swerve requests to apply during SysId characterization */
@@ -324,6 +339,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             /* use the measured time delta, get battery voltage from WPILib */
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
+
+            if (m_highFreqSimCallback != null) {
+                m_highFreqSimCallback.run();
+            }
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
     }

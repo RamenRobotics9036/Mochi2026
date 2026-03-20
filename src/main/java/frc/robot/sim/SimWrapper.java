@@ -1,8 +1,5 @@
 package frc.robot.sim;
 
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
@@ -45,7 +42,7 @@ public class SimWrapper {
      */
     public SimWrapper(
             BotConfigInterface configInterface,
-            SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
+            CommandSwerveDrivetrain drivetrain,
             Consumer<Pose2d> poseResetConsumer) {
 
         if (!Robot.isSimulation()) {
@@ -60,8 +57,10 @@ public class SimWrapper {
 
         m_configInterface = configInterface;
 
-        // Create ground truth simulation
+        // Create ground truth simulation and wire it into the drivetrain's high-frequency
+        // sim notifier so it integrates pose at the same 4 ms rate as updateSimState.
         m_groundTruthSim = GroundTruthSimFactory.create(drivetrain, poseResetConsumer);
+        drivetrain.setHighFreqSimCallback(m_groundTruthSim::updateGroundTruthPose);
 
         // Create vision simulation
         m_visionSim = VisionSimFactory.create(m_configInterface);
@@ -220,7 +219,7 @@ public class SimWrapper {
      */
     public static SimWrapper create(
             BotConfigInterface configInterface,
-            SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
+            CommandSwerveDrivetrain drivetrain,
             Consumer<Pose2d> poseResetConsumer) {
 
         if (!Robot.isSimulation() || VisionSimConstants.Vision.kForceSimWrapperOff) {

@@ -363,10 +363,9 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      */
     @Override
     public void simulationPeriodic() {
-        // Update the ground truth pose tracking
-        updateGroundTruthPose();
-
-        // Publish simulation telemetry (pose errors, etc.)
+        // Ground truth pose is integrated at high frequency via updateGroundTruthPose()
+        // (registered as setHighFreqSimCallback on CommandSwerveDrivetrain).
+        // Here we only publish telemetry at the standard 50 Hz robot loop rate.
         publishTelemetry();
     }
 }
