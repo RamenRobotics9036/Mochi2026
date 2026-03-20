@@ -33,6 +33,8 @@ import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.commands.AlignToTagCommand;
 import frc.robot.generated.TunerSwerveDrivetrain;
+import frc.robot.sim.gyromodel.ConstantAngleGyroModel;
+import frc.robot.sim.gyromodel.SimGyroModel;
 import frc.robot.visutils.StaleVisionFilter;
 import frc.robot.LimelightHelpers;
 
@@ -44,6 +46,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+    private final SimGyroModel m_simGyroModel;
 
     /** Swerve request to apply during robot-centric path following */
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
@@ -177,7 +180,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     ) {
         // super constructor call
         super(drivetrainConstants, modules);
-        if (Utils.isSimulation()) {
+        m_simGyroModel = createSimGyroModel();
+        if (Robot.isSimulation()) {
             startSimThread();
         }
 
@@ -206,7 +210,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SwerveModuleConstants<?, ?, ?>... modules
     ) {
         super(drivetrainConstants, odometryUpdateFrequency, modules);
-        if (Utils.isSimulation()) {
+        m_simGyroModel = createSimGyroModel();
+        if (Robot.isSimulation()) {
             startSimThread();
         }
 
@@ -240,7 +245,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SwerveModuleConstants<?, ?, ?>... modules
     ) {
         super(drivetrainConstants, odometryUpdateFrequency, odometryStandardDeviation, visionStandardDeviation, modules);
-        if (Utils.isSimulation()) {
+        m_simGyroModel = createSimGyroModel();
+        if (Robot.isSimulation()) {
             startSimThread();
         }
 
@@ -315,6 +321,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private void startSimThread() {
         m_lastSimTime = Utils.getCurrentTimeSeconds();
+        applySimGyroModel();
 
         /* Run simulation at a faster rate so PID gains behave more reasonably */
         m_simNotifier = new Notifier(() -> {
@@ -324,8 +331,35 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
             /* use the measured time delta, get battery voltage from WPILib */
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
+            updateAndApplySimGyro(deltaTime);
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
+    }
+
+    private SimGyroModel createSimGyroModel() {
+        if (!Robot.isSimulation()) {
+            return null;
+        }
+        return new ConstantAngleGyroModel();
+    }
+
+    private void updateAndApplySimGyro(double deltaTime) {
+        if (m_simGyroModel == null) {
+            return;
+        }
+
+        m_simGyroModel.update(deltaTime);
+        applySimGyroModel();
+    }
+
+    private void applySimGyroModel() {
+        if (m_simGyroModel == null) {
+            return;
+        }
+
+        getPigeon2().getSimState().setRawYaw(m_simGyroModel.getMeasuredHeading().getDegrees());
+        getPigeon2().getSimState().setAngularVelocityZ(
+            Math.toDegrees(m_simGyroModel.getMeasuredOmegaRadPerSec()));
     }
 
     /**
