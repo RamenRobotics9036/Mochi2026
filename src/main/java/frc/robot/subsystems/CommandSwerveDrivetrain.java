@@ -6,6 +6,8 @@ import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.hardware.Pigeon2;
+import com.ctre.phoenix6.sim.Pigeon2SimState;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -333,15 +335,25 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         /* Run simulation at a faster rate so PID gains behave more reasonably */
         m_simNotifier = new Notifier(() -> {
+            Pigeon2 pigeon = getPigeon2();
+            Pigeon2SimState pigeonSim = pigeon.getSimState();
             final double currentTime = Utils.getCurrentTimeSeconds();
             double deltaTime = currentTime - m_lastSimTime;
             m_lastSimTime = currentTime;
+
+            // Save the current pigeon gyro angle before updating the sim state
+            double previousGyroAngle = pigeon.getYaw().getValueAsDouble();
 
             /* use the measured time delta, get battery voltage from WPILib */
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
 
             if (m_highFreqSimCallback != null) {
                 m_highFreqSimCallback.run();
+
+                // The idea is that we get the exact change in angle for the ground truth
+                // robot, and apply the same change to the pigeon gyro angle.  This simulates
+                // giving the "real" gyro reading to the robot pose estimate.
+                pigeonSim.setRawYaw(45);
             }
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);
