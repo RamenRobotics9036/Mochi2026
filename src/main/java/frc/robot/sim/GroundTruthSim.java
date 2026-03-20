@@ -77,7 +77,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * for each meter of forward travel. Models real-world drivetrain turn asymmetry.
      */
     private static final double kClockwiseRotationRadiansPerMeterForward =
-        Degrees.of(1).in(Radians);
+        Degrees.of(10).in(Radians);
 
     /** Whether the simulated rightward pull is currently active. */
     private boolean m_pullRightEnabled = false;
