@@ -2,6 +2,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
 import com.ctre.phoenix6.SignalLogger;
@@ -61,17 +62,20 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final StaleVisionFilter m_staleVisionFilter;
 
     /** Optional callback run inside the high-frequency sim notifier (same rate as updateSimState). */
-    private Runnable m_highFreqSimCallback = null;
+    private DoubleSupplier m_highFreqSimCallback = null;
 
     /**
      * Registers a callback to be invoked on every tick of the high-frequency
      * simulation notifier, at the same rate as {@link #updateSimState}.
+     * The callback returns a {@code double} that is passed to
+     * {@link com.ctre.phoenix6.sim.Pigeon2SimState#setRawYaw} to keep the
+     * simulated gyro in sync with the ground-truth robot angle.
      * Must be called after the drivetrain is constructed and before the sim loop starts
      * (or it will take effect on the next notifier tick).
      *
-     * @param callback the runnable to invoke; pass {@code null} to clear
+     * @param callback the supplier to invoke; pass {@code null} to clear
      */
-    public void setHighFreqSimCallback(Runnable callback) {
+    public void setHighFreqSimCallback(DoubleSupplier callback) {
         m_highFreqSimCallback = callback;
     }
 
@@ -336,7 +340,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         /* Run simulation at a faster rate so PID gains behave more reasonably */
         m_simNotifier = new Notifier(() -> {
             Pigeon2 pigeon = getPigeon2();
-            Pigeon2SimState pigeonSim = pigeon.getSimState();
             final double currentTime = Utils.getCurrentTimeSeconds();
             double deltaTime = currentTime - m_lastSimTime;
             m_lastSimTime = currentTime;
@@ -348,12 +351,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
 
             if (m_highFreqSimCallback != null) {
-                m_highFreqSimCallback.run();
-
                 // The idea is that we get the exact change in angle for the ground truth
                 // robot, and apply the same change to the pigeon gyro angle.  This simulates
                 // giving the "real" gyro reading to the robot pose estimate.
-                pigeonSim.setRawYaw(45);
+                double dthetaRadians = m_highFreqSimCallback.getAsDouble();
+                pigeon.getSimState().setRawYaw(previousGyroAngle + Math.toDegrees(dthetaRadians));
             }
         });
         m_simNotifier.startPeriodic(kSimLoopPeriod);

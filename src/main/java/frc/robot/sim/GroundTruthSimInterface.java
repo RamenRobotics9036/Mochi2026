@@ -14,7 +14,7 @@ public interface GroundTruthSimInterface {
      * Must be called at a high frequency (e.g. 250 Hz) — register this as the
      * high-frequency sim callback on {@code CommandSwerveDrivetrain}.
      */
-    void updateGroundTruthPose();
+    double updateGroundTruthPose();
 
     /**
      * Publishes telemetry for the current simulation state.
