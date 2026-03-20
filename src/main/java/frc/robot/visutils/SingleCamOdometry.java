@@ -387,7 +387,13 @@ public class SingleCamOdometry implements CamOdometryInterface {
         if (numTags == 1 && avgDist > 4) {
             return VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
         }
-        Matrix<N3, N1> result = estStdDevs.times(1 + (avgDist * avgDist / 30));
+        double distanceScale = 1 + (avgDist * avgDist / 30);
+        // For multi-tag measurements, increase the distance scaling to reduce trust at longer distances
+        // This helps when seeing tags from different locations (e.g., scoring tag + depot wall tag)
+        if (numTags > 1) {
+            distanceScale *= Constants.VisionConstants.kMultiTagDistanceScaleFactor;
+        }
+        Matrix<N3, N1> result = estStdDevs.times(distanceScale);
         if (poseEstimate.isMegaTag2) {
             // MT2's reported rotation is the gyro heading reflected back — it carries no new
             // rotational information, so we set theta std dev to a very large value so the

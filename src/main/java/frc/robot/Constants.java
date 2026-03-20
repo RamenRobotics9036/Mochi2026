@@ -212,19 +212,26 @@ public final class Constants {
         public static final Time kSecondsToAlternate = Seconds.of(0.25); //TODO: filler value
     }
 
-    /**
-     * Constants for the vision subsystem and dual Limelight configuration.
-     */
-    // To upload fmap:
-    // curl -X POST http://10.90.36.15:5807/upload-fieldmap -H "Content-Type: application/json" --data-binary @FRC2026_ANDYMARK.fmap
-    public static final class VisionConstants {
-        /**
-         * Distance advantage (meters) given to MegaTag2 when comparing estimates.
-         * MT2 is preferred over MT1 if its avgTagDist is within this margin of MT1's,
-         * because gyro-fused rotation makes the estimate more reliable at similar range.
-         */
-        public static final double kMt2DistanceAdvantageMeter = 0.5;
-    }
+     /**
+      * Constants for the vision subsystem and dual Limelight configuration.
+      */
+     // To upload fmap:
+     // curl -X POST http://10.90.36.15:5807/upload-fieldmap -H "Content-Type: application/json" --data-binary @FRC2026_ANDYMARK.fmap
+     public static final class VisionConstants {
+         /**
+          * Distance advantage (meters) given to MegaTag2 when comparing estimates.
+          * MT2 is preferred over MT1 if its avgTagDist is within this margin of MT1's,
+          * because gyro-fused rotation makes the estimate more reliable at similar range.
+          */
+         public static final double kMt2DistanceAdvantageMeter = 0.5;
+
+         /**
+          * Multi-tag distance scaling factor for reducing vision trust when multiple tags
+          * are visible (helps prevent over-trust when tags are from different locations).
+          * Values > 1.0 increase the standard deviation scaling at distance.
+          */
+         public static final double kMultiTagDistanceScaleFactor = 1.5;
+     }
 
     /**
      * Constants for the Vision-only Kalman filter used for precise
