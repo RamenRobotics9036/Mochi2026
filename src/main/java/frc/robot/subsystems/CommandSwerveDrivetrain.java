@@ -374,6 +374,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // $VISIONSIM - Inject Filter
         m_staleVisionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
 
+        if (m_simGyroModel != null) {
+            m_simGyroModel.reset();
+        }
+
         super.resetPose(pose);
     }
 
