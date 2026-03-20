@@ -51,6 +51,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      *  Using a field avoids reading back the stale Java StatusSignal cache (refreshed at 50 Hz)
      *  on every 250 Hz notifier tick. */
     private double m_simGyroAngleDeg = 0.0;
+    /** True after the first setRawYaw write; ensures the very first write seeds from the
+     *  actual Pigeon2 value rather than 0.0. */
+    private boolean m_simGyroInitialized = false;
 
     /** Swerve request to apply during robot-centric path following */
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
@@ -347,6 +350,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             double deltaTime = currentTime - m_lastSimTime;
             m_lastSimTime = currentTime;
 
+            if (m_highFreqSimCallback != null && !m_simGyroInitialized) {
+                // Seed BEFORE updateSimState so we capture the clean initial Pigeon2 angle.
+                // If we seeded after, updateSimState would have already moved the gyro by
+                // one delta and the callback would add that same delta again (double-count).
+                m_simGyroAngleDeg = getPigeon2().getYaw().getValueAsDouble();
+                m_simGyroInitialized = true;
+            }
+
             /* use the measured time delta, get battery voltage from WPILib */
             updateSimState(deltaTime, RobotController.getBatteryVoltage());
 
@@ -356,6 +367,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 // and would return a stale value on ticks 2-5 between robot loop updates).
                 double dthetaRadians = m_highFreqSimCallback.getAsDouble();
                 m_simGyroAngleDeg += Math.toDegrees(dthetaRadians);
+
+                // System.out.println("dtheta_deg=" + Math.toDegrees(dthetaRadians)
+                //     + "  m_simGyroAngleDeg=" + m_simGyroAngleDeg
+                //     + "  pigeon_yaw=" + getPigeon2().getYaw().getValueAsDouble());
+
                 getPigeon2().getSimState().setRawYaw(m_simGyroAngleDeg);
             }
         });
@@ -374,10 +390,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         // $VISIONSIM - Inject Filter
         m_staleVisionFilter.recordPoseReset(Utils.getCurrentTimeSeconds());
 
-        // Keep the accumulated sim gyro angle in sync with the new pose heading
-        // so the notifier doesn't immediately override the reset with the old angle.
+        // After a pose reset, let the notifier re-seed m_simGyroAngleDeg from the
+        // Pigeon2 yaw that super.resetPose will have just written, rather than
+        // maintaining a parallel copy here.
         if (Robot.isSimulation()) {
-            m_simGyroAngleDeg = pose.getRotation().getDegrees();
+            m_simGyroInitialized = false;
         }
 
         super.resetPose(pose);
