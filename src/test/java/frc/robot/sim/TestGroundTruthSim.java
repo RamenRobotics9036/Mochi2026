@@ -699,14 +699,17 @@ class TestGroundTruthSim {
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
     @Test
-    void simulationPeriodic_updatesGroundTruthAndPublishes() {
+    void simulationPeriodic_publishesCurrentGroundTruth() {
         GroundTruthSim sim = createSim();
 
         m_speeds = new ChassisSpeeds(1.0, 0, 0);
         m_estimatedPose = new Pose2d();
         m_currentTime = 0.5;
 
-        // Should not throw and should update ground truth
+        // Ground truth integration happens in the high-frequency callback.
+        sim.updateGroundTruthPose();
+
+        // simulationPeriodic() should publish the already-integrated pose.
         assertDoesNotThrow(() -> sim.simulationPeriodic());
 
         Pose2d gt = sim.getGroundTruthPose();
