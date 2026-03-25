@@ -2,11 +2,13 @@ package robotutils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class TestTest {
+import org.junit.jupiter.api.Test;
 
-    @org.junit.jupiter.api.Test
-    void getTheValueReturnsFive() {
-        Test test = new Test();
+public class TestTest {
+
+    @Test
+    public void getTheValueReturnsFive() {
+        robotutils.Test test = new robotutils.Test();
 
         assertEquals(5, test.getTheValue());
     }
