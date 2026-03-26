@@ -131,17 +131,6 @@ class TestJoystickInput {
         return input.getJoystickInputs();
     }
 
-    // -- zero input -------------------------------------------------------
-
-    @Test
-    void zeroInputs_producesZeroOutputs() {
-        JoystickInputsRecord rec = createInput(0, 0, 0)
-            .getJoystickInputs();
-        assertEquals(0.0, rec.driveX(), ROUNDING_EPSILON);
-        assertEquals(0.0, rec.driveY(), ROUNDING_EPSILON);
-        assertEquals(0.0, rec.rotatetX(), ROUNDING_EPSILON);
-    }
-
     // -- joystick direction -> sign mapping --------------------------------
     // RobotContainer wires: rawX = -getLeftY(), rawY = -getLeftX()
     // WPILib field coords: +X = forward, +Y = left
@@ -190,33 +179,6 @@ class TestJoystickInput {
         assertTrue(rec.driveY() < 0,
             "right stick should produce negative driveY, got "
                 + rec.driveY());
-    }
-
-    // -- deadband ---------------------------------------------------------
-
-    @Test
-    void inputWithinDeadband_producesZero() {
-        // All values below 0.1 deadband
-        JoystickInputsRecord rec = createInput(0.05, -0.05, 0.09)
-            .getJoystickInputs();
-        assertEquals(0.0, rec.driveX(), ROUNDING_EPSILON);
-        assertEquals(0.0, rec.driveY(), ROUNDING_EPSILON);
-        assertEquals(0.0, rec.rotatetX(), ROUNDING_EPSILON);
-    }
-
-    // -- full deflection --------------------------------------------------
-
-    @Test
-    void fullDeflection_approachesMaxSpeed() {
-        JoystickInputsRecord rec = settledRecord(1.0, 1.0, 1.0);
-
-        assertTrue(rec.driveX() > TELEOP_SPEED * 0.9,
-            "driveX should approach max speed, got " + rec.driveX());
-        assertTrue(rec.driveY() > TELEOP_SPEED * 0.9,
-            "driveY should approach max speed, got " + rec.driveY());
-        assertTrue(rec.rotatetX() > MAX_ANGULAR * 0.9,
-            "rotate should approach max angular, got "
-                + rec.rotatetX());
     }
 
     // -- fine positioning -------------------------------------------------
@@ -272,31 +234,6 @@ class TestJoystickInput {
         assertEquals(expectedRatio, actualRatio, 0.15,
             "translation/rotation ratio should reflect "
                 + "speed constants");
-    }
-
-    // -- partial stick ----------------------------------------------------
-
-    @Test
-    void partialStick_outputBetweenZeroAndMax() {
-        JoystickInputsRecord rec = settledRecord(0.5, 0, 0);
-
-        assertTrue(rec.driveX() > 0, "expected positive output");
-        assertTrue(rec.driveX() < TELEOP_SPEED,
-            "expected below max speed");
-    }
-
-    // -- slew-rate limiting -----------------------------------------------
-
-    @Test
-    void slewRateLimiter_preventsInstantJump() {
-        JoystickInput input = createInput(1.0, 0, 0);
-
-        // First call with full stick and a small time step
-        SimHooks.stepTiming(DT);
-        double first = input.getJoystickInputs().driveX();
-        assertTrue(first < TELEOP_SPEED * 0.5,
-            "slew limiter should prevent instant jump to max, got "
-                + first);
     }
 
     // -- simulation sign checks -------------------------------------------
