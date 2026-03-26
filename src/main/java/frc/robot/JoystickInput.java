@@ -3,7 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.SimJoystickOrientation;
-import frc.robot.visutils.DriveSmooth;
+import robotutils.DriveSmoothInterface;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -24,7 +24,7 @@ import java.util.function.DoubleSupplier;
  */
 public class JoystickInput {
 
-    private final DriveSmooth driveSmooth;
+    private final DriveSmoothInterface driveSmooth;
     private final DoubleSupplier rawXSupplier;
     private final DoubleSupplier rawYSupplier;
     private final DoubleSupplier rawRotateSupplier;
@@ -51,7 +51,7 @@ public class JoystickInput {
      *                                          may be {@code null} otherwise).
      */
     public JoystickInput(
-            DriveSmooth driveSmooth,
+            DriveSmoothInterface driveSmooth,
             DoubleSupplier rawXSupplier,
             DoubleSupplier rawYSupplier,
             DoubleSupplier rawRotateSupplier,
@@ -60,6 +60,7 @@ public class JoystickInput {
             double maxAngularRate,
             boolean isSimulation,
             DoubleSupplier operatorForwardDegreesSupplier) {
+
         this.driveSmooth = driveSmooth;
         this.rawXSupplier = rawXSupplier;
         this.rawYSupplier = rawYSupplier;

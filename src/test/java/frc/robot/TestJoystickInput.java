@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
 import frc.robot.sim.JoystickInputsRecord;
-import frc.robot.visutils.DriveSmooth;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import robotutils.RobotUtilsFactory;
 
 /**
  * Unit tests for {@link JoystickInput}.
@@ -30,6 +30,9 @@ import org.junit.jupiter.api.Test;
  * helpers, avoiding shared mutable state between tests.
  */
 class TestJoystickInput {
+
+    private static final RobotUtilsFactory ROBOT_UTILS_FACTORY =
+        new RobotUtilsFactory();
 
     private static final double TELEOP_SPEED = 4.0;   // m/s
     private static final double MAX_ANGULAR  = 3.0;   // rad/s
@@ -63,7 +66,7 @@ class TestJoystickInput {
     private static JoystickInput createInput(
             double x, double y, double rot) {
         return new JoystickInput(
-            new DriveSmooth(),
+            ROBOT_UTILS_FACTORY.createDriveSmooth(),
             () -> x, () -> y, () -> rot,
             () -> false,
             TELEOP_SPEED, MAX_ANGULAR,
@@ -77,7 +80,7 @@ class TestJoystickInput {
             DoubleSupplier rotSup,
             BooleanSupplier fineModeSup) {
         return new JoystickInput(
-            new DriveSmooth(),
+            ROBOT_UTILS_FACTORY.createDriveSmooth(),
             supX, supY, rotSup,
             fineModeSup,
             TELEOP_SPEED, MAX_ANGULAR,
@@ -88,7 +91,7 @@ class TestJoystickInput {
     private static JoystickInput createSimInput(
             double x, double y, double rot) {
         return new JoystickInput(
-            new DriveSmooth(),
+            ROBOT_UTILS_FACTORY.createDriveSmooth(),
             () -> x, () -> y, () -> rot,
             () -> false,
             TELEOP_SPEED, MAX_ANGULAR,

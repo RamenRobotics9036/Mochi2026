@@ -4,7 +4,7 @@ import robotutils.drivesmooth.DriveSmooth;
 
 
 /** Factory for robot utility objects. */
-public final class RobotUtilsFactory {
+public class RobotUtilsFactory {
 
     /** Creates a default drive smoothing pipeline. */
     public DriveSmoothInterface createDriveSmooth() {
@@ -27,11 +27,17 @@ public final class RobotUtilsFactory {
         double joystickDeadband,
         double translationExponent,
         double rotationExponent) {
+
         return new DriveSmooth(
             translationSlewRate,
             rotationSlewRate,
             joystickDeadband,
             translationExponent,
             rotationExponent);
+    }
+
+    /** Create using default params. */
+    public DriveSmoothInterface createDefaultDriveSmooth() {
+        return createDriveSmooth();
     }
 }

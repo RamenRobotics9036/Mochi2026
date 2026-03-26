@@ -69,11 +69,13 @@ import frc.robot.visutils.CamInputs;
 import frc.robot.visutils.CamOdometryInterface;
 import frc.robot.visutils.CamOutputs;
 import frc.robot.visutils.DriveAccuracyTester;
-import frc.robot.visutils.DriveSmooth;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometryFactory;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
+import robotutils.DriveSmoothInterface;
+import robotutils.RobotUtilsFactory;
+
 import java.util.OptionalDouble;
 
 
@@ -86,6 +88,8 @@ import java.util.OptionalDouble;
 public class RobotContainer {
 
     private BotConfigInterface m_configInterface = RobotIdentity.getBotConfig();
+
+    private final RobotUtilsFactory m_robotUtilsFactory = new RobotUtilsFactory();
 
     /** Maximum linear velocity of the robot in meters per second. */
     private double MaxSpeed = m_configInterface.getSpeedAt12Volts().in(MetersPerSecond);
@@ -125,7 +129,12 @@ public class RobotContainer {
      * Owned here (not inside JoystickInput) so we can reset it on mode transitions
      * (e.g. auto → teleop).
      */
-    private final DriveSmooth m_driveSmooth = new DriveSmooth();
+    private final DriveSmoothInterface m_driveSmooth = m_robotUtilsFactory.createDriveSmooth(
+        DriveConstants.kTranslationSlewRate,
+        DriveConstants.kRotationSlewRate,
+        DriveConstants.kJoystickDeadband,
+        DriveConstants.kTranslationExponent,
+        DriveConstants.kRotationExponent);
 
     /** Processes raw joystick inputs into scaled robot velocities. */
     public final JoystickInput m_joystickInput;
