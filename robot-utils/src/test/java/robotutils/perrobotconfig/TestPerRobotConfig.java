@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import robotutils.interfaces.MacKey;
 
@@ -27,11 +28,19 @@ class TestPerRobotConfig {
         }
     }
 
+    class TestConfig3 implements TestConfigInterface {
+        public final int m_value = 100;
+
+        public TestConfig3() {
+        }
+    }
+
     // ---------------------------------------------------------------------------
     // Minimal valid inputs reused across validation tests
     // ---------------------------------------------------------------------------
     private final MacKey m_macKeyA = new MacKey(0x01, 0x02);
     private final MacKey m_macKeyB = new MacKey(0x03, 0x04);
+    private final MacKey m_macKeyC = new MacKey(0x05, 0x06);
     private final String m_robotNameA = "RobotComp";
     private final String m_robotNameB = "RobotTesting";
 
@@ -40,6 +49,9 @@ class TestPerRobotConfig {
 
     private final String m_configNameB = "ConfigB";
     private final TestConfigInterface m_configObjB = new TestConfig2();
+
+    private final String m_configNameC = "ConfigC";
+    private final TestConfigInterface m_configObjC = new TestConfig3();
 
     private final Map<MacKey, String> m_validMacDict = Map.of(
         m_macKeyA, m_robotNameA,
@@ -60,7 +72,9 @@ class TestPerRobotConfig {
                 m_validNameDict,
                 m_validConfigDict,
                 m_configNameA,
-                m_configNameA));
+                m_configNameA,
+                null,
+                Optional.of(false)));
         assertEquals("macToRobotNameDict must contain at least one entry", ex.getMessage());
     }
 
@@ -73,7 +87,9 @@ class TestPerRobotConfig {
                 m_validNameDict,
                 m_validConfigDict,
                 m_configNameA,
-                m_configNameA));
+                m_configNameA,
+                null,
+                Optional.of(false)));
         assertEquals("macToRobotNameDict must contain at least one entry", ex.getMessage());
     }
 
@@ -90,7 +106,9 @@ class TestPerRobotConfig {
                 Map.of("UnrelatedRobot", m_configNameA),
                 m_validConfigDict,
                 m_configNameA,
-                m_configNameA));
+                m_configNameA,
+                null,
+                Optional.of(false)));
         assertTrue(ex.getMessage().startsWith("Missing robot->config mapping for robot name: "));
     }
 
@@ -100,6 +118,18 @@ class TestPerRobotConfig {
      */
     @Test
     void constructor_configNameMissingFromConfigDict_throwsIllegalArgument() {
+        // nameDict maps robotNameA -> "MissingConfig", which is absent from configDict
+        var ex = assertThrows(IllegalArgumentException.class, () ->
+            new PerRobotConfig<TestConfigInterface>(
+                Map.of(m_macKeyA, m_robotNameA),
+                Map.of(m_robotNameA, "MissingConfig"),
+                Map.of(m_configNameA, m_configObjA),
+                m_configNameA,
+                m_configNameA,
+                null,
+                Optional.of(false)));
+        assertTrue(ex.getMessage().startsWith("Missing config object for config name: "));
+
     }
 
     /**
@@ -108,7 +138,18 @@ class TestPerRobotConfig {
      */
     @Test
     void constructor_invalidDefaultConfigName_throwsIllegalArgument() {
-        throw new UnsupportedOperationException("Not implemented");
+        var ex = assertThrows(IllegalArgumentException.class, () ->
+            new PerRobotConfig<TestConfigInterface>(
+                m_validMacDict,
+                m_validNameDict,
+                m_validConfigDict,
+                "NonExistentDefaultConfig",
+                m_configNameA,
+                null,
+                Optional.of(false)));
+        assertEquals(
+            "defaultConfigName must be a key in configNameToConfigObjDict",
+            ex.getMessage());
     }
 
     /**
@@ -117,7 +158,18 @@ class TestPerRobotConfig {
      */
     @Test
     void constructor_invalidSimulationConfigName_throwsIllegalArgument() {
-        throw new UnsupportedOperationException("Not implemented");
+        var ex = assertThrows(IllegalArgumentException.class, () ->
+            new PerRobotConfig<TestConfigInterface>(
+                m_validMacDict,
+                m_validNameDict,
+                m_validConfigDict,
+                m_configNameA,
+                "NonExistentSimulationConfig",
+                null,
+                Optional.of(false)));
+        assertEquals(
+            "simulationConfigName must be a key in configNameToConfigObjDict",
+            ex.getMessage());
     }
 
     /**
@@ -126,13 +178,29 @@ class TestPerRobotConfig {
      */
     @Test
     void constructor_inSimulation_returnsSimulationConfig() {
-        throw new UnsupportedOperationException("Not implemented");
+        var config = new PerRobotConfig<TestConfigInterface>(
+            m_validMacDict,
+            m_validNameDict,
+            m_validConfigDict,
+            m_configNameA,
+            m_configNameB,
+            m_macKeyA,
+            Optional.of(true));
+        assertEquals(m_configNameB, config.getBotConfigName());
     }
 
     /** When running in simulation, getRobotName returns "Simulation". */
     @Test
     void constructor_inSimulation_robotNameIsSimulation() {
-        throw new UnsupportedOperationException("Not implemented");
+        var config = new PerRobotConfig<TestConfigInterface>(
+            m_validMacDict,
+            m_validNameDict,
+            m_validConfigDict,
+            m_configNameA,
+            m_configNameB,
+            m_macKeyA,
+            Optional.of(true));
+        assertEquals("Simulation", config.getRobotName());
     }
 
     /**
@@ -141,7 +209,16 @@ class TestPerRobotConfig {
      * */
     @Test
     void testMacKey_matchingEntry_returnsMatchedRobotConfig() {
-        throw new UnsupportedOperationException("Not implemented");
+        var config = new PerRobotConfig<TestConfigInterface>(
+            m_validMacDict,
+            m_validNameDict,
+            m_validConfigDict,
+            m_configNameA,
+            m_configNameB,
+            m_macKeyA,
+            Optional.of(false));
+        assertEquals(m_configNameA, config.getBotConfigName());
+
     }
 
     /**

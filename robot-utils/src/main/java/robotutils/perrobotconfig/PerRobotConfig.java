@@ -2,6 +2,7 @@ package robotutils.perrobotconfig;
 
 import edu.wpi.first.wpilibj.RobotBase;
 import java.util.Map;
+import java.util.Optional;
 import robotutils.interfaces.MacKey;
 
 
@@ -15,26 +16,29 @@ public class PerRobotConfig<T> {
     private String m_selectedConfigName = null;
     private T m_selectedConfig = null;
     private MacKey m_testMacKey = null;
+    private Optional<Boolean> m_forceSimulationValue = Optional.empty();
 
-    /** Constructor. */
+    /** Simple Constructor. */
     public PerRobotConfig(
         Map<MacKey, String> macToRobotNameDict,
         Map<String, String> robotNameToConfigNameDict,
         Map<String, T> configNameToConfigObjDict,
         String defaultConfigName,
         String simulationConfigName) {
+
         this(
             macToRobotNameDict,
             robotNameToConfigNameDict,
             configNameToConfigObjDict,
             defaultConfigName,
             simulationConfigName,
-            null);
+            null,
+            Optional.empty());
     }
 
     /**
      * Constructor for testing: treats testMacKey as the RoboRIO MAC address
-     * instead of reading hardware.
+     * instead of reading hardware, and optionally forces simulation mode.
      */
     public PerRobotConfig(
         Map<MacKey, String> macToRobotNameDict,
@@ -42,9 +46,11 @@ public class PerRobotConfig<T> {
         Map<String, T> configNameToConfigObjDict,
         String defaultConfigName,
         String simulationConfigName,
-        MacKey testMacKey) {
+        MacKey testMacKey,
+        Optional<Boolean> forceSimulationValue) {
 
         m_testMacKey = testMacKey;
+        m_forceSimulationValue = forceSimulationValue;
 
         validateInputMappings(
             macToRobotNameDict,
@@ -155,7 +161,7 @@ public class PerRobotConfig<T> {
         String defaultConfigName,
         String simulationConfigName) {
 
-        if (RobotBase.isSimulation()) {
+        if (calcIsSimulation()) {
             return simulationConfigName;
         }
         if (robotName == null) {
@@ -170,6 +176,14 @@ public class PerRobotConfig<T> {
         return robotNameToConfigNameDict.get(robotName);
     }
 
+    private boolean calcIsSimulation() {
+        if (m_forceSimulationValue.isPresent()) {
+            return m_forceSimulationValue.get();
+        }
+
+        return RobotBase.isSimulation();
+    }
+
     private T getConfig(
         String configName,
         Map<String, T> configNameToConfigObjDict) {
@@ -182,7 +196,7 @@ public class PerRobotConfig<T> {
     }
 
     private String getRobotDisplayname(String robotName) {
-        if (RobotBase.isSimulation()) {
+        if (calcIsSimulation()) {
             return "Simulation";
         }
         if (robotName == null) {
