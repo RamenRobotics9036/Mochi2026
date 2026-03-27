@@ -3,6 +3,7 @@ package robotutils.joystickinput;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import robotutils.interfaces.DriveSmoothInterface;
+import robotutils.interfaces.JoystickInputInterface;
 import robotutils.interfaces.JoystickInputsRecord;
 
 
@@ -20,7 +21,7 @@ import robotutils.interfaces.JoystickInputsRecord;
  * <p>All external dependencies are injected through the constructor so this
  * class can be unit-tested without hardware or a running robot.
  */
-public class JoystickInput {
+public class JoystickInput implements JoystickInputInterface {
 
     private final DriveSmoothInterface m_driveSmooth;
     private final DoubleSupplier m_rawxSupplier;
