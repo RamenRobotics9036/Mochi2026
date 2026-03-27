@@ -220,7 +220,7 @@ public class RobotContainer {
      * Initializes autonomous selection dashboards and binds controller inputs to commands.
      */
     public RobotContainer() {
-        m_joystickInput = new JoystickInput(
+        m_joystickInput = m_robotUtilsFactory.createJoystickInput(
             m_driveSmooth,
             () -> -driveController.getLeftY(),
             () -> -driveController.getLeftX(),
