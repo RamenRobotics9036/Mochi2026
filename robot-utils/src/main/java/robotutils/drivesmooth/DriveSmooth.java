@@ -1,7 +1,7 @@
 package robotutils.drivesmooth;
 
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import robotutils.DriveSmoothInterface;
+import robotutils.interfaces.DriveSmoothInterface;
 
 
 /**

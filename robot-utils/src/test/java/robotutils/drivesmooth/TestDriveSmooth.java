@@ -5,13 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
-import robotutils.DriveSmoothInterface;
-import robotutils.RobotUtilsFactory;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import robotutils.RobotUtilsFactory;
+import robotutils.interfaces.DriveSmoothInterface;
+
 
 class TestDriveSmooth {
 

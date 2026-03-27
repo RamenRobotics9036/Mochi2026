@@ -73,10 +73,10 @@ import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometryFactory;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
-import robotutils.DriveSmoothInterface;
 import robotutils.RobotUtilsFactory;
+import robotutils.interfaces.DriveSmoothInterface;
+import robotutils.interfaces.JoystickInputsRecord;
 import robotutils.joystickinput.JoystickInput;
-import robotutils.joystickinput.JoystickInputsRecord;
 
 import java.util.OptionalDouble;
 

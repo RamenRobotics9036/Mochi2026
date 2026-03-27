@@ -1,6 +1,7 @@
 package robotutils;
 
 import robotutils.drivesmooth.DriveSmooth;
+import robotutils.interfaces.DriveSmoothInterface;
 
 
 /** Factory for robot utility objects. */

@@ -1,6 +1,7 @@
 package robotutils.joystickinput;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import robotutils.interfaces.JoystickInputsRecord;
 
 
 /**
