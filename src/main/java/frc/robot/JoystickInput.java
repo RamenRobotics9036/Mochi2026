@@ -3,10 +3,10 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.SimJoystickOrientation;
-import robotutils.DriveSmoothInterface;
-
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
+import robotutils.DriveSmoothInterface;
+
 
 /**
  * Processes raw joystick inputs into scaled robot velocities.
@@ -24,31 +24,31 @@ import java.util.function.DoubleSupplier;
  */
 public class JoystickInput {
 
-    private final DriveSmoothInterface driveSmooth;
-    private final DoubleSupplier rawXSupplier;
-    private final DoubleSupplier rawYSupplier;
-    private final DoubleSupplier rawRotateSupplier;
-    private final BooleanSupplier finePositioningEnabledSupplier;
-    private final double teleoperatedSpeed;
-    private final double maxAngularRate;
-    private final boolean isSimulation;
-    private final DoubleSupplier operatorForwardDegreesSupplier;
+    private final DriveSmoothInterface m_driveSmooth;
+    private final DoubleSupplier m_rawxSupplier;
+    private final DoubleSupplier m_rawySupplier;
+    private final DoubleSupplier m_rawRotateSupplier;
+    private final BooleanSupplier m_finePositioningEnabledSupplier;
+    private final double m_teleoperatedSpeed;
+    private final double m_maxAngularRate;
+    private final boolean m_isSimulation;
+    private final DoubleSupplier m_operatorForwardDegreesSupplier;
 
     /**
      * Creates a new JoystickInput processor.
      *
      * @param driveSmooth              Smoothing pipeline (deadband, curve, slew).
-     * @param rawXSupplier             Supplier for the forward/backward axis (typically {@code -leftY}).
+     * @param rawXSupplier             Supplier for forward/back axis (typically {@code -leftY}).
      * @param rawYSupplier             Supplier for the strafe axis (typically {@code -leftX}).
      * @param rawRotateSupplier        Supplier for the rotation axis (typically {@code -rightX}).
-     * @param finePositioningEnabledSupplier  Returns {@code true} when fine-positioning mode is active
+     * @param finePositioningEnabledSupplier  Returns {@code true} when fine-pos mode is active
      *                                 (halves all output velocities).
      * @param teleoperatedSpeed        Maximum linear velocity in m/s.
      * @param maxAngularRate           Maximum angular velocity in rad/s.
      * @param isSimulation             {@code true} when running inside the WPILib simulator.
      * @param operatorForwardDegreesSupplier   Supplies the operator forward direction in degrees
-     *                                          (used only when {@code isSimulation} is {@code true};
-     *                                          may be {@code null} otherwise).
+     *                                 (used only when {@code isSimulation} is {@code true};
+     *                                 may be {@code null} otherwise).
      */
     public JoystickInput(
             DriveSmoothInterface driveSmooth,
@@ -61,15 +61,15 @@ public class JoystickInput {
             boolean isSimulation,
             DoubleSupplier operatorForwardDegreesSupplier) {
 
-        this.driveSmooth = driveSmooth;
-        this.rawXSupplier = rawXSupplier;
-        this.rawYSupplier = rawYSupplier;
-        this.rawRotateSupplier = rawRotateSupplier;
-        this.finePositioningEnabledSupplier = finePositioningEnabledSupplier;
-        this.teleoperatedSpeed = teleoperatedSpeed;
-        this.maxAngularRate = maxAngularRate;
-        this.isSimulation = isSimulation;
-        this.operatorForwardDegreesSupplier = operatorForwardDegreesSupplier;
+        m_driveSmooth = driveSmooth;
+        m_rawxSupplier = rawXSupplier;
+        m_rawySupplier = rawYSupplier;
+        m_rawRotateSupplier = rawRotateSupplier;
+        m_finePositioningEnabledSupplier = finePositioningEnabledSupplier;
+        m_teleoperatedSpeed = teleoperatedSpeed;
+        m_maxAngularRate = maxAngularRate;
+        m_isSimulation = isSimulation;
+        m_operatorForwardDegreesSupplier = operatorForwardDegreesSupplier;
     }
 
     /**
@@ -78,9 +78,9 @@ public class JoystickInput {
      * @return Scaled velocity in meters per second.
      */
     private double getDriveX() {
-        double input = driveSmooth.processTranslationX(rawXSupplier.getAsDouble());
-        double inputScale = finePositioningEnabledSupplier.getAsBoolean() ? 0.5 : 1.0;
-        return input * teleoperatedSpeed * inputScale;
+        double input = m_driveSmooth.processTranslationX(m_rawxSupplier.getAsDouble());
+        double inputScale = m_finePositioningEnabledSupplier.getAsBoolean() ? 0.5 : 1.0;
+        return input * m_teleoperatedSpeed * inputScale;
     }
 
     /**
@@ -89,9 +89,9 @@ public class JoystickInput {
      * @return Scaled velocity in meters per second.
      */
     private double getDriveY() {
-        double input = driveSmooth.processTranslationY(rawYSupplier.getAsDouble());
-        double inputScale = finePositioningEnabledSupplier.getAsBoolean() ? 0.5 : 1.0;
-        return input * teleoperatedSpeed * inputScale;
+        double input = m_driveSmooth.processTranslationY(m_rawySupplier.getAsDouble());
+        double inputScale = m_finePositioningEnabledSupplier.getAsBoolean() ? 0.5 : 1.0;
+        return input * m_teleoperatedSpeed * inputScale;
     }
 
     /**
@@ -100,9 +100,9 @@ public class JoystickInput {
      * @return Scaled angular velocity in radians per second.
      */
     private double getDriveRotate() {
-        double input = driveSmooth.processRotation(rawRotateSupplier.getAsDouble());
-        double inputScale = finePositioningEnabledSupplier.getAsBoolean() ? 0.5 : 1.0;
-        return input * maxAngularRate * inputScale;
+        double input = m_driveSmooth.processRotation(m_rawRotateSupplier.getAsDouble());
+        double inputScale = m_finePositioningEnabledSupplier.getAsBoolean() ? 0.5 : 1.0;
+        return input * m_maxAngularRate * inputScale;
     }
 
     /**
@@ -119,10 +119,10 @@ public class JoystickInput {
         double y = getDriveY();
         double rot = getDriveRotate();
 
-        if (isSimulation) {
+        if (m_isSimulation) {
             JoystickInputsRecord transformed =
                 SimJoystickOrientation.simTransformJoystickOrientation(
-                    operatorForwardDegreesSupplier.getAsDouble(), x, y, rot);
+                    m_operatorForwardDegreesSupplier.getAsDouble(), x, y, rot);
             x   = -1 * transformed.driveX();
             y   = -1 * transformed.driveY();
             rot = transformed.rotatetX();
@@ -131,13 +131,19 @@ public class JoystickInput {
         return new JoystickInputsRecord(x, y, rot);
     }
 
-    /** Returns {@code true} when {@code controller}'s D-pad is in the downward region (135°–225°). */
+    /**
+     * Returns {@code true} when {@code controller}'s D-pad is in
+     * the downward region (135°–225°).
+     */
     public static boolean isPovDownward(CommandXboxController controller) {
         int pov = controller.getHID().getPOV();
         return pov != -1 && (pov >= 135 && pov <= 225);
     }
 
-    /** Returns {@code true} when {@code controller}'s D-pad is in the upward region (315°–360° or 0°–45°). */
+    /**
+     * Returns {@code true} when {@code controller}'s D-pad is in
+     * the upward region (315°–360° or 0°–45°).
+     */
     public static boolean isPovUpward(CommandXboxController controller) {
         int pov = controller.getHID().getPOV();
         return pov != -1 && (pov <= 45 || pov >= 315);
