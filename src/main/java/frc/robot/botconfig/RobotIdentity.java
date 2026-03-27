@@ -7,6 +7,7 @@ import frc.robot.util.MACAddress;
 /**
  * Automatically picks the right robot constants based on the RoboRIO's MAC address.
  */
+// $TODO4 - This should go away and be replaced by per robot config.
 public class RobotIdentity {
 
     /** Holds the detected robot's config and name together. */

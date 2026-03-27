@@ -8,6 +8,7 @@ import java.util.List;
 /**
  * Utility to identify which RoboRIO is being used by checking its MAC address.
  */
+// $TODO4 - This should move into perrobotconfig
 public class MACAddress {
 
     /**
@@ -22,17 +23,17 @@ public class MACAddress {
 
             for (NetworkInterface netIf : interfaces) {
                 byte[] mac = netIf.getHardwareAddress();
-                
+
                 // Only check interfaces that actually have a MAC address
                 if (mac != null && mac.length >= identifier.length) {
                     boolean match = true;
-                    
+
                     // Compare the end of the RIO's MAC to our ID bytes
                     for (int i = 0; i < identifier.length; i++) {
                         // Get the byte from the RIO and the byte from our ID
                         int macByte = mac[mac.length - identifier.length + i] & 0xFF;
                         int targetByte = identifier[i] & 0xFF;
-                        
+
                         // If any byte doesn't match, this isn't the right robot
                         if (macByte != targetByte) {
                             match = false;
@@ -49,7 +50,7 @@ public class MACAddress {
     }
 
     /**
-     * Prints all MAC addresses to the console. 
+     * Prints all MAC addresses to the console.
      * Use this in RobotInit to find the ID of a new robot.
      */
     public static void dumpToConsole() {
