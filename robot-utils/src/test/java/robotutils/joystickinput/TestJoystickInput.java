@@ -1,11 +1,10 @@
-package frc.robot;
+package robotutils.joystickinput;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
-import frc.robot.sim.JoystickInputsRecord;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import robotutils.RobotUtilsFactory;
+
 
 /**
  * Unit tests for {@link JoystickInput}.

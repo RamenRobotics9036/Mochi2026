@@ -1,7 +1,5 @@
-package frc.robot;
+package robotutils.joystickinput;
 
-import frc.robot.sim.JoystickInputsRecord;
-import frc.robot.sim.SimJoystickOrientation;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import robotutils.DriveSmoothInterface;

@@ -40,7 +40,6 @@ import frc.robot.commands.JiggleCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.SpinnyDefaultCommand;
-import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.SimIoFactory;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.rollerssim.RollerIoInterface;
@@ -76,6 +75,8 @@ import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import robotutils.DriveSmoothInterface;
 import robotutils.RobotUtilsFactory;
+import robotutils.joystickinput.JoystickInput;
+import robotutils.joystickinput.JoystickInputsRecord;
 
 import java.util.OptionalDouble;
 
