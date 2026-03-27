@@ -1,6 +1,8 @@
 package robotutils.perrobotconfig;
 
 import java.util.Map;
+
+import edu.wpi.first.wpilibj.RobotBase;
 import robotutils.interfaces.MacKey;
 
 
@@ -19,8 +21,50 @@ public class PerRobotConfig<T> {
         Map<MacKey, String> macToRobotNameDict,
         Map<String, String> robotNameToConfigNameDict,
         Map<String, T> configNameToConfigObjDict,
-        T defaultConfigName,
-        T simulationConfigName) {
+        String defaultConfigName,
+        String simulationConfigName) {
+
+        validateInputMappings(
+            macToRobotNameDict,
+            robotNameToConfigNameDict,
+            configNameToConfigObjDict,
+            defaultConfigName,
+            simulationConfigName);
+
+        m_robotName = identifyRobot(macToRobotNameDict);
+
+        // $TODO4 - For now, just return the first
+        m_robotName = macToRobotNameDict.values().iterator().next();
+        m_selectedConfigName = robotNameToConfigNameDict.get(m_robotName);
+        m_selectedConfig = configNameToConfigObjDict.get(m_selectedConfigName);
+    }
+
+    /** Returns robot name. */
+    public String getRobotName() {
+        return m_robotName;
+    }
+
+    /** Returns the config for the current robot. */
+    public T getBotConfig() {
+        return m_selectedConfig;
+    }
+
+    /** Returns the name of the config for the current robot. */
+    public String getBotConfigName() {
+        return m_selectedConfigName;
+    }
+
+    /**
+     * Validates that robot and config-name mappings are internally consistent.
+     *
+     * <p>String checks are case-sensitive.
+     */
+    private void validateInputMappings(
+        Map<MacKey, String> macToRobotNameDict,
+        Map<String, String> robotNameToConfigNameDict,
+        Map<String, T> configNameToConfigObjDict,
+        String defaultConfigName,
+        String simulationConfigName) {
 
         if (macToRobotNameDict == null || macToRobotNameDict.isEmpty()) {
             throw new IllegalArgumentException(
@@ -34,27 +78,18 @@ public class PerRobotConfig<T> {
             throw new IllegalArgumentException(
                 "configNameToConfigObjDict must contain at least one entry");
         }
+        if (defaultConfigName == null
+            || !configNameToConfigObjDict.containsKey(defaultConfigName)) {
 
-        validateInputMappings(
-            macToRobotNameDict,
-            robotNameToConfigNameDict,
-            configNameToConfigObjDict);
+            throw new IllegalArgumentException(
+                "defaultConfigName must be a key in configNameToConfigObjDict");
+        }
+        if (simulationConfigName == null
+            || !configNameToConfigObjDict.containsKey(simulationConfigName)) {
 
-        // $TODO4 - For now, just return the first
-        m_robotName = macToRobotNameDict.values().iterator().next();
-        m_selectedConfigName = robotNameToConfigNameDict.get(m_robotName);
-        m_selectedConfig = configNameToConfigObjDict.get(m_selectedConfigName);
-    }
-
-    /**
-     * Validates that robot and config-name mappings are internally consistent.
-     *
-     * <p>String checks are case-sensitive.
-     */
-    private void validateInputMappings(
-        Map<MacKey, String> macToRobotNameDict,
-        Map<String, String> robotNameToConfigNameDict,
-        Map<String, T> configNameToConfigObjDict) {
+            throw new IllegalArgumentException(
+                "simulationConfigName must be a key in configNameToConfigObjDict");
+        }
 
         for (String robotName : macToRobotNameDict.values()) {
             if (!robotNameToConfigNameDict.containsKey(robotName)) {
@@ -71,18 +106,12 @@ public class PerRobotConfig<T> {
         }
     }
 
-    /** Returns robot name. */
-    public String getRobotName() {
-        return m_robotName;
-    }
-
-    /** Returns the config for the current robot. */
-    public T getBotConfig() {
-        return m_selectedConfig;
-    }
-
-    /** Returns the name of the config for the current robot. */
-    public String getBotConfigName() {
-        return m_selectedConfigName;
+    private String identifyRobot(Map<MacKey, String> macToRobotNameDict) {
+        for (Map.Entry<MacKey, String> entry : macToRobotNameDict.entrySet()) {
+            if (MacAddress.isRobot(entry.getKey().suffixBytes())) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 }
