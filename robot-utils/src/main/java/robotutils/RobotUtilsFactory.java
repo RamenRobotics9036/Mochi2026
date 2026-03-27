@@ -1,11 +1,16 @@
 package robotutils;
 
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import robotutils.drivesmooth.DriveSmooth;
 import robotutils.interfaces.DriveSmoothInterface;
 import robotutils.interfaces.JoystickInputInterface;
+import robotutils.interfaces.MacKey;
+import robotutils.interfaces.PerRobotConfigInterface;
 import robotutils.joystickinput.JoystickInput;
+import robotutils.perrobotconfig.PerRobotConfig;
 
 
 /** Factory for robot utility objects. */
@@ -81,5 +86,30 @@ public class RobotUtilsFactory {
             maxAngularRate,
             isSimulation,
             operatorForwardDegreesSupplier);
+    }
+
+    /**
+     * Creates a per-robot configuration selector.
+     *
+     * @param macToRobotNameDict maps MAC key suffixes to robot names
+     * @param robotNameToConfigNameDict maps robot names to config names
+     * @param configNameToConfigObjDict maps config names to config objects
+     * @param defaultConfigName config name used when no MAC address matches
+     * @param simulationConfigName config name used in simulation
+     * @return configured per-robot config selector
+     */
+    public <T> PerRobotConfigInterface<T> createPerRobotConfig(
+        Map<MacKey, String> macToRobotNameDict,
+        Map<String, String> robotNameToConfigNameDict,
+        Map<String, T> configNameToConfigObjDict,
+        String defaultConfigName,
+        String simulationConfigName) {
+
+        return new PerRobotConfig<T>(
+            macToRobotNameDict,
+            robotNameToConfigNameDict,
+            configNameToConfigObjDict,
+            defaultConfigName,
+            simulationConfigName);
     }
 }

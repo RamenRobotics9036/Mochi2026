@@ -4,13 +4,14 @@ import edu.wpi.first.wpilibj.RobotBase;
 import java.util.Map;
 import java.util.Optional;
 import robotutils.interfaces.MacKey;
+import robotutils.interfaces.PerRobotConfigInterface;
 
 
 /**
  * Takes a list of robot config objects.  When requested, returns the correct config
  * based on the Roborio MAC address.
  */
-public class PerRobotConfig<T> {
+public class PerRobotConfig<T> implements PerRobotConfigInterface<T> {
 
     private String m_robotName = null;
     private String m_selectedConfigName = null;
