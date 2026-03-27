@@ -14,6 +14,7 @@ public class PerRobotConfig<T> {
     private String m_robotName = null;
     private String m_selectedConfigName = null;
     private T m_selectedConfig = null;
+    private MacKey m_testMacKey = null;
 
     /** Constructor. */
     public PerRobotConfig(
@@ -22,6 +23,28 @@ public class PerRobotConfig<T> {
         Map<String, T> configNameToConfigObjDict,
         String defaultConfigName,
         String simulationConfigName) {
+        this(
+            macToRobotNameDict,
+            robotNameToConfigNameDict,
+            configNameToConfigObjDict,
+            defaultConfigName,
+            simulationConfigName,
+            null);
+    }
+
+    /**
+     * Constructor for testing: treats testMacKey as the RoboRIO MAC address
+     * instead of reading hardware.
+     */
+    public PerRobotConfig(
+        Map<MacKey, String> macToRobotNameDict,
+        Map<String, String> robotNameToConfigNameDict,
+        Map<String, T> configNameToConfigObjDict,
+        String defaultConfigName,
+        String simulationConfigName,
+        MacKey testMacKey) {
+
+        m_testMacKey = testMacKey;
 
         validateInputMappings(
             macToRobotNameDict,
@@ -113,7 +136,10 @@ public class PerRobotConfig<T> {
 
     private String identifyRobot(Map<MacKey, String> macToRobotNameDict) {
         for (Map.Entry<MacKey, String> entry : macToRobotNameDict.entrySet()) {
-            if (MacAddress.isRobot(entry.getKey().suffixBytes())) {
+            boolean matches = (m_testMacKey != null)
+                ? entry.getKey().equals(m_testMacKey)
+                : MacAddress.isRobot(entry.getKey().suffixBytes());
+            if (matches) {
                 return entry.getValue();
             }
         }
