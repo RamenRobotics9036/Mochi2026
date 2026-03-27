@@ -19,7 +19,6 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.botconfig.RobotIdentity;
 import java.util.List;
 import java.util.OptionalDouble;
 import java.util.stream.Collectors;
@@ -125,6 +124,7 @@ public class BasicInfoDashboard {
     /**
      * Constructs a BasicInfoDashboard.
      *
+     * @param robotName        Display name of the selected robot
      * @param configInterface   Bot configuration (vision defaults, etc.)
      * @param drivetrain        The swerve drivetrain to get info from
      * @param glassField        Field2d for Glass visualization
@@ -134,6 +134,7 @@ public class BasicInfoDashboard {
      * @param cameraNames       Names of all Limelight cameras to monitor
      */
     public BasicInfoDashboard(
+        String robotName,
         BotConfigInterface configInterface,
         SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
         Field2d glassField,
@@ -160,7 +161,7 @@ public class BasicInfoDashboard {
         m_visionEnabled.set(m_configInterface.isVisionEnabledDefault());
 
         // Init NetworkTables for some dashboard itemms
-        SmartDashboard.putString("MAC Address Name", RobotIdentity.getBotName());
+        SmartDashboard.putString("MAC Address Name", robotName);
         SmartDashboard.putString("Robot Config", configInterface.getConfigName());
         SmartDashboard.putData("GlassField", glassField);
         SmartDashboard.putData("Accuracy Drive Test", driveAccuracyTester.createTapeDropAutoCommand());

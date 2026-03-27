@@ -27,7 +27,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.botconfig.RobotIdentity;
+import frc.robot.botconfig.RobotConfigSelector;
 import frc.robot.commands.FullAutoClimbCommand;
 import frc.robot.commands.GetFuelCommand;
 import frc.robot.commands.IntakeArmCommand;
@@ -77,6 +77,7 @@ import robotutils.RobotUtilsFactory;
 import robotutils.interfaces.DriveSmoothInterface;
 import robotutils.interfaces.JoystickInputInterface;
 import robotutils.interfaces.JoystickInputsRecord;
+import robotutils.perrobotconfig.PerRobotConfig;
 
 import java.util.OptionalDouble;
 
@@ -89,7 +90,9 @@ import java.util.OptionalDouble;
  */
 public class RobotContainer {
 
-    private BotConfigInterface m_configInterface = RobotIdentity.getBotConfig();
+    private final PerRobotConfig<BotConfigInterface> m_perRobotConfig = RobotConfigSelector.create();
+    private final BotConfigInterface m_configInterface = m_perRobotConfig.getBotConfig();
+    private final String m_robotName = m_perRobotConfig.getRobotName();
 
     private final RobotUtilsFactory m_robotUtilsFactory = new RobotUtilsFactory();
 
@@ -248,6 +251,7 @@ public class RobotContainer {
 
         // $TODO2 - Can I consolidate all the basicInfoDashboard config
         basicInfoDashboard = new BasicInfoDashboard(
+            m_robotName,
             m_configInterface,
             drivetrain,
             m_glassField,
