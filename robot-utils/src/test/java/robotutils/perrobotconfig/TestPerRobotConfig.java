@@ -12,26 +12,43 @@ import robotutils.interfaces.MacKey;
 
 class TestPerRobotConfig {
 
-    interface TestConfigInterface {}
+    interface TestConfigInterface {
+        public int getValue();
+    }
 
     class TestConfig1 implements TestConfigInterface {
-        public final int m_value = 5;
+        private final int m_value = 5;
 
         public TestConfig1() {
+        }
+
+        @Override
+        public int getValue() {
+            return m_value;
         }
     }
 
     class TestConfig2 implements TestConfigInterface {
-        public final int m_value = 42;
+        private final int m_value = 42;
 
         public TestConfig2() {
+        }
+
+        @Override
+        public int getValue() {
+            return m_value;
         }
     }
 
     class TestConfig3 implements TestConfigInterface {
-        public final int m_value = 100;
+        private final int m_value = 100;
 
         public TestConfig3() {
+        }
+
+        @Override
+        public int getValue() {
+            return m_value;
         }
     }
 
@@ -227,7 +244,16 @@ class TestPerRobotConfig {
      */
     @Test
     void testMacKey_matchingEntry_returnsCorrectRobotName() {
-        throw new UnsupportedOperationException("Not implemented");
+        var config = new PerRobotConfig<TestConfigInterface>(
+            m_validMacDict,
+            m_validNameDict,
+            m_validConfigDict,
+            m_configNameA,
+            m_configNameA,
+            m_macKeyB,
+            Optional.of(false));
+        assertEquals(m_robotNameB, config.getRobotName());
+
     }
 
     /**
@@ -236,7 +262,15 @@ class TestPerRobotConfig {
      */
     @Test
     void testMacKey_noMatchingEntry_returnsDefaultConfig() {
-        throw new UnsupportedOperationException("Not implemented");
+        var config = new PerRobotConfig<TestConfigInterface>(
+            m_validMacDict,
+            m_validNameDict,
+            m_validConfigDict,
+            m_configNameA,
+            m_configNameB,
+            new MacKey(0xFF, 0xFF),
+            Optional.of(false));
+        assertEquals(m_configNameA, config.getBotConfigName());
     }
 
     /**
@@ -245,7 +279,15 @@ class TestPerRobotConfig {
      */
     @Test
     void testMacKey_noMatchingEntry_robotNameIsUnknownRobot() {
-        throw new UnsupportedOperationException("Not implemented");
+        var config = new PerRobotConfig<TestConfigInterface>(
+            m_validMacDict,
+            m_validNameDict,
+            m_validConfigDict,
+            m_configNameA,
+            m_configNameB,
+            new MacKey(0xFF, 0xFF),
+            Optional.of(false));
+        assertEquals("Unknown Robot", config.getRobotName());
     }
 
     /**
@@ -254,12 +296,29 @@ class TestPerRobotConfig {
      */
     @Test
     void getBotConfig_returnsSelectedConfigObject() {
-        throw new UnsupportedOperationException("Not implemented");
+        var config = new PerRobotConfig<TestConfigInterface>(
+            m_validMacDict,
+            m_validNameDict,
+            m_validConfigDict,
+            m_configNameB,
+            m_configNameB,
+            new MacKey(0xFF, 0xFF),
+            Optional.of(false));
+        assertEquals(42, config.getBotConfig().getValue());
+
     }
 
     /** getBotConfigName returns the string name of the selected config. */
     @Test
     void getBotConfigName_returnsSelectedConfigName() {
-        throw new UnsupportedOperationException("Not implemented");
+        var config = new PerRobotConfig<TestConfigInterface>(
+            m_validMacDict,
+            m_validNameDict,
+            m_validConfigDict,
+            m_configNameB,
+            m_configNameB,
+            new MacKey(0xFF, 0xFF),
+            Optional.of(false));
+        assertEquals(m_configNameB, config.getBotConfigName());
     }
 }
