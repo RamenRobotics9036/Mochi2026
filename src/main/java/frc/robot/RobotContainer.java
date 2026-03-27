@@ -63,6 +63,7 @@ import frc.robot.subsystems.indexer.IndexerIoReal;
 import frc.robot.subsystems.intake.ArmIoReal;
 import frc.robot.subsystems.intake.IntakeIoReal;
 import frc.robot.subsystems.shooter.ShooterIoReal;
+import frc.robot.util.JoyHelpers;
 import frc.robot.visutils.AimController;
 import frc.robot.visutils.BasicInfoDashboard;
 import frc.robot.visutils.CamInputs;
@@ -373,7 +374,7 @@ public class RobotContainer {
         // POV Down: rotate in place to face the configured AprilTag.
         // Use a tolerant trigger (135°–225°) instead of exact povDown() (180° only)
         // to avoid command cancellation from D-pad diagonal flicker.
-        new Trigger(() -> JoystickInput.isPovDownward(driveController)).whileTrue(
+        new Trigger(() -> JoyHelpers.isPovDownward(driveController)).whileTrue(
             new RotateToTargetCommand(drivetrain, () ->
                 TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getPrimaryTagId())));
 
@@ -425,7 +426,7 @@ public class RobotContainer {
                 // while keeping X/Y translation.
                 var driveState = drivetrain.getState();
                 OptionalDouble aimRate = m_aimController.update(
-                    JoystickInput.isPovUpward(driveController),
+                    JoyHelpers.isPovUpward(driveController),
                     m_multiCamlimelight.getPrimaryTagId(),
                     driveState.Pose,
                     driveState.Speeds);
