@@ -2,7 +2,6 @@ package robotutils.joystickinput;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-
 import robotutils.interfaces.DriveSmoothInterface;
 import robotutils.interfaces.JoystickInputsRecord;
 
@@ -37,8 +36,8 @@ public class JoystickInput {
      * Creates a new JoystickInput processor.
      *
      * @param driveSmooth              Smoothing pipeline (deadband, curve, slew).
-     * @param rawXSupplier             Supplier for forward/back axis (typically {@code -leftY}).
-     * @param rawYSupplier             Supplier for the strafe axis (typically {@code -leftX}).
+     * @param rawxSupplier             Supplier for forward/back axis (typically {@code -leftY}).
+     * @param rawySupplier             Supplier for the strafe axis (typically {@code -leftX}).
      * @param rawRotateSupplier        Supplier for the rotation axis (typically {@code -rightX}).
      * @param finePositioningEnabledSupplier  Returns {@code true} when fine-pos mode is active
      *                                 (halves all output velocities).
@@ -51,8 +50,8 @@ public class JoystickInput {
      */
     public JoystickInput(
             DriveSmoothInterface driveSmooth,
-            DoubleSupplier rawXSupplier,
-            DoubleSupplier rawYSupplier,
+            DoubleSupplier rawxSupplier,
+            DoubleSupplier rawySupplier,
             DoubleSupplier rawRotateSupplier,
             BooleanSupplier finePositioningEnabledSupplier,
             double teleoperatedSpeed,
@@ -61,8 +60,8 @@ public class JoystickInput {
             DoubleSupplier operatorForwardDegreesSupplier) {
 
         m_driveSmooth = driveSmooth;
-        m_rawxSupplier = rawXSupplier;
-        m_rawySupplier = rawYSupplier;
+        m_rawxSupplier = rawxSupplier;
+        m_rawySupplier = rawySupplier;
         m_rawRotateSupplier = rawRotateSupplier;
         m_finePositioningEnabledSupplier = finePositioningEnabledSupplier;
         m_teleoperatedSpeed = teleoperatedSpeed;
