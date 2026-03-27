@@ -89,10 +89,85 @@ was the main goal of the refactor.
 
 ## Switching to use this new config model
 
-### Old files we will replace/modify that *used* to handle Config
+### Existing robot-side files involved
 
-- `src/main/java/frc/robot/botconfig/BotConfigInterface.java` - Interface to query config through.
-- `src/main/java/frc/robot/botconfig/CompConfig.java` - Implementation of BotConfigInterface for competition robot.
-- `src/main/java/frc/robot/botconfig/PancakeConfig.java` - Implementation of BotConfigInterface for pancake/practice robot.
-- `src/main/java/frc/robot/botconfig/RobotIdentity.java` - Gets the correct robot config based on MAC address.
-- `src/main/java/frc/robot/util/MACAddress.java` - Utility code to get robot MAC address.
+- `src/main/java/frc/robot/botconfig/BotConfigInterface.java`
+- `src/main/java/frc/robot/botconfig/CompConfig.java`
+- `src/main/java/frc/robot/botconfig/PancakeConfig.java`
+- `src/main/java/frc/robot/botconfig/RobotIdentity.java`
+- `src/main/java/frc/robot/util/MACAddress.java`
+- `src/main/java/frc/robot/RobotContainer.java`
+- `src/main/java/frc/robot/visutils/BasicInfoDashboard.java`
+
+### Step-by-step migration plan
+
+1. Keep `BotConfigInterface` as the team-facing config contract.
+   `CompConfig` and `PancakeConfig` already implement the right shared type, so
+   they can stay as-is and become the `T = BotConfigInterface` entries passed to
+   `PerRobotConfig<BotConfigInterface>`.
+
+2. Add a small robot-side builder/factory for `PerRobotConfig<BotConfigInterface>`.
+   Create one place in the main robot project that constructs the selector using:
+   - a `Map<MacKey, String>` for RoboRIO MAC suffix to robot name
+   - a `Map<String, String>` for robot name to config name
+   - a `Map<String, BotConfigInterface>` for config name to config object
+   - the chosen default config name
+   - the chosen simulation config name
+
+   For this project, that mapping should represent the same choices currently
+   hardcoded in `RobotIdentity`:
+   - competition MAC `38:D2:58` -> `"Competition"` -> comp config
+   - pancake MAC `38:D9:80` -> `"Pancake"` -> pancake config
+   - simulation -> competition config
+   - unknown real robot -> competition config
+
+3. Replace `RobotIdentity.getBotConfig()` in `RobotContainer`.
+   `RobotContainer` currently initializes `m_configInterface` directly from
+   `RobotIdentity`. Change that so it holds a `PerRobotConfig<BotConfigInterface>`
+   instance, then initialize:
+   - `m_configInterface` from `perRobotConfig.getBotConfig()`
+   - a robot-name field from `perRobotConfig.getRobotName()`
+   - optionally a config-name field from `perRobotConfig.getBotConfigName()`
+
+4. Replace `RobotIdentity.getBotName()` in `BasicInfoDashboard`.
+   `BasicInfoDashboard` is the current direct consumer of the old robot-name API.
+   Pass the selected robot name into the dashboard from `RobotContainer` instead
+   of having the dashboard reach back into global identity logic.
+
+5. Remove the old static identity singleton flow.
+   Once the new `PerRobotConfig<BotConfigInterface>` object is created and owned
+   by `RobotContainer` or a small factory class, `RobotIdentity` is no longer
+   needed. Delete `src/main/java/frc/robot/botconfig/RobotIdentity.java` after
+   all imports and call sites are switched over.
+
+6. Remove the old robot-project MAC utility.
+   After `RobotIdentity` is gone, the robot project should stop using
+   `src/main/java/frc/robot/util/MACAddress.java`. The shared library already
+   contains `robotutils.perrobotconfig.MacAddress`, so the old project-local
+   copy should be deleted.
+
+7. Verify there are no remaining references to the old model.
+   Search for:
+   - `RobotIdentity`
+   - `frc.robot.util.MACAddress`
+   - any direct import that assumed global static config lookup
+
+   At the end of the migration, only the shared `PerRobotConfig` path should be
+   responsible for robot identification.
+
+8. Run focused tests on selection behavior.
+   Confirm these cases still behave the same after the switchover:
+   - competition RoboRIO selects `CompConfig`
+   - pancake RoboRIO selects `PancakeConfig`
+   - simulation selects the configured simulation config
+   - unknown real hardware falls back to the configured default config
+   - dashboard still shows the correct robot name and config name
+
+### Expected end state
+
+- `BotConfigInterface`, `CompConfig`, and `PancakeConfig` remain
+- `PerRobotConfig<BotConfigInterface>` becomes the one config selector
+- `RobotIdentity.java` is removed
+- the old `src/main/java/frc/robot/util/MACAddress.java` is removed
+- robot code gets config and robot name from the selected `PerRobotConfig`
+  instance instead of from static global helpers
