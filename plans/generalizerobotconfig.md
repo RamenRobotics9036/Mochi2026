@@ -124,36 +124,43 @@ Best for:
 
 - A shared library intended for many external teams.
 
-### Option 5: Generic Name-to-Config Helper (simple and reusable)
+### Option 5: PerRobotConfigInterface + Generic ConfigHandler
 
 What changes:
 
-- Add a reusable helper that accepts a dictionary/map from robot name to config object.
-- Type the helper with generics so the config can derive from a broad interface:
-	- Concept: `RobotConfigRegistry<T extends BaseRobotConfig>`
-	- Holds: `Map<String, T>`
-	- Provides: `getRequired(String robotName)`, `getOrDefault(String robotName, String defaultName)`
-- `RobotIdentity` is responsible only for detecting robot name/identity key, then asks the helper for the config.
+- Library defines a minimal interface:
+	- `PerRobotConfigInterface`
+	- Only required method: `getName()`
+- Caller defines their own richer interface that extends the minimal one:
+	- Example: `RamenRoboticsConfigInterface extends PerRobotConfigInterface`
+	- Caller adds all robot-specific getters they need.
+- Caller creates multiple concrete implementations of their own interface.
+- Library provides a generic `ConfigHandler<T extends PerRobotConfigInterface>` with constructor input:
+	- `List<T>`
+- `ConfigHandler` resolves robot identity by MAC address and selects the matching item from the list.
+- `ConfigHandler.getConfig()` returns `T`.
+- If caller constructs `ConfigHandler<RamenRoboticsConfigInterface>`, no cast is needed at call sites.
+
+Example shape:
+
+- `ConfigHandler<RamenRoboticsConfigInterface> handler = new ConfigHandler<>(configs);`
+- `RamenRoboticsConfigInterface cfg = handler.getConfig();`
 
 Java interface note:
 
-- Yes, Java interfaces can extend interfaces.
-- Example shape:
-	- `interface BaseRobotConfig { ... }`
-	- `interface SwerveRobotConfig extends BaseRobotConfig { ... }`
-	- `interface VisionRobotConfig extends BaseRobotConfig { ... }`
+- Yes, interfaces can extend other interfaces in Java.
 
 Pros:
 
-- Matches your request directly (dictionary + general interface inheritance).
-- Easy for teams to plug in custom config implementations.
-- Keeps identity detection and config data concerns separated.
+- Very small shared contract for the library.
+- Teams keep full control over their own config interface design.
+- No dependency on team-specific methods inside the library.
 
 Cons:
 
-- Name-based lookup still needs a convention (exact strings, enum, or constants).
-- You still need a small assembly point to register available configs.
+- `getName()` values and identity matching rules must be kept consistent.
+- One handler instance should contain one config interface family (`T`); mixing unrelated interface types in one handler is not supported.
 
 Best for:
 
-- Teams wanting a lightweight, explicit extension mechanism without full plugin complexity.
+- A reusable core library where each team wants its own strongly opinionated config interface.
