@@ -1,166 +1,98 @@
 # Per Robot Config
 
-## Current files involved
+## What I implemented
+
+I went with a generic `PerRobotConfig<T>` selector in `robot-utils` instead of
+keeping team-specific robot identity logic inside the main robot project.
+
+The core idea is:
+
+- Teams define whatever config object or interface they want as `T`.
+- The library does robot identification and config selection.
+- Call sites get back the strongly typed config object they registered.
+
+## Files involved
+
+- `robot-utils/src/main/java/robotutils/perrobotconfig/PerRobotConfig.java`
+- `robot-utils/src/main/java/robotutils/interfaces/PerRobotConfigInterface.java`
+- `robot-utils/src/main/java/robotutils/interfaces/MacKey.java`
+- `robot-utils/src/main/java/robotutils/perrobotconfig/MacAddress.java`
+- `robot-utils/src/test/java/robotutils/perrobotconfig/TestPerRobotConfig.java`
+
+## How it works
+
+`PerRobotConfig<T>` is constructed from three maps plus two fallback config names:
+
+- `Map<MacKey, String> macToRobotNameDict`
+- `Map<String, String> robotNameToConfigNameDict`
+- `Map<String, T> configNameToConfigObjDict`
+- `String defaultConfigName`
+- `String simulationConfigName`
+
+Selection flow:
+
+1. Match the current RoboRIO MAC address against `macToRobotNameDict`.
+2. Convert the matched robot name into a config name with
+   `robotNameToConfigNameDict`.
+3. Return the config object from `configNameToConfigObjDict`.
+4. If running in simulation, always use `simulationConfigName`.
+5. If no MAC matches on real hardware, use `defaultConfigName`.
+
+## Returned information
+
+The shared interface exposes:
+
+- `getRobotName()`
+- `getBotConfig()`
+- `getBotConfigName()`
+
+Behavior:
+
+- In simulation, `getRobotName()` returns `"Simulation"`.
+- If no real robot matches, `getRobotName()` returns `"Unknown Robot"`.
+- `getBotConfig()` returns the selected typed config object `T`.
+
+## Validation and safety checks
+
+The constructor validates that:
+
+- all three maps are non-null and non-empty
+- `defaultConfigName` exists in the config-object map
+- `simulationConfigName` exists in the config-object map
+- every robot name referenced by a MAC entry has a robot-to-config mapping
+- every config name referenced by a robot has a config object
+
+If any of those are invalid, it throws `IllegalArgumentException` with a direct
+error message.
+
+## Testing support
+
+There is a second constructor used for tests that accepts:
+
+- a `testMacKey` so tests do not need real hardware
+- an optional forced simulation value
+
+That lets the tests cover:
+
+- input validation failures
+- simulation override behavior
+- matched MAC selection
+- unknown robot fallback
+- selected config object return value
+
+## Why this was the right fit
+
+This keeps the reusable library small and generic while still giving the robot
+project strong typing and explicit control over its own config objects. It also
+separates identity matching from the team-specific config implementation, which
+was the main goal of the refactor.
+
+## Switching to use this new config model
+
+### Old files we will replace/modify that *used* to handle Config
 
 - `src/main/java/frc/robot/botconfig/BotConfigInterface.java` - Interface to query config through.
 - `src/main/java/frc/robot/botconfig/CompConfig.java` - Implementation of BotConfigInterface for competition robot.
 - `src/main/java/frc/robot/botconfig/PancakeConfig.java` - Implementation of BotConfigInterface for pancake/practice robot.
 - `src/main/java/frc/robot/botconfig/RobotIdentity.java` - Gets the correct robot config based on MAC address.
 - `src/main/java/frc/robot/util/MACAddress.java` - Utility code to get robot MAC address.
-
-## Goal
-
-Make the config + identity system reusable so another team can plug in their own
-robot configs without editing your core robot code.
-
-## Current state (baseline)
-
-- `BotConfigInterface` is good: most robot-dependent values are behind one contract.
-- `CompConfig` and `PancakeConfig` are concrete adapters.
-- `RobotIdentity` is hardcoded to your robots (MAC constants + direct `new CompConfig()` / `new PancakeConfig()`).
-
-This means other teams must fork/modify identity selection logic, even if they can implement the interface.
-
-## High-level options
-
-### Option 1: Keep interface, make identity table-driven (lowest risk)
-
-What changes:
-
-- Keep `BotConfigInterface` and concrete classes exactly as the extension point.
-- Replace hardcoded `if/else` in `RobotIdentity` with a registration table.
-- Add a simple registration API so each team lists identity rules in one place.
-
-Example concept:
-
-- `RobotIdentity.register("Competition", new CompConfig(), mac(0x38, 0xD2, 0x58))`
-- `RobotIdentity.register("Practice", new PancakeConfig(), mac(0x38, 0xD9, 0x80))`
-- Optional fallback per runtime mode (`SIM`, `REAL_UNKNOWN`).
-
-Pros:
-
-- Smallest code churn.
-- Easy migration from current design.
-- Keeps compile-time safety and explicit code ownership.
-
-Cons:
-
-- Still code-based registration (not purely declarative).
-
-Best for:
-
-- Your immediate next step.
-
-### Option 2: Split config contract into composable subcontracts (mid complexity)
-
-What changes:
-
-- Replace one broad interface with grouped interfaces:
-	- `DrivetrainConfig`
-	- `VisionConfig`
-	- `FeatureToggleConfig`
-	- `IdentityMetadata`
-- `BotConfig` becomes an aggregate containing those pieces.
-
-Pros:
-
-- Clear ownership boundaries.
-- Easier for teams to implement only relevant parts.
-- Better long-term maintainability as features grow.
-
-Cons:
-
-- Moderate refactor across call sites.
-- More types to maintain.
-
-Best for:
-
-- Teams expecting frequent architecture evolution.
-
-### Option 3: Data-driven identity + config loading (JSON/YAML + adapters)
-
-What changes:
-
-- Move mostly-static values (toggles, camera transforms, names, speed limits) to JSON/YAML.
-- Keep runtime/vendor-specific objects (e.g. Phoenix `SwerveModuleConstants`) in Java adapters.
-- Identity mapping file controls which config profile applies for each MAC/hostname.
-
-Pros:
-
-- No code change needed for many tuning updates.
-- Easier for external teams to onboard.
-- Enables tool-driven config validation.
-
-Cons:
-
-- Requires schema/versioning/validation discipline.
-- Not all config can be cleanly data-only because of generated CTRE types.
-
-Best for:
-
-- Multi-robot programs that tune frequently between events.
-
-### Option 4: Provider/plugin model (highest flexibility)
-
-What changes:
-
-- Define provider interface, e.g. `RobotConfigProvider`:
-	- `boolean supports(IdentityProbe probe)`
-	- `IdentityResult build(IdentityProbe probe)`
-- `RobotIdentity` discovers providers (manual registry or `ServiceLoader`).
-- Each team supplies its own provider module/jar.
-
-Pros:
-
-- Strongest reuse boundary for open-source use.
-- Teams can ship config logic independently.
-
-Cons:
-
-- Most architectural complexity.
-- Harder debugging and deployment discipline required.
-
-Best for:
-
-- A shared library intended for many external teams.
-
-### Option 5: PerRobotConfigInterface + Generic ConfigHandler
-
-What changes:
-
-- Library defines a minimal interface:
-	- `PerRobotConfigInterface`
-	- Only required method: `getName()`
-- Caller defines their own richer interface that extends the minimal one:
-	- Example: `RamenRoboticsConfigInterface extends PerRobotConfigInterface`
-	- Caller adds all robot-specific getters they need.
-- Caller creates multiple concrete implementations of their own interface.
-- Library provides a generic `ConfigHandler<T extends PerRobotConfigInterface>` with constructor input:
-	- `List<T>`
-- `ConfigHandler` resolves robot identity by MAC address and selects the matching item from the list.
-- `ConfigHandler.getConfig()` returns `T`.
-- If caller constructs `ConfigHandler<RamenRoboticsConfigInterface>`, no cast is needed at call sites.
-
-Example shape:
-
-- `ConfigHandler<RamenRoboticsConfigInterface> handler = new ConfigHandler<>(configs);`
-- `RamenRoboticsConfigInterface cfg = handler.getConfig();`
-
-Java interface note:
-
-- Yes, interfaces can extend other interfaces in Java.
-
-Pros:
-
-- Very small shared contract for the library.
-- Teams keep full control over their own config interface design.
-- No dependency on team-specific methods inside the library.
-
-Cons:
-
-- `getName()` values and identity matching rules must be kept consistent.
-- One handler instance should contain one config interface family (`T`); mixing unrelated interface types in one handler is not supported.
-
-Best for:
-
-- A reusable core library where each team wants its own strongly opinionated config interface.
