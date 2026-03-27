@@ -1,8 +1,7 @@
 package robotutils.perrobotconfig;
 
-import java.util.Map;
-
 import edu.wpi.first.wpilibj.RobotBase;
+import java.util.Map;
 import robotutils.interfaces.MacKey;
 
 
@@ -31,12 +30,18 @@ public class PerRobotConfig<T> {
             defaultConfigName,
             simulationConfigName);
 
-        m_robotName = identifyRobot(macToRobotNameDict);
+        String robotName = identifyRobot(macToRobotNameDict);
+        String configName = selectConfigName(
+            robotName,
+            robotNameToConfigNameDict,
+            defaultConfigName,
+            simulationConfigName);
+        T config = getConfig(configName, configNameToConfigObjDict);
 
-        // $TODO4 - For now, just return the first
-        m_robotName = macToRobotNameDict.values().iterator().next();
-        m_selectedConfigName = robotNameToConfigNameDict.get(m_robotName);
-        m_selectedConfig = configNameToConfigObjDict.get(m_selectedConfigName);
+        // Set the results into member variables to save
+        m_robotName = getRobotDisplayname(robotName);
+        m_selectedConfigName = configName;
+        m_selectedConfig = config;
     }
 
     /** Returns robot name. */
@@ -113,5 +118,50 @@ public class PerRobotConfig<T> {
             }
         }
         return null;
+    }
+
+    /** Given robot name or null, figures out whether to return robot
+     * specific config, default config, or simulation config.
+     */
+    private String selectConfigName(
+        String robotName,
+        Map<String, String> robotNameToConfigNameDict,
+        String defaultConfigName,
+        String simulationConfigName) {
+
+        if (RobotBase.isSimulation()) {
+            return simulationConfigName;
+        }
+        if (robotName == null) {
+            return defaultConfigName;
+        }
+
+        if (!robotNameToConfigNameDict.containsKey(robotName)) {
+            throw new IllegalArgumentException(
+                "No config mapping found for robot name: " + robotName);
+        }
+
+        return robotNameToConfigNameDict.get(robotName);
+    }
+
+    private T getConfig(
+        String configName,
+        Map<String, T> configNameToConfigObjDict) {
+
+        if (!configNameToConfigObjDict.containsKey(configName)) {
+            throw new IllegalArgumentException(
+                "No config object found for config name: " + configName);
+        }
+        return configNameToConfigObjDict.get(configName);
+    }
+
+    private String getRobotDisplayname(String robotName) {
+        if (RobotBase.isSimulation()) {
+            return "Simulation";
+        }
+        if (robotName == null) {
+            return "Unknown Robot";
+        }
+        return robotName;
     }
 }
