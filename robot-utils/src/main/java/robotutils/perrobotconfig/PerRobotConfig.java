@@ -1,6 +1,8 @@
 package robotutils.perrobotconfig;
 
 import java.util.Map;
+import robotutils.interfaces.MacKey;
+
 
 /**
  * Takes a list of robot config objects.  When requested, returns the correct config
@@ -14,7 +16,7 @@ public class PerRobotConfig<T> {
 
     /** Constructor. */
     public PerRobotConfig(
-        Map<int[], String> macToRobotNameDict,
+        Map<MacKey, String> macToRobotNameDict,
         Map<String, String> robotNameToConfigNameDict,
         Map<String, T> configNameToConfigObjDict,
         T defaultConfigName,
@@ -33,6 +35,40 @@ public class PerRobotConfig<T> {
                 "configNameToConfigObjDict must contain at least one entry");
         }
 
+        validateInputMappings(
+            macToRobotNameDict,
+            robotNameToConfigNameDict,
+            configNameToConfigObjDict);
+
+        // $TODO4 - For now, just return the first
+        m_robotName = macToRobotNameDict.values().iterator().next();
+        m_selectedConfigName = robotNameToConfigNameDict.get(m_robotName);
+        m_selectedConfig = configNameToConfigObjDict.get(m_selectedConfigName);
+    }
+
+    /**
+     * Validates that robot and config-name mappings are internally consistent.
+     *
+     * <p>String checks are case-sensitive.
+     */
+    private void validateInputMappings(
+        Map<MacKey, String> macToRobotNameDict,
+        Map<String, String> robotNameToConfigNameDict,
+        Map<String, T> configNameToConfigObjDict) {
+
+        for (String robotName : macToRobotNameDict.values()) {
+            if (!robotNameToConfigNameDict.containsKey(robotName)) {
+                throw new IllegalArgumentException(
+                    "Missing robot->config mapping for robot name: " + robotName);
+            }
+        }
+
+        for (String configName : robotNameToConfigNameDict.values()) {
+            if (!configNameToConfigObjDict.containsKey(configName)) {
+                throw new IllegalArgumentException(
+                    "Missing config object for config name: " + configName);
+            }
+        }
     }
 
     /** Returns robot name. */
