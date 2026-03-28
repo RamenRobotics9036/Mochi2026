@@ -9,8 +9,7 @@
 // can also do vision simulation.
 //
 
-// $TODO4 - Delete this entire directory
-package frc.robot.sim.visionproducers;
+package robotutils.simlimelightproducer;
 
 /**
  * Pure data container representing Limelight NetworkTables data format.
