@@ -1,4 +1,4 @@
-package frc.robot.sim.visionproducers;
+package robotutils.simlimelightproducer;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
