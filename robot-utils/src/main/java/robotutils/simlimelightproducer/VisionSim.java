@@ -24,6 +24,8 @@
 
 package robotutils.simlimelightproducer;
 
+import static robotutils.simlimelightproducer.VisionSimConstants.Vision.*;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -68,7 +70,7 @@ public class VisionSim implements VisionSimInterface {
         }
 
         // ----- Simulation
-        if (Robot.isSimulation()) {
+        if (RobotBase.isSimulation()) {
             // Create the vision system simulation which handles cameras and targets on the field.
             m_visionSystemSim = new VisionSystemSim("main");
             // Add all the AprilTags inside the tag layout as visible targets to simulated field.
@@ -113,7 +115,7 @@ public class VisionSim implements VisionSimInterface {
     /** Reset pose history of the robot in the vision system simulation. */
     @Override
     public void resetSimPose(Pose2d pose) {
-        if (Robot.isSimulation()) {
+        if (RobotBase.isSimulation()) {
             m_visionSystemSim.resetRobotPose(pose);
         }
     }
@@ -121,7 +123,7 @@ public class VisionSim implements VisionSimInterface {
     /** A Field2d for visualizing our robot and objects on the field. */
     @Override
     public Field2d getSimDebugField() {
-        if (!Robot.isSimulation()) {
+        if (!RobotBase.isSimulation()) {
             throw new IllegalStateException(
                 "getSimDebugField should only be called in simulation");
         }

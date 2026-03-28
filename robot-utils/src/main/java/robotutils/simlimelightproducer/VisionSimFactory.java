@@ -1,5 +1,6 @@
 package robotutils.simlimelightproducer;
 
+import edu.wpi.first.wpilibj.RobotBase;
 
 /**
  * Factory for creating VisionSimInterface instances.
@@ -13,7 +14,7 @@ public class VisionSimFactory {
      * @return A VisionSimInterface instance, or null if not in simulation
      */
     public static VisionSimInterface create(BotConfigInterface configInterface) {
-        if (Robot.isSimulation()) {
+        if (RobotBase.isSimulation()) {
             return new VisionSim(configInterface);
         }
         return null;

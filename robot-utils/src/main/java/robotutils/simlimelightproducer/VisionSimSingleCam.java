@@ -1,6 +1,10 @@
 package robotutils.simlimelightproducer;
 
+import static robotutils.simlimelightproducer.VisionSimConstants.Vision.*;
+
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.RobotBase;
+
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -51,7 +55,7 @@ public class VisionSimSingleCam {
     public void addToVisionSystem(VisionSystemSim visionSystemSim, SimCameraProperties cameraProp) {
         PhotonCameraSim cameraSim;
 
-        if (!Robot.isSimulation()) {
+        if (!RobotBase.isSimulation()) {
             throw new IllegalStateException(
                 "Camera simulation should only be created in simulation");
         }
@@ -83,7 +87,9 @@ public class VisionSimSingleCam {
         if (m_cameraSim == null || m_visionSystemSim == null) {
             return;
         }
-        m_visionSystemSim.adjustCamera(m_cameraSim, m_initialBaseSimTransform.plus(additionalOffset));
+        m_visionSystemSim.adjustCamera(
+            m_cameraSim,
+            m_initialBaseSimTransform.plus(additionalOffset));
     }
 
     /**
