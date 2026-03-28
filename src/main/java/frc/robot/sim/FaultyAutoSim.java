@@ -11,17 +11,17 @@ import robotutils.interfaces.SimLimelightProducerInterface;
 public class FaultyAutoSim {
 
     private final GroundTruthSimInterface m_groundTruthSim;
-    private final SimLimelightProducerInterface m_visionSim;
+    private final SimLimelightProducerInterface m_simLimelightProducer;
 
     /**
      * Constructs a FaultyAutoSim.
      *
      * @param groundTruthSim The ground truth sim to apply faults to
-     * @param visionSim The vision sim to apply camera faults to
+     * @param simLimelightProducer The sim limelight producer to apply camera faults to
      */
-    public FaultyAutoSim(GroundTruthSimInterface groundTruthSim, SimLimelightProducerInterface visionSim) {
+    public FaultyAutoSim(GroundTruthSimInterface groundTruthSim, SimLimelightProducerInterface simLimelightProducer) {
         m_groundTruthSim = groundTruthSim;
-        m_visionSim = visionSim;
+        m_simLimelightProducer = simLimelightProducer;
     }
 
     /**
@@ -49,7 +49,7 @@ public class FaultyAutoSim {
      * @param offset Additional transform to apply on top of the static mounting offset
      */
     public void enableCameraMisplaced(Transform3d offset) {
-        m_visionSim.enablePrimaryCameraMisplaced(offset);
+        m_simLimelightProducer.enablePrimaryCameraMisplaced(offset);
     }
 
     /**

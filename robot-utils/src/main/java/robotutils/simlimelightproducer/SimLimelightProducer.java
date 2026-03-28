@@ -57,7 +57,7 @@ public class SimLimelightProducer implements SimLimelightProducerInterface {
         // simulation.  You'll need a separate implementation for real robot vision processing.
         if (!RobotBase.isSimulation()) {
             throw new IllegalStateException(
-                "VisionSim should only be instantiated in simulation");
+                "SimLimelightProducer should only be instantiated in simulation");
         }
 
         int numCams = m_cameras.size();

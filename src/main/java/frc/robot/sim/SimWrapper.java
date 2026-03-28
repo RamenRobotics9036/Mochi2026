@@ -32,7 +32,7 @@ public class SimWrapper {
     private final BotConfigInterface m_configInterface;
 
     private final GroundTruthSimInterface m_groundTruthSim;
-    private final SimLimelightProducerInterface m_visionSim;
+    private final SimLimelightProducerInterface m_simLimelightProducer;
     public final FaultyAutoSim m_faultyAutoSim;
 
     /**
@@ -65,13 +65,13 @@ public class SimWrapper {
         drivetrain.setHighFreqSimCallback(m_groundTruthSim::updateGroundTruthPose);
 
         // Create vision simulation
-        m_visionSim = m_robotUtilsFactory.createSimLimelightProducer(m_configInterface.getCameras());
-        if (m_visionSim == null) {
-            throw new IllegalStateException("VisionSimInterface creation failed");
+        m_simLimelightProducer = m_robotUtilsFactory.createSimLimelightProducer(m_configInterface.getCameras());
+        if (m_simLimelightProducer == null) {
+            throw new IllegalStateException("SimLimelightProducer creation failed");
         }
 
         // Create faulty auto sim (fault injection for testing)
-        m_faultyAutoSim = new FaultyAutoSim(m_groundTruthSim, m_visionSim);
+        m_faultyAutoSim = new FaultyAutoSim(m_groundTruthSim, m_simLimelightProducer);
     }
 
     /**
@@ -79,7 +79,7 @@ public class SimWrapper {
      * Updates vision simulation (processes camera results and updates pose estimator).
      */
     public void robotPeriodic() {
-        m_visionSim.periodic();
+        m_simLimelightProducer.periodic();
     }
 
     /**
@@ -93,7 +93,7 @@ public class SimWrapper {
         // Update vision simulation with ground truth pose (not odometry)
         // This ensures cameras see AprilTags based on actual robot position
         Pose2d groundTruthPose = m_groundTruthSim.getGroundTruthPose();
-        m_visionSim.simulationPeriodic(groundTruthPose);
+        m_simLimelightProducer.simulationPeriodic(groundTruthPose);
     }
 
     /**
@@ -104,7 +104,7 @@ public class SimWrapper {
      */
     public void resetSimPose(Pose2d pose) {
         m_groundTruthSim.resetGroundTruthPoseForSim(pose);
-        m_visionSim.resetSimPose(pose);
+        m_simLimelightProducer.resetSimPose(pose);
     }
 
     /**
