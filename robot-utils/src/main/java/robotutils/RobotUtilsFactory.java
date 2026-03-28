@@ -15,14 +15,14 @@ import robotutils.interfaces.MacKey;
 import robotutils.interfaces.PerRobotConfigInterface;
 import robotutils.interfaces.RollerIoInterface;
 import robotutils.interfaces.TwoMotorRollerIoInterface;
-import robotutils.interfaces.VisionSimInterface;
+import robotutils.interfaces.SimLimelightProducerInterface;
 import robotutils.joystickinput.JoystickInput;
 import robotutils.perrobotconfig.PerRobotConfig;
 import robotutils.sim.armsim.ArmIoSim;
 import robotutils.sim.elevatorssim.ElevatorIoSim;
 import robotutils.sim.rollerssim.RollerIoSim;
 import robotutils.sim.rollerssim.TwoMotorRollerIoSim;
-import robotutils.simlimelightproducer.VisionSim;
+import robotutils.simlimelightproducer.SimLimelightProducer;
 
 
 /** Factory for robot utility objects. */
@@ -225,9 +225,9 @@ public class RobotUtilsFactory {
      * @param cameras configured camera list
      * @return a vision simulation instance, or null when not in simulation
      */
-    public VisionSimInterface createSimLimelightProducer(CameraInfoList cameras) {
+    public SimLimelightProducerInterface createSimLimelightProducer(CameraInfoList cameras) {
         if (RobotBase.isSimulation()) {
-            return new VisionSim(cameras);
+            return new SimLimelightProducer(cameras);
         }
         return null;
     }

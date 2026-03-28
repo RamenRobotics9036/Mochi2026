@@ -10,7 +10,7 @@ import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants.VisionKalmanConstants;
 import java.util.Optional;
 import java.util.function.Consumer;
-import robotutils.interfaces.VisionSimInterface.DrivetrainVisionPoseInfo;
+import robotutils.interfaces.SimLimelightProducerInterface.DrivetrainVisionPoseInfo;
 
 
 /**

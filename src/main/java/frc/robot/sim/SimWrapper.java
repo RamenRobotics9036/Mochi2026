@@ -12,7 +12,7 @@ import frc.robot.subsystems.auto.AutoLogic;
 import static edu.wpi.first.units.Units.*;
 import java.util.function.Consumer;
 import robotutils.RobotUtilsFactory;
-import robotutils.interfaces.VisionSimInterface;
+import robotutils.interfaces.SimLimelightProducerInterface;
 import robotutils.simlimelightproducer.VisionSimConstants;
 
 
@@ -32,7 +32,7 @@ public class SimWrapper {
     private final BotConfigInterface m_configInterface;
 
     private final GroundTruthSimInterface m_groundTruthSim;
-    private final VisionSimInterface m_visionSim;
+    private final SimLimelightProducerInterface m_visionSim;
     public final FaultyAutoSim m_faultyAutoSim;
 
     /**

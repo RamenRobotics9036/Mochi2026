@@ -13,7 +13,7 @@ import frc.robot.Constants.VisionKalmanConstants;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import robotutils.interfaces.VisionSimInterface.DrivetrainVisionPoseInfo;
+import robotutils.interfaces.SimLimelightProducerInterface.DrivetrainVisionPoseInfo;
 
 
 class TestVisionKalmanFilter {

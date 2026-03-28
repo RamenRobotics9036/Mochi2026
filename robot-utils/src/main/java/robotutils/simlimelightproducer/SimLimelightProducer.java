@@ -36,12 +36,12 @@ import java.util.List;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import robotutils.interfaces.CameraInfoList;
-import robotutils.interfaces.VisionSimInterface;
+import robotutils.interfaces.SimLimelightProducerInterface;
 
 
 /** Vision simulation using PhotonVision. */
 @SuppressWarnings("PMD.TooManyStaticImports")
-public class VisionSim implements VisionSimInterface {
+public class SimLimelightProducer implements SimLimelightProducerInterface {
     private final CameraInfoList m_cameras;
 
     // Simulation
@@ -50,7 +50,7 @@ public class VisionSim implements VisionSimInterface {
     private VisionSystemSim m_visionSystemSim;
 
     /** Constructor. */
-    public VisionSim(CameraInfoList cameras) {
+    public SimLimelightProducer(CameraInfoList cameras) {
         m_cameras = cameras;
 
         // This is good sample code for PhotonVision usage in-general, but we spin this up ONLY for

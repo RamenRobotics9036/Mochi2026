@@ -24,7 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import robotutils.interfaces.VisionSimInterface;
+import robotutils.interfaces.SimLimelightProducerInterface;
 
 
 /**
@@ -84,7 +84,7 @@ class TestSingleCamOdometry {
         m_lastConsumedPose = null;
         m_consumeCallCount = 0;
 
-        Consumer<VisionSimInterface.DrivetrainVisionPoseInfo> consumer =
+        Consumer<SimLimelightProducerInterface.DrivetrainVisionPoseInfo> consumer =
             info -> {
                 m_lastConsumedPose = info.pose();
                 m_consumeCallCount++;
@@ -152,7 +152,7 @@ class TestSingleCamOdometry {
         boolean supportMegatag2,
         Supplier<Pose2d> currentRobotPoseSupplier) {
 
-        Consumer<VisionSimInterface.DrivetrainVisionPoseInfo> consumer =
+        Consumer<SimLimelightProducerInterface.DrivetrainVisionPoseInfo> consumer =
             info -> {
                 m_lastConsumedPose = info.pose();
                 m_consumeCallCount++;
@@ -175,7 +175,7 @@ class TestSingleCamOdometry {
 
     /** Creates a camera wired to {@link #m_kalmanFilter} with the given motionless supplier. */
     private SingleCamOdometry createCamWithKalman(java.util.function.BooleanSupplier isMotionless) {
-        Consumer<VisionSimInterface.DrivetrainVisionPoseInfo> consumer =
+        Consumer<SimLimelightProducerInterface.DrivetrainVisionPoseInfo> consumer =
             info -> {
                 m_lastConsumedPose = info.pose();
                 m_consumeCallCount++;

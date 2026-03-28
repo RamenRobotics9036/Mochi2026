@@ -1,7 +1,7 @@
 package frc.robot.sim;
 
 import edu.wpi.first.math.geometry.Transform3d;
-import robotutils.interfaces.VisionSimInterface;
+import robotutils.interfaces.SimLimelightProducerInterface;
 
 /**
  * Manages simulated hardware faults for autonomous testing.
@@ -11,7 +11,7 @@ import robotutils.interfaces.VisionSimInterface;
 public class FaultyAutoSim {
 
     private final GroundTruthSimInterface m_groundTruthSim;
-    private final VisionSimInterface m_visionSim;
+    private final SimLimelightProducerInterface m_visionSim;
 
     /**
      * Constructs a FaultyAutoSim.
@@ -19,7 +19,7 @@ public class FaultyAutoSim {
      * @param groundTruthSim The ground truth sim to apply faults to
      * @param visionSim The vision sim to apply camera faults to
      */
-    public FaultyAutoSim(GroundTruthSimInterface groundTruthSim, VisionSimInterface visionSim) {
+    public FaultyAutoSim(GroundTruthSimInterface groundTruthSim, SimLimelightProducerInterface visionSim) {
         m_groundTruthSim = groundTruthSim;
         m_visionSim = visionSim;
     }

@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.stream.Collectors;
-import robotutils.interfaces.VisionSimInterface;
+import robotutils.interfaces.SimLimelightProducerInterface;
 
 
 /**
@@ -248,8 +248,8 @@ public class SingleCamOdometry implements CamOdometryInterface {
         // Finally, update timestamp of last good vision data
         m_lastTimestamp = poseEstimate.timestampSeconds;
 
-        VisionSimInterface.DrivetrainVisionPoseInfo visionPoseInfo =
-            new VisionSimInterface.DrivetrainVisionPoseInfo(
+        SimLimelightProducerInterface.DrivetrainVisionPoseInfo visionPoseInfo =
+            new SimLimelightProducerInterface.DrivetrainVisionPoseInfo(
                 poseEstimate.pose,
                 poseEstimate.timestampSeconds,
                 curStdDevs,

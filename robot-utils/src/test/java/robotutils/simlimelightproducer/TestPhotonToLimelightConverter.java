@@ -22,7 +22,6 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
 
-// $TODO4 - Move this into robot util library
 /**
  * Unit tests for {@link PhotonToLimelightConverter}.
  *
