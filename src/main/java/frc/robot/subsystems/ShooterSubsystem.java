@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.sim.rollerssim.TwoMotorRollerIoInterface;
+import robotutils.interfaces.TwoMotorRollerIoInterface;
 
 public class ShooterSubsystem extends SubsystemBase {
     private final BotConfigInterface m_configInterface;

@@ -6,8 +6,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.sim.armsim.ArmIoInterface;
-import frc.robot.sim.rollerssim.RollerIoInterface;
+import robotutils.interfaces.RollerIoInterface;
 
 /**
  * Subsystem responsible for the robot's game piece intake mechanism.

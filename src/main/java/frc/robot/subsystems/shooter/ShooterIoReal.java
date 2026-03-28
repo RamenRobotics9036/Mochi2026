@@ -7,11 +7,10 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.sim.rollerssim.TwoMotorRollerIoInterface;
+import robotutils.interfaces.TwoMotorRollerIoInterface;
 
 /**
  * Real-hardware implementation of {@link TwoMotorRollerIoInterface} for the shooter.

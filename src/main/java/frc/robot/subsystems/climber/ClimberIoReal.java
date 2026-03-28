@@ -7,11 +7,10 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import frc.robot.Constants.ClimberConstants;
-import frc.robot.sim.elevatorssim.ElevatorIoInterface;
+import robotutils.interfaces.ElevatorIoInterface;
 
 /**
  * Real-hardware implementation of {@link ElevatorIoInterface} for the climber.

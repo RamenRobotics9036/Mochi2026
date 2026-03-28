@@ -10,7 +10,8 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import frc.robot.Constants.ArmConstants;
-import frc.robot.sim.armsim.ArmIoInterface;
+import robotutils.interfaces.ArmIoInterface;
+
 
 /**
  * Real-hardware implementation of {@link ArmIoInterface}.
