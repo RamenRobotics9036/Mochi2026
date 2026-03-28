@@ -13,6 +13,7 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.generated.GeneratedPancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import robotutils.interfaces.CameraInfo;
+import robotutils.interfaces.CameraInfoList;
 
 import java.util.List;
 
@@ -165,7 +166,7 @@ public class PancakeConfig implements BotConfigInterface {
     }
 
     /** The configurations for each camera mounted on the Pancake. */
-    private final List<CameraInfo> m_cameras = List.of(
+    private final CameraInfoList m_cameras = new CameraInfoList(List.of(
         new CameraInfo("limelight-fixedii", new Transform3d(
             new Translation3d(
                 Units.inchesToMeters(12.75), // + is forward
@@ -182,10 +183,10 @@ public class PancakeConfig implements BotConfigInterface {
             ),
             new Rotation3d(0, Math.toRadians(-30), Math.toRadians(180))  // x degrees up, backwards
         ))
-    );
+    ));
 
     @Override
-    public List<CameraInfo> getCameras() {
+    public CameraInfoList getCameras() {
         return m_cameras;
     }
 

@@ -34,6 +34,7 @@ import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import java.util.ArrayList;
 import java.util.List;
+import robotutils.interfaces.CameraInfoList;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 
@@ -59,15 +60,16 @@ public class VisionSim implements VisionSimInterface {
                 "VisionSim should only be instantiated in simulation");
         }
 
-        int numCams = m_configInterface.getCameras().size();
+        CameraInfoList cameras = m_configInterface.getCameras();
+        int numCams = cameras.size();
 
         m_camHelperList = new ArrayList<>();
         for (int i = 0; i < numCams; i++) {
-            String cameraName = m_configInterface.getCameraName(i);
+            String cameraName = cameras.getCameraName(i);
             m_camHelperList.add(new VisionSimSingleCam(
                 kPhotonCameraNamePrefix + cameraName,
                 cameraName,
-                m_configInterface.getRobotToCam(i)));
+                cameras.getRobotToCam(i)));
         }
 
         // ----- Simulation
