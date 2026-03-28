@@ -303,6 +303,6 @@ public class SimWrapper {
             throw new IllegalStateException("getSimDebugField should only be in simulation mode");
         }
 
-        return m_visionSim.getSimDebugField();
+        return m_simLimelightProducer.getSimDebugField();
     }
 }
