@@ -12,6 +12,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.math.util.Units;
 import frc.robot.generated.GeneratedPancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import robotutils.interfaces.CameraInfo;
+
 import java.util.List;
 
 /**

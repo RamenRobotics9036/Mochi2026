@@ -11,9 +11,10 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.Robot;
-import frc.robot.botconfig.BotConfigInterface.CameraInfo;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import robotutils.interfaces.CameraInfo;
+
 import java.util.List;
 
 /**

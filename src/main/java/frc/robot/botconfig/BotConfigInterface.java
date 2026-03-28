@@ -10,6 +10,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.generated.GeneratedPancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import robotutils.interfaces.CameraInfo;
+
 import java.util.List;
 
 /**
@@ -18,23 +20,6 @@ import java.util.List;
  * for a specific robot.
  */
 public interface BotConfigInterface {
-    /** Camera name and robot-to-camera transform pair. */
-    final class CameraInfo {
-        public final String cameraName;
-        public final Transform3d robotToCam;
-
-        /** 
-         * Create a new CameraInfo object to store info about a camera.
-         * 
-         * @param cameraName The name of the active camera
-         * @param robotToCam The transform to get from the robot's position to the camera's
-         */
-        public CameraInfo(String cameraName, Transform3d robotToCam) {
-            this.cameraName = cameraName;
-            this.robotToCam = robotToCam;
-        }
-    }
-
     /*************************************************************************************
      *
      * SWERVEDRIVE GENERATED CONSTANTS
