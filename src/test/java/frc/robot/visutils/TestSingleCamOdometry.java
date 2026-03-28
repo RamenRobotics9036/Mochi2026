@@ -14,7 +14,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
 import frc.robot.LimelightHelpers.RawFiducial;
-import frc.robot.sim.visionproducers.VisionSimInterface;
 import frc.robot.visutils.evaluateposes.EvaluatePosesMochiV1;
 import java.util.List;
 import java.util.function.Consumer;
@@ -25,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import robotutils.interfaces.VisionSimInterface;
 
 
 /**

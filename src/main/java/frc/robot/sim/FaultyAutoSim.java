@@ -1,7 +1,7 @@
 package frc.robot.sim;
 
 import edu.wpi.first.math.geometry.Transform3d;
-import frc.robot.sim.visionproducers.VisionSimInterface;
+import robotutils.interfaces.VisionSimInterface;
 
 /**
  * Manages simulated hardware faults for autonomous testing.

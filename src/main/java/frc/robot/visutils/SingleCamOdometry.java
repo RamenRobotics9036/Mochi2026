@@ -10,7 +10,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.PoseEstimate;
-import frc.robot.sim.visionproducers.VisionSimInterface;
 import frc.robot.visutils.evaluateposes.EnhancedPoseEstimate;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.stream.Collectors;
+import robotutils.interfaces.VisionSimInterface;
 
 
 /**

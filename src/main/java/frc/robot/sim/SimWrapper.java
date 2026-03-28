@@ -7,13 +7,13 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
-import frc.robot.sim.visionproducers.VisionSimConstants;
-import frc.robot.sim.visionproducers.VisionSimFactory;
-import frc.robot.sim.visionproducers.VisionSimInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
 import static edu.wpi.first.units.Units.*;
 import java.util.function.Consumer;
+import robotutils.RobotUtilsFactory;
+import robotutils.interfaces.VisionSimInterface;
+import robotutils.simlimelightproducer.VisionSimConstants;
 
 
 /**
@@ -27,6 +27,8 @@ import java.util.function.Consumer;
  * that the simulation code is only running under simulation conditions.
  */
 public class SimWrapper {
+    private static final RobotUtilsFactory m_robotUtilsFactory = new RobotUtilsFactory();
+
     private final BotConfigInterface m_configInterface;
 
     private final GroundTruthSimInterface m_groundTruthSim;
@@ -63,7 +65,7 @@ public class SimWrapper {
         drivetrain.setHighFreqSimCallback(m_groundTruthSim::updateGroundTruthPose);
 
         // Create vision simulation
-        m_visionSim = VisionSimFactory.create(m_configInterface.getCameras());
+        m_visionSim = m_robotUtilsFactory.createSimLimelightProducer(m_configInterface.getCameras());
         if (m_visionSim == null) {
             throw new IllegalStateException("VisionSimInterface creation failed");
         }

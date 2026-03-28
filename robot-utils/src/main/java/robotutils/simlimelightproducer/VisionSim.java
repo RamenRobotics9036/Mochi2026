@@ -36,6 +36,7 @@ import java.util.List;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import robotutils.interfaces.CameraInfoList;
+import robotutils.interfaces.VisionSimInterface;
 
 
 /** Vision simulation using PhotonVision. */

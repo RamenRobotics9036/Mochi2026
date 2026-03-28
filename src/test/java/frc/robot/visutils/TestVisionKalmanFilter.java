@@ -10,10 +10,10 @@ import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants.VisionKalmanConstants;
-import frc.robot.sim.visionproducers.VisionSimInterface.DrivetrainVisionPoseInfo;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import robotutils.interfaces.VisionSimInterface.DrivetrainVisionPoseInfo;
 
 
 class TestVisionKalmanFilter {
