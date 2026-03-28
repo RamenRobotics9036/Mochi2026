@@ -63,7 +63,7 @@ public class SimWrapper {
         drivetrain.setHighFreqSimCallback(m_groundTruthSim::updateGroundTruthPose);
 
         // Create vision simulation
-        m_visionSim = VisionSimFactory.create(m_configInterface);
+        m_visionSim = VisionSimFactory.create(m_configInterface.getCameras());
         if (m_visionSim == null) {
             throw new IllegalStateException("VisionSimInterface creation failed");
         }

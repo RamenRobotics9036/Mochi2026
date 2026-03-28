@@ -31,18 +31,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Robot;
-import frc.robot.botconfig.BotConfigInterface;
 import java.util.ArrayList;
 import java.util.List;
-import robotutils.interfaces.CameraInfoList;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
+import robotutils.interfaces.CameraInfoList;
 
 
 /** Vision simulation using PhotonVision. */
 @SuppressWarnings("PMD.TooManyStaticImports")
 public class VisionSim implements VisionSimInterface {
-    private final BotConfigInterface m_configInterface;
+    private final CameraInfoList m_cameras;
 
     // Simulation
     private List<VisionSimSingleCam> m_camHelperList;
@@ -50,8 +49,8 @@ public class VisionSim implements VisionSimInterface {
     private VisionSystemSim m_visionSystemSim;
 
     /** Constructor. */
-    public VisionSim(BotConfigInterface configInterface) {
-        m_configInterface = configInterface;
+    public VisionSim(CameraInfoList cameras) {
+        m_cameras = cameras;
 
         // This is good sample code for PhotonVision usage in-general, but we spin this up ONLY for
         // simulation.  You'll need a separate implementation for real robot vision processing.
@@ -60,16 +59,15 @@ public class VisionSim implements VisionSimInterface {
                 "VisionSim should only be instantiated in simulation");
         }
 
-        CameraInfoList cameras = m_configInterface.getCameras();
-        int numCams = cameras.size();
+        int numCams = m_cameras.size();
 
         m_camHelperList = new ArrayList<>();
         for (int i = 0; i < numCams; i++) {
-            String cameraName = cameras.getCameraName(i);
+            String cameraName = m_cameras.getCameraName(i);
             m_camHelperList.add(new VisionSimSingleCam(
                 kPhotonCameraNamePrefix + cameraName,
                 cameraName,
-                cameras.getRobotToCam(i)));
+                m_cameras.getRobotToCam(i)));
         }
 
         // ----- Simulation
