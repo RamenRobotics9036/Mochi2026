@@ -1,4 +1,5 @@
-package frc.robot.sim.elevatorssim;
+package robotutils.interfaces;
+
 
 /**
  * IO interface for a single-motor elevator (linear lift) mechanism.
@@ -24,7 +25,7 @@ public interface ElevatorIoInterface {
 
     /** Read latest sensor data into the given outputs container. */
     void updateOutputs(DeviceOutputs outputs);
-   
+
     /** Reset the encoder position to zero. */
     void resetEncoder();
 }

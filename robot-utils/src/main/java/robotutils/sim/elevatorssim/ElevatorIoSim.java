@@ -1,4 +1,4 @@
-package frc.robot.sim.elevatorssim;
+package robotutils.sim.elevatorssim;
 
 import edu.wpi.first.hal.SimDevice;
 import edu.wpi.first.hal.SimDevice.Direction;
@@ -6,6 +6,8 @@ import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import robotutils.interfaces.ElevatorIoInterface;
+
 
 /**
  * Simulated implementation of {@link ElevatorIoInterface} using

@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.ArmConstants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.botconfig.BotConfigInterface;
@@ -40,7 +41,6 @@ import frc.robot.commands.JiggleCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.SpinnyDefaultCommand;
-import frc.robot.sim.SimIoFactory;
 import frc.robot.sim.ShowVisionOnField;
 import frc.robot.sim.rollerssim.RollerIoInterface;
 import frc.robot.sim.rollerssim.TwoMotorRollerIoInterface;
@@ -78,6 +78,7 @@ import robotutils.interfaces.DriveSmoothInterface;
 import robotutils.interfaces.JoystickInputInterface;
 import robotutils.interfaces.JoystickInputsRecord;
 import robotutils.perrobotconfig.PerRobotConfig;
+import robotutils.sim.SimIoFactory;
 
 import java.util.OptionalDouble;
 
@@ -199,7 +200,7 @@ public class RobotContainer {
 
     private final ArmIoInterface m_intakeArmIo =
         (Robot.isSimulation() || m_configInterface.shouldForceDisableIntakeArm())
-        ? SimIoFactory.createIntakeArmIoSim()
+        ? SimIoFactory.createIntakeArmIoSim(ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle)
         : new ArmIoReal();
 
     /** Intake subsystem driven through the IO abstraction. */

@@ -1,4 +1,4 @@
-package frc.robot.sim;
+package robotutils;
 
 import frc.robot.Constants;
 import frc.robot.sim.armsim.ArmIoInterface;
@@ -81,9 +81,14 @@ public class SimIoFactory {
      *
      * @return A new {@link ArmIoSim} configured with intake arm sim constants.
      */
-    public static ArmIoInterface createIntakeArmIoSim() {
+    public static ArmIoInterface createIntakeArmIoSim(
+        double minArmAngleDegrees,
+        double maxArmAngleDegrees) {
+
         return new ArmIoSim(
             Constants.SimIntakeArmConstants.kDeviceName,
+            minArmAngleDegrees,
+            maxArmAngleDegrees,
             Constants.SimIntakeArmConstants.kMoiKgM2,
             Constants.SimIntakeArmConstants.kArmLengthMeters,
             Constants.ArmConstants.kArmGearRatio);

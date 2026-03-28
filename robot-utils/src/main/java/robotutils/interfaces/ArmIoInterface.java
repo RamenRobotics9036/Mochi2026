@@ -1,4 +1,5 @@
-package frc.robot.sim.armsim;
+package robotutils.interfaces;
+
 
 /**
  * IO interface for the intake arm mechanism.

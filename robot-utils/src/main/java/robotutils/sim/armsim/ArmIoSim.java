@@ -1,13 +1,14 @@
-package frc.robot.sim.armsim;
+package robotutils.sim.armsim;
 
 import edu.wpi.first.hal.SimDevice;
-import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.SimDevice.Direction;
+import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import frc.robot.Constants.ArmConstants;
+import robotutils.interfaces.ArmIoInterface;
+
 
 /**
  * Simulated implementation of {@link ArmIoInterface} for a simple up/down arm.
@@ -30,18 +31,20 @@ public class ArmIoSim implements ArmIoInterface {
     /** Constructor. */
     public ArmIoSim(
             String deviceName,
+            double minArmAngleDegrees,
+            double maxArmAngleDegrees,
             double momentOfInertia,
             double armLengthMeters,
             double gearRatio) {
-        double initialArmPositionDegrees = (ArmConstants.kMinArmAngle + ArmConstants.kMaxArmAngle) / 2.0;
+        double initialArmPositionDegrees = (minArmAngleDegrees + maxArmAngleDegrees) / 2.0;
 
         m_armSim = new SingleJointedArmSim(
             kArmMotor,
             gearRatio,
             momentOfInertia,
             armLengthMeters,
-            Units.degreesToRadians(ArmConstants.kMinArmAngle),
-            Units.degreesToRadians(ArmConstants.kMaxArmAngle),
+            Units.degreesToRadians(minArmAngleDegrees),
+            Units.degreesToRadians(maxArmAngleDegrees),
             false, // No gravity since the arm will just fall
             Units.degreesToRadians(initialArmPositionDegrees));
 
@@ -50,7 +53,8 @@ public class ArmIoSim implements ArmIoInterface {
             m_simPosition = m_simDevice.createDouble("Position", Direction.kOutput, 0.0);
             m_simVelocity = m_simDevice.createDouble("Velocity", Direction.kOutput, 0.0);
             m_simCurrent = m_simDevice.createDouble("Current Amps", Direction.kOutput, 0.0);
-        } else {
+        }
+        else {
             m_simPosition = null;
             m_simVelocity = null;
             m_simCurrent = null;
@@ -88,7 +92,9 @@ public class ArmIoSim implements ArmIoInterface {
     @Override
     public void updateOutputs(DeviceOutputs outputs) {
         if (m_positionControlEnabled) {
-            double positionError = m_targetPosition - Units.radiansToDegrees(m_armSim.getAngleRads());
+            double positionError =
+                m_targetPosition - Units.radiansToDegrees(m_armSim.getAngleRads());
+
             m_openLoopInputVolts = MathUtil.clamp(
                 positionError * kPositionKpVoltsPerUnit,
                 -12.0,
