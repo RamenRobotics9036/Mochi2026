@@ -1,17 +1,14 @@
 package robotutils;
 
 import frc.robot.Constants;
-import frc.robot.sim.armsim.ArmIoInterface;
-import frc.robot.sim.armsim.ArmIoSim;
-import frc.robot.sim.elevatorssim.ElevatorIoInterface;
-import frc.robot.sim.elevatorssim.ElevatorIoSim;
-import frc.robot.sim.rollerssim.RollerIoInterface;
-import frc.robot.sim.rollerssim.RollerIoSim;
-import frc.robot.sim.rollerssim.TwoMotorRollerIoInterface;
-import frc.robot.sim.rollerssim.TwoMotorRollerIoSim;
+import robotutils.interfaces.ArmIoInterface;
+import robotutils.interfaces.ElevatorIoInterface;
+import robotutils.interfaces.RollerIoInterface;
+import robotutils.interfaces.TwoMotorRollerIoInterface;
 
 /** Helps create specific IO Sim instances for our specific robot. */
 public class SimIoFactory {
+    private static final RobotUtilsFactory m_robotUtilsFactory = new RobotUtilsFactory();
 
     /**
      * Creates the shooter IO: a {@link TwoMotorRollerIoSim} in simulation.
@@ -19,7 +16,7 @@ public class SimIoFactory {
      * @return A new {@link TwoMotorRollerIoSim} configured with shooter sim constants.
      */
     public static TwoMotorRollerIoInterface createShooterIoSim() {
-        return new TwoMotorRollerIoSim(
+        return m_robotUtilsFactory.createTwoMotorRollerIoSim(
             Constants.SimShooterConstants.kDeviceName,
             Constants.SimShooterConstants.kMoiKgM2,
             Constants.ShooterConstants.kShooterGearRatio);
@@ -31,7 +28,7 @@ public class SimIoFactory {
      * @return A new {@link RollerIoSim} configured with indexer sim constants.
      */
     public static RollerIoInterface createIndexerIoSim() {
-        return new RollerIoSim(
+        return m_robotUtilsFactory.createRollerIoSim(
             Constants.SimIndexerConstants.kDeviceName,
             Constants.SimIndexerConstants.kMoiKgM2,
             Constants.IndexerConstants.kIndexerGearRatio);
@@ -43,7 +40,7 @@ public class SimIoFactory {
      * @return A new {@link RollerIoSim} configured with spinny wheels sim constants.
      */
     public static RollerIoInterface createSpinnyIoSim() {
-        return new RollerIoSim(
+        return m_robotUtilsFactory.createRollerIoSim(
             Constants.SimSpinnyWheelsConstants.kDeviceName,
             Constants.SimSpinnyWheelsConstants.kMoiKgM2,
             Constants.SpinnyWheelsConstants.kSpinGearRatio);
@@ -55,7 +52,7 @@ public class SimIoFactory {
      * @return A new {@link ElevatorIoSim} configured with climber sim constants.
      */
     public static ElevatorIoInterface createClimberIoSim() {
-        return new ElevatorIoSim(
+        return m_robotUtilsFactory.createElevatorIoSim(
             Constants.SimClimberConstants.kDeviceName,
             Constants.SimClimberConstants.kGearRatio,
             Constants.SimClimberConstants.kCarriageMassKg,
@@ -70,7 +67,7 @@ public class SimIoFactory {
      * @return A new {@link RollerIoSim} configured with intake sim constants.
      */
     public static RollerIoInterface createIntakeIoSim() {
-        return new RollerIoSim(
+        return m_robotUtilsFactory.createRollerIoSim(
             Constants.SimIntakeConstants.kDeviceName,
             Constants.SimIntakeConstants.kMoiKgM2,
             Constants.IntakeConstants.kIntakeRollerGearRatio);
@@ -85,7 +82,7 @@ public class SimIoFactory {
         double minArmAngleDegrees,
         double maxArmAngleDegrees) {
 
-        return new ArmIoSim(
+        return m_robotUtilsFactory.createArmIoSim(
             Constants.SimIntakeArmConstants.kDeviceName,
             minArmAngleDegrees,
             maxArmAngleDegrees,
