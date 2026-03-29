@@ -1,5 +1,6 @@
 package robotutils.perrobotconfig;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import java.util.Map;
 import java.util.Optional;
@@ -87,6 +88,17 @@ public class PerRobotConfig<T> implements PerRobotConfigInterface<T> {
     /** Returns the name of the config for the current robot. */
     public String getBotConfigName() {
         return m_selectedConfigName;
+    }
+
+    /** Prints or reports the detected robot identity to the driver station / console. */
+    public void reportSelection() {
+        if ("Simulation".equals(m_robotName)) {
+            System.out.println(">>> Detected: SIMULATION");
+        } else if ("Unknown Robot".equals(m_robotName)) {
+            DriverStation.reportError("UNKNOWN RIO MAC! Defaulting to COMPETITION.", false);
+        } else {
+            System.out.println(">>> Detected: " + m_robotName.toUpperCase());
+        }
     }
 
     /**

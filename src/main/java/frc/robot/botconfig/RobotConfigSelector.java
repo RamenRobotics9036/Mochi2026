@@ -1,6 +1,5 @@
 package frc.robot.botconfig;
 
-import edu.wpi.first.wpilibj.DriverStation;
 import java.util.Map;
 import robotutils.RobotUtilsFactory;
 import robotutils.interfaces.MacKey;
@@ -35,21 +34,7 @@ public final class RobotConfigSelector {
             competitionConfigName,
             competitionConfigName);
 
-        reportSelection(perRobotConfig);
+        perRobotConfig.reportSelection();
         return perRobotConfig;
-    }
-
-    private static void reportSelection(PerRobotConfigInterface<BotConfigInterface> perRobotConfig) {
-        String robotName = perRobotConfig.getRobotName();
-
-        if ("Simulation".equals(robotName)) {
-            System.out.println(">>> Detected: SIMULATION");
-        }
-        else if ("Unknown Robot".equals(robotName)) {
-            DriverStation.reportError("UNKNOWN RIO MAC! Defaulting to COMPETITION.", false);
-        }
-        else {
-            System.out.println(">>> Detected: " + robotName.toUpperCase());
-        }
     }
 }

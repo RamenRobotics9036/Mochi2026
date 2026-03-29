@@ -12,4 +12,7 @@ public interface PerRobotConfigInterface<T> {
 
     /** Returns the name of the config for the current robot. */
     String getBotConfigName();
+
+    /** Prints or reports the detected robot identity to the driver station / console. */
+    void reportSelection();
 }
