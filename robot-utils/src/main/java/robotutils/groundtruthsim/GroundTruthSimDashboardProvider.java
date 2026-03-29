@@ -4,6 +4,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.math.geometry.Pose2d;
 import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
+import robotutils.pub.interfaces.dashboard.DoublePublisherWrapper;
 import robotutils.pub.interfaces.dashboard.Pose2dPublisherWrapper;
 
 /** Dashboard provider for ground truth simulation pose. */
@@ -14,6 +15,7 @@ public class GroundTruthSimDashboardProvider
     private boolean m_isUpdated = false;
     private GroundTruthSimDashboardSettings m_latestSettings = null;
     private Pose2dPublisherWrapper m_groundTruthPosePublisher;
+    private DoublePublisherWrapper m_estimateToGroundTruthPublisher;
 
     /** Constructor. */
     public GroundTruthSimDashboardProvider() {
@@ -27,6 +29,9 @@ public class GroundTruthSimDashboardProvider
 
         m_groundTruthPosePublisher = new Pose2dPublisherWrapper(
             tableRoot.getStructTopic("GroundTruthPose", Pose2d.struct).publish());
+
+        m_estimateToGroundTruthPublisher = new DoublePublisherWrapper(
+            tableRoot.getDoubleTopic("EstimateToGroundTruth").publish());
 
         m_isInitialized = true;
     }
@@ -43,6 +48,7 @@ public class GroundTruthSimDashboardProvider
         }
 
         m_groundTruthPosePublisher.set(m_latestSettings.groundTruthPose());
+        m_estimateToGroundTruthPublisher.set(m_latestSettings.poseEstimateToGroundTruthDistance());
     }
 
     @Override

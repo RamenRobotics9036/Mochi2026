@@ -460,6 +460,24 @@
               "trajectory_color": 4294967295,
               "show_robot_outside_widget": true
             }
+          },
+          {
+            "title": "GroundTruthToEstimate",
+            "x": 896.0,
+            "y": 640.0,
+            "width": 640.0,
+            "height": 256.0,
+            "type": "Graph",
+            "properties": {
+              "topic": "/RobotUtils/EstimateToGroundTruth",
+              "period": 0.033,
+              "data_type": "double",
+              "time_displayed": 10.0,
+              "min_value": 0.0,
+              "max_value": 1.0,
+              "color": 4278238420,
+              "line_width": 2.0
+            }
           }
         ]
       }

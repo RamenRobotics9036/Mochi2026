@@ -197,7 +197,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         m_optionalDashboardProvider.ifPresent(provider ->
             provider.setLatestSettings(new GroundTruthSimDashboardSettings(
                 m_groundTruthPose,
-                getPoseEstimateToGroundTruthDistance() * 100.0)));
+                getPoseEstimateToGroundTruthDistance())));
 
         // Return the radians rotate this step
         return dtheta;
