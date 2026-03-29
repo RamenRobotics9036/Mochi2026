@@ -53,7 +53,6 @@ import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SpinnyWheels;
-import frc.robot.subsystems.TestSubsystems;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.subsystems.indexer.IndexerIoReal;
 import frc.robot.subsystems.intake.ArmIoReal;
@@ -231,13 +230,6 @@ public class RobotContainer {
             Robot.isSimulation(),
             () -> drivetrain.getOperatorForwardDirection().getDegrees());
 
-        Command driveTestCommand = TestSubsystems.test(
-                intakeSubsystem,
-                m_indexerSubsystem,
-                shooterSubsystem,
-                armSubsystem,
-                climberSubsystem);
-
         m_simWrapper = SimWrapper.create(m_configInterface, drivetrain, this::resetRobotPose);
         Command cycleResetCmd = (m_simWrapper != null)
             ? drivetrain.runOnce(() -> m_simWrapper.cycleResetPosition(
@@ -250,7 +242,6 @@ public class RobotContainer {
             m_configInterface,
             drivetrain,
             m_glassField,
-            driveTestCommand,
             cycleResetCmd,
             m_configInterface.getCameras().stream()
                 .map(c -> c.cameraName)

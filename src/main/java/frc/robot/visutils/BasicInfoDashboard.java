@@ -133,7 +133,6 @@ public class BasicInfoDashboard {
         BotConfigInterface configInterface,
         SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
         Field2d glassField,
-        Command testSubsystemsCommand, // $TODO4 - This should go away
         Command simCycleResetCmd,
         List<String> cameraNames) {
 

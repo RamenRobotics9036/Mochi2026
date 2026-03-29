@@ -81,17 +81,6 @@ public final class  AutoLogic {
         tab.addString("Active Auto", AutoLogic::getSelectedName)
             .withPosition(0, 1)
             .withSize(2, 1);
-
-        // Publish initial value so the key exists in NetworkTables before any selection change
-        String kRelativeKey = "Auto is Relative"; // $TODO4 - Remove auto is relative
-        SmartDashboard.putBoolean(
-            kRelativeKey,
-            getSelectedAutoStartingPose().equals(Pose2d.kZero));
-
-        // $TODO4 - Auto relative goes away
-        autoPicker.onChange(name -> SmartDashboard.putBoolean(
-            kRelativeKey,
-            getSelectedAutoStartingPose().equals(Pose2d.kZero)));
     }
 
     /** Adds both PathPlanner routines and hard-coded manual routines to the chooser. */
