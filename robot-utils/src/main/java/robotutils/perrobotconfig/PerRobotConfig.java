@@ -95,9 +95,11 @@ public class PerRobotConfig<T> implements PerRobotConfigInterface<T> {
     public void reportSelection() {
         if ("Simulation".equals(m_robotName)) {
             System.out.println(">>> Detected: SIMULATION");
-        } else if ("Unknown Robot".equals(m_robotName)) {
+        }
+        else if ("Unknown Robot".equals(m_robotName)) {
             DriverStation.reportError("UNKNOWN RIO MAC! Defaulting to COMPETITION.", false);
-        } else {
+        }
+        else {
             System.out.println(">>> Detected: " + m_robotName.toUpperCase());
         }
     }

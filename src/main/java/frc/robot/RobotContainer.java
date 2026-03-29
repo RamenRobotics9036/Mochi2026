@@ -91,7 +91,6 @@ public class RobotContainer {
 
     private final PerRobotConfigInterface<BotConfigInterface> m_perRobotConfig = RobotConfigSelector.create();
     private final BotConfigInterface m_configInterface = m_perRobotConfig.getBotConfig();
-    private final String m_robotName = m_perRobotConfig.getRobotName();
 
     private final RobotUtilsFactory m_robotUtilsFactory = new RobotUtilsFactory();
 
@@ -238,7 +237,6 @@ public class RobotContainer {
 
         // $TODO2 - Can I consolidate all the basicInfoDashboard config
         basicInfoDashboard = new BasicInfoDashboard(
-            m_robotName,
             m_configInterface,
             drivetrain,
             m_glassField,
