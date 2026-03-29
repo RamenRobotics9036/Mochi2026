@@ -4,6 +4,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import robotutils.pub.interfaces.MacKey;
 import robotutils.pub.interfaces.PerRobotConfigInterface;
+import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
 
 import java.util.Map;
 import java.util.Optional;
@@ -14,7 +15,7 @@ import java.util.Optional;
  * based on the Roborio MAC address.
  */
 public class PerRobotConfig<T> implements PerRobotConfigInterface<T> {
-
+    private Optional<DashboardProviderInterface<PerRobotConfigDashboardSettings>> m_optionalDashboardProvider = Optional.empty();
     private String m_robotName = null;
     private String m_selectedConfigName = null;
     private T m_selectedConfig = null;
@@ -23,6 +24,7 @@ public class PerRobotConfig<T> implements PerRobotConfigInterface<T> {
 
     /** Simple Constructor. */
     public PerRobotConfig(
+        Optional<DashboardProviderInterface<PerRobotConfigDashboardSettings>> optionalDashboardProvider,
         Map<MacKey, String> macToRobotNameDict,
         Map<String, String> robotNameToConfigNameDict,
         Map<String, T> configNameToConfigObjDict,
@@ -30,6 +32,7 @@ public class PerRobotConfig<T> implements PerRobotConfigInterface<T> {
         String simulationConfigName) {
 
         this(
+            optionalDashboardProvider,
             macToRobotNameDict,
             robotNameToConfigNameDict,
             configNameToConfigObjDict,
@@ -44,6 +47,7 @@ public class PerRobotConfig<T> implements PerRobotConfigInterface<T> {
      * instead of reading hardware, and optionally forces simulation mode.
      */
     public PerRobotConfig(
+        Optional<DashboardProviderInterface<PerRobotConfigDashboardSettings>> optionalDashboardProvider,
         Map<MacKey, String> macToRobotNameDict,
         Map<String, String> robotNameToConfigNameDict,
         Map<String, T> configNameToConfigObjDict,
@@ -52,6 +56,7 @@ public class PerRobotConfig<T> implements PerRobotConfigInterface<T> {
         MacKey testMacKey,
         Optional<Boolean> forceSimulationValue) {
 
+        m_optionalDashboardProvider = optionalDashboardProvider;
         m_testMacKey = testMacKey;
         m_forceSimulationValue = forceSimulationValue;
 
@@ -69,6 +74,12 @@ public class PerRobotConfig<T> implements PerRobotConfigInterface<T> {
             defaultConfigName,
             simulationConfigName);
         T config = getConfig(configName, configNameToConfigObjDict);
+
+        if (m_optionalDashboardProvider.isPresent()) {
+            m_optionalDashboardProvider.get().setLatestSettings(new PerRobotConfigDashboardSettings(
+                robotName,
+                configName));
+        }
 
         // Set the results into member variables to save
         m_robotName = getRobotDisplayname(robotName);

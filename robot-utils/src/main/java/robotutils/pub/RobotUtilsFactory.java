@@ -6,6 +6,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.RobotBase;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
@@ -15,6 +16,8 @@ import robotutils.faultydrivemanager.FaultyDriveManager;
 import robotutils.groundtruthsim.GroundTruthSim;
 import robotutils.joystickinput.JoystickInput;
 import robotutils.perrobotconfig.PerRobotConfig;
+import robotutils.perrobotconfig.PerRobotConfigDashboardProvider;
+import robotutils.perrobotconfig.PerRobotConfigDashboardSettings;
 import robotutils.pub.interfaces.CameraInfoList;
 import robotutils.pub.interfaces.DriveSmoothInterface;
 import robotutils.pub.interfaces.FaultyDriveManagerInterface;
@@ -24,6 +27,7 @@ import robotutils.pub.interfaces.MacKey;
 import robotutils.pub.interfaces.PerRobotConfigInterface;
 import robotutils.pub.interfaces.SimLimelightProducerInterface;
 import robotutils.pub.interfaces.dashboard.DashboardManagerInterface;
+import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
 import robotutils.pub.interfaces.simio.ArmIoInterface;
 import robotutils.pub.interfaces.simio.ElevatorIoInterface;
 import robotutils.pub.interfaces.simio.RollerIoInterface;
@@ -118,6 +122,7 @@ public class RobotUtilsFactory {
     /**
      * Creates a per-robot configuration selector.
      *
+     * @param optionalDashboardManager optional dashboard manager for reporting per-robot config settings
      * @param macToRobotNameDict maps MAC key suffixes to robot names
      * @param robotNameToConfigNameDict maps robot names to config names
      * @param configNameToConfigObjDict maps config names to config objects
@@ -126,13 +131,20 @@ public class RobotUtilsFactory {
      * @return configured per-robot config selector
      */
     public <T> PerRobotConfigInterface<T> createPerRobotConfig(
+        Optional<DashboardManagerInterface> optionalDashboardManager,
         Map<MacKey, String> macToRobotNameDict,
         Map<String, String> robotNameToConfigNameDict,
         Map<String, T> configNameToConfigObjDict,
         String defaultConfigName,
         String simulationConfigName) {
 
+        Optional<DashboardProviderInterface<PerRobotConfigDashboardSettings>> optionalDashboardProvider =
+            optionalDashboardManager.isPresent()
+            ? Optional.of(new PerRobotConfigDashboardProvider())
+            : Optional.empty();
+
         return new PerRobotConfig<T>(
+            optionalDashboardProvider,
             macToRobotNameDict,
             robotNameToConfigNameDict,
             configNameToConfigObjDict,

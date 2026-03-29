@@ -1,10 +1,12 @@
 package frc.robot.botconfig;
 
 import java.util.Map;
+import java.util.Optional;
 
 import robotutils.pub.RobotUtilsFactory;
 import robotutils.pub.interfaces.MacKey;
 import robotutils.pub.interfaces.PerRobotConfigInterface;
+import robotutils.pub.interfaces.dashboard.DashboardManagerInterface;
 
 
 /** Builds the per-robot config selector for this project. */
@@ -16,13 +18,14 @@ public final class RobotConfigSelector {
     }
 
     /** Creates the selector used by the main robot project. */
-    public static PerRobotConfigInterface<BotConfigInterface> create() {
+    public static PerRobotConfigInterface<BotConfigInterface> create(Optional<DashboardManagerInterface> optionalDashboardManager) {
         BotConfigInterface compConfig = new CompConfig();
         BotConfigInterface pancakeConfig = new PancakeConfig();
         String competitionConfigName = compConfig.getConfigName();
         String pancakeConfigName = pancakeConfig.getConfigName();
 
         PerRobotConfigInterface<BotConfigInterface> perRobotConfig = new RobotUtilsFactory().createPerRobotConfig(
+            optionalDashboardManager,
             Map.of(
                 new MacKey(0x38, 0xD2, 0x58), COMPETITION_ROBOT_NAME,
                 new MacKey(0x38, 0xD9, 0x80), PANCAKE_ROBOT_NAME),

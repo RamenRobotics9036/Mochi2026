@@ -86,6 +86,7 @@ class TestPerRobotConfig {
     void constructor_nullMacDict_throwsIllegalArgument() {
         var ex = assertThrows(IllegalArgumentException.class, () ->
             new PerRobotConfig<TestConfigInterface>(
+                Optional.empty(),
                 null,
                 m_validNameDict,
                 m_validConfigDict,
@@ -101,6 +102,7 @@ class TestPerRobotConfig {
     void constructor_emptyMacDict_throwsIllegalArgument() {
         var ex = assertThrows(IllegalArgumentException.class, () ->
             new PerRobotConfig<TestConfigInterface>(
+                Optional.empty(),
                 Map.of(),
                 m_validNameDict,
                 m_validConfigDict,
@@ -120,6 +122,7 @@ class TestPerRobotConfig {
         // Name dict has entries but none matching the robot names in VALID_MAC_DICT
         var ex = assertThrows(IllegalArgumentException.class, () ->
             new PerRobotConfig<TestConfigInterface>(
+                Optional.empty(),
                 m_validMacDict,
                 Map.of("UnrelatedRobot", m_configNameA),
                 m_validConfigDict,
@@ -139,6 +142,7 @@ class TestPerRobotConfig {
         // nameDict maps robotNameA -> "MissingConfig", which is absent from configDict
         var ex = assertThrows(IllegalArgumentException.class, () ->
             new PerRobotConfig<TestConfigInterface>(
+                Optional.empty(),
                 Map.of(m_macKeyA, m_robotNameA),
                 Map.of(m_robotNameA, "MissingConfig"),
                 Map.of(m_configNameA, m_configObjA),
@@ -158,6 +162,7 @@ class TestPerRobotConfig {
     void constructor_invalidDefaultConfigName_throwsIllegalArgument() {
         var ex = assertThrows(IllegalArgumentException.class, () ->
             new PerRobotConfig<TestConfigInterface>(
+                Optional.empty(),
                 m_validMacDict,
                 m_validNameDict,
                 m_validConfigDict,
@@ -178,6 +183,7 @@ class TestPerRobotConfig {
     void constructor_invalidSimulationConfigName_throwsIllegalArgument() {
         var ex = assertThrows(IllegalArgumentException.class, () ->
             new PerRobotConfig<TestConfigInterface>(
+                Optional.empty(),
                 m_validMacDict,
                 m_validNameDict,
                 m_validConfigDict,
@@ -197,6 +203,7 @@ class TestPerRobotConfig {
     @Test
     void constructor_inSimulation_returnsSimulationConfig() {
         var config = new PerRobotConfig<TestConfigInterface>(
+            Optional.empty(),
             m_validMacDict,
             m_validNameDict,
             m_validConfigDict,
@@ -211,6 +218,7 @@ class TestPerRobotConfig {
     @Test
     void constructor_inSimulation_robotNameIsSimulation() {
         var config = new PerRobotConfig<TestConfigInterface>(
+            Optional.empty(),
             m_validMacDict,
             m_validNameDict,
             m_validConfigDict,
@@ -228,6 +236,7 @@ class TestPerRobotConfig {
     @Test
     void testMacKey_matchingEntry_returnsMatchedRobotConfig() {
         var config = new PerRobotConfig<TestConfigInterface>(
+            Optional.empty(),
             m_validMacDict,
             m_validNameDict,
             m_validConfigDict,
@@ -246,6 +255,7 @@ class TestPerRobotConfig {
     @Test
     void testMacKey_matchingEntry_returnsCorrectRobotName() {
         var config = new PerRobotConfig<TestConfigInterface>(
+            Optional.empty(),
             m_validMacDict,
             m_validNameDict,
             m_validConfigDict,
@@ -264,6 +274,7 @@ class TestPerRobotConfig {
     @Test
     void testMacKey_noMatchingEntry_returnsDefaultConfig() {
         var config = new PerRobotConfig<TestConfigInterface>(
+            Optional.empty(),
             m_validMacDict,
             m_validNameDict,
             m_validConfigDict,
@@ -281,6 +292,7 @@ class TestPerRobotConfig {
     @Test
     void testMacKey_noMatchingEntry_robotNameIsUnknownRobot() {
         var config = new PerRobotConfig<TestConfigInterface>(
+            Optional.empty(),
             m_validMacDict,
             m_validNameDict,
             m_validConfigDict,
@@ -298,6 +310,7 @@ class TestPerRobotConfig {
     @Test
     void getBotConfig_returnsSelectedConfigObject() {
         var config = new PerRobotConfig<TestConfigInterface>(
+            Optional.empty(),
             m_validMacDict,
             m_validNameDict,
             m_validConfigDict,
@@ -313,6 +326,7 @@ class TestPerRobotConfig {
     @Test
     void getBotConfigName_returnsSelectedConfigName() {
         var config = new PerRobotConfig<TestConfigInterface>(
+            Optional.empty(),
             m_validMacDict,
             m_validNameDict,
             m_validConfigDict,

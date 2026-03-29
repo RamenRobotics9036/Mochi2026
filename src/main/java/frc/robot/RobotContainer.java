@@ -73,11 +73,13 @@ import robotutils.pub.interfaces.DriveSmoothInterface;
 import robotutils.pub.interfaces.JoystickInputInterface;
 import robotutils.pub.interfaces.JoystickInputsRecord;
 import robotutils.pub.interfaces.PerRobotConfigInterface;
+import robotutils.pub.interfaces.dashboard.DashboardManagerInterface;
 import robotutils.pub.interfaces.simio.ArmIoInterface;
 import robotutils.pub.interfaces.simio.ElevatorIoInterface;
 import robotutils.pub.interfaces.simio.RollerIoInterface;
 import robotutils.pub.interfaces.simio.TwoMotorRollerIoInterface;
 
+import java.util.Optional;
 import java.util.OptionalDouble;
 
 
@@ -88,11 +90,11 @@ import java.util.OptionalDouble;
  * the mapping between operator inputs and subsystem commands for the 2026 season.
  */
 public class RobotContainer {
-
-    private final PerRobotConfigInterface<BotConfigInterface> m_perRobotConfig = RobotConfigSelector.create();
-    private final BotConfigInterface m_configInterface = m_perRobotConfig.getBotConfig();
-
     private final RobotUtilsFactory m_robotUtilsFactory = new RobotUtilsFactory();
+    private final DashboardManagerInterface m_dashboardManager = m_robotUtilsFactory.createDashboardManager();
+
+    private final PerRobotConfigInterface<BotConfigInterface> m_perRobotConfig = RobotConfigSelector.create(Optional.of(m_dashboardManager));
+    private final BotConfigInterface m_configInterface = m_perRobotConfig.getBotConfig();
 
     /** Maximum linear velocity of the robot in meters per second. */
     private double MaxSpeed = m_configInterface.getSpeedAt12Volts().in(MetersPerSecond);
