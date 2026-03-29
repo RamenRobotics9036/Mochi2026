@@ -336,34 +336,6 @@ public class GroundTruthSim implements GroundTruthSimInterface {
     }
 
     /**
-     * Publishes simulation telemetry to SmartDashboard.
-     * Call this from Robot.simulationPeriodic().
-     */
-    public void publishTelemetry() {
-        SmartDashboard.putNumber("Sim/GroundTruth/X", m_groundTruthPose.getX());
-        SmartDashboard.putNumber("Sim/GroundTruth/Y", m_groundTruthPose.getY());
-        SmartDashboard.putNumber(
-            "Sim/GroundTruth/RotationDeg",
-            m_groundTruthPose.getRotation().getDegrees());
-
-        Pose2d estimatedPose = m_estimatedPoseSupplier.get();
-        SmartDashboard.putNumber("Sim/EstimatedPose/X", estimatedPose.getX());
-        SmartDashboard.putNumber("Sim/EstimatedPose/Y", estimatedPose.getY());
-        SmartDashboard.putNumber(
-            "Sim/EstimatedPose/RotationDeg",
-            estimatedPose.getRotation().getDegrees());
-
-        double poseError = m_groundTruthPose
-            .getTranslation()
-            .getDistance(estimatedPose.getTranslation());
-        double headingError = Math.abs(
-            m_groundTruthPose.getRotation().minus(estimatedPose.getRotation()).getDegrees());
-        SmartDashboard.putNumber("Sim/PoseErrorMeters", poseError);
-        SmartDashboard.putNumber("Sim/HeadingErrorDeg", headingError);
-        SmartDashboard.putNumber("Sim/TotalDistanceTraveled", m_totalDistanceTraveled);
-    }
-
-    /**
      * Updates ground truth pose, and publishes telemetry.
      * Call this from Robot.simulationPeriodic().
      */
@@ -372,6 +344,6 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         // Ground truth pose is integrated at high frequency via updateGroundTruthPose()
         // (registered as setHighFreqSimCallback on CommandSwerveDrivetrain).
         // Here we only publish telemetry at the standard 50 Hz robot loop rate.
-        publishTelemetry();
+        //publishTelemetry();
     }
 }
