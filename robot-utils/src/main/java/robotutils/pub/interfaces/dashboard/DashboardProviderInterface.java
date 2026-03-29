@@ -6,7 +6,7 @@ package robotutils.pub.interfaces.dashboard;
  * update values.  Those values are cached in the DashboardProvider and pushed to
  * NetworkTables on Update().
  */
-public interface DashboardProviderInterface {
+public interface DashboardProviderInterface<T> {
 
     /** Root name for NetworkTables entries. */
     static String getNetworkTableRoot() {
@@ -18,4 +18,7 @@ public interface DashboardProviderInterface {
 
     /** Dashboard provider should update NetworkTables with latest cached values. */
     void update();
+
+    /** Update the latest settings that we cache to display on next periodic update. */
+    public void setLatestSettings(T settings);
 }

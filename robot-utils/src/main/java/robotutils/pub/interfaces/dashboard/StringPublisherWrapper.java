@@ -1,4 +1,4 @@
-package robotutils.dashboard;
+package robotutils.pub.interfaces.dashboard;
 
 import edu.wpi.first.networktables.StringPublisher;
 import java.util.Objects;

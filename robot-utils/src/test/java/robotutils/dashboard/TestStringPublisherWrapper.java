@@ -5,6 +5,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import edu.wpi.first.networktables.StringPublisher;
+import robotutils.pub.interfaces.dashboard.StringPublisherWrapper;
+
 import org.junit.jupiter.api.Test;
 
 class TestStringPublisherWrapper {

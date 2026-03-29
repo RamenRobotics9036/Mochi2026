@@ -2,12 +2,14 @@ package robotutils.perrobotconfig;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StringPublisher;
 import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
 import robotutils.pub.interfaces.dashboard.StringPublisherWrapper;
 
+
 /** Dashboard provider for per-robot configuration values. */
-public class PerRobotConfigDashboardProvider implements DashboardProviderInterface {
+public class PerRobotConfigDashboardProvider
+    implements DashboardProviderInterface<PerRobotConfigDashboardSettings> {
+
     private boolean m_isInitialized = false;
     private boolean m_isUpdated = false;
     private PerRobotConfigDashboardSettings m_latestSettings = null;
@@ -48,7 +50,7 @@ public class PerRobotConfigDashboardProvider implements DashboardProviderInterfa
         m_botConfigNamePublisher.set(m_latestSettings.botConfigName());
     }
 
-    /** Caller should use this when new settings are available. */
+    @Override
     public void setLatestSettings(PerRobotConfigDashboardSettings settings) {
         m_latestSettings = settings;
         m_isUpdated = true;
