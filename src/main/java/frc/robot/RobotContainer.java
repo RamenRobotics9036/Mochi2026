@@ -78,7 +78,7 @@ import robotutils.interfaces.JoystickInputInterface;
 import robotutils.interfaces.JoystickInputsRecord;
 import robotutils.interfaces.RollerIoInterface;
 import robotutils.interfaces.TwoMotorRollerIoInterface;
-import robotutils.perrobotconfig.PerRobotConfig;
+import robotutils.interfaces.PerRobotConfigInterface;
 import java.util.OptionalDouble;
 
 
@@ -90,7 +90,7 @@ import java.util.OptionalDouble;
  */
 public class RobotContainer {
 
-    private final PerRobotConfig<BotConfigInterface> m_perRobotConfig = RobotConfigSelector.create();
+    private final PerRobotConfigInterface<BotConfigInterface> m_perRobotConfig = RobotConfigSelector.create();
     private final BotConfigInterface m_configInterface = m_perRobotConfig.getBotConfig();
     private final String m_robotName = m_perRobotConfig.getRobotName();
 
