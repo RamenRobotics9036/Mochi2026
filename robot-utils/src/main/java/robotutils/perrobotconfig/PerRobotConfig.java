@@ -75,16 +75,17 @@ public class PerRobotConfig<T> implements PerRobotConfigInterface<T> {
             simulationConfigName);
         T config = getConfig(configName, configNameToConfigObjDict);
 
-        if (m_optionalDashboardProvider.isPresent()) {
-            m_optionalDashboardProvider.get().setLatestSettings(new PerRobotConfigDashboardSettings(
-                robotName,
-                configName));
-        }
-
         // Set the results into member variables to save
         m_robotName = getRobotDisplayname(robotName);
         m_selectedConfigName = configName;
         m_selectedConfig = config;
+
+        // At this point, we have robot name, so set it once on the dashboard provider.
+        if (m_optionalDashboardProvider.isPresent()) {
+            m_optionalDashboardProvider.get().setLatestSettings(new PerRobotConfigDashboardSettings(
+                m_robotName,
+                m_selectedConfigName));
+        }
     }
 
     /** Returns robot name. */

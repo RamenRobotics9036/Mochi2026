@@ -609,7 +609,7 @@
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/Robot Config",
+              "topic": "/RobotUtils/BotConfigName",
               "period": 0.06,
               "data_type": "string",
               "show_submit_button": false
@@ -623,7 +623,7 @@
             "height": 128.0,
             "type": "Text Display",
             "properties": {
-              "topic": "/SmartDashboard/MAC Address Name",
+              "topic": "/RobotUtils/RobotName",
               "period": 0.06,
               "data_type": "string",
               "show_submit_button": false
