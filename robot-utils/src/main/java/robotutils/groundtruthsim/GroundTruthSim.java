@@ -26,14 +26,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import robotutils.pub.interfaces.GroundTruthSimInterface;
-import robotutils.pub.staticutils.AllianceCalc;
-import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
-
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import robotutils.pub.interfaces.GroundTruthSimInterface;
+import robotutils.pub.staticutils.AllianceCalc;
+import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
 
 
 /**
@@ -62,6 +60,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
     private Pose2d m_groundTruthPose = new Pose2d();
 
     /** Track accumulated distance for telemetry. */
+    @SuppressWarnings("unused")
     private double m_totalDistanceTraveled = 0.0;
 
     @SuppressWarnings("unused")
@@ -291,17 +290,25 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * The "true" pose remains unchanged, but the pose estimator
      * is reset to a drifted position. Vision should then correct this drift.
      *
-     * @param translationOffsetMeters How far to offset the estimated position (meters)
+     * @param offsetFrontBackX Forward/back offset in the robot's local frame (meters)
+     * @param offsetLeftRightY Left/right offset in the robot's local frame (meters)
      * @param rotationOffsetDegrees How far to offset the estimated heading (degrees)
      */
     @Override
-    public void injectDriftToPoseEstimate(double xOffsetFrontBack, double yOffsetLeftRight, double rotationOffsetDegrees) {
+    public void injectDriftToPoseEstimate(
+        double offsetFrontBackX,
+        double offsetLeftRightY,
+        double rotationOffsetDegrees) {
+
         // Get current estimated pose
         Pose2d currentPose = m_estimatedPoseSupplier.get();
 
         // Apply offsets in the robot's local frame (x = forward, y = left)
         Pose2d driftedPose = currentPose.transformBy(
-            new Transform2d(xOffsetFrontBack, yOffsetLeftRight, Rotation2d.fromDegrees(rotationOffsetDegrees))
+            new Transform2d(
+                offsetFrontBackX,
+                offsetLeftRightY,
+                Rotation2d.fromDegrees(rotationOffsetDegrees))
         );
 
         // Reset the pose estimator to the drifted position
