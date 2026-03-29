@@ -1,4 +1,4 @@
-package robotutils.pub.interfaces;
+package robotutils.pub.interfaces.simio;
 
 
 /**

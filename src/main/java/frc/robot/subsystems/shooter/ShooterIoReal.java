@@ -10,7 +10,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.botconfig.BotConfigInterface;
-import robotutils.pub.interfaces.TwoMotorRollerIoInterface;
+import robotutils.pub.interfaces.simio.TwoMotorRollerIoInterface;
 
 /**
  * Real-hardware implementation of {@link TwoMotorRollerIoInterface} for the shooter.

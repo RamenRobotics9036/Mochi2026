@@ -1,4 +1,4 @@
-package robotutils.pub.interfaces;
+package robotutils.pub.interfaces.simio;
 
 /**
  * IO interface for a single motor Roller mechanism.

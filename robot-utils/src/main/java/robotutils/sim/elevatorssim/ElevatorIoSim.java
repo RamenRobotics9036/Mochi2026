@@ -6,7 +6,7 @@ import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import robotutils.pub.interfaces.ElevatorIoInterface;
+import robotutils.pub.interfaces.simio.ElevatorIoInterface;
 
 
 /**

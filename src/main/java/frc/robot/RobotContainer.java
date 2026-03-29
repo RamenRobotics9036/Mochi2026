@@ -69,14 +69,14 @@ import frc.robot.visutils.MultiCamOdometryFactory;
 import frc.robot.visutils.TurnToAngleHelper;
 import frc.robot.visutils.VisionKalmanFilter;
 import robotutils.pub.RobotUtilsFactory;
-import robotutils.pub.interfaces.ArmIoInterface;
 import robotutils.pub.interfaces.DriveSmoothInterface;
-import robotutils.pub.interfaces.ElevatorIoInterface;
 import robotutils.pub.interfaces.JoystickInputInterface;
 import robotutils.pub.interfaces.JoystickInputsRecord;
 import robotutils.pub.interfaces.PerRobotConfigInterface;
-import robotutils.pub.interfaces.RollerIoInterface;
-import robotutils.pub.interfaces.TwoMotorRollerIoInterface;
+import robotutils.pub.interfaces.simio.ArmIoInterface;
+import robotutils.pub.interfaces.simio.ElevatorIoInterface;
+import robotutils.pub.interfaces.simio.RollerIoInterface;
+import robotutils.pub.interfaces.simio.TwoMotorRollerIoInterface;
 
 import java.util.OptionalDouble;
 

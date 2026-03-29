@@ -3,7 +3,7 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ClimberConstants;
-import robotutils.pub.interfaces.ElevatorIoInterface;
+import robotutils.pub.interfaces.simio.ElevatorIoInterface;
 
 /**
  * Subsystem for the single-motor climber arm.
