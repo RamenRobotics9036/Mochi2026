@@ -1,7 +1,8 @@
 package frc.robot.visutils;
 
 import java.util.function.Consumer;
-import robotutils.interfaces.SimLimelightProducerInterface.DrivetrainVisionPoseInfo;
+
+import robotutils.pub.interfaces.SimLimelightProducerInterface.DrivetrainVisionPoseInfo;
 
 
 /**
