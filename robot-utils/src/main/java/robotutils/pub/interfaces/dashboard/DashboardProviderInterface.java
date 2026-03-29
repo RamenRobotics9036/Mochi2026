@@ -1,4 +1,4 @@
-package robotutils.pub.interfaces;
+package robotutils.pub.interfaces.dashboard;
 
 /**
  * Interface for a component to provide data to dashboard/networktables.
