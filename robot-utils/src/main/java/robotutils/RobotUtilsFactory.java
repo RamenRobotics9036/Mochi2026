@@ -3,19 +3,26 @@ package robotutils;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.DoubleSupplier;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.RobotBase;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import robotutils.drivesmooth.DriveSmooth;
+import robotutils.groundtruthsim.GroundTruthSim;
 import robotutils.interfaces.ArmIoInterface;
 import robotutils.interfaces.CameraInfoList;
 import robotutils.interfaces.DriveSmoothInterface;
 import robotutils.interfaces.ElevatorIoInterface;
+import robotutils.interfaces.GroundTruthSimInterface;
 import robotutils.interfaces.JoystickInputInterface;
 import robotutils.interfaces.MacKey;
 import robotutils.interfaces.PerRobotConfigInterface;
 import robotutils.interfaces.RollerIoInterface;
-import robotutils.interfaces.TwoMotorRollerIoInterface;
 import robotutils.interfaces.SimLimelightProducerInterface;
+import robotutils.interfaces.TwoMotorRollerIoInterface;
 import robotutils.joystickinput.JoystickInput;
 import robotutils.perrobotconfig.PerRobotConfig;
 import robotutils.sim.armsim.ArmIoSim;
@@ -228,6 +235,22 @@ public class RobotUtilsFactory {
     public SimLimelightProducerInterface createSimLimelightProducer(CameraInfoList cameras) {
         if (RobotBase.isSimulation()) {
             return new SimLimelightProducer(cameras);
+        }
+        return null;
+    }
+
+    /**
+     * Creates a GroundTruthSimInterface instance if running in simulation mode.
+     *
+     * @param drivetrain The swerve drivetrain to track and manipulate
+     * @param poseResetConsumer Consumer to be called when pose is reset
+     * @return A GroundTruthSimInterface instance, or null if not in simulation
+     */
+    public GroundTruthSimInterface createGroundTruthSim(
+            SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
+            Consumer<Pose2d> poseResetConsumer) {
+        if (RobotBase.isSimulation()) {
+            return new GroundTruthSim(drivetrain, poseResetConsumer);
         }
         return null;
     }

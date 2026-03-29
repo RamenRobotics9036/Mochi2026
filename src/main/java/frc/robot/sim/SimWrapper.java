@@ -12,7 +12,9 @@ import frc.robot.subsystems.auto.AutoLogic;
 import static edu.wpi.first.units.Units.*;
 import java.util.function.Consumer;
 import robotutils.RobotUtilsFactory;
+import robotutils.interfaces.GroundTruthSimInterface;
 import robotutils.interfaces.SimLimelightProducerInterface;
+import robotutils.sim.FaultyAutoSim;
 
 
 /**
@@ -60,7 +62,7 @@ public class SimWrapper {
 
         // Create ground truth simulation and wire it into the drivetrain's high-frequency
         // sim notifier so it integrates pose at the same 4 ms rate as updateSimState.
-        m_groundTruthSim = GroundTruthSimFactory.create(drivetrain, poseResetConsumer);
+        m_groundTruthSim = m_robotUtilsFactory.createGroundTruthSim(drivetrain, poseResetConsumer);
         drivetrain.setHighFreqSimCallback(m_groundTruthSim::updateGroundTruthPose);
 
         // Create vision simulation

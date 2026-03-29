@@ -10,7 +10,7 @@
 // robot code corrects it.
 //
 
-package frc.robot.sim;
+package robotutils.groundtruthsim;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
@@ -25,11 +25,11 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Robot;
-import frc.robot.visutils.AllianceCalc;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import robotutils.interfaces.GroundTruthSimInterface;
 
 
 /**
@@ -127,7 +127,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         Consumer<Pose2d> drivetrainResetPose,
         Consumer<Pose2d> poseResetConsumer) {
 
-        if (!Robot.isSimulation()) {
+        if (!RobotBase.isSimulation()) {
             throw new IllegalStateException("GroundTruthSim only instantiated in simulation mode");
         }
         this.m_speedsSupplier = speedsSupplier;

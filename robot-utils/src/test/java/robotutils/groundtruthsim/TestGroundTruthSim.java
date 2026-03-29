@@ -1,4 +1,4 @@
-package frc.robot.sim;
+package robotutils.groundtruthsim;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,7 +17,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.RobotBase;
-import frc.robot.visutils.AllianceCalc;
 import java.util.List;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
