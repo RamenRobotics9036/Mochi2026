@@ -12,13 +12,24 @@ import org.junit.jupiter.api.Test;
 class TestStringPublisherWrapper {
 
     @Test
-    void firstNullValue_publishes() {
+    void firstNullValue_publishesEmptyString() {
         StringPublisher publisher = mock(StringPublisher.class);
         StringPublisherWrapper wrapper = new StringPublisherWrapper(publisher);
 
         wrapper.set(null);
 
-        verify(publisher, times(1)).set(null);
+        verify(publisher, times(1)).set("");
+    }
+
+    @Test
+    void repeatedNullValue_publishesOnce() {
+        StringPublisher publisher = mock(StringPublisher.class);
+        StringPublisherWrapper wrapper = new StringPublisherWrapper(publisher);
+
+        wrapper.set(null);
+        wrapper.set(null);
+
+        verify(publisher, times(1)).set("");
     }
 
     @Test
