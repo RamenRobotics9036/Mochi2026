@@ -1,16 +1,17 @@
 package robotutils.pub;
 
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.DoubleSupplier;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.RobotBase;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.RobotBase;
+import java.util.Map;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.DoubleSupplier;
+import robotutils.dashboard.DashboardManager;
 import robotutils.drivesmooth.DriveSmooth;
+import robotutils.faultydrivemanager.FaultyDriveManager;
 import robotutils.groundtruthsim.GroundTruthSim;
 import robotutils.joystickinput.JoystickInput;
 import robotutils.perrobotconfig.PerRobotConfig;
@@ -18,6 +19,7 @@ import robotutils.pub.interfaces.ArmIoInterface;
 import robotutils.pub.interfaces.CameraInfoList;
 import robotutils.pub.interfaces.DriveSmoothInterface;
 import robotutils.pub.interfaces.ElevatorIoInterface;
+import robotutils.pub.interfaces.FaultyDriveManagerInterface;
 import robotutils.pub.interfaces.GroundTruthSimInterface;
 import robotutils.pub.interfaces.JoystickInputInterface;
 import robotutils.pub.interfaces.MacKey;
@@ -25,17 +27,21 @@ import robotutils.pub.interfaces.PerRobotConfigInterface;
 import robotutils.pub.interfaces.RollerIoInterface;
 import robotutils.pub.interfaces.SimLimelightProducerInterface;
 import robotutils.pub.interfaces.TwoMotorRollerIoInterface;
+import robotutils.pub.interfaces.dashboard.DashboardManagerInterface;
 import robotutils.sim.armsim.ArmIoSim;
 import robotutils.sim.elevatorssim.ElevatorIoSim;
 import robotutils.sim.rollerssim.RollerIoSim;
 import robotutils.sim.rollerssim.TwoMotorRollerIoSim;
-import robotutils.faultydrivemanager.FaultyDriveManager;
-import robotutils.pub.interfaces.FaultyDriveManagerInterface;
 import robotutils.simlimelightproducer.SimLimelightProducer;
 
 
 /** Factory for robot utility objects. */
 public class RobotUtilsFactory {
+
+    /** Creates a dashboard manager. */
+    public DashboardManagerInterface createDashboardManager() {
+        return new DashboardManager();
+    }
 
     /** Creates a default drive smoothing pipeline. */
     public DriveSmoothInterface createDriveSmooth() {
