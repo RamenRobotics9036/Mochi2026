@@ -138,10 +138,17 @@ public class RobotUtilsFactory {
         String defaultConfigName,
         String simulationConfigName) {
 
-        Optional<DashboardProviderInterface<PerRobotConfigDashboardSettings>> optionalDashboardProvider =
-            optionalDashboardManager.isPresent()
-            ? Optional.of(new PerRobotConfigDashboardProvider())
-            : Optional.empty();
+        Optional<DashboardProviderInterface<PerRobotConfigDashboardSettings>> optionalDashboardProvider;
+        if (optionalDashboardManager.isPresent()) {
+            PerRobotConfigDashboardProvider provider = new PerRobotConfigDashboardProvider();
+            provider.init();
+            optionalDashboardManager.get().registerProvider(provider);
+
+            optionalDashboardProvider = Optional.of(provider);
+        }
+        else {
+            optionalDashboardProvider = Optional.empty();
+        }
 
         return new PerRobotConfig<T>(
             optionalDashboardProvider,

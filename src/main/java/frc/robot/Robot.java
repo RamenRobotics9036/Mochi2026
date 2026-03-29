@@ -99,6 +99,7 @@ public class Robot extends TimedRobot {
     if (m_robotContainer.basicInfoDashboard != null) {
         m_robotContainer.basicInfoDashboard.update();
     }
+    m_robotContainer.m_dashboardManager.update();
   }
 
   @Override

@@ -91,7 +91,7 @@ import java.util.OptionalDouble;
  */
 public class RobotContainer {
     private final RobotUtilsFactory m_robotUtilsFactory = new RobotUtilsFactory();
-    private final DashboardManagerInterface m_dashboardManager = m_robotUtilsFactory.createDashboardManager();
+    public final DashboardManagerInterface m_dashboardManager = m_robotUtilsFactory.createDashboardManager();
 
     private final PerRobotConfigInterface<BotConfigInterface> m_perRobotConfig = RobotConfigSelector.create(Optional.of(m_dashboardManager));
     private final BotConfigInterface m_configInterface = m_perRobotConfig.getBotConfig();
