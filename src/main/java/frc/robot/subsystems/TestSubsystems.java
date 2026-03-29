@@ -11,6 +11,7 @@ import frc.robot.Robot;
 import frc.robot.commands.IntakeArmHomeCommand;
 import frc.robot.commands.SetIntakeBottomCommand;
 
+// $TODO4 - Remove this class
 public class TestSubsystems {
     /** Temporary sequence command for wiring/testing. */
     public static Command test(

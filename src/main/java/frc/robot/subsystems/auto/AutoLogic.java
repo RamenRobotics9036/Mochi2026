@@ -83,11 +83,12 @@ public final class  AutoLogic {
             .withSize(2, 1);
 
         // Publish initial value so the key exists in NetworkTables before any selection change
-        String kRelativeKey = "Auto is Relative";
+        String kRelativeKey = "Auto is Relative"; // $TODO4 - Remove auto is relative
         SmartDashboard.putBoolean(
             kRelativeKey,
             getSelectedAutoStartingPose().equals(Pose2d.kZero));
 
+        // $TODO4 - Auto relative goes away
         autoPicker.onChange(name -> SmartDashboard.putBoolean(
             kRelativeKey,
             getSelectedAutoStartingPose().equals(Pose2d.kZero)));

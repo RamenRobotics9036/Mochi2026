@@ -65,7 +65,6 @@ import frc.robot.visutils.BasicInfoDashboard;
 import frc.robot.visutils.CamInputs;
 import frc.robot.visutils.CamOdometryInterface;
 import frc.robot.visutils.CamOutputs;
-import frc.robot.visutils.DriveAccuracyTester;
 import frc.robot.visutils.MotionlessTracker;
 import frc.robot.visutils.MultiCamOdometryFactory;
 import frc.robot.visutils.TurnToAngleHelper;
@@ -157,9 +156,6 @@ public class RobotContainer {
     public final SimWrapper m_simWrapper;
     public final ShowVisionOnField m_showVisionOnField;
 
-    /** Manages the tape-drop accuracy test workflow. */
-    public final DriveAccuracyTester m_driveAccuracyTester;
-
     public final CamOdometryInterface m_multiCamlimelight;
 
     private final TwoMotorRollerIoInterface m_shooterIo =
@@ -235,8 +231,6 @@ public class RobotContainer {
             Robot.isSimulation(),
             () -> drivetrain.getOperatorForwardDirection().getDegrees());
 
-        m_driveAccuracyTester = new DriveAccuracyTester(drivetrain, m_visionKalmanFilter);
-
         Command driveTestCommand = TestSubsystems.test(
                 intakeSubsystem,
                 m_indexerSubsystem,
@@ -256,7 +250,6 @@ public class RobotContainer {
             m_configInterface,
             drivetrain,
             m_glassField,
-            m_driveAccuracyTester,
             driveTestCommand,
             cycleResetCmd,
             m_configInterface.getCameras().stream()
@@ -264,7 +257,6 @@ public class RobotContainer {
                 .collect(java.util.stream.Collectors.toList()));
 
         // Wire this up to avoid circular dependency
-        m_driveAccuracyTester.setForceDisableVision(basicInfoDashboard::forceDisableVision);
         m_visionKalmanFilter.setDashboard(basicInfoDashboard);
 
         m_showVisionOnField = new ShowVisionOnField(
@@ -497,9 +489,6 @@ public class RobotContainer {
 
         // Reset the vision-only Kalman filter
         m_visionKalmanFilter.reset();
-
-        // Remove any tape from the field
-        m_driveAccuracyTester.clearTape();
     }
 
 }

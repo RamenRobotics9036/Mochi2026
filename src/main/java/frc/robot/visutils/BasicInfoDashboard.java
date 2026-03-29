@@ -92,9 +92,6 @@ public class BasicInfoDashboard {
     private Pose2d m_cachedKalmanPose = new Pose2d();
     private boolean m_cachedKalmanConverged = false;
 
-    /** When true, vision is forcibly disabled regardless of the dashboard toggle. */
-    private boolean m_forceDisableVision = false;
-
     /** Bundles a VisionHeartBeat with its NT publisher for one camera. */
     private static class CameraMonitor {
         final VisionHeartBeat heartbeat;
@@ -128,8 +125,6 @@ public class BasicInfoDashboard {
      * @param configInterface   Bot configuration (vision defaults, etc.)
      * @param drivetrain        The swerve drivetrain to get info from
      * @param glassField        Field2d for Glass visualization
-     * @param driveAccuracyTester Accuracy test workflow manager
-     * @param testSubsystemsCommand Command to test all subsystems
      * @param simCycleResetCmd  Sim-only command to cycle the robot reset position, or null on real robot
      * @param cameraNames       Names of all Limelight cameras to monitor
      */
@@ -138,8 +133,7 @@ public class BasicInfoDashboard {
         BotConfigInterface configInterface,
         SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
         Field2d glassField,
-        DriveAccuracyTester driveAccuracyTester,
-        Command testSubsystemsCommand,
+        Command testSubsystemsCommand, // $TODO4 - This should go away
         Command simCycleResetCmd,
         List<String> cameraNames) {
 
@@ -164,8 +158,6 @@ public class BasicInfoDashboard {
         SmartDashboard.putString("MAC Address Name", robotName);
         SmartDashboard.putString("Robot Config", configInterface.getConfigName());
         SmartDashboard.putData("GlassField", glassField);
-        SmartDashboard.putData("Accuracy Drive Test", driveAccuracyTester.createTapeDropAutoCommand());
-        SmartDashboard.putData("Test Subsystems", testSubsystemsCommand);
         if (simCycleResetCmd != null) {
             SmartDashboard.putData("Sim/CycleResetPosition", simCycleResetCmd);
         }
@@ -178,21 +170,7 @@ public class BasicInfoDashboard {
      * @return true if vision is enabled
      */
     public boolean isVisionEnabled() {
-        if (m_forceDisableVision) {
-            return false;
-        }
         return m_visionEnabled.get(m_configInterface.isVisionEnabledDefault());
-    }
-
-    /**
-     * Force-disables or re-enables vision measurement injection.
-     * When force-disabled, {@link #isVisionEnabled()} always returns false
-     * regardless of the dashboard toggle.
-     *
-     * @param disable true to force-disable vision, false to resume normal behavior
-     */
-    public void forceDisableVision(boolean disable) {
-        m_forceDisableVision = disable;
     }
 
     /** Updates the vision confidence score for dashboard display. */

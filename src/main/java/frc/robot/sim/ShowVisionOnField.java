@@ -31,12 +31,6 @@ public class ShowVisionOnField {
     private final ShowIcon m_kalmanIcon = new ShowIcon(
         List.of("ZKalmanVisionPoseConverged", "ZKalmanVisionPoseNotConverged"));
 
-    /** Icon for displaying the blue tape location. */
-    private final ShowIcon m_blueTape = new ShowIcon(List.of("AAABlueTape"));
-
-    /** Icon for displaying the red tape location. */
-    private final ShowIcon m_redTape = new ShowIcon(List.of("AAARedTape"));
-
     /**
      * Creates a new ShowVisionOnField.
      *
@@ -74,8 +68,6 @@ public class ShowVisionOnField {
     public void updateFieldDisplay(
         Optional<Pose2d> showVisPose,
         DisplayInfo kalmanDisplay,
-        Optional<Pose2d> blueTapePose,
-        Optional<Pose2d> redTapePose,
         SwerveDriveState driveState) {
 
         // Show estimate pose for vision, if we currently see AprilTag.
@@ -85,10 +77,6 @@ public class ShowVisionOnField {
         showKalmanVisionPose(
             kalmanDisplay.pose(),
             kalmanDisplay.hasConverged() ? 0 : 1);
-
-        // Show tape locations on field
-        showBlueTape(blueTapePose);
-        showRedTape(redTapePose);
 
         // Show robot pose and wheel positions on field
         showEstimatedPoseAndWheels(driveState);
@@ -174,24 +162,6 @@ public class ShowVisionOnField {
      */
     private void showKalmanVisionPose(Optional<Pose2d> kalmanPose, int showIndex) {
         showIcon(m_kalmanIcon, kalmanPose, showIndex);
-    }
-
-    /**
-     * Shows or hides the blue tape location on the field.
-     *
-     * @param pose The pose to display, or empty to hide
-     */
-    private void showBlueTape(Optional<Pose2d> pose) {
-        showIcon(m_blueTape, pose, 0);
-    }
-
-    /**
-     * Shows or hides the red tape location on the field.
-     *
-     * @param pose The pose to display, or empty to hide
-     */
-    private void showRedTape(Optional<Pose2d> pose) {
-        showIcon(m_redTape, pose, 0);
     }
 
     /**
