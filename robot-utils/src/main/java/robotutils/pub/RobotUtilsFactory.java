@@ -29,6 +29,8 @@ import robotutils.sim.armsim.ArmIoSim;
 import robotutils.sim.elevatorssim.ElevatorIoSim;
 import robotutils.sim.rollerssim.RollerIoSim;
 import robotutils.sim.rollerssim.TwoMotorRollerIoSim;
+import robotutils.faultydrivemanager.FaultyDriveManager;
+import robotutils.pub.interfaces.FaultyDriveManagerInterface;
 import robotutils.simlimelightproducer.SimLimelightProducer;
 
 
@@ -237,6 +239,19 @@ public class RobotUtilsFactory {
             return new SimLimelightProducer(cameras);
         }
         return null;
+    }
+
+    /**
+     * Creates a FaultyDriveManager for injecting simulated hardware faults.
+     *
+     * @param groundTruthSim The ground truth sim to apply drivetrain faults to
+     * @param simLimelightProducer The sim limelight producer to apply camera faults to
+     * @return configured FaultyDriveManager
+     */
+    public FaultyDriveManagerInterface createFaultyDriveManager(
+            GroundTruthSimInterface groundTruthSim,
+            SimLimelightProducerInterface simLimelightProducer) {
+        return new FaultyDriveManager(groundTruthSim, simLimelightProducer);
     }
 
     /**

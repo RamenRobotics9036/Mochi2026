@@ -1,6 +1,7 @@
 package robotutils.faultydrivemanager;
 
 import edu.wpi.first.math.geometry.Transform3d;
+import robotutils.pub.interfaces.FaultyDriveManagerInterface;
 import robotutils.pub.interfaces.GroundTruthSimInterface;
 import robotutils.pub.interfaces.SimLimelightProducerInterface;
 
