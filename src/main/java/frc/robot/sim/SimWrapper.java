@@ -1,5 +1,7 @@
 package frc.robot.sim;
 
+import static edu.wpi.first.units.Units.*;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
@@ -9,13 +11,13 @@ import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
-import static edu.wpi.first.units.Units.*;
 import java.util.function.Consumer;
 
+import robotutils.faultydrivemanager.FaultyDriveManager;
 import robotutils.pub.RobotUtilsFactory;
+import robotutils.pub.interfaces.FaultyDriveManagerInterface;
 import robotutils.pub.interfaces.GroundTruthSimInterface;
 import robotutils.pub.interfaces.SimLimelightProducerInterface;
-import robotutils.sim.FaultyAutoSim;
 
 
 /**
@@ -35,7 +37,7 @@ public class SimWrapper {
 
     private final GroundTruthSimInterface m_groundTruthSim;
     private final SimLimelightProducerInterface m_simLimelightProducer;
-    public final FaultyDriveManager m_faultyDriveManager;
+    public final FaultyDriveManagerInterface m_faultyDriveManager;
 
     /**
      * Creates a new SimWrapper.
@@ -67,13 +69,16 @@ public class SimWrapper {
         drivetrain.setHighFreqSimCallback(m_groundTruthSim::updateGroundTruthPose);
 
         // Create vision simulation
-        m_simLimelightProducer = m_robotUtilsFactory.createSimLimelightProducer(m_configInterface.getCameras());
+        m_simLimelightProducer = m_robotUtilsFactory.createSimLimelightProducer(
+            m_configInterface.getCameras());
         if (m_simLimelightProducer == null) {
             throw new IllegalStateException("SimLimelightProducer creation failed");
         }
 
         // Create faulty auto sim (fault injection for testing)
-        m_faultyDriveManager = new FaultyDriveManager(m_groundTruthSim, m_simLimelightProducer);
+        m_faultyDriveManager = m_robotUtilsFactory.createFaultyDriveManager(
+            m_groundTruthSim,
+            m_simLimelightProducer);
     }
 
     /**
