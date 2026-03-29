@@ -1,8 +1,8 @@
-package robotutils.sim;
+package robotutils.groundtruthsim;
 
 import edu.wpi.first.math.geometry.Transform3d;
-import robotutils.interfaces.GroundTruthSimInterface;
-import robotutils.interfaces.SimLimelightProducerInterface;
+import robotutils.pub.interfaces.GroundTruthSimInterface;
+import robotutils.pub.interfaces.SimLimelightProducerInterface;
 
 /**
  * Manages simulated hardware faults for autonomous testing.

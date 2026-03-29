@@ -1,4 +1,4 @@
-package robotutils.groundtruthsim;
+package robotutils.pub.staticutils;
 
 import com.pathplanner.lib.util.FlippingUtil;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -10,8 +10,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
  * Static utility methods for alliance-aware field calculations.
  */
 public final class AllianceCalc {
-
-    private AllianceCalc() {}
+    /** Private constructor. */
+    private AllianceCalc() {
+        throw new UnsupportedOperationException("AllianceCalc is a static utility class");
+    }
 
     /**
      * Returns true if the robot is currently configured as red alliance.
