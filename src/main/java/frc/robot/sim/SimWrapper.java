@@ -1,7 +1,5 @@
 package frc.robot.sim;
 
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
@@ -12,8 +10,6 @@ import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
 import java.util.function.Consumer;
-
-import robotutils.faultydrivemanager.FaultyDriveManager;
 import robotutils.pub.RobotUtilsFactory;
 import robotutils.pub.interfaces.FaultyDriveManagerInterface;
 import robotutils.pub.interfaces.GroundTruthSimInterface;
