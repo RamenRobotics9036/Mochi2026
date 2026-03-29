@@ -1,4 +1,4 @@
-package robotutils.interfaces;
+package robotutils.pub.interfaces;
 
 import edu.wpi.first.math.geometry.Pose2d;
 

@@ -1,4 +1,4 @@
-package robotutils.interfaces;
+package robotutils.pub.interfaces;
 
 
 /** Interface for per-robot configuration selection. */

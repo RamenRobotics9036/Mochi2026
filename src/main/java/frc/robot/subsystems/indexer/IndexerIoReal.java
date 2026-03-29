@@ -7,7 +7,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import frc.robot.Constants.IndexerConstants;
-import robotutils.interfaces.RollerIoInterface;
+import robotutils.pub.interfaces.RollerIoInterface;
 
 /**
  * Real-hardware implementation of {@link RollerIoInterface} for the indexer.

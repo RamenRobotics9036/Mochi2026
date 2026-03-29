@@ -7,7 +7,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import robotutils.interfaces.ArmIoInterface;
+import robotutils.pub.interfaces.ArmIoInterface;
 
 
 /**

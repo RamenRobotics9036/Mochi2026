@@ -11,9 +11,10 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
 import static edu.wpi.first.units.Units.*;
 import java.util.function.Consumer;
-import robotutils.RobotUtilsFactory;
-import robotutils.interfaces.GroundTruthSimInterface;
-import robotutils.interfaces.SimLimelightProducerInterface;
+
+import robotutils.pub.RobotUtilsFactory;
+import robotutils.pub.interfaces.GroundTruthSimInterface;
+import robotutils.pub.interfaces.SimLimelightProducerInterface;
 import robotutils.sim.FaultyAutoSim;
 
 

@@ -12,8 +12,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import robotutils.RobotUtilsFactory;
-import robotutils.interfaces.JoystickInputsRecord;
+
+import robotutils.pub.RobotUtilsFactory;
+import robotutils.pub.interfaces.JoystickInputsRecord;
 
 
 /**

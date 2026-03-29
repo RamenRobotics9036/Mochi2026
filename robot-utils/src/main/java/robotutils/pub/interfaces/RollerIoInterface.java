@@ -1,4 +1,4 @@
-package robotutils.interfaces;
+package robotutils.pub.interfaces;
 
 /**
  * IO interface for a single motor Roller mechanism.

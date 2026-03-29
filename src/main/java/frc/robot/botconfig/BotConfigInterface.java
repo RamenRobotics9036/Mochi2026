@@ -9,7 +9,7 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.generated.GeneratedPancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import robotutils.interfaces.CameraInfoList;
+import robotutils.pub.interfaces.CameraInfoList;
 
 /**
  * Interface for robot-specific tuner configuration.

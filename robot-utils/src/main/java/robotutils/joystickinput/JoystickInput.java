@@ -2,9 +2,10 @@ package robotutils.joystickinput;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import robotutils.interfaces.DriveSmoothInterface;
-import robotutils.interfaces.JoystickInputInterface;
-import robotutils.interfaces.JoystickInputsRecord;
+
+import robotutils.pub.interfaces.DriveSmoothInterface;
+import robotutils.pub.interfaces.JoystickInputInterface;
+import robotutils.pub.interfaces.JoystickInputsRecord;
 
 
 /**

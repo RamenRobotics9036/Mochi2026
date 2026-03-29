@@ -1,9 +1,10 @@
 package frc.robot.botconfig;
 
 import java.util.Map;
-import robotutils.RobotUtilsFactory;
-import robotutils.interfaces.MacKey;
-import robotutils.interfaces.PerRobotConfigInterface;
+
+import robotutils.pub.RobotUtilsFactory;
+import robotutils.pub.interfaces.MacKey;
+import robotutils.pub.interfaces.PerRobotConfigInterface;
 
 
 /** Builds the per-robot config selector for this project. */

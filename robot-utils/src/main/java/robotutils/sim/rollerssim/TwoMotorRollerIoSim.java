@@ -6,7 +6,7 @@ import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import robotutils.interfaces.TwoMotorRollerIoInterface;
+import robotutils.pub.interfaces.TwoMotorRollerIoInterface;
 
 
 /**

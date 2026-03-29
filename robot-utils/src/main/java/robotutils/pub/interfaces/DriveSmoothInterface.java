@@ -1,4 +1,4 @@
-package robotutils.interfaces;
+package robotutils.pub.interfaces;
 
 
 /** Interface for joystick input smoothing pipelines. */

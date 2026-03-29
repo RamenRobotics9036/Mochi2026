@@ -13,8 +13,8 @@ import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.Robot;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import robotutils.interfaces.CameraInfo;
-import robotutils.interfaces.CameraInfoList;
+import robotutils.pub.interfaces.CameraInfo;
+import robotutils.pub.interfaces.CameraInfoList;
 
 import java.util.List;
 

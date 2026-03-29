@@ -3,7 +3,7 @@ package frc.robot.visutils;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.visutils.evaluateposes.EvaluatePosesFactory;
 import frc.robot.visutils.evaluateposes.EvaluatePosesInterface;
-import robotutils.interfaces.CameraInfo;
+import robotutils.pub.interfaces.CameraInfo;
 
 import java.util.ArrayList;
 import java.util.List;

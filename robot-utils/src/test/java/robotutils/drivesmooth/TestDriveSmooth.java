@@ -10,8 +10,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import robotutils.RobotUtilsFactory;
-import robotutils.interfaces.DriveSmoothInterface;
+import robotutils.pub.RobotUtilsFactory;
+import robotutils.pub.interfaces.DriveSmoothInterface;
 
 
 class TestDriveSmooth {
