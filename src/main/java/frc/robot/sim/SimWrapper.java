@@ -13,7 +13,6 @@ import static edu.wpi.first.units.Units.*;
 import java.util.function.Consumer;
 import robotutils.RobotUtilsFactory;
 import robotutils.interfaces.SimLimelightProducerInterface;
-import robotutils.simlimelightproducer.VisionSimConstants;
 
 
 /**
@@ -224,7 +223,11 @@ public class SimWrapper {
             CommandSwerveDrivetrain drivetrain,
             Consumer<Pose2d> poseResetConsumer) {
 
-        if (!Robot.isSimulation() || VisionSimConstants.Vision.kForceSimWrapperOff) {
+        // Whether to force simWrapper OFF in simulation.  This is useful for
+        // debugging the real robot running with simulated subsystems.
+        boolean forceSimWrapperOff = false;
+
+        if (!Robot.isSimulation() || forceSimWrapperOff) {
             return null;
         }
 

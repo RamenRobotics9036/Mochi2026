@@ -7,10 +7,6 @@ import edu.wpi.first.apriltag.AprilTagFields;
 public class VisionSimConstants {
     /** Constants. */
     public static class Vision {
-        // Whether to force simWrapper OFF in simulation.  This is useful for
-        // debugging the real robot running with simulated subsystems.
-        public static final boolean kForceSimWrapperOff = false;
-
         // Whether to also publish MegaTag2 pose entries (botpose_orb_wpiblue / botpose_orb_wpired).
         public static final boolean kPublishMt2Poses = true;
 
