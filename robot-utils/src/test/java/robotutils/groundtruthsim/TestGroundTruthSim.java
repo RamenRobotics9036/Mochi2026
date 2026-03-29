@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import robotutils.pub.staticutils.AllianceCalc;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -89,7 +90,8 @@ class TestGroundTruthSim {
             () -> m_speeds,
             () -> m_estimatedPose,
             m_mockDrivetrainResetPose,
-            m_mockPoseResetConsumer);
+            m_mockPoseResetConsumer,
+            Optional.empty());
     }
 
     // ── Constructor tests ────────────────────────────────────────────

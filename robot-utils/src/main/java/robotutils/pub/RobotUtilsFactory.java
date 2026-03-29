@@ -14,6 +14,8 @@ import robotutils.dashboard.DashboardManager;
 import robotutils.drivesmooth.DriveSmooth;
 import robotutils.faultydrivemanager.FaultyDriveManager;
 import robotutils.groundtruthsim.GroundTruthSim;
+import robotutils.groundtruthsim.GroundTruthSimDashboardProvider;
+import robotutils.groundtruthsim.GroundTruthSimDashboardSettings;
 import robotutils.joystickinput.JoystickInput;
 import robotutils.perrobotconfig.PerRobotConfig;
 import robotutils.perrobotconfig.PerRobotConfigDashboardProvider;
@@ -282,15 +284,26 @@ public class RobotUtilsFactory {
     /**
      * Creates a GroundTruthSimInterface instance if running in simulation mode.
      *
+     * @param optionalDashboardManager optional dashboard manager for reporting ground truth pose
      * @param drivetrain The swerve drivetrain to track and manipulate
      * @param poseResetConsumer Consumer to be called when pose is reset
      * @return A GroundTruthSimInterface instance, or null if not in simulation
      */
     public GroundTruthSimInterface createGroundTruthSim(
+            Optional<DashboardManagerInterface> optionalDashboardManager,
             SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
             Consumer<Pose2d> poseResetConsumer) {
         if (RobotBase.isSimulation()) {
-            return new GroundTruthSim(drivetrain, poseResetConsumer);
+            Optional<DashboardProviderInterface<GroundTruthSimDashboardSettings>> optionalDashboardProvider;
+            if (optionalDashboardManager.isPresent()) {
+                GroundTruthSimDashboardProvider provider = new GroundTruthSimDashboardProvider();
+                provider.init();
+                optionalDashboardManager.get().registerProvider(provider);
+                optionalDashboardProvider = Optional.of(provider);
+            } else {
+                optionalDashboardProvider = Optional.empty();
+            }
+            return new GroundTruthSim(drivetrain, poseResetConsumer, optionalDashboardProvider);
         }
         return null;
     }

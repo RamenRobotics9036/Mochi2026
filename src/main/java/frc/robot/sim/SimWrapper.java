@@ -10,10 +10,12 @@ import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.auto.AutoLogic;
 import java.util.function.Consumer;
+import java.util.Optional;
 import robotutils.pub.RobotUtilsFactory;
 import robotutils.pub.interfaces.FaultyDriveManagerInterface;
 import robotutils.pub.interfaces.GroundTruthSimInterface;
 import robotutils.pub.interfaces.SimLimelightProducerInterface;
+import robotutils.pub.interfaces.dashboard.DashboardManagerInterface;
 
 
 /**
@@ -43,6 +45,7 @@ public class SimWrapper {
      *     (typically drivetrain::resetPose)
      */
     public SimWrapper(
+            DashboardManagerInterface dashboardManager,
             BotConfigInterface configInterface,
             CommandSwerveDrivetrain drivetrain,
             Consumer<Pose2d> poseResetConsumer) {
@@ -61,7 +64,7 @@ public class SimWrapper {
 
         // Create ground truth simulation and wire it into the drivetrain's high-frequency
         // sim notifier so it integrates pose at the same 4 ms rate as updateSimState.
-        m_groundTruthSim = m_robotUtilsFactory.createGroundTruthSim(drivetrain, poseResetConsumer);
+        m_groundTruthSim = m_robotUtilsFactory.createGroundTruthSim(Optional.of(dashboardManager), drivetrain, poseResetConsumer);
         drivetrain.setHighFreqSimCallback(m_groundTruthSim::updateGroundTruthPose);
 
         // Create vision simulation
@@ -223,6 +226,7 @@ public class SimWrapper {
      * @return A new SimWrapper, or null if not in simulation
      */
     public static SimWrapper create(
+            DashboardManagerInterface dashboardManager,
             BotConfigInterface configInterface,
             CommandSwerveDrivetrain drivetrain,
             Consumer<Pose2d> poseResetConsumer) {
@@ -235,7 +239,7 @@ public class SimWrapper {
             return null;
         }
 
-        return new SimWrapper(configInterface, drivetrain, poseResetConsumer);
+        return new SimWrapper(dashboardManager, configInterface, drivetrain, poseResetConsumer);
     }
 
     /**

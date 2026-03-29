@@ -29,7 +29,9 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import robotutils.pub.interfaces.GroundTruthSimInterface;
 import robotutils.pub.staticutils.AllianceCalc;
+import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -52,6 +54,9 @@ public class GroundTruthSim implements GroundTruthSimInterface {
 
     /** Consumer to notify RobotContainer when pose is reset. */
     private final Consumer<Pose2d> m_poseResetConsumer;
+
+    /** Optional dashboard provider to report the ground truth pose. */
+    private final Optional<DashboardProviderInterface<GroundTruthSimDashboardSettings>> m_optionalDashboardProvider;
 
     /** The ground truth pose tracks where the robot actually is in simulation physics. */
     private Pose2d m_groundTruthPose = new Pose2d();
@@ -103,13 +108,15 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      */
     public GroundTruthSim(
         SwerveDrivetrain<TalonFX, TalonFX, CANcoder> drivetrain,
-        Consumer<Pose2d> poseResetConsumer) {
+        Consumer<Pose2d> poseResetConsumer,
+        Optional<DashboardProviderInterface<GroundTruthSimDashboardSettings>> optionalDashboardProvider) {
 
         this(
             () -> drivetrain.getState().Speeds,
             () -> drivetrain.getState().Pose,
             drivetrain::resetPose,
-            poseResetConsumer);
+            poseResetConsumer,
+            optionalDashboardProvider);
     }
 
     /**
@@ -127,7 +134,8 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         Supplier<ChassisSpeeds> speedsSupplier,
         Supplier<Pose2d> estimatedPoseSupplier,
         Consumer<Pose2d> drivetrainResetPose,
-        Consumer<Pose2d> poseResetConsumer) {
+        Consumer<Pose2d> poseResetConsumer,
+        Optional<DashboardProviderInterface<GroundTruthSimDashboardSettings>> optionalDashboardProvider) {
 
         if (!RobotBase.isSimulation()) {
             throw new IllegalStateException("GroundTruthSim only instantiated in simulation mode");
@@ -136,6 +144,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         this.m_estimatedPoseSupplier = estimatedPoseSupplier;
         this.m_drivetrainResetPose = drivetrainResetPose;
         this.m_poseResetConsumer = poseResetConsumer;
+        this.m_optionalDashboardProvider = optionalDashboardProvider;
         this.m_lastUpdateTime = Utils.getCurrentTimeSeconds();
     }
 
@@ -185,6 +194,9 @@ public class GroundTruthSim implements GroundTruthSimInterface {
             m_groundTruthPose.getY() + fieldDy,
             m_groundTruthPose.getRotation().plus(new Rotation2d(dtheta))
         );
+
+        m_optionalDashboardProvider.ifPresent(provider ->
+            provider.setLatestSettings(new GroundTruthSimDashboardSettings(m_groundTruthPose)));
 
         // Return the radians rotate this step
         return dtheta;

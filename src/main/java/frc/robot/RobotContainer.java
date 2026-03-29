@@ -231,7 +231,7 @@ public class RobotContainer {
             Robot.isSimulation(),
             () -> drivetrain.getOperatorForwardDirection().getDegrees());
 
-        m_simWrapper = SimWrapper.create(m_configInterface, drivetrain, this::resetRobotPose);
+        m_simWrapper = SimWrapper.create(m_dashboardManager, m_configInterface, drivetrain, this::resetRobotPose);
         Command cycleResetCmd = (m_simWrapper != null)
             ? drivetrain.runOnce(() -> m_simWrapper.cycleResetPosition(
                 AutoLogic.getSelectedAutoStartingPose()))
