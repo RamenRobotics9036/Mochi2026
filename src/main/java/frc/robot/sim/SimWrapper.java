@@ -35,7 +35,7 @@ public class SimWrapper {
 
     private final GroundTruthSimInterface m_groundTruthSim;
     private final SimLimelightProducerInterface m_simLimelightProducer;
-    public final FaultyAutoSim m_faultyAutoSim;
+    public final FaultyDriveManager m_faultyDriveManager;
 
     /**
      * Creates a new SimWrapper.
@@ -73,7 +73,7 @@ public class SimWrapper {
         }
 
         // Create faulty auto sim (fault injection for testing)
-        m_faultyAutoSim = new FaultyAutoSim(m_groundTruthSim, m_simLimelightProducer);
+        m_faultyDriveManager = new FaultyDriveManager(m_groundTruthSim, m_simLimelightProducer);
     }
 
     /**
@@ -248,7 +248,7 @@ public class SimWrapper {
         if (simWrapper == null) {
             return;
         }
-        simWrapper.m_faultyAutoSim.enablePullRight(enabled);
+        simWrapper.m_faultyDriveManager.enablePullRight(enabled);
     }
 
     /**
@@ -262,7 +262,7 @@ public class SimWrapper {
         if (simWrapper == null) {
             return;
         }
-        simWrapper.m_faultyAutoSim.enableRotateClockwise(enabled);
+        simWrapper.m_faultyDriveManager.enableRotateClockwise(enabled);
     }
 
     /**
@@ -276,7 +276,7 @@ public class SimWrapper {
         if (simWrapper == null) {
             return;
         }
-        simWrapper.m_faultyAutoSim.enableCameraMisplaced(offset);
+        simWrapper.m_faultyDriveManager.enableCameraMisplaced(offset);
     }
 
     /**
@@ -289,7 +289,7 @@ public class SimWrapper {
         if (simWrapper == null) {
             return;
         }
-        simWrapper.m_faultyAutoSim.resetAllAutoSimFaults();
+        simWrapper.m_faultyDriveManager.resetAllAutoSimFaults();
     }
 
     /**  Gets the ground truth pose from the simulation. */

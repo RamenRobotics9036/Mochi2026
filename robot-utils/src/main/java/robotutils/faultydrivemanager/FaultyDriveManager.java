@@ -1,4 +1,4 @@
-package robotutils.groundtruthsim;
+package robotutils.faultydrivemanager;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import robotutils.pub.interfaces.GroundTruthSimInterface;
@@ -9,7 +9,7 @@ import robotutils.pub.interfaces.SimLimelightProducerInterface;
  * Use this to enable/disable specific modeled imperfections (e.g. drivetrain pull)
  * so that vision correction and path following can be validated.
  */
-public class FaultyAutoSim {
+public class FaultyDriveManager implements FaultyDriveManagerInterface {
 
     private final GroundTruthSimInterface m_groundTruthSim;
     private final SimLimelightProducerInterface m_simLimelightProducer;
@@ -20,7 +20,7 @@ public class FaultyAutoSim {
      * @param groundTruthSim The ground truth sim to apply faults to
      * @param simLimelightProducer The sim limelight producer to apply camera faults to
      */
-    public FaultyAutoSim(GroundTruthSimInterface groundTruthSim, SimLimelightProducerInterface simLimelightProducer) {
+    public FaultyDriveManager(GroundTruthSimInterface groundTruthSim, SimLimelightProducerInterface simLimelightProducer) {
         m_groundTruthSim = groundTruthSim;
         m_simLimelightProducer = simLimelightProducer;
     }
