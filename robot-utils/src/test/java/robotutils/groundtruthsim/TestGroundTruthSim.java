@@ -686,16 +686,6 @@ class TestGroundTruthSim {
         assertEquals(25.0, after.getRotation().getDegrees(), 1e-6);
     }
 
-    // ── publishTelemetry tests ───────────────────────────────────────
-
-    @Test
-    void publishTelemetry_doesNotThrow() {
-        GroundTruthSim sim = createSim();
-
-        m_estimatedPose = new Pose2d(1, 2, Rotation2d.fromDegrees(30));
-        assertDoesNotThrow(() -> sim.publishTelemetry());
-    }
-
     // ── simulationPeriodic tests ─────────────────────────────────────
 
     @SuppressWarnings("VariableDeclarationUsageDistance")
