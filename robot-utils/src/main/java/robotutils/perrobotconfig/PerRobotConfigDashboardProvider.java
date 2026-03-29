@@ -10,6 +10,7 @@ import robotutils.pub.interfaces.dashboard.StringPublisherWrapper;
 public class PerRobotConfigDashboardProvider implements DashboardProviderInterface {
     private boolean m_isInitialized = false;
     private boolean m_isUpdated = false;
+    private PerRobotConfigDashboardSettings m_latestSettings = null;
     private StringPublisherWrapper m_robotNamePublisher;
     private StringPublisherWrapper m_botConfigNamePublisher;
 
@@ -43,14 +44,13 @@ public class PerRobotConfigDashboardProvider implements DashboardProviderInterfa
             return;
         }
 
-        m_robotNamePublisher
-
+        m_robotNamePublisher.set(m_latestSettings.robotName());
+        m_botConfigNamePublisher.set(m_latestSettings.botConfigName());
     }
 
     /** Caller should use this when new settings are available. */
     public void setLatestSettings(PerRobotConfigDashboardSettings settings) {
-
-
+        m_latestSettings = settings;
         m_isUpdated = true;
     }
 }
