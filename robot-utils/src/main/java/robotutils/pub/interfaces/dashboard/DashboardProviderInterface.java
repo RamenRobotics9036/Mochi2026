@@ -1,5 +1,7 @@
 package robotutils.pub.interfaces.dashboard;
 
+import robotutils.dashboard.Field2dObjectRenderer;
+
 /**
  * Interface for a component to provide data to dashboard/networktables.
  * Basic model we use here: Each DashboardProvider has methods for a component to
@@ -15,6 +17,15 @@ public interface DashboardProviderInterface<T> {
 
     /** Dashboard provider should add the entries to NetworkTables in Init(). */
     void init();
+
+    /**
+     * Adds a custom Field2d renderer for one of this provider's Pose2d items.
+     * Providers with no Pose2d items may leave the default unsupported behavior.
+     */
+    default void addCustomRenderer(Field2dObjectRenderer renderer, String itemName) {
+        throw new UnsupportedOperationException(
+            this.getClass().getSimpleName() + " does not support custom field renderers");
+    }
 
     /** Dashboard provider should update NetworkTables with latest cached values. */
     void update();

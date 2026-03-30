@@ -1,11 +1,15 @@
 package robotutils.groundtruthsim;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.math.geometry.Pose2d;
+import java.util.ArrayList;
+import java.util.List;
+import robotutils.dashboard.Field2dObjectRenderer;
 import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
 import robotutils.pub.interfaces.dashboard.DoublePublisherWrapper;
 import robotutils.pub.interfaces.dashboard.Pose2dPublisherWrapper;
+
 
 /** Dashboard provider for ground truth simulation pose. */
 public class GroundTruthSimDashboardProvider
@@ -17,6 +21,7 @@ public class GroundTruthSimDashboardProvider
     private GroundTruthSimDashboardSettings m_latestSettings = null;
     private Pose2dPublisherWrapper m_groundTruthPosePublisher;
     private DoublePublisherWrapper m_estimateToGroundTruthPublisher;
+    private final List<Field2dObjectRenderer> m_field2dRenderers = new ArrayList<>();
 
     /** Constructor. */
     public GroundTruthSimDashboardProvider() {
@@ -50,6 +55,21 @@ public class GroundTruthSimDashboardProvider
 
         m_groundTruthPosePublisher.set(m_latestSettings.groundTruthPose());
         m_estimateToGroundTruthPublisher.set(m_latestSettings.poseEstimateToGroundTruthDistance());
+
+        for (Field2dObjectRenderer renderer : m_field2dRenderers) {
+            renderer.renderPose(m_latestSettings.groundTruthPose());
+        }
+    }
+
+    @Override
+    public void addCustomRenderer(Field2dObjectRenderer renderer, String itemName) {
+        if (kGroundTruthPoseItemName.equals(itemName)) {
+            m_field2dRenderers.add(renderer);
+            return;
+        }
+
+        throw new IllegalArgumentException(
+            "GroundTruthSimDashboardProvider does not support itemName: " + itemName);
     }
 
     @Override
