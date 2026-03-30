@@ -11,6 +11,7 @@ import robotutils.pub.interfaces.dashboard.Pose2dPublisherWrapper;
 public class GroundTruthSimDashboardProvider
     implements DashboardProviderInterface<GroundTruthSimDashboardSettings> {
 
+    public static final String kGroundTruthPoseItemName = "groundTruthPose";
     private boolean m_isInitialized = false;
     private boolean m_isUpdated = false;
     private GroundTruthSimDashboardSettings m_latestSettings = null;
