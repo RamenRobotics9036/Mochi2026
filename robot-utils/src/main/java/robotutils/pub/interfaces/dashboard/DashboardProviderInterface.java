@@ -1,7 +1,5 @@
 package robotutils.pub.interfaces.dashboard;
 
-import robotutils.dashboard.Field2dObjectRenderer;
-
 /**
  * Interface for a component to provide data to dashboard/networktables.
  * Basic model we use here: Each DashboardProvider has methods for a component to

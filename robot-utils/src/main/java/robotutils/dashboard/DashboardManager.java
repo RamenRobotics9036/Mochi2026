@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import robotutils.pub.interfaces.dashboard.DashboardManagerInterface;
 import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
+import robotutils.pub.interfaces.dashboard.Field2dObjectRenderer;
 
 /** Holds all the Dashboard Providers, and calls update() on them every periodic. */
 public class DashboardManager implements DashboardManagerInterface {
@@ -39,5 +40,11 @@ public class DashboardManager implements DashboardManagerInterface {
         String providerName,
         String providerItemName) {
 
+        if (!m_providers.containsKey(providerName)) {
+            throw new IllegalArgumentException("Provider not registered: " + providerName);
+        }
+
+        // Route the call to that provider
+        m_providers.get(providerName).addCustomRenderer(renderer, providerItemName);
     }
 }

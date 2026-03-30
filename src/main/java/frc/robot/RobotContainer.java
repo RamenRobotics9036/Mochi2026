@@ -74,6 +74,8 @@ import robotutils.pub.interfaces.JoystickInputInterface;
 import robotutils.pub.interfaces.JoystickInputsRecord;
 import robotutils.pub.interfaces.PerRobotConfigInterface;
 import robotutils.pub.interfaces.dashboard.DashboardManagerInterface;
+import robotutils.pub.interfaces.dashboard.DashboardNames;
+import robotutils.pub.interfaces.dashboard.Field2dObjectRenderer;
 import robotutils.pub.interfaces.simio.ArmIoInterface;
 import robotutils.pub.interfaces.simio.ElevatorIoInterface;
 import robotutils.pub.interfaces.simio.RollerIoInterface;
@@ -236,6 +238,16 @@ public class RobotContainer {
             ? drivetrain.runOnce(() -> m_simWrapper.cycleResetPosition(
                 AutoLogic.getSelectedAutoStartingPose()))
             : null;
+
+        // We want to display objects from the ground truth simulation on Field2d
+        if (m_simWrapper != null) {
+            m_dashboardManager.addCustomRenderer(
+                new Field2dObjectRenderer(
+                    m_glassField,
+                    "GroundTruthRobot"), // This is the name on the Field2d
+                DashboardNames.kGroundTruthProviderName,
+                DashboardNames.kGroundTruthPoseItemName);
+        }
 
         // $TODO2 - Can I consolidate all the basicInfoDashboard config
         basicInfoDashboard = new BasicInfoDashboard(

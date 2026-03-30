@@ -29,6 +29,7 @@ import robotutils.pub.interfaces.MacKey;
 import robotutils.pub.interfaces.PerRobotConfigInterface;
 import robotutils.pub.interfaces.SimLimelightProducerInterface;
 import robotutils.pub.interfaces.dashboard.DashboardManagerInterface;
+import robotutils.pub.interfaces.dashboard.DashboardNames;
 import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
 import robotutils.pub.interfaces.simio.ArmIoInterface;
 import robotutils.pub.interfaces.simio.ElevatorIoInterface;
@@ -144,7 +145,7 @@ public class RobotUtilsFactory {
         if (optionalDashboardManager.isPresent()) {
             PerRobotConfigDashboardProvider provider = new PerRobotConfigDashboardProvider();
             provider.init();
-            optionalDashboardManager.get().registerProvider("PerRobotConfig", provider);
+            optionalDashboardManager.get().registerProvider(DashboardNames.kPerRobotConfigProviderName, provider);
 
             optionalDashboardProvider = Optional.of(provider);
         }
@@ -298,9 +299,10 @@ public class RobotUtilsFactory {
             if (optionalDashboardManager.isPresent()) {
                 GroundTruthSimDashboardProvider provider = new GroundTruthSimDashboardProvider();
                 provider.init();
-                optionalDashboardManager.get().registerProvider("GroundTruthSim", provider);
+                optionalDashboardManager.get().registerProvider(DashboardNames.kGroundTruthProviderName, provider);
                 optionalDashboardProvider = Optional.of(provider);
-            } else {
+            }
+            else {
                 optionalDashboardProvider = Optional.empty();
             }
             return new GroundTruthSim(drivetrain, poseResetConsumer, optionalDashboardProvider);

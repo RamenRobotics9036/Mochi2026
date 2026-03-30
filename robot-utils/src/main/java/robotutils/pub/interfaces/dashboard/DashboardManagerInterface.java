@@ -1,7 +1,5 @@
 package robotutils.pub.interfaces.dashboard;
 
-import robotutils.dashboard.Field2dObjectRenderer;
-
 /** Interface for dashboard manager. */
 public interface DashboardManagerInterface {
 

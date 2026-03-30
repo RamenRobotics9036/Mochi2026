@@ -1,4 +1,4 @@
-package robotutils.dashboard;
+package robotutils.pub.interfaces.dashboard;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -24,6 +24,8 @@ public class Field2dObjectRenderer {
 
     /** Draws the pose on the configured field object, or clears it when pose is null. */
     public void renderPose(Pose2d pose) {
+        // $TODO4 - Don't update pose if it hasn't changed
+
         if (pose == null) {
             // Clear the object off the field
             m_field.getObject(m_fieldObjectName).setPoses();

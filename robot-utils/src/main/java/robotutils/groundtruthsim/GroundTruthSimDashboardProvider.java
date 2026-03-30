@@ -5,9 +5,11 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.ArrayList;
 import java.util.List;
-import robotutils.dashboard.Field2dObjectRenderer;
+
+import robotutils.pub.interfaces.dashboard.DashboardNames;
 import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
 import robotutils.pub.interfaces.dashboard.DoublePublisherWrapper;
+import robotutils.pub.interfaces.dashboard.Field2dObjectRenderer;
 import robotutils.pub.interfaces.dashboard.Pose2dPublisherWrapper;
 
 
@@ -15,7 +17,6 @@ import robotutils.pub.interfaces.dashboard.Pose2dPublisherWrapper;
 public class GroundTruthSimDashboardProvider
     implements DashboardProviderInterface<GroundTruthSimDashboardSettings> {
 
-    public static final String kGroundTruthPoseItemName = "groundTruthPose";
     private boolean m_isInitialized = false;
     private boolean m_isUpdated = false;
     private GroundTruthSimDashboardSettings m_latestSettings = null;
@@ -63,7 +64,7 @@ public class GroundTruthSimDashboardProvider
 
     @Override
     public void addCustomRenderer(Field2dObjectRenderer renderer, String providerItemName) {
-        if (kGroundTruthPoseItemName.equals(providerItemName)) {
+        if (DashboardNames.kGroundTruthPoseItemName.equals(providerItemName)) {
             m_field2dRenderers.add(renderer);
             return;
         }
