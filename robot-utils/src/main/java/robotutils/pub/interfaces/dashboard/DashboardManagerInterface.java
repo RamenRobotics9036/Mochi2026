@@ -1,5 +1,7 @@
 package robotutils.pub.interfaces.dashboard;
 
+import robotutils.dashboard.Field2dObjectRenderer;
+
 /** Interface for dashboard manager. */
 public interface DashboardManagerInterface {
 
@@ -11,4 +13,13 @@ public interface DashboardManagerInterface {
      * The dashboard manager will call update() on each registered provider.
      */
     void registerProvider(String providerName, DashboardProviderInterface<?> provider);
+
+    /**
+     * Main program calls this to add one of the Poses from a provider onto
+     * their own Field2d object.
+     */
+    void addCustomRenderer(
+        Field2dObjectRenderer renderer,
+        String providerName,
+        String providerItemName);
 }

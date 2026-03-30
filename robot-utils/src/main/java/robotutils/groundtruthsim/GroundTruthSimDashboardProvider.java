@@ -62,14 +62,14 @@ public class GroundTruthSimDashboardProvider
     }
 
     @Override
-    public void addCustomRenderer(Field2dObjectRenderer renderer, String itemName) {
-        if (kGroundTruthPoseItemName.equals(itemName)) {
+    public void addCustomRenderer(Field2dObjectRenderer renderer, String providerItemName) {
+        if (kGroundTruthPoseItemName.equals(providerItemName)) {
             m_field2dRenderers.add(renderer);
             return;
         }
 
         throw new IllegalArgumentException(
-            "GroundTruthSimDashboardProvider does not support itemName: " + itemName);
+            "GroundTruthSimDashboardProvider does not support itemName: " + providerItemName);
     }
 
     @Override

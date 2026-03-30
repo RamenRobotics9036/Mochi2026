@@ -22,7 +22,7 @@ public interface DashboardProviderInterface<T> {
      * Adds a custom Field2d renderer for one of this provider's Pose2d items.
      * Providers with no Pose2d items may leave the default unsupported behavior.
      */
-    default void addCustomRenderer(Field2dObjectRenderer renderer, String itemName) {
+    default void addCustomRenderer(Field2dObjectRenderer renderer, String providerItemName) {
         throw new UnsupportedOperationException(
             this.getClass().getSimpleName() + " does not support custom field renderers");
     }
