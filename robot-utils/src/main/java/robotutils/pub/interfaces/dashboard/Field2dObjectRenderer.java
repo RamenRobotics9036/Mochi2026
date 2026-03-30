@@ -9,6 +9,9 @@ public class Field2dObjectRenderer {
     private final Field2d m_field;
     private final String m_fieldObjectName;
 
+    private Pose2d m_lastValue = null;
+    private boolean m_lastValueSet = false;
+
     /** Constructor. */
     public Field2dObjectRenderer(Field2d field, String fieldObjectName) {
         if (field == null) {
@@ -24,7 +27,12 @@ public class Field2dObjectRenderer {
 
     /** Draws the pose on the configured field object, or clears it when pose is null. */
     public void renderPose(Pose2d pose) {
-        // $TODO4 - Don't update pose if it hasn't changed
+        // Dont update pose if it hasnt changed
+        if (m_lastValueSet && m_lastValue.equals(pose)) {
+            return;
+        }
+        m_lastValue = pose;
+        m_lastValueSet = true;
 
         if (pose == null) {
             // Clear the object off the field
