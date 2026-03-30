@@ -15,6 +15,7 @@ import frc.robot.visutils.VisionKalmanFilter.DisplayInfo;
 import java.util.List;
 import java.util.Optional;
 
+// $TODO4 - This class should go away now that we use custom Field2d renderers instead.
 /**
  * Class to show vision targets on the field.
  */
@@ -70,16 +71,16 @@ public class ShowVisionOnField {
         DisplayInfo kalmanDisplay,
         SwerveDriveState driveState) {
 
-        // Show estimate pose for vision, if we currently see AprilTag.
-        showPointInTimeVisionEstimate(showVisPose);
+        // // Show estimate pose for vision, if we currently see AprilTag.
+        // showPointInTimeVisionEstimate(showVisPose);
 
-        // Show VisionKalmanFilter converged pose (offset forward for visibility)
-        showKalmanVisionPose(
-            kalmanDisplay.pose(),
-            kalmanDisplay.hasConverged() ? 0 : 1);
+        // // Show VisionKalmanFilter converged pose (offset forward for visibility)
+        // showKalmanVisionPose(
+        //     kalmanDisplay.pose(),
+        //     kalmanDisplay.hasConverged() ? 0 : 1);
 
-        // Show robot pose and wheel positions on field
-        showEstimatedPoseAndWheels(driveState);
+        // // Show robot pose and wheel positions on field
+        // showEstimatedPoseAndWheels(driveState);
     }
 
     /**
@@ -90,19 +91,19 @@ public class ShowVisionOnField {
     private void showEstimatedPoseAndWheels(
         SwerveDrivetrain.SwerveDriveState driveState) {
 
-        // Always show robot pose and wheels on real/glass field
-        m_realGlassField.ifPresent(f -> {
-            f.getObject("EstimatedRobot").setPose(driveState.Pose);
-            f.getObject("EstimatedRobotModules").setPoses(getModulePoses(driveState));
-        });
+        // // Always show robot pose and wheels on real/glass field
+        // m_realGlassField.ifPresent(f -> {
+        //     f.getObject("EstimatedRobot").setPose(driveState.Pose);
+        //     f.getObject("EstimatedRobotModules").setPoses(getModulePoses(driveState));
+        // });
 
-        // Only show on debug field if simulation is running in debug mode
-        if (Robot.isSimulation()) {
-            m_simulationField.ifPresent(f -> {
-                f.getObject("EstimatedRobot").setPose(driveState.Pose);
-                f.getObject("EstimatedRobotModules").setPoses(getModulePoses(driveState));
-            });
-        }
+        // // Only show on debug field if simulation is running in debug mode
+        // if (Robot.isSimulation()) {
+        //     m_simulationField.ifPresent(f -> {
+        //         f.getObject("EstimatedRobot").setPose(driveState.Pose);
+        //         f.getObject("EstimatedRobotModules").setPoses(getModulePoses(driveState));
+        //     });
+        // }
     }
 
     /**
@@ -111,20 +112,20 @@ public class ShowVisionOnField {
      * @param groundTruthPose The ground truth pose (where the robot actually is in simulation)
      */
     public void showGroundTruthPoseOnField(Pose2d groundTruthPose) {
-        // Only show ground truth pose on glass field when we're in simulation mode
-        if (Robot.isSimulation()) {
-            m_realGlassField.ifPresent(f -> f.getObject("GroundTruthRobot").setPose(groundTruthPose));
+        // // Only show ground truth pose on glass field when we're in simulation mode
+        // if (Robot.isSimulation()) {
+        //     m_realGlassField.ifPresent(f -> f.getObject("GroundTruthRobot").setPose(groundTruthPose));
 
-            // Also, the default "Robot" object on the glass field shows same thing.  This is confusing,
-            // but PhotonVisions sim is updating Robot based on where the cameras are.  And then I'm
-            // adding another object called GroundTruthRobot that shows the same pose.
-            m_realGlassField.ifPresent(f -> f.getObject("Robot").setPose(groundTruthPose));
-        }
+        //     // Also, the default "Robot" object on the glass field shows same thing.  This is confusing,
+        //     // but PhotonVisions sim is updating Robot based on where the cameras are.  And then I'm
+        //     // adding another object called GroundTruthRobot that shows the same pose.
+        //     m_realGlassField.ifPresent(f -> f.getObject("Robot").setPose(groundTruthPose));
+        // }
 
-        // Only show on debug field if simulation is running in debug mode
-        if (Robot.isSimulation()) {
-            m_simulationField.ifPresent(f -> f.getObject("GroundTruthRobot").setPose(groundTruthPose));
-        }
+        // // Only show on debug field if simulation is running in debug mode
+        // if (Robot.isSimulation()) {
+        //     m_simulationField.ifPresent(f -> f.getObject("GroundTruthRobot").setPose(groundTruthPose));
+        // }
     }
 
     /**
