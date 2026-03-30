@@ -10,5 +10,5 @@ public interface DashboardManagerInterface {
      * After a provider is initialized, it can be registered with the dashboard manager.
      * The dashboard manager will call update() on each registered provider.
      */
-    void registerProvider(DashboardProviderInterface<?> provider);
+    void registerProvider(String providerName, DashboardProviderInterface<?> provider);
 }

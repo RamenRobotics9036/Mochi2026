@@ -144,7 +144,7 @@ public class RobotUtilsFactory {
         if (optionalDashboardManager.isPresent()) {
             PerRobotConfigDashboardProvider provider = new PerRobotConfigDashboardProvider();
             provider.init();
-            optionalDashboardManager.get().registerProvider(provider);
+            optionalDashboardManager.get().registerProvider("PerRobotConfig", provider);
 
             optionalDashboardProvider = Optional.of(provider);
         }
@@ -298,7 +298,7 @@ public class RobotUtilsFactory {
             if (optionalDashboardManager.isPresent()) {
                 GroundTruthSimDashboardProvider provider = new GroundTruthSimDashboardProvider();
                 provider.init();
-                optionalDashboardManager.get().registerProvider(provider);
+                optionalDashboardManager.get().registerProvider("GroundTruthSim", provider);
                 optionalDashboardProvider = Optional.of(provider);
             } else {
                 optionalDashboardProvider = Optional.empty();
