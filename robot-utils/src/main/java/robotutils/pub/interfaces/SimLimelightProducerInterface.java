@@ -32,9 +32,9 @@ public interface SimLimelightProducerInterface {
      * Update the vision simulation with the current robot pose.
      * Should be called from simulationPeriodic.
      *
-     * @param robotSimPose The ground truth robot pose in simulation
+     * @param groundTruthSimPose The ground truth robot pose in simulation
      */
-    void simulationPeriodic(Pose2d robotSimPose);
+    void simulationPeriodic(Pose2d groundTruthSimPose);
 
     /**
      * Reset pose history of the robot in the vision system simulation.

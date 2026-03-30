@@ -110,9 +110,13 @@ public class SimLimelightProducer implements SimLimelightProducerInterface {
 
     // ----- Simulation
 
+    /**
+     * Note that we hand Photonvisions visionSystemSim the ground truth pose
+     * of the robot in simulation, rather than the robot estimate pose.
+     */
     @Override
-    public void simulationPeriodic(Pose2d robotSimPose) {
-        m_visionSystemSim.update(robotSimPose);
+    public void simulationPeriodic(Pose2d groundTruthSimPose) {
+        m_visionSystemSim.update(groundTruthSimPose);
     }
 
     /** Reset pose history of the robot in the vision system simulation. */
