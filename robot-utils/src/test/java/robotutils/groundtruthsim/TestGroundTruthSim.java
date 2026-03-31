@@ -12,6 +12,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -84,12 +85,17 @@ class TestGroundTruthSim {
         return mock(Consumer.class);
     }
 
+    private SwerveDriveState buildDriveState() {
+        SwerveDriveState state = new SwerveDriveState();
+        state.Speeds = m_speeds;
+        state.Pose = m_estimatedPose;
+        return state;
+    }
+
     /** Creates a GroundTruthSim with default randomness. */
     private GroundTruthSim createSim() {
         return new GroundTruthSim(
-            () -> m_speeds,
-            () -> m_estimatedPose,
-            () -> null,
+            this::buildDriveState,
             m_mockDrivetrainResetPose,
             m_mockPoseResetConsumer,
             Optional.empty());
