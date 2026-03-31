@@ -96,20 +96,4 @@ public class GroundTruthSimDashboardProvider
         m_latestSettings = settings;
         m_isUpdated = true;
     }
-
-    // $TODO4 - Is this method needed?
-    private SwerveModuleState[] sanitizeModuleStates(SwerveModuleState[] moduleStates) {
-        if (moduleStates == null) {
-            return new SwerveModuleState[0];
-        }
-        return moduleStates;
-    }
-
-    // $TODO4 - Is this method needed?
-    private SwerveModulePosition[] sanitizeModulePositions(SwerveModulePosition[] modulePositions) {
-        if (modulePositions == null) {
-            return new SwerveModulePosition[0];
-        }
-        return modulePositions;
-    }
 }
