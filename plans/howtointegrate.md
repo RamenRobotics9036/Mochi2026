@@ -59,36 +59,13 @@ public final DashboardManagerInterface m_dashboardManager =
 
 The factory is the single entry point for all robot-utils objects.
 
-### Step 2 — Publish the main `Field2d` to SmartDashboard
-
-Create a `Field2d` and put it on the dashboard so Glass/AdvantageScope can
-display it:
-
-```java
-public final Field2d m_glassField = new Field2d();
-// in constructor or robotInit:
-SmartDashboard.putData("Field", m_glassField);
-```
-
-### Step 3 — Add custom renderers (sim only, optional)
+### Step 2 — Add custom renderers (sim only, optional)
 
 After `SimWrapper` is constructed (see Section 2), register renderers so
 ground-truth and odometry poses appear on your `Field2d`:
 
 ```java
 if (m_simWrapper != null) {
-    // Ground truth pose on the main Glass field
-    m_dashboardManager.addCustomRenderer(
-        new Field2dObjectRenderer(m_glassField, DashboardConstants.kGroundTruthPoseItemName),
-        DashboardConstants.kGroundTruthProviderName,
-        DashboardConstants.kGroundTruthPoseItemName);
-
-    // Odometry estimate on the main Glass field
-    m_dashboardManager.addCustomRenderer(
-        new Field2dObjectRenderer(m_glassField, DashboardConstants.kEstimatedPoseItemName),
-        DashboardConstants.kGroundTruthProviderName,
-        DashboardConstants.kEstimatedPoseItemName);
-
     // Odometry estimate on the sim debug Field2d (returned by SimWrapper)
     m_dashboardManager.addCustomRenderer(
         new Field2dObjectRenderer(m_simWrapper.getSimDebugField(), DashboardConstants.kEstimatedPoseItemName),
@@ -107,7 +84,7 @@ The constant strings (`DashboardConstants.kGroundTruthProviderName` etc.) must
 match identically the names used inside `RobotUtilsFactory` when it registers
 providers, so only use the constants — never hardcode strings.
 
-### Step 4 — Call `update()` every robot cycle
+### Step 3 — Call `update()` every robot cycle
 
 In `Robot.robotPeriodic()`, after `CommandScheduler.getInstance().run()`:
 
