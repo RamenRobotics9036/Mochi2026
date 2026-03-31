@@ -42,9 +42,7 @@ methods (see GroundTruthSim section); the robot project only needs to create
 the manager and call `update()`.
 
 **Call sites in Mochi2026:**
-- `RobotContainer.java` — `createDashboardManager()`, `addCustomRenderer()` ×4
-- `RobotConfigSelector.java` — passes manager to `createPerRobotConfig()`
-- `SimWrapper.java` — passes manager to `createGroundTruthSim()`
+- `RobotContainer.java` — `createDashboardManager()`, passes manager to `createGroundTruthSim()`, `addCustomRenderer()` ×4
 - `Robot.java` — calls `m_dashboardManager.update()` from `robotPeriodic()`
 
 ### Step 1 — Create `RobotUtilsFactory` and the dashboard manager
@@ -61,20 +59,23 @@ The factory is the single entry point for all robot-utils objects.
 
 ### Step 2 — Add custom renderers (sim only, optional)
 
-After `SimWrapper` is constructed (see Section 2), register renderers so
-ground-truth and odometry poses appear on your `Field2d`:
+In `RobotContainer`, after both `groundTruthSim` and `simLimelightProducer` are
+constructed (see Sections 2 and 4), register renderers so ground-truth and
+odometry poses appear on the sim debug `Field2d`:
 
 ```java
-if (m_simWrapper != null) {
-    // Odometry estimate on the sim debug Field2d (returned by SimWrapper)
+if (RobotBase.isSimulation()) {
+    Field2d simDebugField = simLimelightProducer.getSimDebugField();
+
+    // Odometry estimate on the sim debug field
     m_dashboardManager.addCustomRenderer(
-        new Field2dObjectRenderer(m_simWrapper.getSimDebugField(), DashboardConstants.kEstimatedPoseItemName),
+        new Field2dObjectRenderer(simDebugField, DashboardConstants.kEstimatedPoseItemName),
         DashboardConstants.kGroundTruthProviderName,
         DashboardConstants.kEstimatedPoseItemName);
 
     // Swerve module poses on the sim debug field (array renderer, 4 modules)
     m_dashboardManager.addCustomRenderer(
-        new Field2dMultipleObjectRenderer(m_simWrapper.getSimDebugField(), DashboardConstants.kEstimatedPoseModules, 4),
+        new Field2dMultipleObjectRenderer(simDebugField, DashboardConstants.kEstimatedPoseModules, 4),
         DashboardConstants.kGroundTruthProviderName,
         DashboardConstants.kEstimatedPoseModules);
 }
@@ -104,12 +105,10 @@ speeds at the drivetrain's high-frequency (250 Hz) sim rate and publishes the
 result for vision simulation and debug display.
 
 **Call sites in Mochi2026:**
-- `SimWrapper.java` — construction, all lifecycle calls, all pose-manipulation
-  proxy methods
-- `Robot.java` — `m_simWrapper.simulationPeriodic()`,
-  `m_simWrapper.getGroundTruthPose()` in `simulationPeriodic()`
-- `RobotContainer.java` — `addCustomRenderer` calls for ground truth + estimate
-  items (see Dashboard section above)
+- `RobotContainer.java` — construction, high-frequency callback registration,
+  `addCustomRenderer` calls, pose-manipulation helpers, named-command registrations
+- `Robot.java` — `groundTruthSim.simulationPeriodic()`,
+  `groundTruthSim.getGroundTruthPose()` in `simulationPeriodic()`
 
 ### Step 1 — Create a pose-reset consumer
 
@@ -120,8 +119,9 @@ pose into the drivetrain and the vision system.  Define a method in
 ```java
 private void resetRobotPose(Pose2d pose) {
     drivetrain.resetPose(pose);
-    if (Robot.isSimulation() && m_simWrapper != null) {
-        m_simWrapper.resetSimPose(pose);   // also resets vision sim (see Section 4)
+    if (Robot.isSimulation()) {
+        groundTruthSim.resetGroundTruthPoseForSim(pose);
+        simLimelightProducer.resetSimPose(pose);  // see Section 4
     }
     // reset any other stateful vision filters here
 }
@@ -162,10 +162,8 @@ first `simulationPeriodic()`.
 In `Robot.simulationPeriodic()`:
 
 ```java
-if (m_robotContainer.m_simWrapper != null) {
-    m_simWrapper.simulationPeriodic();
-    // ^ internally calls groundTruthSim.simulationPeriodic()
-    //   then passes groundTruthPose to simLimelightProducer.simulationPeriodic()
+if (m_robotContainer.groundTruthSim != null) {
+    m_robotContainer.groundTruthSim.simulationPeriodic();
 }
 ```
 
@@ -177,7 +175,7 @@ vs. ground truth pose, distance between them) at the standard 50 Hz loop rate.
 After `simulationPeriodic()` you can read the current ground truth pose:
 
 ```java
-Pose2d groundTruthPose = simWrapper.getGroundTruthPose();
+Pose2d groundTruthPose = groundTruthSim.getGroundTruthPose();
 // use it to update vision sim, show on debug Field2d, etc.
 ```
 
@@ -216,12 +214,10 @@ some faults affect drivetrain physics (handled by ground truth) and others
 affect camera position (handled by the vision sim).
 
 **Call sites in Mochi2026:**
-- `SimWrapper.java` — `createFaultyDriveManager()`, `enablePullRight()`,
-  `enableRotateClockwise()`, `enableCameraMisplaced()`, `resetAllAutoSimFaults()`
-- `RobotContainer.java` — named-command registrations (`faulty-pull-right`,
-  `faulty-rotate-clockwise`, `faulty-camera-misplaced`) in
-  `registerNamedCommands()`; `resetAllAutoSimFaults()` in
-  `getAutonomousCommand()`
+- `RobotContainer.java` — `createFaultyDriveManager()`, named-command
+  registrations (`faulty-pull-right`, `faulty-rotate-clockwise`,
+  `faulty-camera-misplaced`) in `registerNamedCommands()`;
+  `resetAllAutoSimFaults()` in `getAutonomousCommand()`
 
 ### Step 1 — Build `GroundTruthSim` and `SimLimelightProducer` first
 
@@ -289,22 +285,25 @@ Limelight NetworkTables data so the real vision pipeline code works
 unmodified in simulation.
 
 **Call sites in Mochi2026:**
-- `SimWrapper.java` — `createSimLimelightProducer()`, `periodic()`,
-  `simulationPeriodic()`, `resetSimPose()`, `getSimDebugField()`
+- `RobotContainer.java` — `createSimLimelightProducer()`; `getSimDebugField()`
+  for custom renderers; `resetSimPose()` in the pose-reset consumer
+- `Robot.java` — `simLimelightProducer.periodic()` in `robotPeriodic()`;
+  `simLimelightProducer.simulationPeriodic()` in `simulationPeriodic()`
 - `SingleCamOdometry.java` — constructs `DrivetrainVisionPoseInfo` records
 - `CamOutputs.java` — holds `Consumer<DrivetrainVisionPoseInfo>` for feeding
   `drivetrain.addVisionMeasurement()`
 - `VisionKalmanFilter.java` — implements `Consumer<DrivetrainVisionPoseInfo>`
-- `Robot.java` — `m_simWrapper.robotPeriodic()` (which calls
-  `simLimelightProducer.periodic()`)
 
-### Step 1 — Provide a `CameraInfoList` from `BotConfigInterface`
+### Step 1 — Provide a `CameraInfoList`
 
 The producer needs to know each camera's name and robot-to-camera transform.
-Store this in your `BotConfigInterface`:
+Build a `CameraInfoList` for your robot's cameras:
 
 ```java
-CameraInfoList cameras = configInterface.getCameras();
+CameraInfoList cameras = new CameraInfoList(List.of(
+    new CameraInfo("limelight-front", robotToFrontCamTransform),
+    new CameraInfo("limelight-back",  robotToBackCamTransform)
+));
 // Each CameraInfo contains: String cameraName, Transform3d robotToCam
 ```
 
@@ -336,8 +335,8 @@ Pass the current ground truth pose so the sim knows where to "see" AprilTags:
 
 ```java
 // In Robot.simulationPeriodic():
-Pose2d groundTruthPose = simWrapper.getGroundTruthPose();
-simLimelightProducer.simulationPeriodic(groundTruthPose);
+Pose2d groundTruthPose = m_robotContainer.groundTruthSim.getGroundTruthPose();
+m_robotContainer.simLimelightProducer.simulationPeriodic(groundTruthPose);
 ```
 
 This updates the PhotonVision sim with the robot's actual position, not the
@@ -400,9 +399,8 @@ The dependencies between the four components dictate the order of construction:
    on a real robot
 5. **`FaultyDriveManagerInterface`** — needs both GroundTruthSim and
    SimLimelightProducer; only create after both are confirmed non-null
-6. **Custom renderers** (`addCustomRenderer`) — add after `SimWrapper` (or the
-   equivalent holder object) is fully constructed so `getSimDebugField()` is
-   available
+6. **Custom renderers** (`addCustomRenderer`) — add after `SimLimelightProducerInterface`
+   is constructed so `getSimDebugField()` is available
 
 And the lifecycle order each robot cycle:
 
