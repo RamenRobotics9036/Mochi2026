@@ -144,11 +144,11 @@ public final class Constants {
     public static final class IndexerConstants {
         public static final int kMotorID = 30; //TODO: filler value
         /** Indexer flywheel speed */
-        public static final double kIndexSpeed = 0.20; //TODO: filler value
+        public static final double kIndexSpeed = 0.90; //TODO: filler value
 
-        public static final int kIndexerCurrentLimit = 40; //TODO: filler value
+        public static final int kIndexerCurrentLimit = 50; //TODO: filler value
 
-        public static final double kIndexerGearRatio = 1.0;
+        public static final double kIndexerGearRatio = 4.0;
         /** The shooter spin-up time before indexer activation, in seconds */
         public static final double kIndexDelay = 0.3;
     }
