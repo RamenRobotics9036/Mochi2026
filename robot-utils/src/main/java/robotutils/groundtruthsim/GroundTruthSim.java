@@ -225,7 +225,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
     private GroundTruthSimDashboardSettings buildDashboardSettings() {
         SwerveDriveState driveState = m_driveStateSupplier.get();
         Pose2d estimatedPose = driveState != null ? driveState.Pose : Pose2d.kZero;
-        Pose2d[] estimatedModulePoses = driveState != null ? getModulePoses(driveState) : new Pose2d[4];
+        Pose2d[] estimatedModulePoses = (driveState != null) ? getModulePoses(driveState) : new Pose2d[4];
 
         return new GroundTruthSimDashboardSettings(
             m_groundTruthPose,
