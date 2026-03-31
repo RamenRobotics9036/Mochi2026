@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 public record GroundTruthSimDashboardSettings(
     Pose2d groundTruthPose,
     Pose2d estimatedPose,
-    SwerveModuleState[] estimatedModuleStates,
-    SwerveModulePosition[] estimatedModulePositions,
+    Pose2d[] estimatedModulePoses,
     double poseEstimateToGroundTruthDistance) {
 }

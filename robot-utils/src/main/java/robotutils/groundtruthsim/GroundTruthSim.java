@@ -25,6 +25,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -58,6 +59,9 @@ public class GroundTruthSim implements GroundTruthSimInterface {
 
     /** The ground truth pose tracks where the robot actually is in simulation physics. */
     private Pose2d m_groundTruthPose = new Pose2d();
+
+    /** Module locations relative to robot center (from BotConfigInterface). */
+    private final Translation2d[] m_moduleLocations;
 
     /** Track accumulated distance for telemetry. */
     @SuppressWarnings("unused")
@@ -140,6 +144,15 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         this.m_poseResetConsumer = poseResetConsumer;
         this.m_optionalDashboardProvider = optionalDashboardProvider;
         this.m_lastUpdateTime = Utils.getCurrentTimeSeconds();
+
+        // Set wheel positions relative to robot center
+        // $TODO4 - Hardcoded
+        m_moduleLocations = new Translation2d[] {
+            new Translation2d(0.26035, 0.26670),
+            new Translation2d(0.26035, -0.26670),
+            new Translation2d(-0.26035, 0.26670),
+            new Translation2d(-0.26035, -0.26670)
+        };
     }
 
     /**
@@ -196,24 +209,28 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         return dtheta;
     }
 
+    /**
+     * Get the Pose2d of each swerve module based on the current robot pose and module states.
+     */
+    private Pose2d[] getModulePoses(SwerveDriveState driveState) {
+        Pose2d[] modulePoses = new Pose2d[4];
+        for (int i = 0; i < 4; i++) {
+            modulePoses[i] = driveState.Pose.transformBy(
+                new Transform2d(m_moduleLocations[i], driveState.ModuleStates[i].angle)
+            );
+        }
+        return modulePoses;
+    }
+
     private GroundTruthSimDashboardSettings buildDashboardSettings() {
-        // $TODO4 - Lookover this method.  Why is m_estimatedPoseSupplier needed?
         SwerveDriveState driveState = m_driveStateSupplier.get();
-        Pose2d estimatedPose = driveState != null ? driveState.Pose : new Pose2d();
-        SwerveModuleState[] estimatedModuleStates =
-            driveState != null && driveState.ModuleStates != null
-                ? driveState.ModuleStates.clone()
-                : new SwerveModuleState[0];
-        SwerveModulePosition[] estimatedModulePositions =
-            driveState != null && driveState.ModulePositions != null
-                ? driveState.ModulePositions.clone()
-                : new SwerveModulePosition[0];
+        Pose2d estimatedPose = driveState != null ? driveState.Pose : Pose2d.kZero;
+        Pose2d[] estimatedModulePoses = driveState != null ? getModulePoses(driveState) : new Pose2d[4];
 
         return new GroundTruthSimDashboardSettings(
             m_groundTruthPose,
             estimatedPose,
-            estimatedModuleStates,
-            estimatedModulePositions,
+            estimatedModulePoses,
             estimatedPose.getTranslation().getDistance(m_groundTruthPose.getTranslation()));
     }
 
