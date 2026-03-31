@@ -89,6 +89,7 @@ class TestGroundTruthSim {
         return new GroundTruthSim(
             () -> m_speeds,
             () -> m_estimatedPose,
+            () -> null,
             m_mockDrivetrainResetPose,
             m_mockPoseResetConsumer,
             Optional.empty());

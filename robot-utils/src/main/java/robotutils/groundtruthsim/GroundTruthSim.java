@@ -21,10 +21,13 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.RobotBase;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -46,6 +49,9 @@ public class GroundTruthSim implements GroundTruthSimInterface {
 
     /** Supplier for the current estimated pose from the pose estimator. */
     private final Supplier<Pose2d> m_estimatedPoseSupplier;
+
+    /** Supplier for the full current drivetrain state for dashboard publishing. */
+    private final Supplier<SwerveDriveState> m_driveStateSupplier;
 
     /** Consumer to reset the pose estimator (e.g. drivetrain.resetPose). */
     private final Consumer<Pose2d> m_drivetrainResetPose;
@@ -113,6 +119,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         this(
             () -> drivetrain.getState().Speeds,
             () -> drivetrain.getState().Pose,
+            drivetrain::getState,
             drivetrain::resetPose,
             poseResetConsumer,
             optionalDashboardProvider);
@@ -132,6 +139,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
     GroundTruthSim(
         Supplier<ChassisSpeeds> speedsSupplier,
         Supplier<Pose2d> estimatedPoseSupplier,
+        Supplier<SwerveDriveState> driveStateSupplier,
         Consumer<Pose2d> drivetrainResetPose,
         Consumer<Pose2d> poseResetConsumer,
         Optional<DashboardProviderInterface<GroundTruthSimDashboardSettings>> optionalDashboardProvider) {
@@ -141,6 +149,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         }
         this.m_speedsSupplier = speedsSupplier;
         this.m_estimatedPoseSupplier = estimatedPoseSupplier;
+        this.m_driveStateSupplier = driveStateSupplier;
         this.m_drivetrainResetPose = drivetrainResetPose;
         this.m_poseResetConsumer = poseResetConsumer;
         this.m_optionalDashboardProvider = optionalDashboardProvider;
@@ -195,17 +204,31 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         );
 
         m_optionalDashboardProvider.ifPresent(provider ->
-            provider.setLatestSettings(new GroundTruthSimDashboardSettings(
-                m_groundTruthPose,
-                getPoseEstimateToGroundTruthDistance())));
+            provider.setLatestSettings(buildDashboardSettings()));
 
         // Return the radians rotate this step
         return dtheta;
     }
 
-    private double getPoseEstimateToGroundTruthDistance() {
-        Pose2d estimatedPose = m_estimatedPoseSupplier.get();
-        return estimatedPose.getTranslation().getDistance(m_groundTruthPose.getTranslation());
+    private GroundTruthSimDashboardSettings buildDashboardSettings() {
+        // $TODO4 - Lookover this method.  Why is m_estimatedPoseSupplier needed?
+        SwerveDriveState driveState = m_driveStateSupplier.get();
+        Pose2d estimatedPose = driveState != null ? driveState.Pose : m_estimatedPoseSupplier.get();
+        SwerveModuleState[] estimatedModuleStates =
+            driveState != null && driveState.ModuleStates != null
+                ? driveState.ModuleStates.clone()
+                : new SwerveModuleState[0];
+        SwerveModulePosition[] estimatedModulePositions =
+            driveState != null && driveState.ModulePositions != null
+                ? driveState.ModulePositions.clone()
+                : new SwerveModulePosition[0];
+
+        return new GroundTruthSimDashboardSettings(
+            m_groundTruthPose,
+            estimatedPose,
+            estimatedModuleStates,
+            estimatedModulePositions,
+            estimatedPose.getTranslation().getDistance(m_groundTruthPose.getTranslation()));
     }
 
     /**

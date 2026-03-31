@@ -2,6 +2,7 @@ package robotutils.perrobotconfig;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import robotutils.pub.interfaces.dashboard.DashboardConstants;
 import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
 import robotutils.pub.interfaces.dashboard.StringPublisherWrapper;
 
@@ -28,9 +29,9 @@ public class PerRobotConfigDashboardProvider
 
         // Publish all the values to NetworkTables
         m_robotNamePublisher = new StringPublisherWrapper(
-            tableRoot.getStringTopic("RobotName").publish());
+            tableRoot.getStringTopic(DashboardConstants.kRobotName).publish());
         m_botConfigNamePublisher = new StringPublisherWrapper(
-            tableRoot.getStringTopic("BotConfigName").publish());
+            tableRoot.getStringTopic(DashboardConstants.kBotConfigName).publish());
 
         m_isInitialized = true;
     }

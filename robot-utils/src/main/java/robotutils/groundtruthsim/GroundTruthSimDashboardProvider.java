@@ -1,12 +1,15 @@
 package robotutils.groundtruthsim;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
 import java.util.ArrayList;
 import java.util.List;
 
-import robotutils.pub.interfaces.dashboard.DashboardNames;
+import robotutils.pub.interfaces.dashboard.DashboardConstants;
 import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
 import robotutils.pub.interfaces.dashboard.DoublePublisherWrapper;
 import robotutils.pub.interfaces.dashboard.Field2dObjectRenderer;
@@ -21,8 +24,10 @@ public class GroundTruthSimDashboardProvider
     private boolean m_isUpdated = false;
     private GroundTruthSimDashboardSettings m_latestSettings = null;
     private Pose2dPublisherWrapper m_groundTruthPosePublisher;
+    private Pose2dPublisherWrapper m_estimatedPosePublisher;
     private DoublePublisherWrapper m_estimateToGroundTruthPublisher;
-    private final List<Field2dObjectRenderer> m_field2dRenderers = new ArrayList<>();
+    private final List<Field2dObjectRenderer> m_groundTruthField2dRenderers = new ArrayList<>();
+    private final List<Field2dObjectRenderer> m_estimatedPoseField2dRenderers = new ArrayList<>();
 
     /** Constructor. */
     public GroundTruthSimDashboardProvider() {
@@ -35,10 +40,14 @@ public class GroundTruthSimDashboardProvider
                 DashboardProviderInterface.getNetworkTableRoot());
 
         m_groundTruthPosePublisher = new Pose2dPublisherWrapper(
-            tableRoot.getStructTopic("GroundTruthPose", Pose2d.struct).publish());
+            tableRoot.getStructTopic(DashboardConstants.kGroundTruthPoseItemName, Pose2d.struct).publish(),
+            false);
+        m_estimatedPosePublisher = new Pose2dPublisherWrapper(
+            tableRoot.getStructTopic(DashboardConstants.kEstimatedPoseItemName, Pose2d.struct).publish(),
+            false);
 
         m_estimateToGroundTruthPublisher = new DoublePublisherWrapper(
-            tableRoot.getDoubleTopic("EstimateToGroundTruth").publish());
+            tableRoot.getDoubleTopic(DashboardConstants.kEstimateToGroundTruthDistance).publish());
 
         m_isInitialized = true;
     }
@@ -55,17 +64,26 @@ public class GroundTruthSimDashboardProvider
         }
 
         m_groundTruthPosePublisher.set(m_latestSettings.groundTruthPose());
+        m_estimatedPosePublisher.set(m_latestSettings.estimatedPose());
+
         m_estimateToGroundTruthPublisher.set(m_latestSettings.poseEstimateToGroundTruthDistance());
 
-        for (Field2dObjectRenderer renderer : m_field2dRenderers) {
+        for (Field2dObjectRenderer renderer : m_groundTruthField2dRenderers) {
             renderer.renderPose(m_latestSettings.groundTruthPose());
+        }
+        for (Field2dObjectRenderer renderer : m_estimatedPoseField2dRenderers) {
+            renderer.renderPose(m_latestSettings.estimatedPose());
         }
     }
 
     @Override
     public void addCustomRenderer(Field2dObjectRenderer renderer, String providerItemName) {
-        if (DashboardNames.kGroundTruthPoseItemName.equals(providerItemName)) {
-            m_field2dRenderers.add(renderer);
+        if (DashboardConstants.kGroundTruthPoseItemName.equals(providerItemName)) {
+            m_groundTruthField2dRenderers.add(renderer);
+            return;
+        }
+        if (DashboardConstants.kEstimatedPoseItemName.equals(providerItemName)) {
+            m_estimatedPoseField2dRenderers.add(renderer);
             return;
         }
 
@@ -77,5 +95,21 @@ public class GroundTruthSimDashboardProvider
     public void setLatestSettings(GroundTruthSimDashboardSettings settings) {
         m_latestSettings = settings;
         m_isUpdated = true;
+    }
+
+    // $TODO4 - Is this method needed?
+    private SwerveModuleState[] sanitizeModuleStates(SwerveModuleState[] moduleStates) {
+        if (moduleStates == null) {
+            return new SwerveModuleState[0];
+        }
+        return moduleStates;
+    }
+
+    // $TODO4 - Is this method needed?
+    private SwerveModulePosition[] sanitizeModulePositions(SwerveModulePosition[] modulePositions) {
+        if (modulePositions == null) {
+            return new SwerveModulePosition[0];
+        }
+        return modulePositions;
     }
 }
