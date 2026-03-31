@@ -73,8 +73,9 @@ import robotutils.pub.interfaces.DriveSmoothInterface;
 import robotutils.pub.interfaces.JoystickInputInterface;
 import robotutils.pub.interfaces.JoystickInputsRecord;
 import robotutils.pub.interfaces.PerRobotConfigInterface;
-import robotutils.pub.interfaces.dashboard.DashboardManagerInterface;
 import robotutils.pub.interfaces.dashboard.DashboardConstants;
+import robotutils.pub.interfaces.dashboard.DashboardManagerInterface;
+import robotutils.pub.interfaces.dashboard.Field2dMultipleObjectRenderer;
 import robotutils.pub.interfaces.dashboard.Field2dObjectRenderer;
 import robotutils.pub.interfaces.simio.ArmIoInterface;
 import robotutils.pub.interfaces.simio.ElevatorIoInterface;
@@ -264,6 +265,15 @@ public class RobotContainer {
                     DashboardConstants.kEstimatedPoseItemName), // This is the name on the Field2d
                 DashboardConstants.kGroundTruthProviderName,
                 DashboardConstants.kEstimatedPoseItemName);
+
+            // Show estimated swerve module poses on simulation debug field
+            m_dashboardManager.addCustomRenderer(
+                new Field2dMultipleObjectRenderer(
+                    m_simWrapper.getSimDebugField(),
+                    DashboardConstants.kEstimatedPoseModules,
+                    4), // This is the name on the Field2d
+                DashboardConstants.kGroundTruthProviderName,
+                DashboardConstants.kEstimatedPoseModules);
         }
 
         // $TODO2 - Can I consolidate all the basicInfoDashboard config

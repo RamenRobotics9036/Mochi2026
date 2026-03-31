@@ -1,17 +1,15 @@
 package robotutils.groundtruthsim;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
 import java.util.ArrayList;
 import java.util.List;
 
 import robotutils.pub.interfaces.dashboard.DashboardConstants;
 import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
 import robotutils.pub.interfaces.dashboard.DoublePublisherWrapper;
+import robotutils.pub.interfaces.dashboard.Field2dMultipleObjectRenderer;
 import robotutils.pub.interfaces.dashboard.Field2dObjectRenderer;
 import robotutils.pub.interfaces.dashboard.Pose2dPublisherWrapper;
 
@@ -28,6 +26,8 @@ public class GroundTruthSimDashboardProvider
     private DoublePublisherWrapper m_estimateToGroundTruthPublisher;
     private final List<Field2dObjectRenderer> m_groundTruthField2dRenderers = new ArrayList<>();
     private final List<Field2dObjectRenderer> m_estimatedPoseField2dRenderers = new ArrayList<>();
+    private final List<Field2dMultipleObjectRenderer> m_estimatedModuleField2dRenderers =
+            new ArrayList<>();
 
     /** Constructor. */
     public GroundTruthSimDashboardProvider() {
@@ -74,6 +74,9 @@ public class GroundTruthSimDashboardProvider
         for (Field2dObjectRenderer renderer : m_estimatedPoseField2dRenderers) {
             renderer.renderPose(m_latestSettings.estimatedPose());
         }
+        for (Field2dMultipleObjectRenderer renderer : m_estimatedModuleField2dRenderers) {
+            renderer.renderMultiplePoses(m_latestSettings.estimatedModulePoses());
+        }
     }
 
     @Override
@@ -84,6 +87,17 @@ public class GroundTruthSimDashboardProvider
         }
         if (DashboardConstants.kEstimatedPoseItemName.equals(providerItemName)) {
             m_estimatedPoseField2dRenderers.add(renderer);
+            return;
+        }
+
+        throw new IllegalArgumentException(
+            "GroundTruthSimDashboardProvider does not support itemName: " + providerItemName);
+    }
+
+    @Override
+    public void addCustomRenderer(Field2dMultipleObjectRenderer renderer, String providerItemName) {
+        if (DashboardConstants.kEstimatedPoseModules.equals(providerItemName)) {
+            m_estimatedModuleField2dRenderers.add(renderer);
             return;
         }
 

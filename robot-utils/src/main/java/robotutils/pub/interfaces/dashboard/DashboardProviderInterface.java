@@ -25,6 +25,15 @@ public interface DashboardProviderInterface<T> {
             this.getClass().getSimpleName() + " does not support custom field renderers");
     }
 
+    /**
+     * Adds a custom Field2d renderer for one of this provider's Pose2d[] items.
+     * Providers with no Pose2d[] items may leave the default unsupported behavior.
+     */
+    default void addCustomRenderer(Field2dMultipleObjectRenderer renderer, String providerItemName) {
+        throw new UnsupportedOperationException(
+            this.getClass().getSimpleName() + " does not support custom field renderers");
+    }
+
     /** Dashboard provider should update NetworkTables with latest cached values. */
     void update();
 

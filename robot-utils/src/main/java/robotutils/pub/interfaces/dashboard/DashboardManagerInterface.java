@@ -20,4 +20,13 @@ public interface DashboardManagerInterface {
         Field2dObjectRenderer renderer,
         String providerName,
         String providerItemName);
+
+    /**
+     * Main program calls this to add one of the Pose2d arrays from a provider onto
+     * their own Field2d object.
+     */
+    void addCustomRenderer(
+        Field2dMultipleObjectRenderer renderer,
+        String providerName,
+        String providerItemName);
 }

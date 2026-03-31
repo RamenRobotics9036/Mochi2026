@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import robotutils.pub.interfaces.dashboard.DashboardManagerInterface;
 import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
+import robotutils.pub.interfaces.dashboard.Field2dMultipleObjectRenderer;
 import robotutils.pub.interfaces.dashboard.Field2dObjectRenderer;
 
 /** Holds all the Dashboard Providers, and calls update() on them every periodic. */
@@ -37,6 +38,24 @@ public class DashboardManager implements DashboardManagerInterface {
     @Override
     public void addCustomRenderer(
         Field2dObjectRenderer renderer,
+        String providerName,
+        String providerItemName) {
+
+        if (!m_providers.containsKey(providerName)) {
+            throw new IllegalArgumentException("Provider not registered: " + providerName);
+        }
+
+        // Route the call to that provider
+        m_providers.get(providerName).addCustomRenderer(renderer, providerItemName);
+    }
+
+    /**
+     * Called by main program to add one of the Pose2d arrays from a provider onto
+     * their own Field2d object.
+     */
+    @Override
+    public void addCustomRenderer(
+        Field2dMultipleObjectRenderer renderer,
         String providerName,
         String providerItemName) {
 
