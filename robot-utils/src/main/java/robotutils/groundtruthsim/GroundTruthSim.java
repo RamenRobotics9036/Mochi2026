@@ -44,12 +44,6 @@ import robotutils.pub.interfaces.dashboard.DashboardProviderInterface;
  */
 public class GroundTruthSim implements GroundTruthSimInterface {
 
-    /** Supplier for the current chassis speeds (robot-relative). */
-    private final Supplier<ChassisSpeeds> m_speedsSupplier;
-
-    /** Supplier for the current estimated pose from the pose estimator. */
-    private final Supplier<Pose2d> m_estimatedPoseSupplier;
-
     /** Supplier for the full current drivetrain state for dashboard publishing. */
     private final Supplier<SwerveDriveState> m_driveStateSupplier;
 
@@ -117,8 +111,6 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         Optional<DashboardProviderInterface<GroundTruthSimDashboardSettings>> optionalDashboardProvider) {
 
         this(
-            () -> drivetrain.getState().Speeds,
-            () -> drivetrain.getState().Pose,
             drivetrain::getState,
             drivetrain::resetPose,
             poseResetConsumer,
@@ -130,15 +122,11 @@ public class GroundTruthSim implements GroundTruthSimInterface {
      * Package-private to allow unit tests to supply deterministic collaborators
      * without depending on vendor hardware classes.
      *
-     * @param speedsSupplier Supplies the current robot-relative chassis speeds
-     * @param estimatedPoseSupplier Supplies the current estimated pose from the pose estimator
      * @param drivetrainResetPose Consumer to reset the drivetrain's pose estimator
      * @param poseResetConsumer Consumer to be called when pose is reset (e.g. for vision)
      * @throws IllegalStateException if called outside of simulation mode
      */
     GroundTruthSim(
-        Supplier<ChassisSpeeds> speedsSupplier,
-        Supplier<Pose2d> estimatedPoseSupplier,
         Supplier<SwerveDriveState> driveStateSupplier,
         Consumer<Pose2d> drivetrainResetPose,
         Consumer<Pose2d> poseResetConsumer,
@@ -147,8 +135,6 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         if (!RobotBase.isSimulation()) {
             throw new IllegalStateException("GroundTruthSim only instantiated in simulation mode");
         }
-        this.m_speedsSupplier = speedsSupplier;
-        this.m_estimatedPoseSupplier = estimatedPoseSupplier;
         this.m_driveStateSupplier = driveStateSupplier;
         this.m_drivetrainResetPose = drivetrainResetPose;
         this.m_poseResetConsumer = poseResetConsumer;
@@ -165,7 +151,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         double deltaTime = currentTime - m_lastUpdateTime;
         m_lastUpdateTime = currentTime;
 
-        ChassisSpeeds speeds = m_speedsSupplier.get();
+        ChassisSpeeds speeds = m_driveStateSupplier.get().Speeds;
 
         // Calculate how much the robot moved this timestep
         double dx = speeds.vxMetersPerSecond * deltaTime;
@@ -213,7 +199,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
     private GroundTruthSimDashboardSettings buildDashboardSettings() {
         // $TODO4 - Lookover this method.  Why is m_estimatedPoseSupplier needed?
         SwerveDriveState driveState = m_driveStateSupplier.get();
-        Pose2d estimatedPose = driveState != null ? driveState.Pose : m_estimatedPoseSupplier.get();
+        Pose2d estimatedPose = driveState != null ? driveState.Pose : new Pose2d();
         SwerveModuleState[] estimatedModuleStates =
             driveState != null && driveState.ModuleStates != null
                 ? driveState.ModuleStates.clone()
@@ -331,7 +317,7 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         double rotationOffsetDegrees) {
 
         // Get current estimated pose
-        Pose2d currentPose = m_estimatedPoseSupplier.get();
+        Pose2d currentPose = m_driveStateSupplier.get().Pose;
 
         // Apply offsets in the robot's local frame (x = forward, y = left)
         Pose2d driftedPose = currentPose.transformBy(
