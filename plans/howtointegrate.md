@@ -262,7 +262,7 @@ In `getAutonomousCommand()` (or `autonomousExit()`), append a reset so faults
 do not leak into subsequent runs:
 
 ```java
-return AutoLogic.getSelectedAutoCommand()
+return getSelectedAutoCommand()
     .andThen(Commands.runOnce(() -> faultyDriveManager.resetAllAutoSimFaults()));
 ```
 
@@ -289,10 +289,6 @@ unmodified in simulation.
   for custom renderers; `resetSimPose()` in the pose-reset consumer
 - `Robot.java` — `simLimelightProducer.periodic()` in `robotPeriodic()`;
   `simLimelightProducer.simulationPeriodic()` in `simulationPeriodic()`
-- `SingleCamOdometry.java` — constructs `DrivetrainVisionPoseInfo` records
-- `CamOutputs.java` — holds `Consumer<DrivetrainVisionPoseInfo>` for feeding
-  `drivetrain.addVisionMeasurement()`
-- `VisionKalmanFilter.java` — implements `Consumer<DrivetrainVisionPoseInfo>`
 
 ### Step 1 — Provide a `CameraInfoList`
 
@@ -326,7 +322,7 @@ pipeline reads NetworkTables, so the simulated limelight data is fresh:
 if (Robot.isSimulation() && simLimelightProducer != null) {
     simLimelightProducer.periodic();
 }
-// then: m_multiCamlimelight.periodic(), CommandScheduler.run(), etc.
+// then: vision pipeline periodic(), CommandScheduler.run(), etc.
 ```
 
 ### Step 4 — Call `simulationPeriodic(groundTruthPose)` from `Robot.simulationPeriodic()`
