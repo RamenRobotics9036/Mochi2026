@@ -25,6 +25,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -189,18 +190,9 @@ public class GroundTruthSim implements GroundTruthSimInterface {
         m_totalDistanceTraveled += distanceThisStep;
         m_totalRotation += rotationThisStep;
 
-        // Update the ground truth pose (using field-relative velocities)
-        // Rotate the robot-relative velocity by the current heading to get field-relative
-        double cos = Math.cos(m_groundTruthPose.getRotation().getRadians());
-        double sin = Math.sin(m_groundTruthPose.getRotation().getRadians());
-        double fieldDx = dx * cos - dy * sin;
-        double fieldDy = dx * sin + dy * cos;
-
-        m_groundTruthPose = new Pose2d(
-            m_groundTruthPose.getX() + fieldDx,
-            m_groundTruthPose.getY() + fieldDy,
-            m_groundTruthPose.getRotation().plus(new Rotation2d(dtheta))
-        );
+        // Integrate as a robot-frame twist over dt. This uses SE(2) exponential
+        // integration, which stays accurate while translating and rotating together.
+        m_groundTruthPose = m_groundTruthPose.exp(new Twist2d(dx, dy, dtheta));
 
         // Update the settings with latest values we cache
         if (m_optionalDashboardProvider.isPresent()) {
