@@ -12,9 +12,9 @@ public class Field2dMultipleObjectRenderer {
 
     // Pre-allocated to avoid runtime allocations. Pose2d is immutable, so storing
     // references here is safe (no deep clone needed).
-    private final Pose2d[] m_lastMultipleValue;
+    private final Pose2d[] m_cachedValue;
+    private Pose2d[] m_lastValue = null;
     private boolean m_lastValueSet = false;
-    private boolean m_lastWasNull = false;
 
     /**
      * Constructor.
@@ -38,7 +38,7 @@ public class Field2dMultipleObjectRenderer {
         m_field = field;
         m_fieldObjectName = fieldObjectName;
         m_expectedCount = expectedCount;
-        m_lastMultipleValue = new Pose2d[expectedCount];
+        m_cachedValue = new Pose2d[expectedCount];
     }
 
     /**
@@ -49,18 +49,7 @@ public class Field2dMultipleObjectRenderer {
      * @throws IllegalArgumentException if poses.length != expectedCount
      */
     public void renderMultiplePoses(Pose2d[] poses) {
-        // Poses == null means that we just want to REMOVE the field of these poses
-        if (poses == null) {
-            if (!m_lastWasNull) {
-                m_lastValueSet = false;
-                m_lastWasNull = true;
-                m_field.getObject(m_fieldObjectName).setPoses();
-            }
-            return;
-        }
-        m_lastWasNull = false;
-
-        if (poses.length != m_expectedCount) {
+        if (poses != null && poses.length != m_expectedCount) {
             throw new IllegalArgumentException(
                     "poses.length must be "
                             + m_expectedCount
@@ -69,14 +58,31 @@ public class Field2dMultipleObjectRenderer {
         }
 
         // Skip update if nothing changed
-        if (m_lastValueSet && Arrays.equals(m_lastMultipleValue, poses)) {
+        if (lastValueEquals(poses)) {
+            return;
+        }
+
+        m_lastValueSet = true;
+        if (poses == null) {
+            m_lastValue = null;
+            m_field.getObject(m_fieldObjectName).setPoses();
             return;
         }
 
         // Copy references into pre-allocated array (Pose2d is immutable, refs are safe)
-        System.arraycopy(poses, 0, m_lastMultipleValue, 0, m_expectedCount);
-        m_lastValueSet = true;
+        System.arraycopy(poses, 0, m_cachedValue, 0, m_expectedCount);
+        m_lastValue = m_cachedValue;
 
-        m_field.getObject(m_fieldObjectName).setPoses(m_lastMultipleValue);
+        m_field.getObject(m_fieldObjectName).setPoses(m_cachedValue);
+    }
+
+    private boolean lastValueEquals(Pose2d[] poses) {
+        if (!m_lastValueSet) {
+            return false;
+        }
+        if (m_lastValue == null || poses == null) {
+            return m_lastValue == poses;
+        }
+        return Arrays.equals(m_lastValue, poses);
     }
 }
