@@ -31,6 +31,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Robot;
 import frc.robot.botconfig.BotConfigInterface;
+import frc.robot.commands.AlignToHubCommand;
 import frc.robot.commands.AlignToTagCommand;
 import frc.robot.generated.TunerSwerveDrivetrain;
 import frc.robot.visutils.VisionInjectFilter;
@@ -271,6 +272,19 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         double MaxAngularVelocity) {
 
         return new AlignToTagCommand(configInterface, this, joystick, MaxAngularVelocity);
+    }
+
+    /**
+     * Returns a command that tries to align the swerve drivetrain to an AprilTag.
+     *
+     * @return Command to run
+     */
+    public Command AlignToHub(
+        BotConfigInterface configInterface,
+        CommandXboxController joystick,
+        double MaxAngularVelocity) {
+
+        return new AlignToHubCommand(configInterface, this, joystick, MaxAngularVelocity);
     }
 
     /**

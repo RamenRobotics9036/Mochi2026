@@ -305,7 +305,7 @@ public class RobotContainer {
         driveController.start().onTrue(drivetrain.runOnce(() -> drivetrain.seedFieldCentric()));
 
         // Try to align to an AprilTag with the Left Trigger
-        driveController.leftTrigger().onTrue(drivetrain.AlignToTag(
+        driveController.leftTrigger().onTrue(drivetrain.AlignToHub(
             m_configInterface,
             driveController,
             MaxAngularRate));

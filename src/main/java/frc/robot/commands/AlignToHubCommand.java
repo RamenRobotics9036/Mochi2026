@@ -20,7 +20,7 @@ import frc.robot.Constants.VisionConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
+import com.ctre.phoenix6.swerve.SwerveRequest.RobotCentricFacingAngle;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import java.util.function.DoubleSupplier;
@@ -38,7 +38,7 @@ public class AlignToHubCommand extends Command {
     /** The desired rotation of the robot. */
     private Rotation2d m_targetRotation;
     /** The control object to use when commanding the robot to turn. */
-    private SwerveRequest.FieldCentric m_driveRequest;
+    private SwerveRequest.RobotCentric m_driveRequest;
     /** Is true if no AprilTags were within sight when the command was called. */
     private boolean alignmentFailed = false;
     /** The timer representing how long the command has been running. */
@@ -78,9 +78,9 @@ public class AlignToHubCommand extends Command {
         // Resets the command.
         alignmentFailed = false;
         m_timer.restart();
-        m_driveRequest = new SwerveRequest.FieldCentric();
+        m_driveRequest = new SwerveRequest.RobotCentric();
 
-        System.out.println("Attempting to align to AprilTag.");
+        System.out.println("Attempting to align to Hub.");
     }
 
     /**
@@ -98,7 +98,7 @@ public class AlignToHubCommand extends Command {
         }
     
         // Gets the desired rotation using the atan of the robot and hub
-        m_targetRotation = Rotation2d.fromRadians(Math.atan(m_drivetrain.getState().Pose.getX()/m_drivetrain.getState().Pose.getX()));
+        m_targetRotation = Rotation2d.fromRadians(Math.atan(m_drivetrain.getState().Pose.getX()/m_drivetrain.getState().Pose.getY()));
 
         // Checks to see how far off the robot is from its rotation target
         SwerveDriveState driveState = m_drivetrain.getState();
