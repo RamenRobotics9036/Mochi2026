@@ -1,410 +1,156 @@
-# How to integrate a robot project with robot-utils
+# robot-utils integration guide
 
-This guide covers step-by-step integration for four robot-utils capabilities:
-**Dashboard**, **GroundTruthSim**, **FaultyDriveManager**, and **SimLimelightProducer**.
+It covers:
+- `DashboardManagerInterface`
+- `GroundTruthSimInterface`
+- `SimLimelightProducerInterface`
+- `FaultyDriveManagerInterface`
 
-It is based on how Mochi2026 uses each feature.  For each section the relevant
-source files are cited so you can cross-reference real usage.
+The reference call sites in this repo are:
+- `src/main/java/frc/robot/Subsystems.java`
+- `src/main/java/frc/robot/Robot.java`
+- `src/main/java/frc/robot/subsystems/auto/AutoLogic.java`
+- `src/main/java/frc/robot/subsystems/auto/AutoBuilderConfig.java`
+- `src/main/java/frc/robot/Controls.java`
 
----
+## 1) Gradle wiring
 
-## Prerequisites — Gradle wiring
+1. In `settings.gradle`:
 
-`robot-utils` is a Gradle subproject.  Before using any of the APIs below, the
-consuming robot project must declare the dependency.
-
-1. In `settings.gradle`, include the subproject:
-
-   ```groovy
-   include ':robot-utils'
-   ```
-
-2. In the root `build.gradle`, add the implementation dependency:
-
-   ```groovy
-   dependencies {
-       implementation project(':robot-utils')
-   }
-   ```
-
-3. Create `robot-utils/build.gradle` using the `java` and
-   `edu.wpi.first.GradleRIO` plugins (same as the root project), targeting
-   Java 17 and pulling WPILib desktop artifacts.
-
----
-
-## 1. Dashboard
-
-The dashboard subsystem (`DashboardManagerInterface`) provides a central hub
-for publishing telemetry — poses on `Field2d` objects, strings, doubles — via
-registered providers.  Providers are registered automatically by factory
-methods (see GroundTruthSim section); the robot project only needs to create
-the manager and call `update()`.
-
-**Call sites in Mochi2026:**
-- `RobotContainer.java` — `createDashboardManager()`, passes manager to `createGroundTruthSim()`, `addCustomRenderer()` ×4
-- `Robot.java` — calls `m_dashboardManager.update()` from `robotPeriodic()`
-
-### Step 1 — Create `RobotUtilsFactory` and the dashboard manager
-
-In `RobotContainer` (field declarations, before any subsystems):
-
-```java
-private final RobotUtilsFactory m_robotUtilsFactory = new RobotUtilsFactory();
-public final DashboardManagerInterface m_dashboardManager =
-    m_robotUtilsFactory.createDashboardManager();
+```groovy
+include ':robot-utils'
 ```
 
-The factory is the single entry point for all robot-utils objects.
+2. In root `build.gradle`:
 
-### Step 2 — Add custom renderers (sim only, optional)
-
-In `RobotContainer`, after both `groundTruthSim` and `simLimelightProducer` are
-constructed (see Sections 2 and 4), register renderers so ground-truth and
-odometry poses appear on the sim debug `Field2d`:
-
-```java
-if (RobotBase.isSimulation()) {
-    Field2d simDebugField = simLimelightProducer.getSimDebugField();
-
-    // Odometry estimate on the sim debug field
-    m_dashboardManager.addCustomRenderer(
-        new Field2dObjectRenderer(simDebugField, DashboardConstants.kEstimatedPoseItemName),
-        DashboardConstants.kGroundTruthProviderName,
-        DashboardConstants.kEstimatedPoseItemName);
-
-    // Swerve module poses on the sim debug field (array renderer, 4 modules)
-    m_dashboardManager.addCustomRenderer(
-        new Field2dMultipleObjectRenderer(simDebugField, DashboardConstants.kEstimatedPoseModules, 4),
-        DashboardConstants.kGroundTruthProviderName,
-        DashboardConstants.kEstimatedPoseModules);
+```groovy
+dependencies {
+    implementation project(':robot-utils')
 }
 ```
 
-The constant strings (`DashboardConstants.kGroundTruthProviderName` etc.) must
-match identically the names used inside `RobotUtilsFactory` when it registers
-providers, so only use the constants — never hardcode strings.
+3. Ensure PhotonVision vendordep exists in the main project:
 
-### Step 3 — Call `update()` every robot cycle
-
-In `Robot.robotPeriodic()`, after `CommandScheduler.getInstance().run()`:
-
-```java
-m_robotContainer.m_dashboardManager.update();
+```text
+vendordeps/photonlib.json
 ```
 
-This iterates all registered providers and pushes fresh data to NetworkTables.
+## 2) Centralize all pose resets
 
----
-
-## 2. GroundTruthSim
-
-`GroundTruthSimInterface` tracks where the simulated robot *actually* is,
-independently of the drivetrain's pose estimator.  It integrates chassis
-speeds at the drivetrain's high-frequency (250 Hz) sim rate and publishes the
-result for vision simulation and debug display.
-
-**Call sites in Mochi2026:**
-- `RobotContainer.java` — construction, high-frequency callback registration,
-  `addCustomRenderer` calls, pose-manipulation helpers, named-command registrations
-- `Robot.java` — `groundTruthSim.simulationPeriodic()`,
-  `groundTruthSim.getGroundTruthPose()` in `simulationPeriodic()`
-
-### Step 1 — Create a pose-reset consumer
-
-When `GroundTruthSim` cycles the robot reset position it needs to push the new
-pose into the drivetrain and the vision system.  Define a method in
-`RobotContainer`:
+This commit expects one shared reset function that updates drivetrain, ground truth,
+and vision sim together.
 
 ```java
-private void resetRobotPose(Pose2d pose) {
-    drivetrain.resetPose(pose);
-    if (Robot.isSimulation()) {
-        groundTruthSim.resetGroundTruthPoseForSim(pose);
-        simLimelightProducer.resetSimPose(pose);  // see Section 4
-    }
-    // reset any other stateful vision filters here
+public void resetRobotPose(Pose2d pose) {
+  if (drivebaseSubsystem == null) {
+    return;
+  }
+  drivebaseSubsystem.resetPose(pose);
+  if (groundTruthSim != null) {
+    groundTruthSim.resetGroundTruthPoseForSim(pose);
+  }
+  if (simLimelightProducer != null) {
+    simLimelightProducer.resetSimPose(pose);
+  }
 }
 ```
 
-### Step 2 — Construct `GroundTruthSimInterface` via the factory
+Use this reset path everywhere instead of calling `drivebase.resetPose(...)` directly:
+- PathPlanner auto reset callback (`AutoBuilderConfig.buildAuto(..., subsystems::resetRobotPose, ...)`)
+- controls/manual reset actions
+- any simulation helper that resets pose
 
-Call `createGroundTruthSim` inside the sim-only construction path.  The
-factory returns `null` when `RobotBase.isSimulation()` is false, so guard all
-usages:
+## 3) Subsystems construction order
 
-```java
-GroundTruthSimInterface groundTruthSim = m_robotUtilsFactory.createGroundTruthSim(
-    Optional.of(dashboardManager),   // pass empty() to skip dashboard integration
-    drivetrain,                      // SwerveDrivetrain instance
-    this::resetRobotPose);           // consumer called on each pose reset
-```
+Use this order (see `Subsystems.java`):
 
-The factory internally creates a `GroundTruthSimDashboardProvider`, calls
-`provider.init()`, and registers it under
-`DashboardConstants.kGroundTruthProviderName` — so the dashboard manager
-automatically receives ground truth telemetry without any additional wiring.
-
-### Step 3 — Register the high-frequency pose integration callback
-
-The drivetrain runs its physics at ~250 Hz.  `updateGroundTruthPose()` must be
-called at that same rate so ground truth stays in sync:
+1. `RobotUtilsFactory`
+2. `DashboardManagerInterface dashboardManager = createDashboardManager()`
+3. `groundTruthSim = createGroundTruthSim(Optional.of(dashboardManager), drivebase, this::resetRobotPose)`
+4. If non-null, immediately sync startup pose and high-frequency update callback:
 
 ```java
-drivetrain.setHighFreqSimCallback(groundTruthSim::updateGroundTruthPose);
+groundTruthSim.resetGroundTruthPoseForSim(drivebaseSubsystem.getState().Pose);
+drivebaseSubsystem.setHighFreqSimCallback(groundTruthSim::updateGroundTruthPose);
 ```
 
-Register this immediately after constructing `groundTruthSim`, before the
-first `simulationPeriodic()`.
-
-### Step 4 — Call `simulationPeriodic()` every sim cycle
-
-In `Robot.simulationPeriodic()`:
+5. `simLimelightProducer = createSimLimelightProducer(kSimCameras)`
+6. If simulation and both are non-null:
 
 ```java
-if (m_robotContainer.groundTruthSim != null) {
-    m_robotContainer.groundTruthSim.simulationPeriodic();
-}
+faultyDriveManager = createFaultyDriveManager(groundTruthSim, simLimelightProducer);
 ```
 
-`GroundTruthSimInterface.simulationPeriodic()` publishes telemetry (estimated
-vs. ground truth pose, distance between them) at the standard 50 Hz loop rate.
-
-### Step 5 — Retrieve ground truth pose for external use
-
-After `simulationPeriodic()` you can read the current ground truth pose:
-
-```java
-Pose2d groundTruthPose = groundTruthSim.getGroundTruthPose();
-// use it to update vision sim, show on debug Field2d, etc.
-```
-
-### Step 6 — Pose reset consistency
-
-Whenever the robot pose is reset (driver station request, auto start, etc.)
-call both:
-
-```java
-groundTruthSim.resetGroundTruthPoseForSim(newPose);
-// AND reset the vision sim pose history (see Section 4)
-simLimelightProducer.resetSimPose(newPose);
-```
-
-### Optional — Drift and reset helpers
-
-```java
-// Inject odometry drift (ground truth unchanged; pose estimator is shifted)
-groundTruthSim.injectDriftToPoseEstimate(xFrontBack, yLeftRight, rotDegrees);
-
-// Move the ground truth pose without touching the pose estimator
-groundTruthSim.injectDriftToGroundTruth(xFrontBack, yLeftRight, rotDegrees);
-
-// Cycle through a predefined list of field reset positions
-groundTruthSim.cycleResetPosition(blueAlliancePose);
-```
-
----
-
-## 3. FaultyDriveManager
-
-`FaultyDriveManagerInterface` injects simulated hardware faults — pull-right,
-rotation drift, camera miscalibration — for autonomous testing.  It depends on
-both `GroundTruthSimInterface` and `SimLimelightProducerInterface` because
-some faults affect drivetrain physics (handled by ground truth) and others
-affect camera position (handled by the vision sim).
-
-**Call sites in Mochi2026:**
-- `RobotContainer.java` — `createFaultyDriveManager()`, named-command
-  registrations (`faulty-pull-right`, `faulty-rotate-clockwise`,
-  `faulty-camera-misplaced`) in `registerNamedCommands()`;
-  `resetAllAutoSimFaults()` in `getAutonomousCommand()`
-
-### Step 1 — Build `GroundTruthSim` and `SimLimelightProducer` first
-
-`FaultyDriveManager` requires both objects already instantiated (see Sections
-2 and 4).  Create them before calling `createFaultyDriveManager`.
-
-### Step 2 — Create `FaultyDriveManagerInterface` via the factory
-
-```java
-FaultyDriveManagerInterface faultyDriveManager = m_robotUtilsFactory.createFaultyDriveManager(
-    groundTruthSim,            // GroundTruthSimInterface (must be non-null)
-    simLimelightProducer);     // SimLimelightProducerInterface (must be non-null)
-```
-
-Both arguments must be non-null — this is sim-only code, guarded by the same
-`if (Robot.isSimulation())` block used to construct the other two.
-
-### Step 3 — Wire fault triggers to PathPlanner named commands (or buttons)
-
-Register named commands so autonomous paths can trigger faults mid-run:
-
-```java
-// Only register inside if (Robot.isSimulation()) block
-NamedCommands.registerCommand("faulty-pull-right", Commands.runOnce(() ->
-    faultyDriveManager.enablePullRight(true)));
-
-NamedCommands.registerCommand("faulty-rotate-clockwise", Commands.runOnce(() ->
-    faultyDriveManager.enableRotateClockwise(true)));
-
-NamedCommands.registerCommand("faulty-camera-misplaced", Commands.runOnce(() ->
-    faultyDriveManager.enableCameraMisplaced(new Transform3d(0, -1.0, 0, new Rotation3d()))));
-```
-
-Use `Commands.runOnce` (not `drivetrain.runOnce`) to avoid a subsystem
-requirement conflict — PathPlanner's `FollowPathCommand` already holds the
-drivetrain subsystem, so a second requirement would silently prevent the
-command from executing.
-
-### Step 4 — Reset all faults after autonomous ends
-
-In `getAutonomousCommand()` (or `autonomousExit()`), append a reset so faults
-do not leak into subsequent runs:
-
-```java
-return getSelectedAutoCommand()
-    .andThen(Commands.runOnce(() -> faultyDriveManager.resetAllAutoSimFaults()));
-```
-
-### Fault reference
-
-| Method | Effect |
-|--------|--------|
-| `enablePullRight(true)` | Adds a rightward translation bias to forward motion |
-| `enableRotateClockwise(true)` | Adds a clockwise rotation bias during turns |
-| `enableCameraMisplaced(offset)` | Shifts the sim camera origin without touching the pose estimator |
-| `resetAllAutoSimFaults()` | Disables all of the above |
-
----
-
-## 4. SimLimelightProducer
-
-`SimLimelightProducerInterface` simulates Limelight cameras:  it runs a
-PhotonVision AprilTag simulation internally and publishes the results as
-Limelight NetworkTables data so the real vision pipeline code works
-unmodified in simulation.
-
-**Call sites in Mochi2026:**
-- `RobotContainer.java` — `createSimLimelightProducer()`; `getSimDebugField()`
-  for custom renderers; `resetSimPose()` in the pose-reset consumer
-- `Robot.java` — `simLimelightProducer.periodic()` in `robotPeriodic()`;
-  `simLimelightProducer.simulationPeriodic()` in `simulationPeriodic()`
-
-### Step 1 — Provide a `CameraInfoList`
-
-The producer needs to know each camera's name and robot-to-camera transform.
-Build a `CameraInfoList` for your robot's cameras:
-
-```java
-CameraInfoList cameras = new CameraInfoList(List.of(
-    new CameraInfo("limelight-front", robotToFrontCamTransform),
-    new CameraInfo("limelight-back",  robotToBackCamTransform)
-));
-// Each CameraInfo contains: String cameraName, Transform3d robotToCam
-```
-
-### Step 2 — Create `SimLimelightProducerInterface` via the factory
-
-The factory returns `null` when not in simulation:
-
-```java
-SimLimelightProducerInterface simLimelightProducer =
-    m_robotUtilsFactory.createSimLimelightProducer(cameras);
-// null on real robot — guard all downstream usage
-```
-
-### Step 3 — Call `periodic()` from `Robot.robotPeriodic()`
-
-This must run **before** `CommandScheduler.run()` and before the vision
-pipeline reads NetworkTables, so the simulated limelight data is fresh:
-
-```java
-if (Robot.isSimulation() && simLimelightProducer != null) {
-    simLimelightProducer.periodic();
-}
-// then: vision pipeline periodic(), CommandScheduler.run(), etc.
-```
-
-### Step 4 — Call `simulationPeriodic(groundTruthPose)` from `Robot.simulationPeriodic()`
-
-Pass the current ground truth pose so the sim knows where to "see" AprilTags:
-
-```java
-// In Robot.simulationPeriodic():
-Pose2d groundTruthPose = m_robotContainer.groundTruthSim.getGroundTruthPose();
-m_robotContainer.simLimelightProducer.simulationPeriodic(groundTruthPose);
-```
-
-This updates the PhotonVision sim with the robot's actual position, not the
-potentially-drifted odometry pose.
-
-### Step 5 — Reset pose history on robot reset
-
-Whenever the robot pose is reset, clear the vision sim's pose history so stale
-measurements don't corrupt the pose estimator:
-
-```java
-simLimelightProducer.resetSimPose(newPose);
-```
-
-Call this alongside `groundTruthSim.resetGroundTruthPoseForSim(newPose)` — see
-the `resetRobotPose` consumer in Section 2.
-
-### Step 6 — Use `DrivetrainVisionPoseInfo` in the vision pipeline
-
-`SimLimelightProducerInterface.DrivetrainVisionPoseInfo` is the data transfer
-record that bridges the vision pipeline to `drivetrain.addVisionMeasurement()`.
-The real vision code (`SingleCamOdometry`) creates these records from Limelight
-NT data; the sim produces the same NT data, so no special handling is needed.
-
-If you write your own vision integration class, consume the record like this:
-
-```java
-// Create from vision measurement
-var info = new SimLimelightProducerInterface.DrivetrainVisionPoseInfo(
-    pose, timestamp, estimationStdDevs, tagCount);
-
-// Feed to drivetrain
-drivetrain.addVisionMeasurement(info.pose(), info.timestamp(), info.estimationStdDevs());
-```
-
-### Step 7 — (Optional) Debug field
-
-Get a `Field2d` that shows the simulated camera view and detected tags:
+7. If simulation and sim producer exists, add renderers to sim debug field:
 
 ```java
 Field2d simDebugField = simLimelightProducer.getSimDebugField();
-SmartDashboard.putData("SimDebugField", simDebugField);
+dashboardManager.addCustomRenderer(
+    new Field2dObjectRenderer(simDebugField, DashboardConstants.kEstimatedPoseItemName),
+    DashboardConstants.kGroundTruthProviderName,
+    DashboardConstants.kEstimatedPoseItemName);
+dashboardManager.addCustomRenderer(
+    new Field2dMultipleObjectRenderer(simDebugField, DashboardConstants.kEstimatedPoseModules, 4),
+    DashboardConstants.kGroundTruthProviderName,
+    DashboardConstants.kEstimatedPoseModules);
 ```
 
-Use this with `addCustomRenderer` (see Dashboard section) to overlay odometry
-estimates and module poses on the same field widget.
+## 4) Robot lifecycle call order
 
----
+`Robot.robotPeriodic()`:
+1. In simulation, call `simLimelightProducer.periodic()` first.
+2. Run vision update.
+3. Run `CommandScheduler`.
+4. Call `dashboardManager.update()`.
 
-## Putting it together — construction order
+`Robot.simulationPeriodic()`:
+1. `groundTruthSim.simulationPeriodic()` (currently a lightweight hook)
+2. `simLimelightProducer.simulationPeriodic(groundTruthSim.getGroundTruthPose())`
 
-The dependencies between the four components dictate the order of construction:
+Important detail: ground-truth integration is done in the high-frequency callback via
+`updateGroundTruthPose()`. `simulationPeriodic()` is not where integration happens.
 
-1. **`RobotUtilsFactory`** — create once, reuse everywhere
-2. **`DashboardManagerInterface`** — needed by `createGroundTruthSim`; create
-   before any subsystem
-3. **`GroundTruthSimInterface`** — needs the drivetrain and the pose-reset
-   consumer; returns `null` on a real robot
-4. **`SimLimelightProducerInterface`** — needs `CameraInfoList`; returns `null`
-   on a real robot
-5. **`FaultyDriveManagerInterface`** — needs both GroundTruthSim and
-   SimLimelightProducer; only create after both are confirmed non-null
-6. **Custom renderers** (`addCustomRenderer`) — add after `SimLimelightProducerInterface`
-   is constructed so `getSimDebugField()` is available
+## 5) Fault command behavior (including what was easy to miss)
 
-And the lifecycle order each robot cycle:
+In `AutoLogic.registerCommands(...)`, these are the actual mappings:
 
-| When | Call |
-|------|------|
-| `robotPeriodic()` — first thing | `simLimelightProducer.periodic()` |
-| `robotPeriodic()` — after CommandScheduler | `dashboardManager.update()` |
-| `simulationPeriodic()` | `groundTruthSim.simulationPeriodic()` |
-| `simulationPeriodic()` | `simLimelightProducer.simulationPeriodic(groundTruthPose)` |
-| On any pose reset | `groundTruthSim.resetGroundTruthPoseForSim(pose)` + `simLimelightProducer.resetSimPose(pose)` |
-| After auto ends | `faultyDriveManager.resetAllAutoSimFaults()` |
+- `faulty-pull-right` -> `faultyDriveManager.enablePullRight(true)`
+- `faulty-rotate-clockwise` -> `faultyDriveManager.enableRotateClockwise(true)`
+- `faulty-camera-misplaced` -> `faultyDriveManager.enableCameraMisplaced(new Transform3d(0, -1.0, 0, new Rotation3d()))`
+- `nudge-right` -> one-shot `groundTruthSim.injectDriftToGroundTruth(0, Units.inchesToMeters(12), 0)`
+- `nudge-rotate` -> one-shot `groundTruthSim.injectDriftToGroundTruth(0, 0, -45)`
+
+`nudge-right` and `nudge-rotate` are not aliases of the continuous fault toggles.
+
+Reset faults after autonomous:
+
+```java
+selectedAuto.andThen(Commands.runOnce(subsystems::resetAllAutoSimFaults));
+```
+
+Also reset in `autonomousExit()`.
+
+## 6) simgui.json requirements for correct visuals
+
+For expected simulation visuals (`simgui.json`):
+
+- Keep object names aligned with dashboard constants:
+  - `EstimatedRobot`
+  - `EstimatedRobotModules`
+  - `GroundTruthPose` (if displayed)
+- Keep camera style hidden if you do not want camera wireframes in the field widget.
+- Set image paths for module/tag icons (for example `swerve_module.png`, `tag-blue.png`, `tag-green.png`).
+
+If these names do not match the published Field2d object names, the custom styles/images will not apply.
+
+## 7) Quick API notes
+
+- `createGroundTruthSim(...)` and `createSimLimelightProducer(...)` return `null` on real hardware.
+- `SimLimelightProducer.getSimDebugField()` is simulation-only in practice; guard its use.
+- `FaultyDriveManager` assumes non-null dependencies from simulation wiring.
+
+## Next steps
+
+1. Show how to copy simgui.json styles for robot-pose, and how to get robot wheel icons to show-up correctly
+2. Show how to add all the sim* fault Pathplanner paths, and add them as sim-only in autologic
+3. Pov-left should cycle auto start pose, and pov-right should offset groundtruth bot
