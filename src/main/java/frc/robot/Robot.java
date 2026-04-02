@@ -118,6 +118,7 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     Shuffleboard.startRecording();
+    m_robotContainer.resetDriveSmoothing();
 
     // Fetch the specific command selected by the drive team via the Auto Chooser
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
@@ -140,6 +141,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopInit() {
+    m_robotContainer.resetDriveSmoothing();
+
     // Stop autonomous to prevent conflicts with manual driver inputs
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
