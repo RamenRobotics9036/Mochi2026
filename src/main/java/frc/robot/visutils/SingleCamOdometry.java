@@ -463,7 +463,7 @@ public class SingleCamOdometry implements CamOdometryInterface {
     /** Returns the ID of the last seen fiducial, or -1 if none. */
     @Override
     public int getPrimaryTagId() {
-        return m_lastTarget;
+        return m_hasTargetLock ? m_lastTarget : -1;
     }
 
     private boolean isMegaTag2Enabled() {

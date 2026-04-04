@@ -27,6 +27,7 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.FullAutoClimbCommand;
+import frc.robot.commands.AutonomousClimbVisionAlign;
 import frc.robot.commands.GetFuelCommand;
 import frc.robot.commands.IntakeArmCommand;
 import frc.robot.commands.IntakeArmHomeCommand;
@@ -231,6 +232,20 @@ public class RobotContainer {
             m_glassField,
             (m_simWrapper == null) ? null : m_simWrapper.getSimDebugField());
 
+        // Setup vision system early so drivers and named commands can reference it.
+        m_motionlessTracker = MotionlessTracker.create(
+            () -> drivetrain.getState().Speeds,
+            m_visionKalmanFilter::reset);
+
+        m_multiCamlimelight = MultiCamOdometryFactory.create(
+            m_configInterface,
+            drivetrain::samplePoseAt,
+            drivetrain::addVisionMeasurement,
+            () -> drivetrain.getState().Pose.getRotation().getDegrees(),
+            basicInfoDashboard,
+            m_visionKalmanFilter,
+            m_motionlessTracker);
+
         AutoLogic.initShuffleboard(drivetrain);
         DashboardFactory.initDebugDashboard(
             m_configInterface,
@@ -257,19 +272,6 @@ public class RobotContainer {
         new EventTrigger("set intake top").onTrue(SetIntakeTopCommand.create(armSubsystem, intakeSubsystem));
         new EventTrigger("Jiggle").onTrue(new JiggleCommand(drivetrain).withTimeout(20.0));
 
-        // Setup vision system
-        m_motionlessTracker = MotionlessTracker.create(
-            () -> drivetrain.getState().Speeds,
-            m_visionKalmanFilter::reset);
-
-        m_multiCamlimelight = MultiCamOdometryFactory.create(
-            m_configInterface,
-            drivetrain::samplePoseAt,
-            drivetrain::addVisionMeasurement,
-            () -> drivetrain.getState().Pose.getRotation().getDegrees(),
-            basicInfoDashboard,
-            m_visionKalmanFilter,
-            m_motionlessTracker);
     }
 
     /** Registers named commands for PathPlanner */
@@ -277,6 +279,16 @@ public class RobotContainer {
         NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
         NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
+
+        // Register vision-based climb alignment so it can be invoked from PathPlanner event markers
+        NamedCommands.registerCommand(
+            "ClimbVisionAlign",
+            new AutonomousClimbVisionAlign(
+                m_configInterface,
+                drivetrain,
+                () -> (m_multiCamlimelight != null ? m_multiCamlimelight.getPrimaryTagId() : -1)
+            )
+        );
 
         NamedCommands.registerCommand("get fuel", GetFuelCommand.create(intakeSubsystem));
 
