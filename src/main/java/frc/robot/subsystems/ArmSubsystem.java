@@ -114,6 +114,13 @@ public class ArmSubsystem extends SubsystemBase{
         return m_armOutputs.position >= (ArmConstants.kMaxArmAngle - 1.0);
     }
 
+    /**
+     * Returns the most recently observed arm position in degrees.
+     */
+    public double getArmPosition() {
+        return m_armOutputs.position;
+    }
+
     /** Returns true once the homing sequence has completed successfully. */
     public boolean isArmHomed() {
         return m_HomingState == ArmHomedState.HOMED;

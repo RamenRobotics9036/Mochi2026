@@ -11,12 +11,27 @@ public class SetIntakeTopCommand {
     /** Returns a Command that drives the arm up, stopping it when done or interrupted. */ 
     public static Command create(ArmSubsystem arm, IntakeSubsystem intake) { 
         return new RunCommand( 
-                () -> arm.setArmPosition(Constants.ArmConstants.kMinArmAngle), 
+                () -> {
+                    if (!arm.isArmHomed()) {
+                        return;
+                    }
+
+                    if (arm.getArmPosition() > Constants.ArmConstants.kMinArmAngle + 1.0) {
+                        arm.moveArmWithSpeed(-Constants.ArmConstants.kArmSpeed);
+                    } else {
+                        arm.stop();
+                    }
+                }, 
                 // Dependencies: 
                 arm, intake) 
-            // Initialize the homing sequence before the command starts running updates 
-            .beforeStarting(arm::beginHoming) 
-            .withTimeout(2.0) 
+            // Initialize homing only if needed. If the arm is already homed, keep the current zero reference.
+            .beforeStarting(() -> {
+                if (!arm.isArmHomed()) {
+                    arm.beginHoming();
+                }
+            })
+            .until(() -> arm.isArmHomed() && arm.getArmPosition() <= Constants.ArmConstants.kMinArmAngle + 1.0)
+            .withTimeout(Constants.AutoConstants.k_intakeTopDuration) 
             .finallyDo(arm::stop); 
     } 
 } 
