@@ -62,7 +62,7 @@ public class JiggleCommand extends Command {
     /** Relinquish control of the drivetrain when the command is interrupted */
     @Override
     public void end(boolean interrupted) {
-        //TODO: Stop the timer when the command ends
+        m_timer.stop();
         m_swerve.setControl(m_request.withVelocityX(0).withVelocityY(0));
     }
 
