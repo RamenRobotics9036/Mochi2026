@@ -19,7 +19,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "C_ReturnShoot"
+            "pathName": "C_BackClimb"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Full Auto Climb"
           }
         }
       ]

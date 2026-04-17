@@ -7,19 +7,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "C_BackShoot"
+            "pathName": "SimpleDriveForwards"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "C_ReturnShoot"
           }
         }
       ]
