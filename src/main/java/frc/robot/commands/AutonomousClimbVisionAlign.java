@@ -24,8 +24,8 @@ import java.util.function.IntSupplier;
 @SuppressWarnings({"all"}) // suppress CheckStyle warnings in this file
 public class AutonomousClimbVisionAlign extends Command {
     private static final Pose2d kTargetPoseBlueAlliance = new Pose2d(
-        15.27,
-        5.22,
+        15.37,
+        3.28,
         Rotation2d.fromDegrees(179.8)
     );
     private Pose2d m_targetPose = kTargetPoseBlueAlliance;
