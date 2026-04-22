@@ -88,7 +88,7 @@ public class GeneratedCompConstants {
     // To change auto max speed, find it in deploy\pathplanner\settings.json
     public static final LinearVelocity kSpeedAt12Volts = MetersPerSecond.of(4.54);
     // Factor used to divide the teleop speed to keep it reasonable during testing
-    public static final double kSpeedDivisionFactor = 2.0;
+    public static final double kSpeedDivisionFactor = 6.0;
     // This serves as our teleop max speed
     public static final LinearVelocity kSpeedInTeleop = MetersPerSecond.of(6.54 / kSpeedDivisionFactor);
 
