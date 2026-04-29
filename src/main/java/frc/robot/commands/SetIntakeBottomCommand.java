@@ -10,8 +10,8 @@ import frc.robot.subsystems.IntakeSubsystem;
 public class SetIntakeBottomCommand {
     /** Returns a Command that drives the arm down until it reports deployed. */
     public static Command create(ArmSubsystem arm, IntakeSubsystem intake) {
-        //TODO - Tarun, shouldnt the IntakeBottomCommand set arm position to kMINArmAngle instead of kMAXArmAngle?
         return new RunCommand(
+                // kMaxArmAngle represents the lowest position, as the intake begins up
                 () -> arm.setArmPosition(Constants.ArmConstants.kMaxArmAngle),
                 // Dependencies:
                 arm, intake)
