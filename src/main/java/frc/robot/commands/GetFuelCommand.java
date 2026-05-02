@@ -13,6 +13,7 @@ public class GetFuelCommand {
         return new RunCommand(() -> {
                 arm.setArmPosition(Constants.ArmConstants.kMaxArmAngle / Constants.ArmConstants.kArmGearRatio);
                 intake.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
+                System.out.println("Running GetFuelCommand: deploying arm and running intake");
             },
             // Dependencies:
             arm, intake)
