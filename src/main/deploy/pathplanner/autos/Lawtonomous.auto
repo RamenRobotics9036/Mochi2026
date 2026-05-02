@@ -17,15 +17,22 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "get fuel"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "To Center from Left"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "To Center from Left"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "get fuel"
+                }
+              }
+            ]
           }
         }
       ]

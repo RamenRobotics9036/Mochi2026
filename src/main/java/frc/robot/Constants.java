@@ -267,7 +267,7 @@ public final class Constants {
         public static final double k_raiseClimbDuration = 4.0;
         public static final double k_lowerClimbDuration = 4.0;
 
-        public static final double k_getFuelDuration = 3.0;
+        public static final double k_getFuelDuration = 5.0;
 
         public static final double k_intakeBottomDuration = 3.5;
         public static final double k_intakeTopDuration = 2.0;
