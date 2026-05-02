@@ -11,7 +11,7 @@ public class GetFuelCommand {
     /** Returns a Command that deploys the arm and runs the intake. */
     public static Command create(ArmSubsystem arm, IntakeSubsystem intake) {
         return new RunCommand(() -> {
-                arm.setArmPosition(Constants.ArmConstants.kMaxArmAngle);
+                arm.setArmPosition(Constants.ArmConstants.kMaxArmAngle / Constants.ArmConstants.kArmGearRatio);
                 intake.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
             },
             // Dependencies:
