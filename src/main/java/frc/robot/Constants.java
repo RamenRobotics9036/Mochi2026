@@ -49,7 +49,7 @@ public final class Constants {
         /** Max angle (degrees) — lowered/deployed position.
          * Measured on hardware: 2/23/2026
         */
-        public static final double kMaxArmAngle = 160;
+        public static final double kMaxArmAngle = 90;
 
         /** Min angle (degrees) — raised/stowed position. */
         public static final double kMinArmAngle = 10;
