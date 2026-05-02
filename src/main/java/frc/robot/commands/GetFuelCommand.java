@@ -1,5 +1,6 @@
 package frc.robot.commands;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.RunCommand;
 import frc.robot.Constants;
@@ -13,7 +14,7 @@ public class GetFuelCommand {
         return new RunCommand(() -> {
                 arm.setArmPosition(Constants.ArmConstants.kMaxArmAngle / Constants.ArmConstants.kArmGearRatio);
                 intake.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
-                System.out.println("Running GetFuelCommand: deploying arm and running intake");
+                DriverStation.reportWarning("Command being run!", false);
             },
             // Dependencies:
             arm, intake)
@@ -21,6 +22,7 @@ public class GetFuelCommand {
             .finallyDo(() -> {
                 arm.stop();
                 intake.stop();
+                DriverStation.reportWarning("Command stopped!!", false);
             });
     }
 }
