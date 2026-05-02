@@ -95,11 +95,12 @@ public class ArmSubsystem extends SubsystemBase{
      * @param position Target arm angle in degrees.
      */
     public void setArmPosition(double position) {
-        if (m_HomingState != ArmHomedState.HOMED) {
-            DriverStation.reportWarning("ArmSubsystem: setArmPosition called before homing — ignored", false);
-            SmartDashboard.putString("Intake/ArmWarning", "setArmPosition before homing — ignored");
-            return;
-        }
+        // if (m_HomingState != ArmHomedState.HOMED) {
+        //     DriverStation.reportWarning("ArmSubsystem: setArmPosition called before homing — ignored", false);
+        //     SmartDashboard.putString("Intake/ArmWarning", "setArmPosition before homing — ignored");
+        //     return;
+        // } 
+        //$TODO: Re-enable after homing is modified to work with this auto routine
         m_armIO.setPosition(
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
     }
