@@ -15,6 +15,7 @@ public class GetFuelCommand {
                 arm.setArmPosition(Constants.ArmConstants.kMaxArmAngle / Constants.ArmConstants.kArmGearRatio);
                 intake.setIntakeSpeed(Constants.IntakeConstants.kIntakeSpeed);
                 DriverStation.reportWarning("Command being run!", false);
+                DriverStation.reportWarning("Target speed: "+Double.toString(Constants.ArmConstants.kMaxArmAngle / Constants.ArmConstants.kArmGearRatio), false);
             },
             // Dependencies:
             arm, intake)
