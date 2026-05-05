@@ -85,6 +85,16 @@ public class ArmSubsystem extends SubsystemBase{
         }
     }
 
+    /** Returns the current arm angle in rotations */
+    public double getArmAngle() {
+        return m_armOutputs.position;
+    }
+
+    /** Returns the current arm angle in degrees */
+    public double getArmAngleDegrees() {
+        return m_armOutputs.position * ArmConstants.kArmGearRatio;
+    }
+
     /**
      * Sets the desired position for the arm in degrees.
      *
@@ -100,7 +110,16 @@ public class ArmSubsystem extends SubsystemBase{
         //     SmartDashboard.putString("Intake/ArmWarning", "setArmPosition before homing — ignored");
         //     return;
         // } 
-        //$TODO: Re-enable after homing is modified to work with this auto routine
+        //TODO: Re-enable after homing is modified to work with this auto routine
+        //TODO: Test homing! I don't believe Tyler was able to test this before he left!
+        if (position > ArmConstants.kMaxArmAngle) {
+            DriverStation.reportWarning("ArmSubsystem: Attempted to set the arm lower than its maximum!", false);
+            SmartDashboard.putString("Intake/ArmWarning", "Attempted to set the arm lower than its maximum!");
+        }
+        if (position < ArmConstants.kMinArmAngle) {
+            DriverStation.reportWarning("ArmSubsystem: Attempted to set the arm lower than its minimum!", false);
+            SmartDashboard.putString("Intake/ArmWarning", "Attempted to set the arm lower than its minimum!");
+        }
         m_armIO.setPosition(
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
     }
