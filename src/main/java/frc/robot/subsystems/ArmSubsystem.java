@@ -85,14 +85,10 @@ public class ArmSubsystem extends SubsystemBase{
         }
     }
 
-    /** Returns the current arm angle in rotations */
+    /** Returns the current arm angle in degrees. */
     public double getArmAngle() {
+        m_armIO.updateOutputs(m_armOutputs);
         return m_armOutputs.position;
-    }
-
-    /** Returns the current arm angle in degrees */
-    public double getArmAngleDegrees() {
-        return m_armOutputs.position * ArmConstants.kArmGearRatio;
     }
 
     /**
