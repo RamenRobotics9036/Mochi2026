@@ -47,12 +47,12 @@ public final class Constants {
         public static final int kRightArmMotorID = 21;
 
         /** Max angle (degrees) — lowered/deployed position.
-         * Measured on hardware: 2/23/2026
+         * Measured on hardware: 5/5/2026
         */
-        public static final double kMaxArmAngle = 160;
+        public static final double kMaxArmAngle = 170; //TODO: Re-test using teleop movement rather than manual pushing
 
         /** Min angle (degrees) — raised/stowed position. */
-        public static final double kMinArmAngle = 10;
+        public static final double kMinArmAngle = 12; //TODO: Re-test using teleop movement rather than manual pushing
 
         /** Position loop proportional gain. TODO: tune on hardware — 0.05 is a conservative starting value. */
         public static final double kArmPositionP = 0.05;
