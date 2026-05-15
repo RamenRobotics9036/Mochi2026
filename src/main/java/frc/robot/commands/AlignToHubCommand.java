@@ -98,7 +98,8 @@ public class AlignToHubCommand extends Command {
         }
     
         // Gets the desired rotation using the atan of the robot and hub
-        m_targetRotation = Rotation2d.fromRadians(Math.atan(m_drivetrain.getState().Pose.getX()/m_drivetrain.getState().Pose.getY()));
+        m_targetRotation = Rotation2d.fromRadians(Math.atan(m_drivetrain.getState().Pose.getY()/m_drivetrain.getState().Pose.getX()));
+        System.out.println(m_targetRotation); //For debugging
 
         // Checks to see how far off the robot is from its rotation target
         SwerveDriveState driveState = m_drivetrain.getState();
