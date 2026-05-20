@@ -38,7 +38,7 @@ public class AlignToHubCommand extends Command {
     /** The desired rotation of the robot. */
     private Rotation2d m_targetRotation;
     /** The control object to use when commanding the robot to turn. */
-    private SwerveRequest.RobotCentric m_driveRequest;
+    private SwerveRequest.RobotCentricFacingAngle m_driveRequest;
     /** Is true if no AprilTags were within sight when the command was called. */
     private boolean alignmentFailed = false;
     /** The timer representing how long the command has been running. */
@@ -78,7 +78,8 @@ public class AlignToHubCommand extends Command {
         // Resets the command.
         alignmentFailed = false;
         m_timer.restart();
-        m_driveRequest = new SwerveRequest.RobotCentric();
+        m_driveRequest = new SwerveRequest.RobotCentricFacingAngle()
+                                    .withForwardPerspective(SwerveRequest.ForwardPerspectiveValue.valueOf("OperatorPerspective"));
 
         System.out.println("Attempting to align to Hub.");
     }
@@ -106,14 +107,15 @@ public class AlignToHubCommand extends Command {
         Pose2d driveStatePose = driveState.Pose;
         double remainingRotation = driveStatePose.getRotation().getRadians() - m_targetRotation.getRadians();
 
-        m_drivetrain.setControl(m_driveRequest.withRotationalRate(
+        m_drivetrain.setControl(m_driveRequest.withTargetDirection(m_targetRotation));
+        /*m_drivetrain.setControl(m_driveRequest.withRotationalRate(
             // Ensures that the angular velocity doesn't exceed the maximum angular speed.
             MathUtil.clamp(
                 pid.calculate(remainingRotation),
                 -m_maxAngularVelocity,
                 m_maxAngularVelocity
                 )
-            ));
+            ));*/
     }
 
     /**
