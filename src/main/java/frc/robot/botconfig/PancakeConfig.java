@@ -3,16 +3,11 @@ package frc.robot.botconfig;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.math.util.Units;
 import frc.robot.generated.GeneratedPancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-import java.util.List;
 
 /**
  * Adapter that bridges BotConfigInterface to the current constants.
@@ -89,7 +84,12 @@ public class PancakeConfig implements BotConfigInterface {
 
     @Override
     public CommandSwerveDrivetrain createDrivetrain() {
-        return GeneratedPancakeConstants.createDrivetrain();
+        return new CommandSwerveDrivetrain(
+            GeneratedPancakeConstants.DrivetrainConstants,
+            GeneratedPancakeConstants.FrontLeft,
+            GeneratedPancakeConstants.FrontRight,
+            GeneratedPancakeConstants.BackLeft,
+            GeneratedPancakeConstants.BackRight);
     }
 
 
@@ -134,52 +134,4 @@ public class PancakeConfig implements BotConfigInterface {
     public boolean shouldForceDisableIntakeArm() {
         return true;
     }
-
-
-    /*************************************************************************************
-     *
-     * VISION
-     *
-     ************************************************************************************/
-
-    @Override
-    public boolean isVisionEnabledDefault() {
-        return true;
-    }
-
-    @Override
-    public boolean isMegaTag2Supported() {
-        return false; // $TODO2 - Enable after testing
-    }
-
-    @Override
-    public boolean isAutoVisionInjectionEnabled() {
-        return true;
-    }
-
-    /** The configurations for each camera mounted on the Pancake. */
-    private final List<CameraInfo> m_cameras = List.of(
-        new CameraInfo("limelight-fixedii", new Transform3d(
-            new Translation3d(
-                Units.inchesToMeters(12.75), // + is forward
-                Units.inchesToMeters(-0.25),        // + is left
-                Units.inchesToMeters(9.75)   // x" deck + 4" mount
-            ),
-            new Rotation3d(0, Math.toRadians(0), 0)  // x degrees up
-        )),
-        new CameraInfo("limelight", new Transform3d(
-            new Translation3d(
-                Units.inchesToMeters(-11.75),         // + is forward
-                Units.inchesToMeters(1.75),   // + is left
-                Units.inchesToMeters(8.75)    // x" deck + 4" mount
-            ),
-            new Rotation3d(0, Math.toRadians(-30), Math.toRadians(180))  // x degrees up, backwards
-        ))
-    );
-
-    @Override
-    public List<CameraInfo> getCameras() {
-        return m_cameras;
-    }
-
 }

@@ -4,21 +4,13 @@
 
 package frc.robot;
 
-import java.util.Optional;
-
-import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
-
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.sim.ShowVisionOnField;
 import frc.robot.subsystems.auto.AutoLogic;
-import frc.robot.visutils.PerCycleState;
-import frc.robot.visutils.VisionKalmanFilter.DisplayInfo;
 
 /**
  * The main robot class that controls the flow of the 2026 FRC robot code.
@@ -58,53 +50,9 @@ public class Robot extends TimedRobot {
    * Called every 20ms regardless of mode.
    * Runs the CommandScheduler, which handles all active command execution.
    */
-  @SuppressWarnings("VariableDeclarationUsageDistance")
   @Override
   public void robotPeriodic() {
-    // Update motionless tracking early - this resets Kalman filter when robot moves
-    m_robotContainer.m_motionlessTracker.update();
-
-    // $VISIONSIM - Wrapper for sim features
-    if (Robot.isSimulation() && m_robotContainer.m_simWrapper != null) {
-        // NOTE: We run the vision period FIRST in robotPeriodic, since it updates
-        // NetworkTables with the limelight data, in-case any code in this loop
-        // needs that info and doesnt want it delayed 20ms.
-        m_robotContainer.m_simWrapper.robotPeriodic();
-    }
-
-    // We allow vision to be enabled/disabled DYNAMICALLY from dashboard, so we set whether
-    // its enabled on EACH cycle.
-    m_robotContainer.m_multiCamlimelight.enableVision(
-        m_robotContainer.basicInfoDashboard.isVisionEnabled());
-
-    m_robotContainer.m_multiCamlimelight.periodic();
-
-    Optional<Pose2d> showVisPose =
-      m_robotContainer.m_multiCamlimelight.getEstimatedPose();
-
-    DisplayInfo kalmanDisplay = m_robotContainer.m_visionKalmanFilter.getFieldDisplayInfo(0.4);
-
-    // Show tape locations on field
-    Optional<Pose2d> blueTapePose = m_robotContainer.m_driveAccuracyTester.getBlueTapePose();
-    Optional<Pose2d> redTapePose = m_robotContainer.m_driveAccuracyTester.getRedTapePose();
-
     CommandScheduler.getInstance().run();
-
-    SwerveDriveState driveState = m_robotContainer.drivetrain.getState();
-
-    // Take field info gathered, and show it on dashboard
-    m_robotContainer.m_showVisionOnField.updateFieldDisplay(
-        showVisPose,
-        kalmanDisplay,
-        blueTapePose,
-        redTapePose,
-        driveState);
-
-    // We update logging after CommandScheduler.run(), so that any commands that
-    // changed drivetrain state are reflected in the telemetry.
-    if (m_robotContainer.basicInfoDashboard != null) {
-        m_robotContainer.basicInfoDashboard.update();
-    }
   }
 
   @Override
@@ -179,13 +127,5 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void simulationPeriodic() {
-    // $VISIONSIM - Wrapper for sim features
-    if (m_robotContainer.m_simWrapper != null) {
-        m_robotContainer.m_simWrapper.simulationPeriodic();
-
-        // Debug field visualization
-        Pose2d groundTruthPose = m_robotContainer.m_simWrapper.getGroundTruthPose();
-        m_robotContainer. m_showVisionOnField.showGroundTruthPoseOnField(groundTruthPose);
-    }
   }
 }

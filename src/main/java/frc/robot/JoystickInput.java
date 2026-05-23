@@ -1,9 +1,10 @@
 package frc.robot;
 
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Constants.DriveConstants;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.SimJoystickOrientation;
-import frc.robot.visutils.DriveSmooth;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -11,8 +12,8 @@ import java.util.function.DoubleSupplier;
 /**
  * Processes raw joystick inputs into scaled robot velocities.
  *
- * <p>Pipeline per axis: raw supplier â†’ DriveSmooth (deadband + response curve +
- * slew-rate limit) â†’ speed scale â†’ optional fine-positioning halving.
+ * <p>Pipeline per axis: raw supplier ? deadband with rescaling ? power response curve ?
+ * slew-rate limit ? speed scale ? optional fine-positioning halving.
  *
  * <p>When running in simulation the outputs of {@link #getJoystickInputs()} are
  * additionally transformed via {@link SimJoystickOrientation} so that
@@ -24,7 +25,10 @@ import java.util.function.DoubleSupplier;
  */
 public class JoystickInput {
 
-    private final DriveSmooth driveSmooth;
+    private final SlewRateLimiter m_xLimiter = new SlewRateLimiter(DriveConstants.kTranslationSlewRate);
+    private final SlewRateLimiter m_yLimiter = new SlewRateLimiter(DriveConstants.kTranslationSlewRate);
+    private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(DriveConstants.kRotationSlewRate);
+
     private final DoubleSupplier rawXSupplier;
     private final DoubleSupplier rawYSupplier;
     private final DoubleSupplier rawRotateSupplier;
@@ -37,7 +41,6 @@ public class JoystickInput {
     /**
      * Creates a new JoystickInput processor.
      *
-     * @param driveSmooth              Smoothing pipeline (deadband, curve, slew).
      * @param rawXSupplier             Supplier for the forward/backward axis (typically {@code -leftY}).
      * @param rawYSupplier             Supplier for the strafe axis (typically {@code -leftX}).
      * @param rawRotateSupplier        Supplier for the rotation axis (typically {@code -rightX}).
@@ -51,7 +54,6 @@ public class JoystickInput {
      *                                          may be {@code null} otherwise).
      */
     public JoystickInput(
-            DriveSmooth driveSmooth,
             DoubleSupplier rawXSupplier,
             DoubleSupplier rawYSupplier,
             DoubleSupplier rawRotateSupplier,
@@ -60,7 +62,6 @@ public class JoystickInput {
             double maxAngularRate,
             boolean isSimulation,
             DoubleSupplier operatorForwardDegreesSupplier) {
-        this.driveSmooth = driveSmooth;
         this.rawXSupplier = rawXSupplier;
         this.rawYSupplier = rawYSupplier;
         this.rawRotateSupplier = rawRotateSupplier;
@@ -72,12 +73,41 @@ public class JoystickInput {
     }
 
     /**
+     * Applies deadband with linear rescaling to preserve full output range.
+     * Maps [deadband, 1.0] to [0.0, 1.0] so no top-end speed is lost.
+     *
+     * @param value Raw joystick input (-1 to 1)
+     * @param deadband Deadband threshold (e.g., 0.1 for 10%)
+     * @return Processed value with deadband applied and rescaled to full range
+     */
+    private double applyDeadbandWithRescale(double value, double deadband) {
+        if (Math.abs(value) < deadband) {
+            return 0.0;
+        }
+        return Math.signum(value) * ((Math.abs(value) - deadband) / (1.0 - deadband));
+    }
+
+    /**
+     * Applies power-based response curve for fine control at low speeds.
+     *
+     * @param value Processed input (-1 to 1)
+     * @param exponent Response curve exponent (1.0=linear, 2.0=squared, 3.0=cubed)
+     * @return Curved value
+     */
+    private double applyResponseCurve(double value, double exponent) {
+        return Math.signum(value) * Math.pow(Math.abs(value), exponent);
+    }
+
+    /**
      * Processes the forward/backward (X) axis.
      *
      * @return Scaled velocity in meters per second.
      */
     private double getDriveX() {
-        double input = driveSmooth.processTranslationX(rawXSupplier.getAsDouble());
+        double raw = rawXSupplier.getAsDouble();
+        double deadbanded = applyDeadbandWithRescale(raw, DriveConstants.kJoystickDeadband);
+        double curved = applyResponseCurve(deadbanded, DriveConstants.kTranslationExponent);
+        double input = m_xLimiter.calculate(curved);
         double inputScale = finePositioningEnabledSupplier.getAsBoolean() ? 0.5 : 1.0;
         return input * teleoperatedSpeed * inputScale;
     }
@@ -88,7 +118,10 @@ public class JoystickInput {
      * @return Scaled velocity in meters per second.
      */
     private double getDriveY() {
-        double input = driveSmooth.processTranslationY(rawYSupplier.getAsDouble());
+        double raw = rawYSupplier.getAsDouble();
+        double deadbanded = applyDeadbandWithRescale(raw, DriveConstants.kJoystickDeadband);
+        double curved = applyResponseCurve(deadbanded, DriveConstants.kTranslationExponent);
+        double input = m_yLimiter.calculate(curved);
         double inputScale = finePositioningEnabledSupplier.getAsBoolean() ? 0.5 : 1.0;
         return input * teleoperatedSpeed * inputScale;
     }
@@ -99,7 +132,10 @@ public class JoystickInput {
      * @return Scaled angular velocity in radians per second.
      */
     private double getDriveRotate() {
-        double input = driveSmooth.processRotation(rawRotateSupplier.getAsDouble());
+        double raw = rawRotateSupplier.getAsDouble();
+        double deadbanded = applyDeadbandWithRescale(raw, DriveConstants.kJoystickDeadband);
+        double curved = applyResponseCurve(deadbanded, DriveConstants.kRotationExponent);
+        double input = m_rotLimiter.calculate(curved);
         double inputScale = finePositioningEnabledSupplier.getAsBoolean() ? 0.5 : 1.0;
         return input * maxAngularRate * inputScale;
     }
@@ -130,13 +166,13 @@ public class JoystickInput {
         return new JoystickInputsRecord(x, y, rot);
     }
 
-    /** Returns {@code true} when {@code controller}'s D-pad is in the downward region (135Â°â€“225Â°). */
+    /** Returns {@code true} when {@code controller}'s D-pad is in the downward region (135°–225°). */
     public static boolean isPovDownward(CommandXboxController controller) {
         int pov = controller.getHID().getPOV();
         return pov != -1 && (pov >= 135 && pov <= 225);
     }
 
-    /** Returns {@code true} when {@code controller}'s D-pad is in the upward region (315Â°â€“360Â° or 0Â°â€“45Â°). */
+    /** Returns {@code true} when {@code controller}'s D-pad is in the upward region (315°–360° or 0°–45°). */
     public static boolean isPovUpward(CommandXboxController controller) {
         int pov = controller.getHID().getPOV();
         return pov != -1 && (pov <= 45 || pov >= 315);

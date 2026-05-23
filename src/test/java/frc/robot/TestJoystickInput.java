@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
 import frc.robot.sim.JoystickInputsRecord;
-import frc.robot.visutils.DriveSmooth;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -14,13 +13,12 @@ import org.junit.jupiter.api.*;
 /**
  * Unit tests for {@link JoystickInput}.
  *
- * <p>Uses real {@link DriveSmooth} instances with injected suppliers so the
+ * <p>Uses real {@link SlewRateLimiter SlewRateLimiters} with injected suppliers so the
  * full processing pipeline (deadband, response curve, slew-rate limit) is
  * exercised without any hardware dependency.
  *
  * <p>FPGA time is controlled via {@link SimHooks#pauseTiming()} /
- * {@link SimHooks#stepTiming(double)} so the slew-rate limiters inside
- * {@link DriveSmooth} advance deterministically.
+ * {@link SimHooks#stepTiming(double)} so the slew-rate limiters advance deterministically.
  *
  * <p>Each test creates its own {@link JoystickInput} via local factory
  * helpers, avoiding shared mutable state between tests.
@@ -59,7 +57,6 @@ class TestJoystickInput {
     private static JoystickInput createInput(
             double x, double y, double rot) {
         return new JoystickInput(
-            new DriveSmooth(),
             () -> x, () -> y, () -> rot,
             () -> false,
             TELEOP_SPEED, MAX_ANGULAR,
@@ -73,7 +70,6 @@ class TestJoystickInput {
             DoubleSupplier rotSup,
             BooleanSupplier fineModeSup) {
         return new JoystickInput(
-            new DriveSmooth(),
             xSup, ySup, rotSup,
             fineModeSup,
             TELEOP_SPEED, MAX_ANGULAR,
@@ -84,7 +80,6 @@ class TestJoystickInput {
     private static JoystickInput createSimInput(
             double x, double y, double rot) {
         return new JoystickInput(
-            new DriveSmooth(),
             () -> x, () -> y, () -> rot,
             () -> false,
             TELEOP_SPEED, MAX_ANGULAR,
@@ -228,8 +223,7 @@ class TestJoystickInput {
         double normalX = input.getJoystickInputs().driveX();
 
         // Enable fine mode -- the slew limiter is already settled so
-        // processTranslationX returns the same base value; only the
-        // 0.5 scale factor changes.
+        // the base value is the same; only the 0.5 scale factor changes.
         fineMode.set(true);
         SimHooks.stepTiming(DT);
         double fineX = input.getJoystickInputs().driveX();

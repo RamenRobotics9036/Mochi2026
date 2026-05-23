@@ -212,56 +212,6 @@ public final class Constants {
         public static final Time kSecondsToAlternate = Seconds.of(0.25); //TODO: filler value
     }
 
-    /**
-     * Constants for the vision subsystem and dual Limelight configuration.
-     */
-    // To upload fmap:
-    // curl -X POST http://10.90.36.15:5807/upload-fieldmap -H "Content-Type: application/json" --data-binary @FRC2026_ANDYMARK.fmap
-    public static final class VisionConstants {
-        /**
-         * Distance advantage (meters) given to MegaTag2 when comparing estimates.
-         * MT2 is preferred over MT1 if its avgTagDist is within this margin of MT1's,
-         * because gyro-fused rotation makes the estimate more reliable at similar range.
-         */
-        public static final double kMt2DistanceAdvantageMeter = 0.5;
-    }
-
-    /**
-     * Constants for the Vision-only Kalman filter used for precise
-     * stationary position estimation with multi-tag measurements.
-     */
-    public static final class VisionKalmanConstants {
-        // Initial covariance (high uncertainty at start)
-        /** Initial position variance in m². */
-        public static final double kInitialPositionVariance = 1.0;
-        /** Initial angle variance in rad². */
-        public static final double kInitialAngleVariance = 0.5;
-
-        // Process noise Q (very small - robot is stationary)
-        /** Position process noise in m². */
-        public static final double kProcessNoisePosition = 0.0001;
-        /** Angle process noise in rad². */
-        public static final double kProcessNoiseAngle = 0.00005;
-
-        // Measurement noise R base values (before tag count scaling)
-        /** Base position measurement noise in m². */
-        public static final double kBasePositionNoise = 0.05;
-        /** Base angle measurement noise in rad². */
-        public static final double kBaseAngleNoise = 0.02;
-
-        // Convergence thresholds
-        /** Position std dev threshold for convergence (meters). */
-        public static final double kConvergencePositionThreshold = 0.02;
-        /** Angle std dev threshold for convergence (degrees). */
-        public static final double kConvergenceAngleThresholdDegrees = 1.0;
-
-        // Motionless detection
-        /** Gyro angular rate threshold for "motionless" detection (deg/sec). */
-        public static final double kMotionlessGyroThreshold = 2.0;
-        /** Linear velocity threshold for "motionless" detection (m/s). */
-        public static final double kMotionlessLinearThreshold = 0.05;
-    }
-
     /** Constants for auto commands. */
     public static final class AutoConstants {
         public static final double k_raiseClimbDuration = 4.0;
