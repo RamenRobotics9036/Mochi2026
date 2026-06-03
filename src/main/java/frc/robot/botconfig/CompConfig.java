@@ -5,9 +5,12 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.vision.VisionConstants;
+import java.util.List;
 
 /**
  * Adapter that bridges BotConfigInterface to the current constants.
@@ -132,5 +135,19 @@ public class CompConfig implements BotConfigInterface {
     @Override
     public boolean shouldForceDisableIntakeArm() {
         return false;
+    }
+
+    /*************************************************************************************
+     *
+     * VISION CAMERAS
+     *
+     ************************************************************************************/
+
+    @Override
+    public List<CameraConfig> getCameras() {
+        return List.of(
+            new CameraConfig(VisionConstants.CAM_FRONT, VisionConstants.FRONT_CAM_TRANSFORM),
+            new CameraConfig(VisionConstants.CAM_BACK, VisionConstants.BACK_CAM_TRANSFORM)
+        );
     }
 }

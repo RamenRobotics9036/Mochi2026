@@ -8,6 +8,7 @@ import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.GeneratedPancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import java.util.List;
 
 /**
  * Adapter that bridges BotConfigInterface to the current constants.
@@ -133,5 +134,16 @@ public class PancakeConfig implements BotConfigInterface {
     @Override
     public boolean shouldForceDisableIntakeArm() {
         return true;
+    }
+
+    /*************************************************************************************
+     *
+     * VISION CAMERAS (Pancake has no cameras)
+     *
+     ************************************************************************************/
+
+    @Override
+    public List<CameraConfig> getCameras() {
+        return List.of();
     }
 }

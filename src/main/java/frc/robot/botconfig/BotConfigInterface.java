@@ -5,10 +5,12 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.GeneratedCompConstants;
 import frc.robot.generated.GeneratedPancakeConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import java.util.List;
 
 /**
  * Interface for robot-specific tuner configuration.
@@ -123,4 +125,14 @@ public interface BotConfigInterface {
 
     /** Force disable intake arm. */
     boolean shouldForceDisableIntakeArm();
+
+
+    /*************************************************************************************
+     *
+     * VISION CAMERAS
+     *
+     ************************************************************************************/
+
+    /** Returns the list of Limelight cameras on this robot. */
+    List<CameraConfig> getCameras();
 }

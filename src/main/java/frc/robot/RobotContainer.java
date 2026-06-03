@@ -18,8 +18,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ClimberConstants;
-import frc.robot.Constants.DriveConstants;
 import frc.robot.botconfig.BotConfigInterface;
+import frc.robot.vision.VisionConstants;
+import frc.robot.botconfig.CameraConfig;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.FullAutoClimbCommand;
 import frc.robot.commands.GetFuelCommand;
@@ -29,7 +30,6 @@ import frc.robot.commands.SetIntakeBottomCommand;
 import frc.robot.commands.SetIntakeTopCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.JiggleCommand;
 import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.SpinnyDefaultCommand;
 import frc.robot.sim.JoystickInputsRecord;
@@ -47,12 +47,16 @@ import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.subsystems.SpinnyWheels;
-import frc.robot.subsystems.TestSubsystems;
 import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.subsystems.indexer.IndexerIoReal;
 import frc.robot.subsystems.intake.ArmIoReal;
 import frc.robot.subsystems.intake.IntakeIoReal;
 import frc.robot.subsystems.shooter.ShooterIoReal;
+import frc.robot.vision.CameraWrapper;
+import frc.robot.LimelightHelpers;
+import frc.robot.vision.VisionSubsystem;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The RobotContainer class is where the bulk of the robot structure is declared.
@@ -77,6 +81,10 @@ public class RobotContainer {
             .withDeadband(0.001 * TeleoperatedSpeed)
             .withRotationalDeadband(0.001 * MaxAngularRate)
             .withDriveRequestType(DriveRequestType.Velocity);
+
+    // Request used for both Static Aiming and Shoot on the Move (Robot-Centric tracking)
+    private final SwerveRequest.RobotCentric robotCentricAimRequest = new SwerveRequest.RobotCentric()
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     /** Brake request: Forces all modules into an X-pattern to resist movement. */
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -152,6 +160,9 @@ public class RobotContainer {
     /** Hood subsystem using Actuonix linear actuator */
     public final HoodSubsystem hoodSubsystem = new HoodSubsystem();
 
+    /** Vision subsystem: processes all Limelight cameras and fuses into odometry */
+    public final VisionSubsystem visionSubsystem;
+
     public RobotContainer() {
         m_joystickInput = new JoystickInput(
             () -> -driveController.getLeftY(),
@@ -164,6 +175,13 @@ public class RobotContainer {
             () -> drivetrain.getOperatorForwardDirection().getDegrees());
 
         AutoLogic.initShuffleboard(drivetrain);
+
+        // Build VisionSubsystem from the bot config's camera list
+        List<CameraConfig> camCfgs = m_configInterface.getCameras();
+        List<CameraWrapper> cameras = camCfgs.stream()
+            .map(cfg -> new CameraWrapper(cfg.name(), cfg.robotToCamera()))
+            .collect(Collectors.toList());
+        visionSubsystem = new VisionSubsystem(cameras, drivetrain);
 
         configureDriveBindings();
         configureOperateBindings();
@@ -215,8 +233,25 @@ public class RobotContainer {
         // Hook up the telemetry logger to the drivetrain periodic updates
         drivetrain.registerTelemetry(logger::telemeterize);
 
-        //driveController.y().whileTrue(new JiggleCommand(drivetrain, armSubsystem));
-        driveController.y().whileTrue(new JiggleCommand(drivetrain));
+        // Hold 'A' Button: Shoot on the Move
+        // Manual stick strafe, automatic target heading and distance tracking
+        driveController.a().whileTrue(
+            drivetrain.applyRequest(() -> robotCentricAimRequest
+                .withVelocityX(getLimelightForwardSpeed())     // Auto-distance
+                .withVelocityY(-driveController.getLeftX() * MaxSpeed) // Manual strafe
+                .withRotationalRate(getLimelightRotationSpeed()) // Auto-heading
+            )
+        );
+
+        // Hold 'Y' Button: Static Aim and Range
+        // Complete hands-off control. The robot automatically drives to the target and aligns
+        driveController.y().whileTrue(
+            drivetrain.applyRequest(() -> robotCentricAimRequest
+                .withVelocityX(getLimelightForwardSpeed())
+                .withVelocityY(0.0)
+                .withRotationalRate(getLimelightRotationSpeed())
+            )
+        );
     }
 
     /**
@@ -271,6 +306,74 @@ public class RobotContainer {
         m_spinnyWheels.setDefaultCommand(new SpinnyDefaultCommand(m_spinnyWheels));
 
         armSubsystem.setDefaultCommand(new IntakeArmCommand(armSubsystem, operateController));
+    }
+
+    /**
+     * Returns the name of the camera with the best target lock.
+     * Iterates over all configured cameras, picks the one with a valid target
+     * and smallest |TX| (closest to center). Falls back to "limelight".
+     */
+    private String getBestAimCamera() {
+        String fallback = "limelight";
+        double bestTx = Double.MAX_VALUE;
+
+        if (visionSubsystem != null) {
+            for (CameraWrapper cam : visionSubsystem.getCameras()) {
+                String name = cam.getName();
+                if (LimelightHelpers.getTV(name)) {
+                    double tx = Math.abs(LimelightHelpers.getTX(name));
+                    if (tx < bestTx) {
+                        bestTx = tx;
+                        fallback = name;
+                    }
+                }
+            }
+        } else {
+            // Fallback to default name if no cameras configured
+            if (LimelightHelpers.getTV("limelight")) {
+                return "limelight";
+            }
+        }
+
+        return fallback;
+    }
+
+    // Used by 'A' and 'Y' Buttons to control rotation
+    private double getLimelightRotationSpeed() {
+        String cam = getBestAimCamera();
+        if (!LimelightHelpers.getTV(cam)) {
+            return 0.0;
+        }
+
+        double tx = LimelightHelpers.getTX(cam);
+        if (Math.abs(tx) < VisionConstants.AIM_ROT_DEADBAND_DEG) {
+            return 0.0;
+        }
+
+        // Note: If the robot still spins rapidly when tracking,
+        // change "-MaxAngularRate" to "MaxAngularRate" to invert the direction.
+        return tx * VisionConstants.AIM_ROT_KP * -MaxAngularRate;
+    }
+
+    // Used by 'A' and 'Y' Buttons to control forward/backward distance
+    private double getLimelightForwardSpeed() {
+        String cam = getBestAimCamera();
+        if (!LimelightHelpers.getTV(cam)) {
+            return 0.0;
+        }
+
+        double currentTY = LimelightHelpers.getTY(cam);
+        double error = currentTY - VisionConstants.AIM_TY_SETPOINT;
+
+        if (Math.abs(error) < VisionConstants.AIM_FWD_DEADBAND_DEG) {
+            return 0.0;
+        }
+
+        double targetingForwardSpeed = error * VisionConstants.AIM_FWD_KP * MaxSpeed * -1.0;
+        return edu.wpi.first.math.MathUtil.clamp(
+            targetingForwardSpeed,
+            -MaxSpeed * VisionConstants.AIM_MAX_FWD_FRACTION,
+            MaxSpeed * VisionConstants.AIM_MAX_FWD_FRACTION);
     }
 
     /**
