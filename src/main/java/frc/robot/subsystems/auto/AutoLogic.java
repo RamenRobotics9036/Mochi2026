@@ -95,7 +95,7 @@ public final class  AutoLogic {
     /** Adds both PathPlanner routines and hard-coded manual routines to the chooser. */
     private static void addAutoOptions() {
         // Default
-        autoPicker.setDefaultOption("Lawtonomous", "Lawtonomous");
+        autoPicker.setDefaultOption("Let's Steal Some Balls", "Let's Steal Some Balls");
 
         autoPicker.addOption("L Bump_Shoot_Move_Back", "L Bump_Shoot_Move_Back");
         autoPicker.addOption("R Bump_Shoot_Move_Back", "R Bump_Shoot_Move_Back");
