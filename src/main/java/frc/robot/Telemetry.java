@@ -2,6 +2,7 @@ package frc.robot;
 
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -19,17 +20,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 
-/** NOTE: Do not add extra Telemetry for logging or dashboard in this file!
- * Telemetry.java is only for CTRE swerve drive telemetry, and needs
- * to be highly optimized since it runs at a high frequency and is called in the
- * critical path of the drivetrain code≈.
- */
 public class Telemetry {
     private final double MaxSpeed;
 
     /**
-     * Construct a telemetry object, with the specified max speed of the robot.
-     *
+     * Construct a telemetry object, with the specified max speed of the robot
+     * 
      * @param maxSpeed Maximum speed in meters per second
      */
     public Telemetry(double maxSpeed) {
@@ -87,8 +83,6 @@ public class Telemetry {
     };
 
     private final double[] m_poseArray = new double[3];
-    private final double[] m_moduleStatesArray = new double[8];
-    private final double[] m_moduleTargetsArray = new double[8];
 
     /** Accept the swerve drive state and telemeterize it to SmartDashboard and SignalLogger. */
     public void telemeterize(SwerveDriveState state) {
@@ -102,23 +96,20 @@ public class Telemetry {
         driveOdometryFrequency.set(1.0 / state.OdometryPeriod);
 
         /* Also write to log file */
-        m_poseArray[0] = state.Pose.getX();
-        m_poseArray[1] = state.Pose.getY();
-        m_poseArray[2] = state.Pose.getRotation().getDegrees();
-        for (int i = 0; i < 4; ++i) {
-            m_moduleStatesArray[i*2 + 0] = state.ModuleStates[i].angle.getRadians();
-            m_moduleStatesArray[i*2 + 1] = state.ModuleStates[i].speedMetersPerSecond;
-            m_moduleTargetsArray[i*2 + 0] = state.ModuleTargets[i].angle.getRadians();
-            m_moduleTargetsArray[i*2 + 1] = state.ModuleTargets[i].speedMetersPerSecond;
-        }
-
-        SignalLogger.writeDoubleArray("DriveState/Pose", m_poseArray);
-        SignalLogger.writeDoubleArray("DriveState/ModuleStates", m_moduleStatesArray);
-        SignalLogger.writeDoubleArray("DriveState/ModuleTargets", m_moduleTargetsArray);
+        SignalLogger.writeStruct("DriveState/Pose", Pose2d.struct, state.Pose);
+        SignalLogger.writeStruct("DriveState/Speeds", ChassisSpeeds.struct, state.Speeds);
+        SignalLogger.writeStructArray("DriveState/ModuleStates", SwerveModuleState.struct, state.ModuleStates);
+        SignalLogger.writeStructArray("DriveState/ModuleTargets", SwerveModuleState.struct, state.ModuleTargets);
+        SignalLogger.writeStructArray("DriveState/ModulePositions", SwerveModulePosition.struct, state.ModulePositions);
         SignalLogger.writeDouble("DriveState/OdometryPeriod", state.OdometryPeriod, "seconds");
+        SignalLogger.writeInteger("DriveState/FailedDaqs", state.FailedDaqs);
 
         /* Telemeterize the pose to a Field2d */
         fieldTypePub.set("Field2d");
+
+        m_poseArray[0] = state.Pose.getX();
+        m_poseArray[1] = state.Pose.getY();
+        m_poseArray[2] = state.Pose.getRotation().getDegrees();
         fieldPub.set(m_poseArray);
 
         /* Telemeterize each module state to a Mechanism2d */

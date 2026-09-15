@@ -1,7 +1,6 @@
 plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.2.1"
-    id "jacoco"
 }
 
 java {
@@ -73,45 +72,12 @@ dependencies {
     simulationRelease wpi.sim.enableRelease()
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
-    testImplementation 'org.mockito:mockito-core:5.11.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {
     useJUnitPlatform()
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
-
-    // JaCoCo agent is disabled by default — only enabled via: ./gradlew test jacocoTestReport -PjacocoEnabled
-    jacoco.enabled = project.hasProperty('jacocoEnabled')
-}
-
-jacoco {
-    toolVersion = "0.8.12"
-}
-
-jacocoTestReport {
-    reports {
-        xml.required = true
-        html.required = true
-        csv.required = false
-    }
-
-    // Only cover main source files (exclude test directory, LimelightHelpers, and constants files)
-    classDirectories.setFrom(
-        files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: [
-                '**/test/**',
-                '**/generated/**',
-                '**/LimelightHelpers.class',
-                '**/LimelightHelpers$*.class',
-                '**/Constants.class',
-                '**/Constants$*.class',
-                '**/VisionSimConstants.class',
-                '**/VisionSimConstants$*.class'
-            ])
-        })
-    )
-    sourceDirectories.setFrom(files(sourceSets.main.java.srcDirs))
 }
 
 // Simulation configuration (e.g. environment variables).
@@ -126,7 +92,6 @@ jar {
     from('src') { into 'backup/src' }
     from('vendordeps') { into 'backup/vendordeps' }
     from('build.gradle') { into 'backup' }
-    from sourceSets.main.allSource
     manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
