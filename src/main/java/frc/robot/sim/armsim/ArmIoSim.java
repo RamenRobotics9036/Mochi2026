@@ -70,6 +70,11 @@ public class ArmIoSim implements ArmIoInterface {
     }
 
     @Override
+    public double getSetpoint() {
+        return m_targetPosition;
+    }
+
+    @Override
     public void resetEncoderValue() {
         m_armSim.setState(Units.degreesToRadians(0.0), 0.0);
     }

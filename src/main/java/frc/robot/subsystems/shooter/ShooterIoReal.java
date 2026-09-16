@@ -65,7 +65,7 @@ public class ShooterIoReal implements TwoMotorRollerIoInterface {
 
         // Sets the right motor to follow the left one
         // Also sets its direction to be opposed rather than inverting it earlier in the code
-        m_rMotor.setControl(new Follower(Constants.ShooterConstants.kLMotorID, MotorAlignmentValue.Opposed));
+        m_rMotor.setControl(new Follower(Constants.ShooterConstants.kLMotorID, MotorAlignmentValue.Opposed)); //$(TODO) Right motor is not following properly. Fix!!
     }
 
     @Override

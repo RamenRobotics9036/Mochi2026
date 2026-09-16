@@ -58,6 +58,8 @@ public class IntakeArmCommand extends Command {
         } else {
             m_arm.stop();
         }
+
+        System.out.println(m_arm.getSetpoint());
     }
 
     /**

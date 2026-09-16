@@ -75,6 +75,10 @@ public class ArmSubsystem extends SubsystemBase{
         m_armIO.moveArmWithSpeed(speed);
     }
 
+    public double getSetpoint() {
+        return m_armIO.getSetpoint();
+    }
+
     /** Homes the arm by moving it to the zero position. */
     public void beginHoming() {
         if(m_HomingState != ArmHomedState.HOMING) {

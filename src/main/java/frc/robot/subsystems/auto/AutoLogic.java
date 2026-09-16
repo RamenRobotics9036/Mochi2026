@@ -95,9 +95,10 @@ public final class  AutoLogic {
     /** Adds both PathPlanner routines and hard-coded manual routines to the chooser. */
     private static void addAutoOptions() {
         // Default
-        autoPicker.setDefaultOption("Lawtonomous", "Lawtonomous");
-
-        autoPicker.addOption("Testing Auto", "R_Zone_Shoot_Home");
+        //autoPicker.setDefaultOption("Lawtonomous", "Lawtonomous");
+        //autoPicker.setDefaultOption("Testing Auto", "R_Zone_Shoot_Home");
+        autoPicker.setDefaultOption("Testing Auto", "ARM");
+        
         autoPicker.addOption("L Bump_Shoot_Move_Back", "L Bump_Shoot_Move_Back");
         autoPicker.addOption("R Bump_Shoot_Move_Back", "R Bump_Shoot_Move_Back");
         autoPicker.addOption("L Bump_Shoot_Climb", "L Bump_Shoot_Climb");

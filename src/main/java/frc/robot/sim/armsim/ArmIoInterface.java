@@ -20,6 +20,9 @@ public interface ArmIoInterface {
     /** Command closed-loop position in subsystem units. */
     void setPosition(double position);
 
+    /** Command closed-loop position in subsystem units. */
+    double getSetpoint();
+
     /** Reset the arm encoder position to 0. */
     void resetEncoderValue();
 

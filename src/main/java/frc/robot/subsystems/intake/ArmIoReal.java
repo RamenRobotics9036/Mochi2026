@@ -85,6 +85,11 @@ public class ArmIoReal implements ArmIoInterface {
     }
 
     @Override
+    public double getSetpoint() {
+        return m_pidController.getSetpoint();
+    }
+
+    @Override
     public void resetEncoderValue() {
         m_encoder.setPosition(0.0);
     }
