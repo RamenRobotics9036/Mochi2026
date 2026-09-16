@@ -17,21 +17,28 @@
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "get fuel"
+            "commands": [
+              {
+                "type": "named",
+                "data": {
+                  "name": "get fuel"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "R_Mid"
+                }
+              }
+            ]
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "R_Return"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shoot"
+            "pathName": "R_Stop"
           }
         }
       ]

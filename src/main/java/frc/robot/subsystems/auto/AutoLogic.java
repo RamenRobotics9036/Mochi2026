@@ -97,6 +97,7 @@ public final class  AutoLogic {
         // Default
         autoPicker.setDefaultOption("Lawtonomous", "Lawtonomous");
 
+        autoPicker.addOption("Testing Auto", "R_Zone_Shoot_Home");
         autoPicker.addOption("L Bump_Shoot_Move_Back", "L Bump_Shoot_Move_Back");
         autoPicker.addOption("R Bump_Shoot_Move_Back", "R Bump_Shoot_Move_Back");
         autoPicker.addOption("L Bump_Shoot_Climb", "L Bump_Shoot_Climb");
