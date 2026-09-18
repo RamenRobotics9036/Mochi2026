@@ -49,10 +49,10 @@ public final class Constants {
         /** Max angle (degrees) — lowered/deployed position.
          * Measured on hardware: 5/5/2026
         */
-        public static final double kMaxArmAngle = -10; //TODO: Re-test using teleop movement rather than manual pushing
+        public static final double kMaxArmAngle = 0; //TODO: Re-test using teleop movement rather than manual pushing
 
         /** Min angle (degrees) — raised/stowed position. */
-        public static final double kMinArmAngle = -190; //TODO: Re-test using teleop movement rather than manual pushing
+        public static final double kMinArmAngle = 198; //TODO: Re-test using teleop movement rather than manual pushing
 
         /** Position loop proportional gain. TODO: tune on hardware — 0.05 is a conservative starting value. */
         public static final double kArmPositionP = 0.05;

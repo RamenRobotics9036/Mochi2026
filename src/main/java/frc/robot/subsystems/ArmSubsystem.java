@@ -122,6 +122,10 @@ public class ArmSubsystem extends SubsystemBase{
         }
         m_armIO.setPosition(
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
+        
+        // Warning to prevent needless debugging when arm value is nonsensical.
+        double m_arm_angle = getArmAngle();
+        if (m_arm_angle < -10) System.err.println("WARNING: Arm angle is negative (" + m_arm_angle + "). You probably deployed the code with the arm down. This causes the max and min values to be inaccurate.");
     }
 
     /** Manually resets the arm encoder to zero. */

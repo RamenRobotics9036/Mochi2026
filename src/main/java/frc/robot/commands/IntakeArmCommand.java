@@ -59,7 +59,11 @@ public class IntakeArmCommand extends Command {
             m_arm.stop();
         }
 
-        System.out.println(m_arm.getSetpoint());
+        // Warning to prevent needless debugging when arm value is nonsensical.
+        double m_arm_angle = m_arm.getArmAngle();
+        if (m_arm_angle < -10) System.err.println("WARNING: Arm angle is negative (" + m_arm_angle + "). You probably deployed the code with the arm down. This causes the max and min values to be inaccurate.");
+
+        // System.out.println("Arm angle: " + m_arm.getArmAngle())
     }
 
     /**
