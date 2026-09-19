@@ -25,6 +25,7 @@ public class ShooterIoReal implements TwoMotorRollerIoInterface {
 
     private final TalonFX m_lMotor;
     private final TalonFX m_rMotor;
+    private Follower follower;
 
     /** Constructs the real shooter IO and configures both motors. */
     public ShooterIoReal(BotConfigInterface configInterface) {
@@ -67,8 +68,8 @@ public class ShooterIoReal implements TwoMotorRollerIoInterface {
 
         // Sets the right motor to follow the left one
         // Also sets its direction to be opposed rather than inverting it earlier in the code
-        m_rMotor.setControl(new Follower(Constants.ShooterConstants.kLMotorID, MotorAlignmentValue.Opposed)); //$(TODO) Right motor is not following properly. Fix!!
-        System.out.println("SHOOTER IO REAL SET FOLLOW");
+        follower = new Follower(Constants.ShooterConstants.kLMotorID, MotorAlignmentValue.Opposed);
+        m_rMotor.setControl(follower);
     }
 
     @Override
@@ -79,8 +80,10 @@ public class ShooterIoReal implements TwoMotorRollerIoInterface {
 
     @Override
     public void stop() {
+        // reestablishing the follower-leader pair in case it was broken to ensure they both stop
+        // stoping both individually would break the pair. DO NOT DO THAT
+        m_rMotor.setControl(follower);
         m_lMotor.stopMotor();
-        m_rMotor.stopMotor();
     }
 
     @Override
