@@ -49,10 +49,10 @@ public final class Constants {
         /** Max angle (degrees) — lowered/deployed position.
          * Measured on hardware: 5/5/2026
         */
-        public static final double kMaxArmAngle = 0; //TODO: Re-test using teleop movement rather than manual pushing
+        public static final double kMaxArmAngle = 195; 
 
         /** Min angle (degrees) — raised/stowed position. */
-        public static final double kMinArmAngle = 198; //TODO: Re-test using teleop movement rather than manual pushing
+        public static final double kMinArmAngle = 0;
 
         /** Position loop proportional gain. TODO: tune on hardware — 0.05 is a conservative starting value. */
         public static final double kArmPositionP = 0.05;
@@ -267,7 +267,7 @@ public final class Constants {
         public static final double k_raiseClimbDuration = 4.0;
         public static final double k_lowerClimbDuration = 4.0;
 
-        public static final double k_getFuelDuration = 8.0;
+        public static final double k_getFuelDuration = 2.2;
 
         public static final double k_intakeBottomDuration = 3.5;
         public static final double k_intakeTopDuration = 2.0;

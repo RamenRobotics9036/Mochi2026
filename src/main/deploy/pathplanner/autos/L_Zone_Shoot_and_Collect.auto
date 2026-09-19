@@ -13,7 +13,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "R_Zone"
+            "pathName": "L_Trench"
           }
         },
         {
@@ -27,9 +27,22 @@
                 }
               },
               {
-                "type": "path",
+                "type": "sequential",
                 "data": {
-                  "pathName": "R_Mid"
+                  "commands": [
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "L_Towards_Center"
+                      }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "L_Collect"
+                      }
+                    }
+                  ]
                 }
               }
             ]
