@@ -37,6 +37,7 @@ import frc.robot.commands.JiggleCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
 import frc.robot.commands.SpinnyDefaultCommand;
+import frc.robot.commands.ClimbCommands.ClimbUpCommand;
 import frc.robot.sim.JoystickInputsRecord;
 import frc.robot.sim.RollerSim.RollerIoInterface;
 import frc.robot.sim.RollerSim.TwoMotorRollerIoInterface;
@@ -338,10 +339,7 @@ public class RobotContainer {
 
         // POV Up: Extend Climber
         operateController.povUp().whileTrue(
-            new RunCommand(
-                () -> climberSubsystem.setClimbSpeed(ClimberConstants.kClimbUpSpeed),
-                climberSubsystem
-            )
+            new ClimbUpCommand(climberSubsystem)
         ).onFalse(new InstantCommand(climberSubsystem::stop, climberSubsystem));
 
         // POV Down: Retract Climber
