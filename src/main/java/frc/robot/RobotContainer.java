@@ -83,6 +83,9 @@ public class RobotContainer {
 
     private BotConfigInterface m_configInterface = RobotIdentity.getBotConfig();
 
+    private final SwerveRequest.RobotCentric robotCentricAimRequest = new SwerveRequest.RobotCentric()
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
     /** Maximum linear velocity of the robot in meters per second. */
     private double MaxSpeed = m_configInterface.getSpeedAt12Volts().in(MetersPerSecond);
     /** Maximum angular velocity of the robot in radians per second. */
@@ -295,6 +298,15 @@ public class RobotContainer {
             point.withModuleDirection(new Rotation2d(-driveController.getLeftY(), -driveController.getLeftX()))
         ));
 
+        driveController.x().whileTrue(
+            drivetrain.applyRequest(() -> robotCentricAimRequest
+                .withVelocityX(getLimelightForwardSpeed())     // Auto-distance
+                .withVelocityY(-driveController.getLeftX() * MaxSpeed) // Manual strafe
+                .withRotationalRate(getLimelightRotationSpeed()) // Auto-heading
+            )
+        );
+
+
         // SysId Characterization bindings (Back/Start + X/Y) for automated PID tuning
         driveController.back().and(driveController.y()).whileTrue(drivetrain.sysIdDynamic(Direction.kForward));
         driveController.back().and(driveController.x()).whileTrue(drivetrain.sysIdDynamic(Direction.kReverse));
@@ -399,6 +411,42 @@ public class RobotContainer {
         m_spinnyWheels.setDefaultCommand(new SpinnyDefaultCommand(m_spinnyWheels));
 
         armSubsystem.setDefaultCommand(new IntakeArmCommand(armSubsystem, operateController));
+    }
+
+     private double getLimelightRotationSpeed() {
+        if (!LimelightHelpers.getTV("limelight")) {
+            return 0.0;
+        }
+
+        double tx = LimelightHelpers.getTX("limelight");
+        if (Math.abs(tx) < 1.5) {
+            return 0.0;
+        }
+
+        double kP = 0.015; 
+        
+        // Note: If the robot still spins rapidly when tracking, 
+        // change "-MaxAngularRate" to "MaxAngularRate" to invert the direction.
+        return tx * kP * -MaxAngularRate;
+    }
+    
+    // Used by 'A' and 'Y' Buttons to control forward/backward distance
+    private double getLimelightForwardSpeed() {
+        if (!LimelightHelpers.getTV("limelight")) {
+            return 0.0;
+        }
+
+        double kP = 0.04;
+        double desiredTY = 0.0; 
+        double currentTY = LimelightHelpers.getTY("limelight");
+        double error = currentTY - desiredTY;
+    
+        if (Math.abs(error) < 1.0) {
+            return 0.0;
+        }
+    
+        double targetingForwardSpeed = error * kP * MaxSpeed * -1.0;
+        return edu.wpi.first.math.MathUtil.clamp(targetingForwardSpeed, -MaxSpeed * 0.4, MaxSpeed * 0.4);
     }
 
     /**
