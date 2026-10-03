@@ -185,7 +185,7 @@ The **drivetrain** is the exception: CTRE's `SwerveDrivetrain` handles real vs. 
 | `HoodSubsystem` | Actuonix linear actuator (servo) | Sets shot angle (`setAngle`) |
 | `IndexerSubsystem` | One roller motor | Feeds fuel into the shooter |
 | `IntakeSubsystem` | One roller motor | Has stall detection by current |
-| `ArmSubsystem` | Two-motor intake arm | Position control and homing; `configureArms(IdleMode)` sets brake or coast |
+| `ArmSubsystem` | Two-motor intake arm | Position control and homing; `setIdleMode(IdleMode)` sets brake or coast |
 | `ClimberSubsystem` | One-motor elevator | |
 | `SpinnyWheels` | One always-on oscillating wheel | |
 | `TestSubsystems` | | Helpers for test / bring-up |

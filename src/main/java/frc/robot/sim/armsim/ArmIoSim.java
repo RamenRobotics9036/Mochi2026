@@ -60,7 +60,7 @@ public class ArmIoSim implements ArmIoInterface {
     }
 
     @Override 
-    public void configureArms(IdleMode idleMode) {
+    public void setIdleMode(IdleMode idleMode) {
         //No-op for simulation, since we don't have a motor controller to configure.
     }
 

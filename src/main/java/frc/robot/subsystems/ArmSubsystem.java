@@ -32,11 +32,11 @@ public class ArmSubsystem extends SubsystemBase{
     }
 
     /**
-     * Pass through to ArmIO - configure arms
-     * @param armIdleMode
+     * Pass through to ArmIO - set the arm motors' idle mode (brake or coast).
+     * @param armIdleMode the idle mode for the arms
      */
-    public void configureArms(IdleMode armIdleMode) {
-        m_armIO.configureArms(armIdleMode);
+    public void setIdleMode(IdleMode armIdleMode) {
+        m_armIO.setIdleMode(armIdleMode);
     }
 
     /**

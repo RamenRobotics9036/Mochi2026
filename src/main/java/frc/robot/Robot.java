@@ -145,11 +145,10 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    //switch arms to run in coast mode during teleop
-    m_robotContainer.armSubsystem.configureArms(IdleMode.kBrake);
+    //switch arms to run in brake mode during autonomous
+    m_robotContainer.armSubsystem.setIdleMode(IdleMode.kBrake);
 
     Shuffleboard.startRecording();
-    //switch arms to run in brake mode
 
     // Fetch the specific command selected by the drive team via the Auto Chooser
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
@@ -177,7 +176,7 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
     //switch arms to run in coast mode during teleop
-    m_robotContainer.armSubsystem.configureArms(IdleMode.kCoast);
+    m_robotContainer.armSubsystem.setIdleMode(IdleMode.kCoast);
 
     Shuffleboard.startRecording();
   }

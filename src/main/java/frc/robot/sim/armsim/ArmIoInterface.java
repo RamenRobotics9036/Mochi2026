@@ -1,5 +1,5 @@
 package frc.robot.sim.armsim;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 /**
  * IO interface for the intake arm mechanism.
@@ -15,8 +15,8 @@ public interface ArmIoInterface {
         public double currentAmps;
     }
 
-    /** Configure arms */
-    void configureArms(IdleMode armIdleMode);
+    /** Set the arm motors' idle mode (brake or coast). */
+    void setIdleMode(IdleMode armIdleMode);
 
     /** Immediately start moving arm [-1.0, 1.0]. */
     void moveArmWithSpeed(double speed);
