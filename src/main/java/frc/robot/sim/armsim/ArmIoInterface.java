@@ -1,4 +1,5 @@
 package frc.robot.sim.armsim;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;;
 
 /**
  * IO interface for the intake arm mechanism.
@@ -13,6 +14,9 @@ public interface ArmIoInterface {
         /** Motor output current in amps. */
         public double currentAmps;
     }
+
+    /** Configure arms */
+    void configureArms(IdleMode armIdleMode);
 
     /** Immediately start moving arm [-1.0, 1.0]. */
     void moveArmWithSpeed(double speed);

@@ -21,16 +21,33 @@ public class ArmIoReal implements ArmIoInterface {
     private final RelativeEncoder m_encoder;
     private final SparkClosedLoopController m_pidController;
 
+
     /** Constructor. */
     public ArmIoReal() {
-        SparkFlexConfig lArmConfig = new SparkFlexConfig();
-        SparkFlexConfig rArmConfig = new SparkFlexConfig();
-
         m_lArmMotor = new SparkFlex(ArmConstants.kLeftArmMotorID, MotorType.kBrushless);
         m_rArmMotor = new SparkFlex(ArmConstants.kRightArmMotorID, MotorType.kBrushless);
 
+        //Configure the arms in brake mode to begin with since autonomous precedes teleop
+        configureArms(IdleMode.kBrake);
+
+        // Initialize the encoder and PID controller for the arm motors
+        m_encoder = m_lArmMotor.getEncoder();
+        m_pidController = m_lArmMotor.getClosedLoopController();
+    }
+
+    /** 
+     * Configure the arms
+     * This was split from the constructor to enable teleop to run in Coast mode while 
+     * autonomous runs in Brake mode.
+     * @param armIdleMode the idle mode for the arms
+     */
+    @Override
+    public void configureArms(IdleMode armIdleMode) {
+        SparkFlexConfig lArmConfig = new SparkFlexConfig();
+        SparkFlexConfig rArmConfig = new SparkFlexConfig();
+
         // Configure the motors:
-        lArmConfig.idleMode(IdleMode.kBrake)
+        lArmConfig.idleMode(armIdleMode)
             .smartCurrentLimit(ArmConstants.kArmStallLimit);
 
         // Convert motor rotations → arm degrees.
@@ -56,7 +73,7 @@ public class ArmIoReal implements ArmIoInterface {
             .reverseSoftLimit((float) ArmConstants.kMinArmAngle)
             .reverseSoftLimitEnabled(false);
 
-        rArmConfig.idleMode(IdleMode.kBrake)
+        rArmConfig.idleMode(armIdleMode)
             .smartCurrentLimit(ArmConstants.kArmStallLimit)
             .follow(m_lArmMotor, true);
 
@@ -65,11 +82,8 @@ public class ArmIoReal implements ArmIoInterface {
             PersistMode.kPersistParameters);
         m_rArmMotor.configure(rArmConfig, ResetMode.kResetSafeParameters,
             PersistMode.kPersistParameters);
-
-        // Initialize the encoder and PID controller for the arm motors
-        m_encoder = m_lArmMotor.getEncoder();
-        m_pidController = m_lArmMotor.getClosedLoopController();
     }
+
 
     @Override
     public void moveArmWithSpeed(double speed) {
