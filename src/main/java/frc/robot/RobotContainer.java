@@ -401,46 +401,6 @@ public class RobotContainer {
         armSubsystem.setDefaultCommand(new IntakeArmCommand(armSubsystem, operateController));
     }
 
-<<<<<<< Updated upstream
-=======
-     private double getLimelightRotationSpeed() {
-        if (!LimelightHelpers.getTV("limelight")) {
-            return 0.0;
-        }
-
-        double tx = LimelightHelpers.getTX("limelight");
-        if (Math.abs(tx) < 1.5) {
-            return 0.0;
-        }
-
-        double kP = 0.015; 
-        
-        // Note: If the robot still spins rapidly when tracking, 
-        // change "-MaxAngularRate" to "MaxAngularRate" to invert the direction.
-        return tx * kP * -MaxAngularRate;
-    }
-    
-    // Used by 'A' and 'Y' Buttons to control forward/backward distance
-    private double getLimelightForwardSpeed() {
-        if (!LimelightHelpers.getTV("limelight")) {
-            return 0.0;
-        }
-
-        double kP = 0.04;
-        // Positive desiredTY = closer to tag, negative desiredTY = farther from tag
-        double desiredTY = -5.5; 
-        double currentTY = LimelightHelpers.getTY("limelight");
-        double error = currentTY - desiredTY;
-    
-        if (Math.abs(error) < 1.0) {
-            return 0.0;
-        }
-    
-        double targetingForwardSpeed = error * kP * MaxSpeed * -1.0;
-        return edu.wpi.first.math.MathUtil.clamp(targetingForwardSpeed, -MaxSpeed * 0.4, MaxSpeed * 0.4);
-    }
-
->>>>>>> Stashed changes
     /**
      * Retrieves the autonomous routine selected via the dashboard at the start of the match.
      *
