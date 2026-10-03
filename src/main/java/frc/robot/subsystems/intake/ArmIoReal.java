@@ -30,7 +30,7 @@ public class ArmIoReal implements ArmIoInterface {
         m_rArmMotor = new SparkFlex(ArmConstants.kRightArmMotorID, MotorType.kBrushless);
 
         // Configure the motors:
-        lArmConfig.idleMode(IdleMode.kBrake)
+        lArmConfig.idleMode(IdleMode.kCoast)
             .smartCurrentLimit(ArmConstants.kArmStallLimit);
 
         // Convert motor rotations → arm degrees.
@@ -56,7 +56,7 @@ public class ArmIoReal implements ArmIoInterface {
             .reverseSoftLimit((float) ArmConstants.kMinArmAngle)
             .reverseSoftLimitEnabled(false);
 
-        rArmConfig.idleMode(IdleMode.kBrake)
+        rArmConfig.idleMode(IdleMode.kCoast)
             .smartCurrentLimit(ArmConstants.kArmStallLimit)
             .follow(m_lArmMotor, true);
 
