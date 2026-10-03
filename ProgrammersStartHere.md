@@ -390,7 +390,7 @@ when you can.
 
 - **`$TODO`** comments mark known incomplete values or future work. Search for them when looking for something to do.
 - **`$VISIONSIM`** comments mark simulation-specific vision code paths.
-- `m_` prefix = member field. Constants use a `k` prefix (`kShootSpeed`). This breaks with standard Java code conventions, and we might retire this convention next season.
+- `m_` prefix = member field. Constants use a `k` prefix (`kShootSpeed`). This breaks with standard Java code conventions, and we might retire this convention next season. (In future seasons, we should be using the standard Java conventions. The [Google Style Guide]( https://google.github.io/styleguide/javaguide.html) is a more complete version of the baseline Java conventions).
 - Arms were switched by me (on Parker's request) to use **brake** mode in auto and **coast** mode in teleop (set in `Robot.autonomousInit()` and `teleopInit()`).
 - **Home the intake arm** (operator right-stick click) before using arm position commands.
 - New feature ideas are usually written up in `plans/` before they're built. Read the plans for background on vision features.
