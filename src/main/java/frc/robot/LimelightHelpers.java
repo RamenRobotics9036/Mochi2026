@@ -21,8 +21,11 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.TimestampedDoubleArray;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.LimelightHelpers.PoseEstimate;
+import frc.robot.sim.visionproducers.VisionSimConstants.Vision;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -1187,6 +1190,18 @@ public class LimelightHelpers {
      */
     public static double getTY(String limelightName) {
         return getLimelightNTDouble(limelightName, "ty");
+    }
+
+    public static double getDistanceFromTag(String limelightName, double goalHeightInches) {
+        double targetOffsetAngle_Vertical = getTY(limelightName);
+
+        double angleToGoalDegrees = VisionConstants.limelightLensHeightInches + targetOffsetAngle_Vertical;
+        double angleToGoalRadians = angleToGoalDegrees * (3.14159 / 180.0);
+
+        //calculate distance
+        double distanceFromLimelightToGoalInches = (goalHeightInches - VisionConstants.limelightLensHeightInches) / Math.tan(angleToGoalRadians);
+        
+        return distanceFromLimelightToGoalInches;
     }
 
     /**

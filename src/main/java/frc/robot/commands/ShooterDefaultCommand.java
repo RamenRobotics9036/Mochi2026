@@ -6,8 +6,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.IndexerConstants;
 import frc.robot.Constants.ShooterConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.subsystems.IndexerSubsystem;
 import frc.robot.subsystems.ShooterSubsystem;
+import frc.robot.LimelightHelpers;
 
 public class ShooterDefaultCommand extends Command{
     /** The subsystem for the motors used to shoot the ball */
@@ -56,30 +58,34 @@ public class ShooterDefaultCommand extends Command{
      */
     @Override
     public void execute() {
-        // Check controller input to determine whether to move the indexer forward,
-        // backward, or not at all. In all but the last case, the shooter should
-        // be commanded to spin as well.
-        if (m_controller.y().getAsBoolean()) indexerDirection = 1.0;
-        else if (m_controller.rightBumper().getAsBoolean()) indexerDirection = -1.0;
-        else indexerDirection = 0.0;
-
-        // Determines whether to actually spin the indexer.
-        // Is false for a short delay so the shooter can spin up.
-        indexerEnabled = m_debouncer.calculate(indexerDirection != 0.0);
-
-        // So long as the indexer is theoretically meant to be running,
-        // the shooter is as well, regardless of whether or not the
-        // indexer is on delay.
-        if (indexerDirection != 0.0) {
-            m_shooter.setSpeed(ShooterConstants.kShootSpeed);
-            
-            if (indexerEnabled) {
-                m_indexer.setSpeed(Math.signum(indexerDirection) * IndexerConstants.kIndexSpeed);
-            }
-
+        if (m_controller.b().getAsBoolean()) {
+            LimelightHelpers.getDistanceFromTag("limelight", VisionConstants.goalHeightInches);
         } else {
-            m_shooter.stop();
-            m_indexer.stop();
+            // Check controller input to determine whether to move the indexer forward,
+            // backward, or not at all. In all but the last case, the shooter should
+            // be commanded to spin as well.
+            if (m_controller.y().getAsBoolean()) indexerDirection = 1.0;
+            else if (m_controller.rightBumper().getAsBoolean()) indexerDirection = -1.0;
+            else indexerDirection = 0.0;
+
+            // Determines whether to actually spin the indexer.
+            // Is false for a short delay so the shooter can spin up.
+            indexerEnabled = m_debouncer.calculate(indexerDirection != 0.0);
+
+            // So long as the indexer is theoretically meant to be running,
+            // the shooter is as well, regardless of whether or not the
+            // indexer is on delay.
+            if (indexerDirection != 0.0) {
+                m_shooter.setSpeed(ShooterConstants.kShootSpeed);
+                
+                if (indexerEnabled) {
+                    m_indexer.setSpeed(Math.signum(indexerDirection) * IndexerConstants.kIndexSpeed);
+                }
+
+            } else {
+                m_shooter.stop();
+                m_indexer.stop();
+            }
         }
     }
 

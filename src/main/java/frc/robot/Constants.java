@@ -224,6 +224,15 @@ public final class Constants {
          * because gyro-fused rotation makes the estimate more reliable at similar range.
          */
         public static final double kMt2DistanceAdvantageMeter = 0.5;
+        
+        /** The angle the Limelight is mounted at relative to completely vertical. */
+        public static final double limelightMountAngleDegrees = 23.0; 
+
+        /** The distance between the limelight's mount and the ground. */
+        public static final double limelightLensHeightInches = 17.0; 
+
+        /** Distance from the AprilTags on the hub to the ground. */
+        public static final double goalHeightInches = 44.5; 
     }
 
     /**
