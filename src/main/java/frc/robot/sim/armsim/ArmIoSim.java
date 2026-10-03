@@ -1,5 +1,7 @@
 package frc.robot.sim.armsim;
 
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
 import edu.wpi.first.hal.SimDevice;
 import edu.wpi.first.hal.SimDouble;
 import edu.wpi.first.hal.SimDevice.Direction;
@@ -55,6 +57,11 @@ public class ArmIoSim implements ArmIoInterface {
             m_simVelocity = null;
             m_simCurrent = null;
         }
+    }
+
+    @Override 
+    public void configureArms(IdleMode idleMode) {
+        //No-op for simulation, since we don't have a motor controller to configure.
     }
 
     @Override
