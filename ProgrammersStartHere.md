@@ -20,6 +20,8 @@ The code is a **Java / WPILib command-based** project. It uses:
 
 Install the WPILib 2026 VS Code bundle, open this folder in WPILib VS Code, and let Gradle finish downloading.
 
+These are the gradle build targets / commands, but an easier way to run most of them, assuming you have the WPILib VSCode, is just to run them using the WPIlib commands (Shft+Ctrl+P they type WPIlib and you'll see a list)
+
 | Task | Command |
 |---|---|
 | Build (compiles and runs tests) | `./gradlew build` |
@@ -45,14 +47,16 @@ src/main/java/frc/robot/
 ├── Constants.java          Tunable numbers (speeds, CAN IDs, limits, ...)
 ├── JoystickInput.java      Turns driver sticks into drive speeds (deadband, slow mode, ...)
 ├── Telemetry.java          Publishes drivetrain data to dashboards
-├── LimelightHelpers.java   Limelight's official helper library (vendor code)
-│
+├── LimelightHelpers.java   This is generated once per project by the vendor. It can be added to in order 
+|                           to add more vision capabilities.
+| 
 ├── botconfig/              Which physical robot are we on? Per-robot settings.
 ├── subsystems/             The robot's mechanisms (drive, shooter, intake, ...)
 │   ├── auto/               Autonomous chooser + PathPlanner glue
 │   └── <mechanism>/        Real-hardware IO classes (XxxIoReal)
 ├── commands/               Actions the robot performs (shoot, intake, climb, align, ...)
-├── visutils/               Vision: camera pose estimation, aiming, filters, dashboards
+├── visutils/               Vision: camera pose estimation, aiming, filters, dashboards (**currently broken, 
+|                                   and not being used**)
 ├── sim/                    Physics simulation and simulated cameras
 ├── generated/              CTRE Tuner X swerve constants. Do not hand-edit.
 └── util/                   Small helpers (MAC address lookup, math)
@@ -182,7 +186,7 @@ The **drivetrain** is the exception: CTRE's `SwerveDrivetrain` handles real vs. 
 |---|---|---|
 | `CommandSwerveDrivetrain` | Phoenix 6 swerve (extends generated `TunerSwerveDrivetrain`) | Driving, pose estimation, `addVisionMeasurement`, SysId, `AlignToTag` |
 | `ShooterSubsystem` | Two REV SparkFlex flywheel motors | |
-| `HoodSubsystem` | Actuonix linear actuator (servo) | Sets shot angle (`setAngle`) |
+| `HoodSubsystem` | Actuonix linear actuator (servo) | Adjusts the angle of the hood (`setAngle`) which can be used to tune the shot trajectory |
 | `IndexerSubsystem` | One roller motor | Feeds fuel into the shooter |
 | `IntakeSubsystem` | One roller motor | Has stall detection by current |
 | `ArmSubsystem` | Two-motor intake arm | Position control and homing; `setIdleMode(IdleMode)` sets brake or coast |
@@ -221,11 +225,11 @@ The **drivetrain** is the exception: CTRE's `SwerveDrivetrain` handles real vs. 
 | `ShooterTestCommand` | Manual shooter tuning (swap it in as the default when testing) |
 | `IntakeCommand` | Run the intake rollers |
 | `IntakeArmCommand` | Default for the arm. Operator triggers move it up or down |
-| `IntakeArmHomeCommand` | Home the arm. **Must run before any arm position commands** |
+| `IntakeArmHomeCommand` | Home the arm. **Incomplete** |
 | `SetIntakeTopCommand` / `SetIntakeBottomCommand` | Move the arm to a preset position |
 | `GetFuelCommand` | Arm down and intake, to collect fuel |
-| `FullAutoClimbCommand` | Automated climb sequence |
-| `AlignToTagCommand` | Drive to line up with an AprilTag |
+| `FullAutoClimbCommand` | Automated climb sequence **Not currently working as of 10/4/26** |
+| `AlignToTagCommand` | Turns to line up with an AprilTag |
 | `RotateToTargetCommand` | Rotate in place to face a target pose |
 | `JiggleCommand` | Wiggle the drivetrain to shake loose stuck game pieces |
 | `SpinnyDefaultCommand` | Keeps the spinny wheels running |
