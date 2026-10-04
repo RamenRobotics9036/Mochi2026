@@ -1,5 +1,6 @@
 # Programmers: Start Here
 > This overview was written by Navneet Joneja, spelunking the codebase when he joined as a mentor after the 2026 season, with help from Claude.
+> If there are any inaccuracies, or changes, please keep it up-to-date! Future programming team members will thank you :-)
 
 Welcome to the Team 9036 (RamenRobotics) 2026 robot code - **Mochi**. This guide walks through
 how the code is organized, how the pieces connect, and where to go when you need to change something.
