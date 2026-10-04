@@ -278,6 +278,9 @@ Two Xbox controllers. Bindings are in `RobotContainer.configureDriveBindings()`,
 ---
 
 ## 9. Vision (`visutils/`)
+> ### WARNING
+> This is currently not working and should be rewritten for the future. A couple vision commands are implemented in 
+> LimelightHelpers, and those are all that are being currently used TTBOMK.
 
 Vision corrects the drivetrain's position estimate on the field using AprilTags seen by Limelight cameras.
 
