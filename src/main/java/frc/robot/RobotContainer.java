@@ -437,7 +437,7 @@ public class RobotContainer {
         }
 
         double kP = 0.04;
-        double desiredTY = 0.0; 
+        double desiredTY = -7.0; 
         double currentTY = LimelightHelpers.getTY("limelight");
         double error = currentTY - desiredTY;
     

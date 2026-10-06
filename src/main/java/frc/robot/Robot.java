@@ -7,6 +7,7 @@ package frc.robot;
 import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -144,6 +145,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    //switch arms to run in brake mode during autonomous
+    m_robotContainer.armSubsystem.setIdleMode(IdleMode.kBrake);
+
     Shuffleboard.startRecording();
 
     // Fetch the specific command selected by the drive team via the Auto Chooser
@@ -171,6 +175,9 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    //switch arms to run in coast mode during teleop
+    m_robotContainer.armSubsystem.setIdleMode(IdleMode.kCoast);
+
     Shuffleboard.startRecording();
   }
 
