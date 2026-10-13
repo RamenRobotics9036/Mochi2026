@@ -7,7 +7,9 @@ package frc.robot;
 import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -20,6 +22,7 @@ import frc.robot.subsystems.auto.AutoLogic;
 import frc.robot.visutils.PerCycleState;
 import frc.robot.visutils.VisionKalmanFilter.DisplayInfo;
 
+
 /**
  * The main robot class that controls the flow of the 2026 FRC robot code.
  *
@@ -30,6 +33,8 @@ public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
+
+  private final boolean kUseLimelight = false;
 
   /**
    * Initializes the RobotContainer, which sets up all subsystem hardware,
@@ -71,6 +76,24 @@ public class Robot extends TimedRobot {
         // needs that info and doesnt want it delayed 20ms.
         m_robotContainer.m_simWrapper.robotPeriodic();
     }
+
+    if (kUseLimelight) {
+            var driveState = m_robotContainer.drivetrain.getState();
+            // CTRE's Pose is already in the state
+            double headingDeg = driveState.Pose.getRotation().getDegrees();
+            double omegaRps = Units.radiansToRotations(driveState.Speeds.omegaRadiansPerSecond);
+        
+            LimelightHelpers.SetRobotOrientation("limelight", headingDeg, 0, 0, 0, 0, 0);
+            var llMeasurement = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight");
+        
+            if (llMeasurement != null && llMeasurement.tagCount > 0 && Math.abs(omegaRps) < 2.0) {
+                // Use the native CTRE addVisionMeasurement method
+                m_robotContainer.drivetrain.addVisionMeasurement(
+                    llMeasurement.pose, 
+                    llMeasurement.timestampSeconds
+                );
+            }
+        }
 
     // We allow vision to be enabled/disabled DYNAMICALLY from dashboard, so we set whether
     // its enabled on EACH cycle.
@@ -122,6 +145,9 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
+    //switch arms to run in brake mode during autonomous
+    m_robotContainer.armSubsystem.setIdleMode(IdleMode.kBrake);
+
     Shuffleboard.startRecording();
 
     // Fetch the specific command selected by the drive team via the Auto Chooser
@@ -149,6 +175,9 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    //switch arms to run in coast mode during teleop
+    m_robotContainer.armSubsystem.setIdleMode(IdleMode.kCoast);
+
     Shuffleboard.startRecording();
   }
 

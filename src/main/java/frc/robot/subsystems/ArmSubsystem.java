@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -27,6 +29,14 @@ public class ArmSubsystem extends SubsystemBase{
 
     public ArmSubsystem(ArmIoInterface armIO){
         m_armIO = armIO;
+    }
+
+    /**
+     * Pass through to ArmIO - set the arm motors' idle mode (brake or coast).
+     * @param armIdleMode the idle mode for the arms
+     */
+    public void setIdleMode(IdleMode armIdleMode) {
+        m_armIO.setIdleMode(armIdleMode);
     }
 
     /**

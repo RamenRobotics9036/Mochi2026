@@ -23,13 +23,14 @@ public class ArmIoReal implements ArmIoInterface {
 
     /** Constructor. */
     public ArmIoReal() {
-        SparkFlexConfig lArmConfig = new SparkFlexConfig();
-        SparkFlexConfig rArmConfig = new SparkFlexConfig();
-
         m_lArmMotor = new SparkFlex(ArmConstants.kLeftArmMotorID, MotorType.kBrushless);
         m_rArmMotor = new SparkFlex(ArmConstants.kRightArmMotorID, MotorType.kBrushless);
 
-        // Configure the motors:
+        SparkFlexConfig lArmConfig = new SparkFlexConfig();
+        SparkFlexConfig rArmConfig = new SparkFlexConfig();
+
+        // Configure the motors. Start in brake mode since autonomous precedes teleop;
+        // setIdleMode() switches idle mode at runtime.
         lArmConfig.idleMode(IdleMode.kBrake)
             .smartCurrentLimit(ArmConstants.kArmStallLimit);
 
@@ -69,6 +70,28 @@ public class ArmIoReal implements ArmIoInterface {
         // Initialize the encoder and PID controller for the arm motors
         m_encoder = m_lArmMotor.getEncoder();
         m_pidController = m_lArmMotor.getClosedLoopController();
+    }
+
+    /**
+     * Switch the arms' idle mode (brake in autonomous, coast in teleop).
+     *
+     * <p>Only the idle mode is changed: no parameter reset (so soft limits enabled after
+     * homing stay enabled) and nothing persisted to flash. Async so mode transitions
+     * don't block the robot loop.
+     *
+     * @param armIdleMode the idle mode for the arms
+     */
+    @Override
+    public void setIdleMode(IdleMode armIdleMode) {
+        SparkFlexConfig lArmConfig = new SparkFlexConfig();
+        SparkFlexConfig rArmConfig = new SparkFlexConfig();
+        lArmConfig.idleMode(armIdleMode);
+        rArmConfig.idleMode(armIdleMode);
+
+        m_lArmMotor.configureAsync(lArmConfig, ResetMode.kNoResetSafeParameters,
+            PersistMode.kNoPersistParameters);
+        m_rArmMotor.configureAsync(rArmConfig, ResetMode.kNoResetSafeParameters,
+            PersistMode.kNoPersistParameters);
     }
 
     @Override
