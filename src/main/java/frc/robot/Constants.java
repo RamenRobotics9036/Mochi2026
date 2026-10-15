@@ -264,10 +264,11 @@ public final class Constants {
 
     /** Constants for auto commands. */
     public static final class AutoConstants {
+        // All durations are in seconds.
         public static final double k_raiseClimbDuration = 4.0;
         public static final double k_lowerClimbDuration = 4.0;
 
-        public static final double k_getFuelDuration = 2.2;
+        public static final double k_getFuelDuration = 16.0; // Used in Parallel Deadline Groups with a path as the deadline, so excess time does not matter
 
         public static final double k_intakeBottomDuration = 3.5;
         public static final double k_intakeTopDuration = 2.0;
