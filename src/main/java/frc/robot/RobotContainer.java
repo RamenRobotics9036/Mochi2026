@@ -270,6 +270,8 @@ public class RobotContainer {
     private void registerNamedCommands() {
         NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
+        NamedCommands.registerCommand("jiggle", JiggleCommand.create(armSubsystem, intakeSubsystem));
+
         NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
 
         NamedCommands.registerCommand("get fuel", GetFuelCommand.create(armSubsystem, intakeSubsystem));
@@ -340,7 +342,7 @@ public class RobotContainer {
                 TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getPrimaryTagId())));
 
         //driveController.y().whileTrue(new JiggleCommand(drivetrain, armSubsystem));
-        driveController.y().whileTrue(new JiggleCommand(drivetrain));
+        driveController.y().whileTrue(JiggleCommand.create(armSubsystem, intakeSubsystem));
     }
 
     /**

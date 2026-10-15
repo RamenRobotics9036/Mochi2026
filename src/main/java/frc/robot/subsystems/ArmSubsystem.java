@@ -123,12 +123,12 @@ public class ArmSubsystem extends SubsystemBase{
         //TODO: Re-enable after homing is modified to work with this auto routine
         //TODO: Test homing! I don't believe Tyler was able to test this before he left!
         if (position > ArmConstants.kMaxArmAngle) {
-            DriverStation.reportWarning("ArmSubsystem: Attempted to set the arm lower than its maximum!", false);
-            SmartDashboard.putString("Intake/ArmWarning", "Attempted to set the arm lower than its maximum!");
+            DriverStation.reportWarning("ArmSubsystem: Attempted to deploy the arm lower than its maximum!", false);
+            SmartDashboard.putString("Intake/ArmWarning", "Attempted to deploy the arm lower than its maximum!");
         }
         if (position < ArmConstants.kMinArmAngle) {
-            DriverStation.reportWarning("ArmSubsystem: Attempted to set the arm lower than its minimum!", false);
-            SmartDashboard.putString("Intake/ArmWarning", "Attempted to set the arm lower than its minimum!");
+            DriverStation.reportWarning("ArmSubsystem: Attempted to retract the arm lower than its minimum!", false);
+            SmartDashboard.putString("Intake/ArmWarning", "Attempted to retract the arm lower than its minimum!");
         }
         m_armIO.setPosition(
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
@@ -146,6 +146,10 @@ public class ArmSubsystem extends SubsystemBase{
     /** Checks if the arm is deployed. */
     public boolean isArmDeployed() {
         return m_armOutputs.position >= (ArmConstants.kMaxArmAngle - 1.0);
+    }
+
+    public boolean isArmRetracted() {
+        return m_armOutputs.position <= (ArmConstants.kMinArmAngle + 1.0);
     }
 
     /** Returns true once the homing sequence has completed successfully. */
