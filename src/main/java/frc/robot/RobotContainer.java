@@ -340,7 +340,7 @@ public class RobotContainer {
                 TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getPrimaryTagId())));
 
         //driveController.y().whileTrue(new JiggleCommand(drivetrain, armSubsystem));
-        driveController.y().whileTrue(new JiggleCommand(drivetrain));
+        driveController.y().whileTrue(JiggleCommand.create(armSubsystem, intakeSubsystem));
     }
 
     /**
