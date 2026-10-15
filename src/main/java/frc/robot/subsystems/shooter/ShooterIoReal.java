@@ -29,6 +29,8 @@ public class ShooterIoReal implements TwoMotorRollerIoInterface {
 
     /** Constructs the real shooter IO and configures both motors. */
     public ShooterIoReal(BotConfigInterface configInterface) {
+        System.out.println("SHOOTER IO REAL MADE");
+
         TalonFXConfiguration lConfig;
         TalonFXConfiguration rConfig;
 

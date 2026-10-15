@@ -19,6 +19,8 @@ public class SimIoFactory {
      * @return A new {@link TwoMotorRollerIoSim} configured with shooter sim constants.
      */
     public static TwoMotorRollerIoInterface createShooterIoSim() {
+        System.err.println("SIM SHOOTEER CREATED");
+
         return new TwoMotorRollerIoSim(
             Constants.SimShooterConstants.kDeviceName,
             Constants.SimShooterConstants.kMoiKgM2,

@@ -13,25 +13,26 @@
         {
           "type": "path",
           "data": {
-            "pathName": "R_Zone"
+            "pathName": "Rotate"
           }
         },
         {
-          "type": "named",
+          "type": "parallel",
           "data": {
-            "name": "get fuel"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "R_Return"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shoot"
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "To Center from Left"
+                }
+              },
+              {
+                "type": "named",
+                "data": {
+                  "name": "get fuel"
+                }
+              }
+            ]
           }
         }
       ]

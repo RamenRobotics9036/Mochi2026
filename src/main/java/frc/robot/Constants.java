@@ -47,12 +47,12 @@ public final class Constants {
         public static final int kRightArmMotorID = 21;
 
         /** Max angle (degrees) — lowered/deployed position.
-         * Measured on hardware: 2/23/2026
+         * Measured on hardware: 5/5/2026
         */
-        public static final double kMaxArmAngle = 160;
+        public static final double kMaxArmAngle = 195; 
 
         /** Min angle (degrees) — raised/stowed position. */
-        public static final double kMinArmAngle = 10;
+        public static final double kMinArmAngle = 0;
 
         /** Position loop proportional gain. TODO: tune on hardware — 0.05 is a conservative starting value. */
         public static final double kArmPositionP = 0.05;
@@ -264,10 +264,11 @@ public final class Constants {
 
     /** Constants for auto commands. */
     public static final class AutoConstants {
+        // All durations are in seconds.
         public static final double k_raiseClimbDuration = 4.0;
         public static final double k_lowerClimbDuration = 4.0;
 
-        public static final double k_getFuelDuration = 3.0;
+        public static final double k_getFuelDuration = 16.0; // Used in Parallel Deadline Groups with a path as the deadline, so excess time does not matter
 
         public static final double k_intakeBottomDuration = 3.5;
         public static final double k_intakeTopDuration = 2.0;

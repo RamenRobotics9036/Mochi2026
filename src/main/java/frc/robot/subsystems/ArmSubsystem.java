@@ -85,6 +85,10 @@ public class ArmSubsystem extends SubsystemBase{
         m_armIO.moveArmWithSpeed(speed);
     }
 
+    public double getSetpoint() {
+        return m_armIO.getSetpoint();
+    }
+
     /** Homes the arm by moving it to the zero position. */
     public void beginHoming() {
         if(m_HomingState != ArmHomedState.HOMING) {
@@ -93,6 +97,12 @@ public class ArmSubsystem extends SubsystemBase{
             m_homingTimer.restart();
             m_stallStartSec = -1.0;
         }
+    }
+
+    /** Returns the current arm angle in degrees. */
+    public double getArmAngle() {
+        m_armIO.updateOutputs(m_armOutputs);
+        return m_armOutputs.position;
     }
 
     /**
@@ -105,13 +115,27 @@ public class ArmSubsystem extends SubsystemBase{
      * @param position Target arm angle in degrees.
      */
     public void setArmPosition(double position) {
-        if (m_HomingState != ArmHomedState.HOMED) {
-            DriverStation.reportWarning("ArmSubsystem: setArmPosition called before homing — ignored", false);
-            SmartDashboard.putString("Intake/ArmWarning", "setArmPosition before homing — ignored");
-            return;
+        // if (m_HomingState != ArmHomedState.HOMED) {
+        //     DriverStation.reportWarning("ArmSubsystem: setArmPosition called before homing — ignored", false);
+        //     SmartDashboard.putString("Intake/ArmWarning", "setArmPosition before homing — ignored");
+        //     return;
+        // } 
+        //TODO: Re-enable after homing is modified to work with this auto routine
+        //TODO: Test homing! I don't believe Tyler was able to test this before he left!
+        if (position > ArmConstants.kMaxArmAngle) {
+            DriverStation.reportWarning("ArmSubsystem: Attempted to set the arm lower than its maximum!", false);
+            SmartDashboard.putString("Intake/ArmWarning", "Attempted to set the arm lower than its maximum!");
+        }
+        if (position < ArmConstants.kMinArmAngle) {
+            DriverStation.reportWarning("ArmSubsystem: Attempted to set the arm lower than its minimum!", false);
+            SmartDashboard.putString("Intake/ArmWarning", "Attempted to set the arm lower than its minimum!");
         }
         m_armIO.setPosition(
             MathUtil.clamp(position, ArmConstants.kMinArmAngle, ArmConstants.kMaxArmAngle));
+        
+        // Warning to prevent needless debugging when arm value is nonsensical.
+        double m_arm_angle = getArmAngle();
+        if (m_arm_angle < -10) System.err.println("WARNING: Arm angle is negative (" + m_arm_angle + "). You probably deployed the code with the arm down. This causes the max and min values to be inaccurate.");
     }
 
     /** Manually resets the arm encoder to zero. */

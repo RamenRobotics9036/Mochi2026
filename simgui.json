@@ -149,6 +149,11 @@
           "visible": true
         }
       },
+      "/SmartDashboard/Sim/CycleResetPosition": {
+        "window": {
+          "visible": true
+        }
+      },
       "/SmartDashboard/VisionSystemSim-main/Sim Field": {
         "AAABlueTape": {
           "arrows": false,
