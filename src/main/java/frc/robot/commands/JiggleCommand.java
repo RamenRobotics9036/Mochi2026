@@ -14,15 +14,15 @@ import frc.robot.subsystems.IntakeSubsystem;
 public class JiggleCommand extends Command {
     public static Command create(ArmSubsystem arm, IntakeSubsystem intake) {
         return new RunCommand(
-                () -> arm.setArmPosition(Constants.ArmConstants.kMinArmAngle),
+                () -> arm.moveArmWithSpeed(-0.1),
                 // Dependencies:
                 arm, intake)
-            .until(() -> arm.isArmRetracted())
+            .until(() -> arm.getArmAngle() <= Constants.ArmConstants.kMinArmAngle + 40)
             .andThen(
                 new RunCommand(
-                    () -> arm.setArmPosition(Constants.ArmConstants.kMaxArmAngle)
+                    () -> arm.moveArmWithSpeed(0.1)
                 )
-                .until(() -> arm.isArmDeployed())
+                .until(() -> arm.getArmAngle() >= Constants.ArmConstants.kMaxArmAngle - 40)
             )
             .repeatedly();
     }
