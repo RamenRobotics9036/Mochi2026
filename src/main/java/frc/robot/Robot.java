@@ -145,8 +145,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    //switch arms to run in brake mode during autonomous
-    m_robotContainer.armSubsystem.setIdleMode(IdleMode.kBrake);
+    //switch arms to run in coast mode during autonomous
+    m_robotContainer.armSubsystem.setIdleMode(IdleMode.kCoast);
 
     Shuffleboard.startRecording();
 

@@ -35,6 +35,12 @@
                       "data": {
                         "pathName": "L_Collect"
                       }
+                    },
+                    {
+                      "type": "path",
+                      "data": {
+                        "pathName": "L_Anti_Collect"
+                      }
                     }
                   ]
                 }
@@ -53,22 +59,9 @@
           "data": {
             "commands": [
               {
-                "type": "sequential",
+                "type": "path",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "L_Anti_Collect"
-                      }
-                    },
-                    {
-                      "type": "path",
-                      "data": {
-                        "pathName": "L_Anti_Towards_Center"
-                      }
-                    }
-                  ]
+                  "pathName": "L_Anti_Towards_Center"
                 }
               },
               {
@@ -84,12 +77,6 @@
           "type": "path",
           "data": {
             "pathName": "L_Anti_Trench"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "shoot"
           }
         }
       ]
