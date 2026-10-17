@@ -32,6 +32,7 @@ Classes under `src/main/java/frc/robot/` that have non-trivial logic but no corr
 | Class | Why it matters |
 |---|---|
 | `commands/JiggleCommand.java` | Timer-driven direction alternation logic. |
+| `commands/ArmJiggleCommand.java` | Timer-driven arm alternation logic. |
 | `commands/SpinnyDefaultCommand.java` | Modular-clock CW/CCW switching; boundary at the threshold. |
 | `visutils/ShowIcon.java` | Clear-all-then-set-one semantics, empty-list guard, index selection. |
 | `subsystems/auto/DriveForwardNow.java` | Euclidean distance `isFinished()` + 15 s safety timeout. |

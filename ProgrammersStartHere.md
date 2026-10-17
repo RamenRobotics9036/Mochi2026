@@ -233,6 +233,7 @@ The **drivetrain** is the exception: CTRE's `SwerveDrivetrain` handles real vs. 
 | `AlignToTagCommand` | Turns to line up with an AprilTag |
 | `RotateToTargetCommand` | Rotate in place to face a target pose |
 | `JiggleCommand` | Wiggle the drivetrain to shake loose stuck game pieces |
+| `ArmJiggleCommand` | Move the arm up and down slowly to shake loose stuck game pieces |
 | `SpinnyDefaultCommand` | Keeps the spinny wheels running |
 
 Many commands use a static `create(...)` factory instead of `new`, for example `ShootCommand.create(shooter, indexer)`.
