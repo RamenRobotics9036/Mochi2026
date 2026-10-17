@@ -33,6 +33,7 @@ import frc.robot.commands.SetIntakeBottomCommand;
 import frc.robot.commands.SetIntakeTopCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.ArmJiggleCommand;
 import frc.robot.commands.JiggleCommand;
 import frc.robot.commands.RotateToTargetCommand;
 import frc.robot.commands.ShooterDefaultCommand;
@@ -270,7 +271,8 @@ public class RobotContainer {
     private void registerNamedCommands() {
         NamedCommands.registerCommand("shoot", ShootCommand.create(shooterSubsystem, m_indexerSubsystem));
 
-        NamedCommands.registerCommand("jiggle", JiggleCommand.create(armSubsystem, intakeSubsystem));
+        // NOTE: This is ARM jiggle, not DRIVETRAIN jiggle. I wanted to touch as little of the code as possible during comps, but we should rename this to "arm jiggle" after comp.
+        NamedCommands.registerCommand("jiggle", ArmJiggleCommand.create(armSubsystem, intakeSubsystem));
 
         NamedCommands.registerCommand("Full Auto Climb", FullAutoClimbCommand.create(climberSubsystem));
 
@@ -342,7 +344,7 @@ public class RobotContainer {
                 TurnToAngleHelper.getTag2dPose(m_multiCamlimelight.getPrimaryTagId())));
 
         //driveController.y().whileTrue(new JiggleCommand(drivetrain, armSubsystem));
-        driveController.y().whileTrue(JiggleCommand.create(armSubsystem, intakeSubsystem));
+        driveController.y().whileTrue(new JiggleCommand(drivetrain));
     }
 
     /**
