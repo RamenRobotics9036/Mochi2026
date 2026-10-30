@@ -59,7 +59,7 @@ public class ShooterDefaultCommand extends Command{
     @Override
     public void execute() {
         if (m_controller.b().getAsBoolean()) {
-            LimelightHelpers.getDistanceFromTag("limelight", VisionConstants.goalHeightInches);
+            System.out.println(LimelightHelpers.getDistanceFromTag("limelight", VisionConstants.goalHeightInches));
         } else {
             // Check controller input to determine whether to move the indexer forward,
             // backward, or not at all. In all but the last case, the shooter should
