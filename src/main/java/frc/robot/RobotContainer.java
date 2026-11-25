@@ -11,6 +11,9 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -23,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.botconfig.BotConfigInterface;
 import frc.robot.botconfig.RobotIdentity;
 import frc.robot.commands.FullAutoClimbCommand;
@@ -372,6 +376,9 @@ public class RobotContainer {
 
         operateController.a().toggleOnTrue(new IntakeCommand(intakeSubsystem));
 
+        //TODO: delete this once testing is done. (Adding shooter is just to avoid errors)
+        operateController.b().whileTrue(new RunCommand(() -> System.out.println(getDistanceToTag()), shooterSubsystem));
+
         // Right stick click: home the arm (must be done before any arm position commands)
         operateController.rightStick().onTrue(
             IntakeArmHomeCommand.create(armSubsystem));
@@ -489,4 +496,29 @@ public class RobotContainer {
         m_driveAccuracyTester.clearTape();
     }
 
+    /** 
+     *  -->  TODO: MOVE THIS THING!
+     * Seriously. We just put it here so we could test it quickly.  <--
+    */
+    private double getDistanceToTag(){
+            String limelightName = m_configInterface.getCameraName(0);
+            double targetOffsetAngle_Vertical = LimelightHelpers.getTY(limelightName);
+
+            // how many degrees back is your limelight rotated from perfectly vertical?
+            double limelightMountAngleDegrees = VisionConstants.limelightMountAngleDegrees; 
+
+            // distance from the center of the Limelight lens to the floor
+            double limelightLensHeightInches = VisionConstants.limelightLensHeightInches; 
+
+            // distance from the target to the floor
+            double goalHeightInches = VisionConstants.goalHeightInches; 
+
+            double angleToGoalDegrees = limelightMountAngleDegrees + targetOffsetAngle_Vertical;
+            double angleToGoalRadians = angleToGoalDegrees * (3.14159265 / 180.0);
+
+            //calculate distance
+            double distanceFromLimelightToGoalInches = (goalHeightInches - limelightLensHeightInches) / Math.tan(angleToGoalRadians);
+
+            return distanceFromLimelightToGoalInches;
+    }
 }
